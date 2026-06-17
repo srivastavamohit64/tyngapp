@@ -1,0 +1,107 @@
+ion-toolbar {
+  --background: #111827;
+  --color: #fff;
+  --border-color: rgba(255, 255, 255, 0.1);
+}
+
+.subtitle {
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.create-page {
+  background: #0a0f1c;
+  min-height: 100%;
+}
+
+.stepper {
+  background: #111827;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 16px;
+  text-align: center;
+  color: #2563eb;
+}
+
+.step-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.step {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #1e293b;
+  color: #64748b;
+  flex: 0 0 auto;
+}
+
+.step.active {
+  background: #2563eb;
+  color: #fff;
+}
+
+.step.done {
+  background: #22c55e;
+  color: #fff;
+}
+
+.line {
+  flex: 1;
+  height: 2px;
+  background: #1e293b;
+  margin: 0 8px;
+}
+
+.line.done {
+  background: #22c55e;
+}
+
+.picker-grid {
+  margin-top: 24px;
+}
+
+.picker {
+  min-height: 134px;
+  color: #94a3b8;
+  text-align: center;
+}
+
+.picker.selected,
+.venue-option.selected {
+  border-color: #2563eb;
+  background: rgba(37, 99, 235, 0.1);
+  color: #fff;
+}
+
+.emoji {
+  font-size: 34px;
+  margin-bottom: 12px;
+}
+
+.venue-option {
+  width: 100%;
+  color: #fff;
+  text-align: left;
+}
+
+.venue-option span {
+  display: block;
+  margin-top: 6px;
+}
+
+.price {
+  color: #2563eb;
+}
+
+.summary p {
+  margin: 8px 0;
+}
+
+ion-footer ion-toolbar {
+  padding: 8px 16px calc(8px + env(safe-area-inset-bottom));
+}

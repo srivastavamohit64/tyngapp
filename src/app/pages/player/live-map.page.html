@@ -1,0 +1,41 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="back()">
+        <ion-icon slot="icon-only" name="chevron-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>
+      Live Sports Map
+      <div class="subtitle">Lucknow</div>
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button>
+        <ion-icon slot="icon-only" name="layers-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content fullscreen>
+  <div class="standalone-safe map-page">
+    <div class="chips filters">
+      <button [class.active]="activeFilter === 'all'" (click)="activeFilter = 'all'">All</button>
+      <button [class.active]="activeFilter === 'games'" (click)="activeFilter = 'games'">Live Games</button>
+      <button [class.active]="activeFilter === 'players'" (click)="activeFilter = 'players'">Players</button>
+      <button [class.active]="activeFilter === 'venues'" (click)="activeFilter = 'venues'">Venues</button>
+    </div>
+
+    <div class="fake-map">
+      <button class="marker" *ngFor="let marker of filteredMarkers" [style.left.%]="marker.x" [style.top.%]="marker.y" [style.background]="marker.color" (click)="selected = marker">
+        {{ marker.emoji }}
+      </button>
+    </div>
+
+    <div class="card selected">
+      <strong>{{ selected.title }}</strong>
+      <p class="muted">{{ selected.subtitle }}</p>
+      <ion-button expand="block">View Details</ion-button>
+    </div>
+  </div>
+</ion-content>

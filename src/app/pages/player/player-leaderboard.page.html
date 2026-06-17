@@ -1,0 +1,27 @@
+<ion-content fullscreen>
+  <div class="page-safe">
+    <section class="hero leaderboard-hero">
+      <div class="header-row">
+        <h2>Leaderboard</h2>
+        <ion-icon name="trophy-outline"></ion-icon>
+      </div>
+      <div class="chips">
+        <button *ngFor="let sport of sports" [class.active]="selectedSport === sport" (click)="selectedSport = sport">
+          {{ sport | titlecase }}
+        </button>
+      </div>
+    </section>
+
+    <section class="content-pad list">
+      <div class="card rank-row" *ngFor="let player of players">
+        <div class="rank">#{{ player.rank }}</div>
+        <div class="avatar">{{ player.avatar }}</div>
+        <div class="rank-info">
+          <strong>{{ player.name }}</strong>
+          <div class="caption muted">{{ player.games }} games · {{ player.wins }}% wins</div>
+        </div>
+        <div class="points">{{ player.points | number }}</div>
+      </div>
+    </section>
+  </div>
+</ion-content>
