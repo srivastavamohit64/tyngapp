@@ -1,0 +1,263 @@
+/* ============================================================
+   Player Evaluation Page
+   Matches Figma design: /app/coach/evaluate
+   ============================================================ */
+
+.eval-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  background: var(--app-background);
+  padding-top: calc(16px + var(--safe-area-top));
+  padding-bottom: calc(var(--app-tab-bar-height) + var(--safe-area-bottom) + 24px);
+  padding-left: calc(20px + var(--safe-area-left));
+  padding-right: calc(20px + var(--safe-area-right));
+  gap: 24px;
+}
+
+/* ── Header ────────────────────────────────── */
+.eval-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  h1 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--app-foreground);
+  }
+}
+
+.back-btn {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--app-card);
+  border: 1px solid var(--app-border);
+  color: var(--app-foreground);
+  cursor: pointer;
+  flex-shrink: 0;
+  appearance: none;
+  font: inherit;
+
+  ion-icon {
+    font-size: 20px;
+  }
+}
+
+/* ── Section wrapper ────────────────────────── */
+.eval-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.section-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+/* ── Player list ────────────────────────────── */
+.player-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.player-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 2px solid var(--app-border);
+  background: var(--app-card);
+  cursor: pointer;
+  appearance: none;
+  font: inherit;
+  text-align: left;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    border-color: rgba(37, 99, 235, 0.4);
+  }
+
+  &.is-selected {
+    border-color: var(--app-primary);
+    background: rgba(37, 99, 235, 0.08);
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.12);
+  }
+}
+
+.player-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--app-primary) 0%, var(--app-secondary) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.player-meta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.player-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--app-foreground);
+}
+
+.player-pos {
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+.player-check {
+  font-size: 22px;
+  color: var(--app-primary);
+  flex-shrink: 0;
+}
+
+/* ── Rate Performance Card ─────────────────── */
+.rate-card {
+  background: var(--app-card);
+  border-radius: 20px;
+  border: 1px solid var(--app-border);
+  padding: 20px;
+}
+
+.rate-title {
+  margin: 0 0 20px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--app-foreground);
+}
+
+.category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.cat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cat-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cat-icon {
+  font-size: 18px;
+  color: var(--app-primary);
+}
+
+.cat-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--app-foreground);
+}
+
+.rating-row {
+  display: flex;
+  gap: 8px;
+}
+
+.rating-btn {
+  flex: 1;
+  height: 44px;
+  border-radius: 10px;
+  border: none;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  appearance: none;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
+  background: var(--app-muted);
+  color: #94a3b8;
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &.is-active {
+    background: var(--app-accent);
+    color: #ffffff;
+  }
+}
+
+/* ── Textarea ────────────────────────────────── */
+.eval-textarea {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 2px solid var(--app-border);
+  background: var(--app-card);
+  color: var(--app-foreground);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.6;
+  resize: none;
+  outline: none;
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+
+  &::placeholder {
+    color: #64748b;
+  }
+
+  &:focus {
+    border-color: var(--app-primary);
+  }
+}
+
+/* ── Save Button ─────────────────────────────── */
+.save-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 16px;
+  border-radius: 16px;
+  border: none;
+  background: var(--app-primary);
+  color: #ffffff;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  appearance: none;
+  transition: opacity 0.2s ease, transform 0.1s ease;
+
+  ion-icon {
+    font-size: 20px;
+  }
+
+  &:hover {
+    opacity: 0.9;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}

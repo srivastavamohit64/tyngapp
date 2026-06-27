@@ -1,0 +1,130 @@
+<ion-content fullscreen>
+  <main class="page-with-tab-bar min-h-full bg-background text-white pb-32">
+    
+    <!-- Top Header section with Trophy -->
+    <header class="px-6 pt-6 pb-4 bg-gradient-to-b from-accent/15 to-transparent flex items-center justify-between">
+      <h1 class="text-3xl font-extrabold tracking-tight text-white">Leaderboard</h1>
+      <div class="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center text-accent">
+        <ion-icon name="trophy" class="text-2xl"></ion-icon>
+      </div>
+    </header>
+
+    <!-- Horizontal Sport Tabs -->
+    <section class="px-6 mb-6">
+      <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
+        <button 
+          *ngFor="let sport of sports"
+          (click)="selectSport(sport)"
+          [class.active-sport-tab]="selectedSport === sport"
+          class="sport-tab px-4 py-2.5 rounded-2xl text-sm font-semibold whitespace-nowrap transition-all duration-300 flex-shrink-0 border border-white/5 bg-card text-slate-400 active:scale-95 bg-transparent"
+        >
+          {{ sport | titlecase }}
+        </button>
+      </div>
+    </section>
+
+    <!-- Podium (Top 3 Players) -->
+    <section class="px-6 mb-6">
+      <div class="grid grid-cols-3 gap-3 items-end">
+        
+        <!-- Rank #2 (Rahul) -->
+        <div *ngIf="topThree[1]" class="order-1 flex flex-col items-center">
+          <div class="podium-card w-full p-4 rounded-3xl border border-white/10 text-center bg-card relative">
+            <div class="relative inline-block mb-3">
+              <div class="w-14 h-14 text-2.5xl rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center mx-auto shadow-md">
+                {{ topThree[1].avatar }}
+              </div>
+              <div class="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-slate-700/80 border border-white/10 flex items-center justify-center">
+                <ion-icon name="medal-outline" class="text-slate-300 text-xs"></ion-icon>
+              </div>
+            </div>
+            <div class="text-sm font-bold text-white mb-0.5 truncate">{{ topThree[1].name.split(' ')[0] }}</div>
+            <div class="text-xs font-bold text-accent mb-1">{{ topThree[1].points | number }}</div>
+            <div class="text-[10px] font-bold text-slate-500">#2</div>
+          </div>
+        </div>
+
+        <!-- Rank #1 (Amit) - Highlighted & Taller -->
+        <div *ngIf="topThree[0]" class="order-2 flex flex-col items-center scale-105">
+          <div class="podium-card podium-card-gold w-full p-5 rounded-3xl border border-accent/20 text-center bg-accent/10 relative shadow-xl shadow-accent/5">
+            <div class="relative inline-block mb-3">
+              <div class="w-18 h-18 text-3.5xl rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center mx-auto shadow-lg border-2 border-accent/30">
+                {{ topThree[0].avatar }}
+              </div>
+              <div class="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-accent border border-accent/50 flex items-center justify-center shadow-lg">
+                <ion-icon name="ribbon" class="text-white text-xs"></ion-icon>
+              </div>
+            </div>
+            <div class="text-base font-extrabold text-white mb-0.5 truncate">{{ topThree[0].name.split(' ')[0] }}</div>
+            <div class="text-sm font-extrabold text-accent mb-1">{{ topThree[0].points | number }}</div>
+            <div class="text-xs font-extrabold text-accent/80">#1</div>
+          </div>
+        </div>
+
+        <!-- Rank #3 (Priya) -->
+        <div *ngIf="topThree[2]" class="order-3 flex flex-col items-center">
+          <div class="podium-card w-full p-4 rounded-3xl border border-white/10 text-center bg-card relative">
+            <div class="relative inline-block mb-3">
+              <div class="w-14 h-14 text-2.5xl rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center mx-auto shadow-md">
+                {{ topThree[2].avatar }}
+              </div>
+              <div class="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-slate-700/80 border border-white/10 flex items-center justify-center">
+                <ion-icon name="award-outline" class="text-accent/60 text-xs"></ion-icon>
+              </div>
+            </div>
+            <div class="text-sm font-bold text-white mb-0.5 truncate">{{ topThree[2].name.split(' ')[0] }}</div>
+            <div class="text-xs font-bold text-accent mb-1">{{ topThree[2].points | number }}</div>
+            <div class="text-[10px] font-bold text-slate-500">#3</div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Leaderboard List (Rank #4+) -->
+    <section class="px-6 space-y-3">
+      <article 
+        *ngFor="let player of listPlayers"
+        class="player-card"
+      >
+        <!-- Rank -->
+        <div class="rank-number">
+          #{{ player.rank }}
+        </div>
+
+        <!-- Avatar Circle -->
+        <div class="avatar-circle">
+          {{ player.avatar }}
+        </div>
+
+        <!-- Player Profile Info -->
+        <div class="player-info">
+          <div class="name-row">
+            <h3>{{ player.name }}</h3>
+            <span class="badge">
+              {{ player.badge }}
+            </span>
+          </div>
+          
+          <div class="stats-row">
+            <div class="stat-item">
+              <ion-icon name="trophy-outline"></ion-icon>
+              <span>{{ player.gamesPlayed }} games</span>
+            </div>
+            <div class="stat-item">
+              <ion-icon name="trending-up-outline"></ion-icon>
+              <span>{{ player.winRate }}% wins</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Points / Rating -->
+        <div class="points-container">
+          <ion-icon name="star"></ion-icon>
+          <span>{{ player.points | number }}</span>
+        </div>
+      </article>
+    </section>
+
+  </main>
+</ion-content>

@@ -1,0 +1,52 @@
+<ion-content fullscreen>
+  <div class="page-safe">
+    <section class="hero profile-hero">
+      <div class="header-row">
+        <h2>Profile</h2>
+        <ion-icon name="settings-outline"></ion-icon>
+      </div>
+      <div class="profile-top">
+        <div class="avatar big">{{ user.avatar }}</div>
+        <h1>{{ user.name }}</h1>
+        <p class="muted">{{ user.location }} · Member since {{ user.memberSince }}</p>
+        <span class="badge orange">★ {{ user.rating }} Rating</span>
+      </div>
+    </section>
+
+    <section class="content-pad list">
+      <div class="card">
+        <div class="header-row">
+          <strong>Level {{ user.level }} Progress</strong>
+          <span class="caption muted">{{ user.xp }}/{{ user.xpToNext }} XP</span>
+        </div>
+        <div class="progress tall"><span [style.width.%]="progress"></span></div>
+      </div>
+
+      <h3>Stats</h3>
+      <div class="grid-3">
+        <div class="card stat" *ngFor="let stat of stats">
+          <ion-icon [name]="stat.icon"></ion-icon>
+          <strong>{{ stat.value }}</strong>
+          <span class="caption muted">{{ stat.label }}</span>
+        </div>
+      </div>
+
+      <h3>Badges</h3>
+      <div class="grid-2">
+        <div class="card badge-card" *ngFor="let badge of badges">
+          <ion-icon [name]="badge.icon" [color]="badge.color"></ion-icon>
+          <span>{{ badge.name }}</span>
+        </div>
+      </div>
+
+      <h3>Match History</h3>
+      <div class="card match" *ngFor="let match of matches">
+        <div>
+          <strong>{{ match.sport }}</strong>
+          <div class="caption muted">{{ match.date }}</div>
+        </div>
+        <div class="result" [class.win]="match.result === 'Won'">{{ match.result }}<br /><span>{{ match.score }}</span></div>
+      </div>
+    </section>
+  </div>
+</ion-content>

@@ -1,0 +1,432 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: var(--app-background);
+  --color-card: var(--app-card);
+  --color-foreground: var(--app-foreground);
+  --color-muted: var(--app-muted);
+  --color-border: var(--app-border);
+  --color-primary: var(--app-primary);
+  --color-secondary: var(--app-secondary);
+  --color-accent: var(--app-accent);
+  --color-violet: var(--app-violet);
+  --color-info: var(--app-info);
+}
+
+/*
+ * App Global CSS
+ * ----------------------------------------------------------------------------
+ */
+
+/* Core CSS required for Ionic components to work properly */
+@import "@ionic/angular/css/core.css";
+
+/* Basic CSS for apps built with Ionic */
+@import "@ionic/angular/css/normalize.css";
+@import "@ionic/angular/css/structure.css";
+@import "@ionic/angular/css/typography.css";
+@import "@ionic/angular/css/display.css";
+
+/* Optional CSS utils that can be commented out */
+@import "@ionic/angular/css/padding.css";
+@import "@ionic/angular/css/float-elements.css";
+@import "@ionic/angular/css/text-alignment.css";
+@import "@ionic/angular/css/text-transformation.css";
+@import "@ionic/angular/css/flex-utils.css";
+
+/* ============================================================
+   DARK MODE (default) — unchanged
+   ============================================================ */
+:root {
+  --app-background: #0a0f1c;
+  --app-card: #111827;
+  --app-foreground: #ffffff;
+  --app-muted: #1e293b;
+  --app-border: rgba(255, 255, 255, 0.1);
+  --app-primary: #2563eb;
+  --app-secondary: #22c55e;
+  --app-accent: #f97316;
+  --app-violet: #7c3aed;
+  --app-info: #38bdf8;
+
+  --app-tab-bar-height: 76px;
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-left: env(safe-area-inset-left, 0px);
+  --safe-area-right: env(safe-area-inset-right, 0px);
+}
+
+/* ============================================================
+   LIGHT MODE — Tyng Brand Theme
+   ──────────────────────────────────────────────────────────
+   Derived from the Tyng logo:
+     • Background  : Ice white-blue   #f4f6ff
+     • Card        : Pure white       #ffffff
+     • Text        : Deep navy        #0d1240
+     • Primary     : Royal blue       #2130d4  (logo BG hue)
+     • Secondary   : Mint green       #00c977  (logo Y mark)
+     • Accent      : Vivid electric   #4f6bff
+     • Violet      : Indigo           #6641f5
+     • Info        : Sky cyan         #0097c4
+   ============================================================ */
+.light-mode {
+  --app-background: #f0f4ff;
+  --app-card: #ffffff;
+  --app-foreground: #0d1240;
+  --app-muted: #e4eaff;
+  --app-border: rgba(33, 48, 212, 0.12);
+  --app-primary: #2130d4;
+  --app-secondary: #00c977;
+  --app-accent: #ff5c35;
+  --app-violet: #6641f5;
+  --app-info: #0097c4;
+}
+
+/* ============================================================
+   BASE STYLES
+   ============================================================ */
+html,
+body,
+ion-app {
+  background: var(--app-background);
+  color: var(--app-foreground);
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Global utility theme overrides */
+.text-white {
+  color: var(--app-foreground) !important;
+}
+
+.border-white\/10 {
+  border-color: var(--app-border) !important;
+}
+
+.bg-card {
+  background-color: var(--app-card) !important;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.bg-background {
+  background-color: var(--app-background) !important;
+  transition: background-color 0.3s ease;
+}
+
+ion-content {
+  --background: var(--app-background);
+}
+
+/* ============================================================
+   LIGHT MODE — Component-level overrides
+   Fix hardcoded dark colours used across pages
+   ============================================================ */
+
+/* Heading & text colours */
+.light-mode h1,
+.light-mode h2,
+.light-mode h3,
+.light-mode h4,
+.light-mode h5,
+.light-mode h6 {
+  color: var(--app-foreground) !important;
+}
+
+/* Tailwind text helpers — deep navy-based tones */
+.light-mode .text-slate-400 {
+  color: #5262a0 !important;
+}
+
+.light-mode .text-slate-300 {
+  color: #3d4f8a !important;
+}
+
+.light-mode .text-slate-500 {
+  color: #2a3870 !important;
+}
+
+/* Tailwind dark background helpers */
+.light-mode .bg-slate-800 {
+  background-color: var(--app-muted) !important;
+}
+
+.light-mode .bg-slate-700 {
+  background-color: #dde1f0 !important;
+}
+
+.light-mode .bg-slate-900 {
+  background-color: var(--app-background) !important;
+}
+
+/* ── Tab bar — Tyng blue ─────────────────── */
+.light-mode ion-tab-bar,
+.light-mode .tab-bar {
+  background: #ffffff !important;
+  border-top: 1px solid rgba(33, 48, 212, 0.12) !important;
+  box-shadow: 0 -4px 24px rgba(33, 48, 212, 0.10) !important;
+}
+
+.light-mode ion-tab-button {
+  color: #7b8dc7 !important;
+}
+
+.light-mode ion-tab-button.tab-selected,
+.light-mode ion-tab-button.tab-selected ion-icon,
+.light-mode ion-tab-button.tab-selected ion-label {
+  color: #2130d4 !important;
+}
+
+/* ── Leaderboard cards — Tyng blue ──────── */
+.light-mode .player-card {
+  background-color: #ffffff !important;
+  border: 1px solid rgba(33, 48, 212, 0.12) !important;
+  box-shadow: 0 2px 16px rgba(33, 48, 212, 0.08) !important;
+}
+
+.light-mode .player-card h3 {
+  color: #0d1240 !important;
+}
+
+.light-mode .player-card .rank-number {
+  color: #2130d4 !important;
+}
+
+.light-mode .player-card .stat-item {
+  color: #5262a0 !important;
+}
+
+.light-mode .player-card .stat-item ion-icon {
+  color: #7b8dc7 !important;
+}
+
+.light-mode .player-card .badge {
+  background-color: rgba(33, 48, 212, 0.08) !important;
+  color: #2130d4 !important;
+  border-color: rgba(33, 48, 212, 0.2) !important;
+}
+
+.light-mode .points-container {
+  color: #ff5c35 !important;
+}
+
+.light-mode .points-container ion-icon {
+  color: #ff5c35 !important;
+}
+
+/* ── Leaderboard podium — Tyng blue/green ── */
+.light-mode .podium-section {
+  background: linear-gradient(135deg, #dce6ff 0%, #d0f5e8 60%, #e0ecff 100%) !important;
+}
+
+/* ── Search / input fields — Tyng ───────── */
+.light-mode .search-input,
+.light-mode input[type="text"],
+.light-mode input[type="email"],
+.light-mode input[type="password"],
+.light-mode textarea {
+  background-color: #ffffff !important;
+  color: #0d1240 !important;
+  border: 1px solid rgba(33, 48, 212, 0.18) !important;
+}
+
+/* ── Sport / filter chips — Tyng ─────────── */
+.light-mode .sport-filter,
+.light-mode .filter-chip {
+  background-color: #ffffff !important;
+  color: #2130d4 !important;
+  border: 1px solid rgba(33, 48, 212, 0.22) !important;
+}
+
+.light-mode .sport-filter.active,
+.light-mode .filter-chip.active {
+  background: linear-gradient(135deg, #2130d4 0%, #4f6bff 100%) !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+}
+
+/* ── Action buttons — Tyng royal blue ────── */
+.light-mode .btn-primary,
+.light-mode button.bg-primary {
+  background: linear-gradient(135deg, #2130d4 0%, #4f6bff 100%) !important;
+  color: #ffffff !important;
+}
+
+/* ── Gradient hero sections — Tyng brand ─── */
+.light-mode .bg-gradient-to-b,
+.light-mode [class*="from-primary"] {
+  --tw-gradient-from: rgba(33, 48, 212, 0.10);
+}
+
+/* ── Card hover borders — Tyng ───────────── */
+.light-mode .hover\:border-primary:hover {
+  border-color: #2130d4 !important;
+}
+
+/* ── Side menu — Tyng ────────────────────── */
+.light-mode ion-menu ion-content,
+.light-mode ion-menu {
+  --background: #ffffff;
+}
+
+.light-mode ion-menu ion-list {
+  background: #ffffff !important;
+}
+
+/* ── Discover + badge chips in light ─────── */
+.light-mode .bg-primary\/20 {
+  background-color: rgba(33, 48, 212, 0.10) !important;
+}
+
+.light-mode .bg-secondary\/20 {
+  background-color: rgba(0, 201, 119, 0.12) !important;
+}
+
+.light-mode .bg-accent\/20 {
+  background-color: rgba(255, 92, 53, 0.10) !important;
+}
+
+.light-mode .text-primary {
+  color: #2130d4 !important;
+}
+
+.light-mode .text-secondary {
+  color: #00a862 !important;
+}
+
+.light-mode .text-accent {
+  color: #e04a28 !important;
+}
+
+/* ── bg-muted in light mode ──────────────── */
+.light-mode .bg-muted {
+  background-color: #e4eaff !important;
+}
+
+/* ── bg-gradient hero (venue/coach header) ─ */
+.light-mode .from-primary\/20 {
+  --tw-gradient-from: rgba(33, 48, 212, 0.09) !important;
+}
+
+/* ── Quick action icons tint ─────────────── */
+.light-mode .rounded-xl.bg-card,
+.light-mode .rounded-2xl.bg-card {
+  box-shadow: 0 2px 12px rgba(33, 48, 212, 0.07);
+}
+
+/* ============================================================
+   SAFE AREA HELPERS
+   ============================================================ */
+.safe-area-top {
+  padding-top: var(--safe-area-top);
+}
+
+.safe-area-bottom {
+  padding-bottom: var(--safe-area-bottom);
+}
+
+.safe-area-header {
+  padding-top: calc(var(--safe-area-top) + 1rem);
+  padding-right: calc(var(--safe-area-right) + 1.5rem);
+  padding-left: calc(var(--safe-area-left) + 1.5rem);
+}
+
+.safe-area-screen {
+  padding-top: calc(var(--safe-area-top) + 1.5rem);
+  padding-right: calc(var(--safe-area-right) + 1.5rem);
+  padding-bottom: calc(var(--safe-area-bottom) + 1.5rem);
+  padding-left: calc(var(--safe-area-left) + 1.5rem);
+}
+
+.page-with-tab-bar {
+  padding-bottom: calc(var(--app-tab-bar-height) + var(--safe-area-bottom));
+}
+
+.safe-area-input-bar {
+  padding: 0.75rem 1.5rem calc(0.75rem + var(--safe-area-bottom));
+  padding-right: calc(1.5rem + var(--safe-area-right));
+  padding-left: calc(1.5rem + var(--safe-area-left));
+}
+
+/* ============================================================
+   GLOBAL ELEMENT RESETS
+   ============================================================ */
+
+/* Global button reset and styling */
+button {
+  appearance: none;
+  border: 0;
+  font: inherit;
+  border-radius: 16px;
+  cursor: pointer;
+}
+
+/* Global card styling */
+.bg-card,
+ion-card,
+article,
+.card,
+.active-card,
+.card-deck>div,
+app-event-card button,
+app-player-card article,
+app-profile-card article {
+  border-radius: 20px;
+}
+
+/* Global input/form element styling */
+input,
+select,
+textarea,
+ion-input,
+.search-input {
+  border-radius: 14px;
+}
+
+/* ============================================================
+   MOBILE VIEWPORT MOCK FRAME (web preview on wider screens)
+   ============================================================ */
+@media (min-width: 480px) {
+
+  html,
+  body,
+  ion-app {
+    max-width: 450px !important;
+    margin: 0 auto !important;
+    position: relative !important;
+    box-shadow: 0 10px 50px rgba(0, 0, 0, 0.7);
+    border-inline: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: #05070c !important;
+  }
+
+  .tab-bar {
+    max-width: 450px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    right: auto !important;
+    z-index: 9999 !important;
+  }
+}
+
+.tab-bar {
+  z-index: 9999 !important;
+}
+
+/* Button focus outline reset */
+button:focus,
+button:active,
+.button-native:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Guarantee borders are visible for elements with border classes */
+.border,
+[class*="border-white/10"],
+[class*="border-border"] {
+  border-style: solid !important;
+  border-width: 1px !important;
+}
+
+.padding10 {
+  padding: 10px;
+}

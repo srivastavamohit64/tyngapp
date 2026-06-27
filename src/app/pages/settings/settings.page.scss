@@ -1,0 +1,18 @@
+/* Settings Page Specific SCSS */
+
+:host {
+  display: block;
+}
+
+.row_design {
+  display: flex;
+  align-items: center;
+  gap: 16px !important;
+}
+
+button {
+  padding-left: 20px !important;
+  padding-right: 24px !important;
+}
+
+.row_design {}

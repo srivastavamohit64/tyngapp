@@ -1,0 +1,85 @@
+<ion-content fullscreen>
+  <div class="page-safe">
+    <section class="hero">
+      <div class="header-row">
+        <div class="location">
+          <ion-icon name="location-outline"></ion-icon>
+          <div>
+            <div class="caption muted">Location</div>
+            <div>Lucknow <ion-icon name="chevron-forward-outline"></ion-icon></div>
+          </div>
+        </div>
+        <button class="bell btn-plain">
+          <ion-icon name="notifications-outline"></ion-icon>
+          <span></span>
+        </button>
+      </div>
+      <ion-searchbar placeholder="Find players, games, venues"></ion-searchbar>
+    </section>
+
+    <section class="content-pad">
+      <div class="suggestion gradient-primary">
+        <div class="header-row">
+          <div>
+            <div class="caption">Quick Suggestion</div>
+            <strong>4 players available near you</strong>
+          </div>
+          <div class="suggestion-icon"><ion-icon name="people-outline"></ion-icon></div>
+        </div>
+        <div class="time"><ion-icon name="time-outline"></ion-icon> Available at 7 PM today</div>
+        <button (click)="go('/app/player/discover')">View Players</button>
+      </div>
+
+      <button class="map-banner" (click)="go('/app/player/map')">
+        <div class="map-left">
+          <div class="icon-box"><ion-icon name="map-outline"></ion-icon></div>
+          <div>
+            <strong>Live Sports Map</strong>
+            <div class="caption muted">View nearby games & players</div>
+          </div>
+        </div>
+        <div class="map-right">
+          <span class="badge orange"><ion-icon name="flash-outline"></ion-icon>4 Live</span>
+          <ion-icon name="chevron-forward-outline"></ion-icon>
+        </div>
+      </button>
+
+      <h3>Quick Actions</h3>
+      <div class="grid-3 quick-actions">
+        <button class="card" (click)="go('/app/player/discover')">
+          <div class="icon-box blue"><ion-icon name="add-outline"></ion-icon></div>
+          <span>Join Game</span>
+        </button>
+        <button class="card" (click)="go('/app/player/game/create')">
+          <div class="icon-box green"><ion-icon name="people-outline"></ion-icon></div>
+          <span>Create Game</span>
+        </button>
+        <button class="card" (click)="go('/app/player/venues')">
+          <div class="icon-box orange"><ion-icon name="business-outline"></ion-icon></div>
+          <span>Book Venue</span>
+        </button>
+      </div>
+
+      <div class="section-header games-title">
+        <h3>Nearby Games</h3>
+        <button class="btn-plain see-all">See all <ion-icon name="chevron-forward-outline"></ion-icon></button>
+      </div>
+      <div class="list games-list">
+        <button class="card game-card" *ngFor="let game of upcomingGames" (click)="go('/app/player/game/create')">
+          <div class="header-row">
+            <div>
+              <strong>{{ game.sport }}</strong>
+              <span *ngIf="game.status === 'almost-full'" class="badge orange small">Almost Full</span>
+              <div class="muted">{{ game.time }}</div>
+            </div>
+            <span class="badge green"><ion-icon name="people-outline"></ion-icon>{{ game.players }}</span>
+          </div>
+          <div class="meta muted">
+            <span><ion-icon name="pin-outline"></ion-icon>{{ game.location }}</span>
+            <span><ion-icon name="trending-up-outline"></ion-icon>{{ game.distance }}</span>
+          </div>
+        </button>
+      </div>
+    </section>
+  </div>
+</ion-content>

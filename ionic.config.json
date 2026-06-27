@@ -1,0 +1,7 @@
+{
+  "name": "TYNG",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}

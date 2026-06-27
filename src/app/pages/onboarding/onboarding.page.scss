@@ -1,0 +1,401 @@
+.onboarding-shell {
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+  background: var(--app-background);
+  color: var(--app-foreground);
+  padding-top: calc(24px + var(--safe-area-top));
+  padding-right: calc(24px + var(--safe-area-right));
+  padding-bottom: calc(24px + var(--safe-area-bottom));
+  padding-left: calc(24px + var(--safe-area-left));
+}
+
+.onboarding-header {
+  margin-bottom: 32px;
+}
+
+.progress-track {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.progress-segment {
+  height: 4px;
+  flex: 1;
+  border-radius: 999px;
+  background: var(--app-muted);
+  transition: background 0.2s ease;
+
+  &.is-filled {
+    background: var(--app-primary);
+  }
+}
+
+.onboarding-header h1 {
+  margin: 0 0 8px;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.onboarding-header p {
+  margin: 0;
+  color: #94a3b8;
+}
+
+.onboarding-content {
+  flex: 1;
+  /* No overflow hidden here — ion-content handles scrolling */
+}
+
+.sports-grid {
+  display: grid;
+  /* Removed max-height — let the grid expand fully, ion-content scrolls */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.sport-card,
+.skill-card,
+.intent-card,
+.time-card,
+.btn-primary,
+.btn-secondary {
+  appearance: none;
+  border: 0;
+  font: inherit;
+  text-align: left;
+}
+
+.sport-card {
+  position: relative;
+  min-height: 112px;
+  padding: 20px;
+  border-radius: 12px;
+  border: 2px solid var(--app-border);
+  background: var(--app-card);
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &.is-selected {
+    box-shadow: 0 0 24px rgba(99, 102, 241, 0.2);
+  }
+}
+
+.sport-emoji {
+  margin-bottom: 8px;
+  font-size: 40px;
+  line-height: 1;
+}
+
+.sport-name {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.sport-check {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  display: grid;
+  height: 24px;
+  width: 24px;
+  place-items: center;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.stack-list,
+.timeline-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.skill-card,
+.intent-card,
+.time-card {
+  width: 100%;
+  border-radius: 12px;
+  border: 2px solid var(--app-border);
+  background: var(--app-card);
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.skill-card {
+  padding: 20px;
+
+  &.is-selected {
+    border-color: var(--app-primary);
+    background: rgba(99, 102, 241, 0.1);
+  }
+}
+
+.skill-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.skill-title {
+  margin-bottom: 4px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.skill-desc,
+.intent-desc,
+.time-range {
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.skill-percent {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--app-primary);
+}
+
+.skill-bar {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--app-muted);
+  margin-bottom: 12px;
+}
+
+.skill-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.8s ease;
+}
+
+.gradient-green {
+  background: linear-gradient(90deg, #22c55e, #10b981);
+}
+
+.gradient-blue {
+  background: linear-gradient(90deg, #38bdf8, #0ea5e9);
+}
+
+.gradient-orange {
+  background: linear-gradient(90deg, #f97316, #ea580c);
+}
+
+.gradient-violet {
+  background: linear-gradient(90deg, #7c3aed, #6d28d9);
+}
+
+.ai-suggestion {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(37, 99, 235, 0.3);
+  background: linear-gradient(90deg, rgba(37, 99, 235, 0.2), rgba(34, 197, 94, 0.2));
+}
+
+.ai-label {
+  margin-bottom: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #2563eb;
+}
+
+.ai-text {
+  font-size: 12px;
+  line-height: 1.6;
+  color: #e2e8f0;
+}
+
+.intent-card {
+  overflow: hidden;
+  padding: 24px;
+  border-radius: 16px;
+
+  &.is-selected {
+    border-color: #2563eb;
+    box-shadow: 0 8px 24px rgba(37, 99, 235, 0.15);
+  }
+}
+
+.intent-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.intent-title {
+  margin-bottom: 4px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.intent-check {
+  display: grid;
+  height: 32px;
+  width: 32px;
+  place-items: center;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.feature-chip {
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(30, 41, 59, 0.5);
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 500;
+
+  &.is-selected {
+    background: rgba(37, 99, 235, 0.2);
+    color: #2563eb;
+  }
+}
+
+.timeline-list {
+  position: relative;
+}
+
+.timeline-line {
+  position: absolute;
+  top: 32px;
+  bottom: 32px;
+  left: 24px;
+  width: 2px;
+  background: linear-gradient(180deg, #2563eb, #22c55e, #f97316);
+  opacity: 0.3;
+}
+
+.time-card {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+
+  &.is-selected {
+    box-shadow: 0 8px 24px rgba(37, 99, 235, 0.12);
+  }
+}
+
+.time-icon {
+  display: grid;
+  height: 48px;
+  width: 48px;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 999px;
+  font-size: 24px;
+}
+
+.time-copy {
+  flex: 1;
+}
+
+.time-title {
+  margin-bottom: 2px;
+  font-weight: 600;
+}
+
+.time-check {
+  display: grid;
+  height: 24px;
+  width: 24px;
+  place-items: center;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.onboarding-footer {
+  display: flex;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.btn-secondary {
+  min-height: 52px;
+  padding: 16px 24px;
+  border-radius: 12px;
+  border: 1px solid var(--app-border);
+  background: transparent;
+  color: var(--app-foreground);
+}
+
+.btn-primary {
+  flex: 1;
+  min-height: 52px;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--app-primary);
+  color: #fff;
+  font-weight: 600;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+}
+
+.step1-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  /* Removed max-height and overflow — let ion-content handle scrolling */
+}
+
+.name-field-container {
+  margin-bottom: 8px;
+}
+
+.name-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #94a3b8;
+  margin-bottom: 8px;
+}
+
+.name-input {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 2px solid var(--app-border);
+  background: var(--app-card);
+  color: var(--app-foreground);
+  font-size: 16px;
+  outline: none;
+  transition: border-color 0.2s ease;
+
+  &:focus {
+    border-color: var(--app-primary);
+  }
+}
+
+.selection-heading {
+  font-size: 14px;
+  font-weight: 600;
+  color: #94a3b8;
+  margin-bottom: 4px;
+}

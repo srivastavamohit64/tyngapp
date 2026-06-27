@@ -1,0 +1,18 @@
+<button class="event-card" (click)="open.emit(event)">
+  <div class="event-header">
+    <div>
+      <div class="event-title">
+        {{ event?.sport }}
+        <span *ngIf="event?.status === 'almost-full'" class="status-badge">Almost Full</span>
+      </div>
+      <p class="event-time">{{ event?.time }}</p>
+    </div>
+    <span class="players-badge">
+      <ion-icon name="people-outline"></ion-icon>{{ event?.players }}
+    </span>
+  </div>
+  <div class="event-footer">
+    <span class="meta-item"><ion-icon name="pin-outline"></ion-icon>{{ event?.location }}</span>
+    <span class="meta-item"><ion-icon name="trending-up-outline"></ion-icon>{{ event?.distance }}</span>
+  </div>
+</button>

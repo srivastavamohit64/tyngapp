@@ -1,0 +1,55 @@
+/* Discover Page Specific SCSS */
+
+:host {
+  display: block;
+}
+
+.active-card {
+  &.swipe-left {
+    transform: translateX(-150%) rotate(-30deg);
+    opacity: 0;
+  }
+
+  &.swipe-right {
+    transform: translateX(150%) rotate(30deg);
+    opacity: 0;
+  }
+}
+
+.filter-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+
+  .filter-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: fit-content;
+    height: 32px;
+    padding: 0 12px;
+
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 20px;
+
+    font-size: 16px;
+    font-weight: 400;
+    color: #9ca3af;
+
+    line-height: 1;
+    white-space: nowrap;
+
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &.active {
+      color: #ffffff;
+      border-color: #ffffff;
+    }
+
+    &:hover {
+      border-color: rgba(255, 255, 255, 0.6);
+    }
+  }
+}

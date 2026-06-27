@@ -1,0 +1,330 @@
+<ion-content fullscreen>
+  <main class="safe-area-top page-with-tab-bar min-h-full bg-background text-white">
+    
+    <!-- COACH PROFILE -->
+    <ng-container *ngIf="auth.user()?.role === 'coach'">
+      <section class="bg-gradient-to-b from-primary/20 to-transparent px-6 pb-8 pt-6">
+        <div class="mb-6 flex items-center justify-between">
+          <button (click)="openMenu()" class="grid h-12 w-12 place-items-center rounded-full bg-card border border-white/10 text-white hover:border-primary transition-all">
+            <ion-icon name="menu-outline" class="text-2xl"></ion-icon>
+          </button>
+          <h1 class="text-lg font-bold tracking-tight">Profile</h1>
+          <button class="grid h-12 w-12 place-items-center rounded-full bg-card border border-white/10 text-white" (click)="router.navigateByUrl('/app/settings')">
+            <ion-icon name="settings-outline" class="text-xl"></ion-icon>
+          </button>
+        </div>
+
+        <div class="flex flex-col items-center">
+          <div class="relative mb-4 grid h-24 w-24 place-items-center rounded-full bg-gradient-to-br from-primary to-secondary text-5xl">
+            👨‍🏫
+          </div>
+          <h2 class="mb-1 text-[32px] font-bold leading-tight tracking-[-0.02em]">{{ auth.user()?.name || 'Coach Arvind' }}</h2>
+          <div class="mb-4 text-sm text-[#94A3B8]">{{ getSpecialty() }}</div>
+          <div class="inline-flex items-center gap-2 rounded-full bg-card px-4 py-2">
+            <ion-icon name="star" class="text-xl text-accent"></ion-icon>
+            <span>4.9 Rating</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="-mt-4 space-y-6 px-6 pb-6">
+        <div class="rounded-xl border border-white/10 bg-card p-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <div class="text-sm text-[#94A3B8] mb-1">Experience</div>
+              <div class="font-semibold">{{ getExperienceLabel() }}</div>
+            </div>
+            <div>
+              <div class="text-sm text-[#94A3B8] mb-1">Certification</div>
+              <div class="font-semibold">{{ getCertificationLabel() }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="mb-3 text-xl font-medium">Stats</h3>
+          <div class="grid grid-cols-3 gap-3">
+            <div class="rounded-xl border border-white/10 bg-card p-4 text-center">
+              <ion-icon name="people-outline" class="mx-auto mb-2 text-2xl text-primary"></ion-icon>
+              <div class="mb-1 text-xl font-bold">3</div>
+              <div class="text-xs text-[#94A3B8]">Teams Coached</div>
+            </div>
+            <div class="rounded-xl border border-white/10 bg-card p-4 text-center">
+              <ion-icon name="trending-up-outline" class="mx-auto mb-2 text-2xl text-primary"></ion-icon>
+              <div class="mb-1 text-xl font-bold">45</div>
+              <div class="text-xs text-[#94A3B8]">Total Players</div>
+            </div>
+            <div class="rounded-xl border border-white/10 bg-card p-4 text-center">
+              <ion-icon name="trophy-outline" class="mx-auto mb-2 text-2xl text-primary"></ion-icon>
+              <div class="mb-1 text-xl font-bold">72%</div>
+              <div class="text-xs text-[#94A3B8]">Success Rate</div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="mb-3 text-xl font-medium">Achievements</h3>
+          <div class="grid grid-cols-2 gap-3">
+            <div *ngFor="let achievement of achievements" class="flex items-center gap-3 rounded-xl border border-white/10 bg-card p-4">
+              <div class="grid h-10 w-10 place-items-center rounded-lg bg-primary/20">
+                <ion-icon [name]="achievement.icon" class="text-xl text-accent"></ion-icon>
+              </div>
+              <span class="text-sm font-semibold">{{ achievement.name }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="mb-3 flex items-center justify-between">
+            <h3 class="text-xl font-medium">Recent Sessions</h3>
+            <button class="flex items-center gap-1 text-sm text-primary" (click)="router.navigateByUrl('/app/schedule')">
+              View All
+              <ion-icon name="chevron-forward-outline"></ion-icon>
+            </button>
+          </div>
+          <div class="space-y-2">
+            <div *ngFor="let session of recentSessions" class="flex items-center justify-between rounded-xl border border-white/10 bg-card p-4">
+              <div>
+                <div class="font-semibold">{{ session.team }}</div>
+                <div class="text-sm text-[#94A3B8]">{{ session.date }}</div>
+              </div>
+              <span class="rounded-full bg-primary/20 px-2 py-1 text-xs text-primary font-bold">
+                {{ session.type }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <button
+          class="flex h-14 w-full items-center justify-center gap-3 rounded-xl border border-red-500/30 bg-red-500/10 font-semibold text-red-400 active:scale-[0.98] bg-transparent animate-fade-in"
+          (click)="logout()"
+        >
+          <ion-icon name="log-out-outline" class="text-xl"></ion-icon>
+          Logout
+        </button>
+      </section>
+    </ng-container>
+ 
+    <!-- VENUE PROFILE -->
+    <ng-container *ngIf="auth.user()?.role === 'venue'">
+      <section class="bg-gradient-to-b from-primary/20 to-transparent px-6 pb-8 pt-6">
+        <div class="mb-6 flex items-center justify-between">
+          <button (click)="openMenu()" class="grid h-12 w-12 place-items-center rounded-full bg-card border border-white/10 text-white hover:border-primary transition-all">
+            <ion-icon name="menu-outline" class="text-2xl"></ion-icon>
+          </button>
+          <h1 class="text-lg font-bold tracking-tight">Venue Profile</h1>
+          <button class="grid h-12 w-12 place-items-center rounded-full bg-card border border-white/10 text-white" (click)="router.navigateByUrl('/app/settings')">
+            <ion-icon name="settings-outline" class="text-xl text-white"></ion-icon>
+          </button>
+        </div>
+ 
+        <div class="flex flex-col items-center">
+          <div class="relative mb-4 grid h-24 w-24 place-items-center rounded-full bg-gradient-to-br from-primary to-secondary text-5xl">
+            🏟️
+          </div>
+          <h2 class="mb-1 text-[32px] font-bold leading-tight tracking-[-0.02em]">{{ auth.user()?.name || 'Phoenix Arena' }}</h2>
+          <div class="mb-4 flex items-center gap-2 text-sm text-[#94A3B8]">
+            <ion-icon name="location-outline"></ion-icon>
+            <span>Gomti Nagar, Lucknow</span>
+          </div>
+          <div class="inline-flex items-center gap-2 rounded-full bg-card px-4 py-2">
+            <ion-icon name="star" class="text-xl text-accent"></ion-icon>
+            <span>4.8 Rating (342 reviews)</span>
+          </div>
+        </div>
+      </section>
+ 
+      <section class="-mt-4 space-y-6 px-6 pb-6">
+        <div>
+          <h3 class="mb-3 text-xl font-medium">Stats</h3>
+          <div class="grid grid-cols-3 gap-3">
+            <div
+              *ngFor="let stat of venueProfileStats"
+              class="rounded-xl border border-white/10 bg-card p-4 text-center cursor-pointer hover:border-primary transition-colors duration-300"
+              (click)="onStatClick(stat.label)"
+            >
+              <ion-icon [name]="stat.icon" class="mx-auto mb-2 text-2xl text-primary"></ion-icon>
+              <div class="mb-1 text-xl font-bold">{{ stat.value }}</div>
+              <div class="text-xs text-[#94A3B8]">{{ stat.label }}</div>
+            </div>
+          </div>
+        </div>
+ 
+        <div>
+          <h3 class="mb-3 flex items-center gap-2 text-xl font-medium">
+            <ion-icon name="time-outline" class="text-primary"></ion-icon>
+            Operating Hours
+          </h3>
+          <div class="bg-card rounded-xl border border-white/10 p-4 space-y-3">
+            <div *ngFor="let schedule of operatingHours" class="flex items-center justify-between">
+              <span class="text-slate-400">{{ schedule.day }}</span>
+              <span class="font-semibold text-white">{{ schedule.hours }}</span>
+            </div>
+          </div>
+        </div>
+ 
+        <div>
+          <h3 class="mb-3 text-xl font-medium">Recent Reviews</h3>
+          <div class="space-y-3">
+            <div *ngFor="let review of recentReviews" class="bg-card p-4 rounded-xl border border-white/10">
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-2">
+                  <div class="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-sm">
+                    👤
+                  </div>
+                  <span class="font-semibold text-white">{{ review.customer }}</span>
+                </div>
+                <div class="flex items-center gap-1">
+                  <ion-icon name="star" class="text-accent"></ion-icon>
+                  <span class="text-sm font-semibold text-white">{{ review.rating }}</span>
+                </div>
+              </div>
+              <p class="text-sm text-slate-400 mb-2">{{ review.comment }}</p>
+              <div class="text-xs text-slate-500">{{ review.date }}</div>
+            </div>
+          </div>
+        </div>
+ 
+        <button
+          class="flex h-14 w-full items-center justify-center gap-3 rounded-xl border border-red-500/30 bg-red-500/10 font-semibold text-red-400 active:scale-[0.98] bg-transparent transition-all duration-300"
+          (click)="logout()"
+        >
+          <ion-icon name="log-out-outline" class="text-xl"></ion-icon>
+          Logout
+        </button>
+      </section>
+    </ng-container>
+
+    <!-- PLAYER PROFILE -->
+    <ng-container *ngIf="auth.user()?.role !== 'coach' && auth.user()?.role !== 'venue'">
+      <section class="bg-gradient-to-b from-primary/20 to-transparent px-6 pb-8 pt-6">
+        <div class="mb-6 flex items-center justify-between">
+          <button (click)="openMenu()" class="grid h-12 w-12 place-items-center rounded-full bg-card border border-white/10 text-white hover:border-primary transition-all">
+            <ion-icon name="menu-outline" class="text-2xl"></ion-icon>
+          </button>
+          <h1 class="text-lg font-bold tracking-tight">Profile</h1>
+          <button class="grid h-12 w-12 place-items-center rounded-full bg-card border border-white/10 text-white" (click)="router.navigateByUrl('/app/settings')">
+            <ion-icon name="settings-outline" class="text-xl"></ion-icon>
+          </button>
+        </div>
+ 
+        <div class="flex flex-col items-center">
+          <div class="relative mb-4 grid h-24 w-24 place-items-center rounded-full bg-gradient-to-br from-primary to-secondary text-5xl">
+            🏏
+            <div class="absolute -bottom-2 -right-2 grid h-10 w-10 place-items-center rounded-full border-4 border-background bg-accent text-sm text-white">
+              L12
+            </div>
+          </div>
+          <h2 class="mb-1 text-[32px] font-bold leading-tight tracking-[-0.02em]">{{ auth.user()?.name || 'Rahul Sharma' }}</h2>
+          <div class="mb-4 flex items-center gap-2 text-sm text-[#94A3B8]">
+            <ion-icon name="location-outline"></ion-icon>
+            <span>Lucknow</span>
+            <span>•</span>
+            <span>Member since Jan 2024</span>
+          </div>
+          <div class="inline-flex items-center gap-2 rounded-full bg-card px-4 py-2">
+            <ion-icon name="star" class="text-xl text-accent"></ion-icon>
+            <span>4.8 Rating</span>
+          </div>
+        </div>
+      </section>
+ 
+      <section class="-mt-4 space-y-6 px-6 pb-6">
+        <div class="rounded-xl border border-white/10 bg-card p-4">
+          <div class="mb-3 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <ion-icon name="flash-outline" class="text-xl text-accent"></ion-icon>
+              <span>Level 12 Progress</span>
+            </div>
+            <span class="text-sm text-[#94A3B8]">8450/10000 XP</span>
+          </div>
+          <div class="h-3 overflow-hidden rounded-full bg-muted">
+            <div class="h-full w-[84.5%] rounded-full bg-gradient-to-r from-primary to-secondary"></div>
+          </div>
+        </div>
+ 
+        <div class="rounded-xl border border-accent/30 bg-gradient-to-r from-accent/20 to-secondary/20 p-4">
+          <div class="flex items-center gap-3">
+            <div class="grid h-12 w-12 place-items-center rounded-full bg-accent/30 text-accent animate-pulse">
+              <ion-icon name="flash-outline" class="text-2xl"></ion-icon>
+            </div>
+            <div>
+              <div>Current Streak</div>
+              <div class="text-sm text-[#94A3B8]">3 weekends in a row!</div>
+            </div>
+          </div>
+        </div>
+ 
+        <div>
+          <h3 class="mb-3 text-xl font-medium">Stats</h3>
+          <div class="grid grid-cols-3 gap-3">
+            <div *ngFor="let stat of stats" class="rounded-xl border border-white/10 bg-card p-4 text-center hover:border-primary transition-all duration-300">
+              <ion-icon [name]="stat.icon" class="mx-auto mb-2 text-2xl text-primary"></ion-icon>
+              <div class="mb-1 text-xl font-bold">{{ stat.value }}</div>
+              <div class="text-xs text-[#94A3B8]">{{ stat.label }}</div>
+            </div>
+          </div>
+        </div>
+ 
+        <div>
+          <h3 class="mb-3 text-xl font-medium">Badges</h3>
+          <div class="grid grid-cols-2 gap-3">
+            <div *ngFor="let badge of badges" class="flex items-center gap-3 rounded-xl border border-white/10 bg-card p-4 hover:border-primary hover:-translate-y-0.5 transition-all duration-300">
+              <div class="grid h-10 w-10 place-items-center rounded-lg bg-primary/20">
+                <ion-icon [name]="badge.icon" class="text-xl" [class]="badge.color"></ion-icon>
+              </div>
+              <span class="text-sm font-semibold">{{ badge.name }}</span>
+            </div>
+          </div>
+        </div>
+ 
+        <div>
+          <div class="mb-3 flex items-center justify-between">
+            <h3 class="text-xl font-medium">Match History</h3>
+            <button class="flex items-center gap-1 text-sm text-primary">
+              View All
+              <ion-icon name="chevron-forward-outline"></ion-icon>
+            </button>
+          </div>
+          <div class="space-y-2">
+            <div *ngFor="let match of recentMatches" class="flex items-center justify-between rounded-xl border border-white/10 bg-card p-4 hover:border-primary transition-colors duration-300">
+              <div>
+                <div class="font-semibold">{{ match.sport }}</div>
+                <div class="text-sm text-[#94A3B8]">{{ match.date }}</div>
+              </div>
+              <div class="text-right">
+                <div [class.text-secondary]="match.result === 'Won'" [class.text-red-500]="match.result !== 'Won'" class="font-bold">{{ match.result }}</div>
+                <div class="text-sm text-[#94A3B8]">{{ match.score }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+ 
+        <div class="rounded-xl border border-white/10 bg-card p-4">
+          <div class="mb-3 flex items-start gap-3">
+            <ion-icon name="shield-checkmark-outline" class="mt-1 shrink-0 text-xl text-secondary"></ion-icon>
+            <div class="flex-1">
+              <div class="mb-1 font-semibold">Reliability Score</div>
+              <div class="mb-3 text-sm text-[#94A3B8]">Your attendance and punctuality rating</div>
+              <div class="flex items-center gap-2">
+                <div class="h-3 flex-1 overflow-hidden rounded-full bg-muted">
+                  <div class="h-full w-[95%] rounded-full bg-secondary"></div>
+                </div>
+                <span class="font-bold">95%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+ 
+        <button
+          class="flex h-14 w-full items-center justify-center gap-3 rounded-xl border border-red-500/30 bg-red-500/10 font-semibold text-red-400 active:scale-[0.98] bg-transparent transition-all duration-300"
+          (click)="logout()"
+        >
+          <ion-icon name="log-out-outline" class="text-xl"></ion-icon>
+          Logout
+        </button>
+      </section>
+    </ng-container>
+
+  </main>
+</ion-content>

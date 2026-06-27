@@ -1,0 +1,92 @@
+<ion-menu contentId="main-content" type="overlay">
+  <ion-content class="bg-card text-white select-none">
+    <div class="flex flex-col h-full justify-between p-6">
+      
+      <!-- Top Section: Logo & Profile -->
+      <div class="space-y-6">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-xl">
+            🏆
+          </div>
+          <div>
+            <h2 class="text-lg font-bold tracking-tight text-white leading-none">TYNG Sports</h2>
+            <p class="text-[10px] text-slate-400 font-semibold leading-none mt-1">Networking App</p>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-background border border-white/10 flex items-center gap-3">
+          <div class="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-2xl">
+            {{ getRoleEmoji() }}
+          </div>
+          <div>
+            <div class="font-bold text-white leading-tight">{{ auth.user()?.name || 'User' }}</div>
+            <div class="text-xs text-slate-400 capitalize">{{ auth.user()?.role || 'player' }}</div>
+          </div>
+        </div>
+
+        <!-- Navigation Links -->
+        <div class="space-y-1">
+          <button (click)="navigateTo('/app/home')" class="w-full h-12 flex items-center gap-3 px-4 rounded-xl hover:bg-white/5 text-slate-300 font-semibold text-sm transition-colors text-left bg-transparent">
+            <ion-icon name="home-outline" class="text-xl"></ion-icon>
+            Home
+          </button>
+          <button (click)="navigateTo('/app/profile')" class="w-full h-12 flex items-center gap-3 px-4 rounded-xl hover:bg-white/5 text-slate-300 font-semibold text-sm transition-colors text-left bg-transparent">
+            <ion-icon name="person-outline" class="text-xl"></ion-icon>
+            Profile
+          </button>
+          <button (click)="navigateTo('/app/settings')" class="w-full h-12 flex items-center gap-3 px-4 rounded-xl hover:bg-white/5 text-slate-300 font-semibold text-sm transition-colors text-left bg-transparent">
+            <ion-icon name="settings-outline" class="text-xl"></ion-icon>
+            Settings
+          </button>
+        </div>
+      </div>
+
+      <!-- Bottom Section: Theme & Logout -->
+      <div class="space-y-6">
+        
+        <!-- Theme Switcher Row -->
+        <div class="p-4 rounded-2xl bg-background border border-white/10">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm font-semibold text-slate-300">App Theme</span>
+            <span class="text-xs text-slate-400 font-medium">{{ theme.isDark() ? 'Dark Mode' : 'Light Mode' }}</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2 bg-card p-1 rounded-xl border border-white/5">
+            <button 
+              (click)="theme.setTheme(false)" 
+              [class.bg-white]="!theme.isDark()"
+              [class.text-primary]="!theme.isDark()"
+              [class.text-slate-400]="theme.isDark()"
+              class="py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all bg-transparent"
+            >
+              <ion-icon name="sunny-outline" class="text-base"></ion-icon>
+              Light
+            </button>
+            <button 
+              (click)="theme.setTheme(true)" 
+              [class.bg-slate-800]="theme.isDark()"
+              [class.text-white]="theme.isDark()"
+              [class.text-slate-400]="!theme.isDark()"
+              class="py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all bg-transparent"
+            >
+              <ion-icon name="moon-outline" class="text-base"></ion-icon>
+              Dark
+            </button>
+          </div>
+        </div>
+
+        <button 
+          (click)="logout()" 
+          class="w-full h-12 flex items-center justify-center gap-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 font-bold text-sm hover:bg-red-500/20 transition-all"
+        >
+          <ion-icon name="log-out-outline" class="text-xl"></ion-icon>
+          Logout
+        </button>
+      </div>
+
+    </div>
+  </ion-content>
+</ion-menu>
+
+<ion-app id="main-content">
+  <ion-router-outlet></ion-router-outlet>
+</ion-app>

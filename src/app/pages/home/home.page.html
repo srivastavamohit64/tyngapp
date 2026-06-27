@@ -1,0 +1,420 @@
+<ion-content fullscreen>
+  <main class="safe-area-top page-with-tab-bar min-h-full bg-background text-white">
+
+    <!-- COACH DASHBOARD -->
+    <ng-container *ngIf="auth.user()?.role === 'coach'">
+      <section class="bg-gradient-to-b from-primary/20 to-transparent px-6 pb-8 pt-6">
+        <div class="mb-6 flex items-center justify-between">
+          <button (click)="openMenu()"
+            class="grid h-12 w-12 place-items-center rounded-full bg-card border border-white/10 text-white hover:border-primary transition-all">
+            <ion-icon name="menu-outline" class="text-2xl"></ion-icon>
+          </button>
+          <div class="text-center">
+            <p class="text-xs text-slate-400 leading-none">Welcome back,</p>
+            <h1 class="text-lg font-bold tracking-tight mt-1">Coach {{ auth.user()?.name || 'Arvind' }}</h1>
+          </div>
+          <button
+            class="relative grid h-12 w-12 place-items-center rounded-full bg-card border border-white/10 text-white">
+            <ion-icon name="notifications-outline" class="text-xl"></ion-icon>
+            <span class="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-accent"></span>
+          </button>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-3 gap-3">
+          <div
+            class="rounded-xl border border-white/10 bg-card p-4 text-center hover:border-primary transition-all duration-300">
+            <ion-icon name="people-outline" class="mx-auto mb-2 text-2xl text-primary"></ion-icon>
+            <div class="text-xl font-bold">3</div>
+            <div class="text-xs text-[#94A3B8]">Active Teams</div>
+          </div>
+          <div
+            class="rounded-xl border border-white/10 bg-card p-4 text-center hover:border-primary transition-all duration-300">
+            <ion-icon name="calendar-outline" class="mx-auto mb-2 text-2xl text-secondary"></ion-icon>
+            <div class="text-xl font-bold">12</div>
+            <div class="text-xs text-[#94A3B8]">Sessions/Wk</div>
+          </div>
+          <div
+            class="rounded-xl border border-white/10 bg-card p-4 text-center hover:border-primary transition-all duration-300">
+            <ion-icon name="trending-up-outline" class="mx-auto mb-2 text-2xl text-accent"></ion-icon>
+            <div class="text-xl font-bold">45</div>
+            <div class="text-xs text-[#94A3B8]">Total Players</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="space-y-6 px-6 pb-6">
+        <!-- Quick Actions -->
+        <div>
+          <h2 class="mb-4 text-xl font-bold">Quick Actions</h2>
+          <div class="grid grid-cols-2 gap-3">
+            <button
+              class="padding10 rounded-xl border border-white/10 bg-card p-4 text-center hover:border-primary hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 active:scale-[0.98]"
+              (click)="go('/app/coach/plan')">
+              <div class="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-xl bg-primary/20 text-primary">
+                <ion-icon name="add-outline" class="text-2xl"></ion-icon>
+              </div>
+              <p class="font-semibold text-sm">New Session</p>
+            </button>
+            <button
+              class="rounded-xl border border-white/10 bg-card p-4 text-center hover:border-primary hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 active:scale-[0.98]"
+              (click)="go('/app/coach/evaluate')">
+              <div class="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-xl bg-secondary/20 text-secondary">
+                <ion-icon name="analytics-outline" class="text-2xl"></ion-icon>
+              </div>
+              <p class="font-semibold text-sm">Evaluate Player</p>
+            </button>
+          </div>
+        </div>
+
+        <!-- Upcoming Sessions -->
+        <div>
+          <div class="mb-4 flex items-center justify-between">
+            <h2 class="text-xl font-bold">Upcoming Sessions</h2>
+            <button class="text-sm font-semibold text-primary" (click)="go('/app/schedule')">See all ›</button>
+          </div>
+          <div class="space-y-3">
+            <div *ngFor="let session of upcomingSessions"
+              class="rounded-xl border border-white/10 bg-card p-4 hover:border-primary hover:-translate-y-0.5 hover:shadow-md transition-all duration-300 cursor-pointer"
+              (click)="go('/app/schedule')">
+              <div class="mb-3 flex items-start justify-between">
+                <div>
+                  <div class="mb-1 flex items-center gap-2">
+                    <span class="font-bold">{{ session.team }}</span>
+                    <span class="rounded-full bg-primary/20 px-2 py-0.5 text-xs text-primary">{{ session.type }}</span>
+                  </div>
+                  <div class="text-sm text-[#94A3B8]">{{ session.time }}</div>
+                </div>
+                <span class="rounded-full bg-secondary/20 px-3 py-1 text-xs text-secondary flex items-center gap-1">
+                  <ion-icon name="people-outline"></ion-icon>
+                  {{ session.attendees }}
+                </span>
+              </div>
+              <div class="flex items-center gap-2 text-sm text-[#94A3B8]">
+                <ion-icon name="pin-outline"></ion-icon>
+                {{ session.venue }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div>
+          <h2 class="mb-4 text-xl font-bold">Recent Activity</h2>
+          <div class="rounded-xl border border-white/10 bg-card p-4 space-y-3">
+            <div *ngFor="let act of recentActivity" class="flex items-start gap-3">
+              <div class="activity-badge">
+                🏃
+              </div>
+              <div class="flex-1">
+                <div class="text-sm">
+                  <span class="font-semibold">{{ act.player }}</span>
+                  <span class="text-slate-400"> {{ act.action }}</span>
+                </div>
+                <div class="text-xs text-slate-500 mt-1">{{ act.time }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </ng-container>
+
+    <!-- VENUE DASHBOARD -->
+    <ng-container *ngIf="auth.user()?.role === 'venue'">
+      <section class="bg-gradient-to-b from-primary/20 to-transparent px-6 pb-8 pt-6">
+        <div class="mb-6 flex items-center justify-between">
+          <button (click)="openMenu()"
+            class="grid h-12 w-12 place-items-center rounded-full bg-card border border-white/10 text-white hover:border-primary transition-all">
+            <ion-icon name="menu-outline" class="text-2xl"></ion-icon>
+          </button>
+          <div class="text-center">
+            <p class="text-xs text-slate-400 leading-none">Welcome back,</p>
+            <h1 class="text-lg font-bold tracking-tight mt-1">{{ auth.user()?.name || 'Phoenix Arena' }}</h1>
+          </div>
+          <button
+            class="relative grid h-12 w-12 place-items-center rounded-full bg-card border border-white/10 text-white">
+            <ion-icon name="notifications-outline" class="text-xl"></ion-icon>
+            <span class="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-accent"></span>
+          </button>
+        </div>
+
+        <!-- Venue Stats Grid: Today's Bookings | Revenue | Occupancy -->
+        <div class="grid grid-cols-3 gap-3">
+          <div *ngFor="let stat of venueStats"
+            class="rounded-xl border border-white/10 bg-card p-4 text-center hover:border-primary transition-all duration-300">
+            <ion-icon [name]="stat.icon" class="mx-auto mb-2 text-2xl" [class]="stat.color"></ion-icon>
+            <div class="text-xl font-bold">{{ stat.value }}</div>
+            <div class="text-xs text-slate-400 leading-tight mt-0.5">{{ stat.label }}</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="space-y-6 px-6 pb-6">
+
+        <!-- TODAY'S BOOKINGS -->
+        <div>
+          <div class="mb-4 flex items-center justify-between">
+            <h2 class="text-xl font-bold">Today's Bookings</h2>
+            <button class="text-sm font-semibold text-primary" (click)="go('/app/venue/bookings')">See all ›</button>
+          </div>
+          <div class="space-y-3">
+            <div *ngFor="let booking of todayBookings"
+              class="rounded-xl border border-white/10 bg-card p-4 hover:border-primary transition-all duration-300 cursor-pointer active:scale-[0.99]"
+              (click)="go('/app/venue/bookings')">
+              <div class="flex items-start justify-between">
+                <div class="flex-1">
+                  <div class="flex items-center gap-1.5 mb-1.5 text-slate-400 text-xs">
+                    <ion-icon name="time-outline"></ion-icon>
+                    <span>{{ booking.time }}</span>
+                  </div>
+                  <div class="font-bold text-base mb-0.5">{{ booking.customer }}</div>
+                  <div class="text-xs text-slate-500">{{ booking.court }}</div>
+                </div>
+                <div class="flex flex-col items-end gap-1.5 ml-3">
+                  <div class="font-bold text-base">{{ booking.amount }}</div>
+                  <span *ngIf="booking.status === 'completed'"
+                    class="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-slate-700/60 text-slate-300">
+                    <ion-icon name="checkmark-circle-outline"></ion-icon> Completed
+                  </span>
+                  <span *ngIf="booking.status === 'confirmed'"
+                    class="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-secondary/20 text-secondary">
+                    <ion-icon name="checkmark-circle-outline"></ion-icon> Confirmed
+                  </span>
+                  <span *ngIf="booking.status === 'pending'"
+                    class="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-accent/20 text-accent">
+                    <ion-icon name="alert-circle-outline"></ion-icon> Pending
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PENDING REQUESTS -->
+        <div>
+          <div class="mb-4 flex items-center justify-between">
+            <h2 class="text-xl font-bold">Pending Requests</h2>
+            <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-accent/20 text-accent">{{ pendingRequests.length }} new</span>
+          </div>
+          <div class="space-y-3">
+            <div *ngFor="let req of pendingRequests"
+              class="rounded-xl border border-white/10 bg-card p-4 hover:border-primary transition-all duration-300">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="h-10 w-10 flex-shrink-0 rounded-full bg-gradient-to-br from-primary to-secondary grid place-items-center text-lg">👤</div>
+                <div class="flex-1 min-w-0">
+                  <div class="font-bold text-base leading-tight">{{ req.customer }}</div>
+                  <div class="text-xs text-slate-400">{{ req.court }}</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 text-sm text-slate-400 mb-3">
+                <ion-icon name="calendar-outline"></ion-icon>
+                <span>{{ req.time }}</span>
+              </div>
+              <div class="flex gap-2">
+                <button class="flex-1 bg-primary text-white py-2.5 rounded-xl font-semibold text-sm active:scale-[0.98] transition-all"
+                  (click)="acceptRequest(req.id)">Accept</button>
+                <button class="px-5 py-2.5 border border-white/10 rounded-xl font-semibold text-sm bg-transparent text-slate-400 hover:border-red-500 hover:text-red-400 transition-colors active:scale-[0.98]"
+                  (click)="declineRequest(req.id)">Decline</button>
+              </div>
+            </div>
+            <div *ngIf="pendingRequests.length === 0" class="text-center py-8 text-slate-500">
+              <ion-icon name="checkmark-circle-outline" class="text-4xl mb-2 text-secondary"></ion-icon>
+              <p class="text-sm">All requests cleared!</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- QUICK ACTIONS 2x2 -->
+        <div>
+          <h2 class="mb-4 text-xl font-bold">Quick Actions</h2>
+          <div class="grid grid-cols-2 gap-3">
+            <button class="rounded-xl border border-white/10 bg-card p-4 text-center hover:border-primary hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 active:scale-[0.98] flex flex-col items-center justify-center min-h-[110px]"
+              (click)="go('/app/venue/bookings')">
+              <div class="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-full bg-primary/20 text-primary">
+                <ion-icon name="calendar-outline" class="text-2xl"></ion-icon>
+              </div>
+              <p class="font-semibold text-sm">Bookings</p>
+            </button>
+            <button class="rounded-xl border border-white/10 bg-card p-4 text-center hover:border-secondary hover:-translate-y-1 hover:shadow-lg hover:shadow-secondary/10 transition-all duration-300 active:scale-[0.98] flex flex-col items-center justify-center min-h-[110px]"
+              (click)="go('/app/venue/calendar')">
+              <div class="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-full bg-secondary/20 text-secondary">
+                <ion-icon name="calendar-clear-outline" class="text-2xl"></ion-icon>
+              </div>
+              <p class="font-semibold text-sm">Calendar</p>
+            </button>
+          </div>
+        </div>
+
+        <!-- Pending Booking Requests -->
+        <div>
+          <h2 class="mb-4 text-xl font-bold">Pending Requests</h2>
+          <div class="space-y-3">
+            <div *ngFor="let req of pendingRequests"
+              class="rounded-xl border border-white/10 bg-card p-4 hover:border-primary transition-all duration-300">
+              <div class="mb-3">
+                <div class="font-bold text-white text-base mb-1">{{ req.customer }}</div>
+                <div class="text-sm text-slate-400 flex items-center gap-2">
+                  <ion-icon name="time-outline"></ion-icon>
+                  <span>{{ req.time }}</span>
+                  <span class="mx-1">•</span>
+                  <span>{{ req.court }}</span>
+                </div>
+              </div>
+              <div class="flex gap-2">
+                <button class="flex-1 bg-primary text-white py-2 rounded-lg font-semibold active:scale-[0.98]"
+                  (click)="acceptRequest(req.id)">
+                  Accept
+                </button>
+                <button
+                  class="px-4 py-2 border border-white/10 rounded-lg hover:border-red-500 hover:text-red-500 transition-colors font-semibold active:scale-[0.98] bg-transparent text-slate-400"
+                  (click)="declineRequest(req.id)">
+                  Decline
+                </button>
+              </div>
+            </div>
+            <div *ngIf="pendingRequests.length === 0" class="text-center py-6 text-slate-500">
+              <ion-icon name="checkmark-circle-outline" class="text-4xl mb-2 text-secondary"></ion-icon>
+              <p class="text-sm">All requests cleared!</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Today's Bookings List -->
+        <div>
+          <div class="mb-4 flex items-center justify-between">
+            <h2 class="text-xl font-bold">Today's Bookings</h2>
+            <button class="text-sm font-semibold text-primary" (click)="go('/app/venue/bookings')">See all ›</button>
+          </div>
+          <div class="space-y-3">
+            <div *ngFor="let booking of todayBookings"
+              class="rounded-xl border border-white/10 bg-card p-4 flex items-center justify-between hover:border-primary transition-all duration-300">
+              <div>
+                <div class="text-xs text-slate-400 mb-1 flex items-center gap-1">
+                  <ion-icon name="time-outline"></ion-icon>
+                  {{ booking.time }}
+                </div>
+                <div class="font-semibold text-white mb-0.5">{{ booking.customer }}</div>
+                <div class="text-xs text-slate-500">{{ booking.court }}</div>
+              </div>
+              <div class="text-right">
+                <div class="font-bold text-white mb-1.5">{{ booking.amount }}</div>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" [ngClass]="{
+                  'bg-secondary/20 text-secondary': booking.status === 'confirmed',
+                  'bg-accent/20 text-accent': booking.status === 'pending',
+                  'bg-slate-800 text-slate-400': booking.status === 'completed'
+                }">
+                  {{ booking.status | titlecase }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </ng-container>
+
+    <!-- PLAYER DASHBOARD -->
+    <ng-container *ngIf="auth.user()?.role !== 'coach' && auth.user()?.role !== 'venue'">
+      <section class="bg-gradient-to-b from-primary/20 to-transparent px-6 pb-8 pt-6">
+        <div class="mb-6 flex items-center justify-between">
+          <button (click)="openMenu()"
+            class="grid h-12 w-12 place-items-center rounded-full bg-card border border-white/10 text-white hover:border-primary transition-all">
+            <ion-icon name="menu-outline" class="text-2xl"></ion-icon>
+          </button>
+          <div class="flex items-center gap-2">
+            <ion-icon name="location-outline" class="text-xl text-primary"></ion-icon>
+            <div>
+              <p class="text-xs text-slate-400 leading-none">Location</p>
+              <p class="font-semibold text-sm leading-none mt-1">Lucknow <ion-icon name="chevron-forward-outline"
+                  class="text-xs"></ion-icon></p>
+            </div>
+          </div>
+          <button
+            class="relative grid h-12 w-12 place-items-center rounded-full bg-card border border-white/10 text-white">
+            <ion-icon name="notifications-outline" class="text-xl"></ion-icon>
+            <span class="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-accent"></span>
+          </button>
+        </div>
+        <app-search placeholder="Find players, games, venues"></app-search>
+      </section>
+
+      <section class="space-y-6 px-6 pb-6">
+        <!-- Quick Suggestion Card with Hover effects and transitions -->
+        <div
+          class="-mt-4 rounded-2xl bg-gradient-to-r from-primary to-secondary p-6 hover:shadow-xl hover:shadow-secondary/15 transition-all duration-300 active:scale-[0.99]">
+          <div class="mb-3 flex justify-between">
+            <div>
+              <p class="text-sm text-white/80 font-medium">Quick Suggestion</p>
+              <p class="font-bold text-lg mt-0.5 text-white">4 players available near you</p>
+            </div>
+            <div class="grid h-12 w-12 place-items-center rounded-full bg-white/20 text-white">
+              <ion-icon name="people-outline" class="text-2xl"></ion-icon>
+            </div>
+          </div>
+          <p class="mb-4 flex items-center gap-2 text-sm text-white/90"><ion-icon
+              name="time-outline"></ion-icon>Available at 7 PM today</p>
+          <button class="h-12 w-full rounded-full bg-white font-bold text-primary active:scale-[0.98] transition-all"
+            (click)="go('/app/discover')">View Players</button>
+        </div>
+
+        <!-- Live Sports Map with pulsing animation, hovering stops the pulsing -->
+        <button
+          class="live_block flex w-full items-center justify-between rounded-2xl border border-primary/30 bg-gradient-to-r from-violet/20 to-primary/20 p-4 text-left animate-pulse hover:animate-none hover:border-primary transition-all duration-300 active:scale-[0.98] cursor-pointer"
+          (click)="go('/app/map')">
+          <div class="flex items-center gap-3">
+            <div class="grid h-12 w-12 place-items-center rounded-xl bg-primary/30 text-primary">
+              <ion-icon name="map-outline" class="text-2xl"></ion-icon>
+            </div>
+            <div>
+              <p class="font-bold text-white text-base">Live Sports Map</p>
+              <p class="text-xs text-slate-400 mt-0.5">View nearby games & players</p>
+            </div>
+          </div>
+          <span class="rounded-full bg-accent/20 px-3 py-1 text-xs text-accent font-bold">⚡ 4 Live</span>
+        </button>
+
+        <!-- Quick Actions with innovative hover translation and shadow animations -->
+        <div>
+          <h2 class="mb-4 text-xl font-bold">Quick Actions</h2>
+          <div class="grid grid-cols-3 gap-3">
+            <button
+              class="rounded-xl border border-white/10 bg-card p-4 hover:border-primary hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 active:scale-[0.98] flex flex-col items-center justify-center min-h-[110px] text-center w-full cursor-pointer"
+              (click)="go('/app/discover')">
+              <div class="mx-auto mb-2.5 grid h-12 w-12 place-items-center rounded-full bg-primary/20 text-primary">
+                <ion-icon name="add-outline" class="text-2xl"></ion-icon>
+              </div>
+              <p class="font-semibold text-sm text-center leading-none text-white">Join Game</p>
+            </button>
+            <button
+              class="rounded-xl border border-white/10 bg-card p-4 hover:border-primary hover:-translate-y-1 hover:shadow-lg hover:shadow-secondary/10 transition-all duration-300 active:scale-[0.98] flex flex-col items-center justify-center min-h-[110px] text-center w-full cursor-pointer"
+              (click)="go('/app/game/create')">
+              <div class="mx-auto mb-2.5 grid h-12 w-12 place-items-center rounded-full bg-secondary/20 text-secondary">
+                <ion-icon name="people-outline" class="text-2xl"></ion-icon>
+              </div>
+              <p class="font-semibold text-sm text-center leading-none text-white">Create Game</p>
+            </button>
+            <button
+              class="rounded-xl border border-white/10 bg-card p-4 hover:border-primary hover:-translate-y-1 hover:shadow-lg hover:shadow-accent/10 transition-all duration-300 active:scale-[0.98] flex flex-col items-center justify-center min-h-[110px] text-center w-full cursor-pointer"
+              (click)="go('/app/venues')">
+              <div class="mx-auto mb-2.5 grid h-12 w-12 place-items-center rounded-full bg-accent/20 text-accent">
+                <ion-icon name="business-outline" class="text-2xl"></ion-icon>
+              </div>
+              <p class="font-semibold text-sm text-center leading-none text-white">Book Venue</p>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <div class="mb-4 flex items-center justify-between">
+            <h2 class="text-xl font-bold">Nearby Games</h2>
+            <button class="text-sm font-semibold text-primary">See all ›</button>
+          </div>
+          <div class="max-h-72 space-y-3 overflow-y-auto pr-1">
+            <app-event-card *ngFor="let game of data.games" [event]="game"
+              (open)="go('/app/game/' + game.id)"></app-event-card>
+          </div>
+        </div>
+      </section>
+    </ng-container>
+
+  </main>
+</ion-content>

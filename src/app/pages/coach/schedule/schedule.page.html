@@ -1,0 +1,86 @@
+<ion-content fullscreen>
+  <div class="sched-shell">
+
+    <!-- Sticky Header -->
+    <header class="sched-header">
+      <div class="header-top">
+        <div class="header-left">
+          <button class="back-btn" (click)="goHome()" type="button">
+            <ion-icon name="chevron-back-outline"></ion-icon>
+          </button>
+          <h1>Schedule</h1>
+        </div>
+        <button class="filter-icon-btn" type="button">
+          <ion-icon name="filter-outline"></ion-icon>
+        </button>
+      </div>
+
+      <!-- Filter chips -->
+      <div class="filter-scroll">
+        <button
+          *ngFor="let filter of filters"
+          class="filter-chip"
+          [class.is-active]="selectedFilter === filter"
+          (click)="selectedFilter = filter"
+          type="button"
+        >
+          {{ filter.charAt(0).toUpperCase() + filter.slice(1) }}
+        </button>
+      </div>
+    </header>
+
+    <!-- Day groups -->
+    <section class="sched-body">
+      <div *ngFor="let day of schedule" class="day-group">
+        <ng-container *ngIf="getFilteredSessions(day.sessions).length > 0">
+
+          <!-- Day label -->
+          <div class="day-label">
+            <ion-icon name="calendar-outline" class="day-icon"></ion-icon>
+            <span>{{ day.date }}</span>
+          </div>
+
+          <!-- Session cards -->
+          <div class="session-list">
+            <div
+              *ngFor="let session of getFilteredSessions(day.sessions)"
+              class="session-card"
+              (click)="openSession(session)"
+            >
+              <!-- Top row: time + attendees -->
+              <div class="session-top">
+                <div class="session-left">
+                  <div class="session-time">
+                    <ion-icon name="time-outline" class="meta-icon"></ion-icon>
+                    <span>{{ session.time }}</span>
+                  </div>
+                  <div class="session-team">{{ session.team }}</div>
+                  <span class="type-badge {{ getTypeColor(session.type) }}">
+                    {{ session.type }}
+                  </span>
+                </div>
+                <div class="attendees-badge">
+                  <ion-icon name="people-outline"></ion-icon>
+                  {{ session.attendees }}
+                </div>
+              </div>
+
+              <!-- Bottom: venue -->
+              <div class="session-venue">
+                <ion-icon name="location-outline" class="meta-icon"></ion-icon>
+                <span>{{ session.venue }}</span>
+              </div>
+            </div>
+          </div>
+
+        </ng-container>
+      </div>
+    </section>
+
+    <!-- FAB: Plan new session -->
+    <button class="plan-fab" (click)="openSession(null)" type="button" routerLink="/app/coach/plan">
+      <ion-icon name="add-outline"></ion-icon>
+    </button>
+
+  </div>
+</ion-content>

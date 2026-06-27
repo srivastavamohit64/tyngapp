@@ -1,0 +1,101 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="back()">
+        <ion-icon slot="icon-only" name="chevron-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>
+      Create Game
+      <div class="subtitle">Step {{ currentStep }} of {{ steps.length }}</div>
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="next()" [disabled]="!canProceed()">
+        <ion-icon slot="icon-only" name="chevron-forward-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content fullscreen>
+  <div class="standalone-safe create-page">
+    <div class="stepper">
+      <div class="step-row">
+        <ng-container *ngFor="let step of steps; let last = last">
+          <div class="step" [class.active]="currentStep === step.id" [class.done]="currentStep > step.id">
+            <ion-icon [name]="currentStep > step.id ? 'checkmark-outline' : step.icon"></ion-icon>
+          </div>
+          <div class="line" *ngIf="!last" [class.done]="currentStep > step.id"></div>
+        </ng-container>
+      </div>
+      <strong>{{ activeStepName }}</strong>
+    </div>
+
+    <section class="content-pad">
+      <ng-container [ngSwitch]="currentStep">
+        <div *ngSwitchCase="1">
+          <h3>Select Sport</h3>
+          <p class="muted">Choose what you want to play</p>
+          <div class="grid-2 picker-grid">
+            <button class="card picker" *ngFor="let sport of sports" [class.selected]="selectedSport === sport.id" (click)="selectSport(sport.id)">
+              <div class="emoji">{{ sport.emoji }}</div>
+              <strong>{{ sport.name }}</strong>
+              <span class="caption muted">{{ sport.players }}</span>
+            </button>
+          </div>
+        </div>
+
+        <div *ngSwitchCase="2">
+          <h3>Choose Venue</h3>
+          <p class="muted">Select a venue for your match</p>
+          <div class="list">
+            <button class="card venue-option" *ngFor="let venue of venues" [class.selected]="selectedVenue === venue.id" (click)="selectedVenue = venue.id; next()">
+              <strong>{{ venue.name }}</strong>
+              <span class="caption muted">{{ venue.location }} · {{ venue.distance }}</span>
+              <span class="price">₹{{ venue.price }}/hr</span>
+            </button>
+          </div>
+        </div>
+
+        <div *ngSwitchCase="3">
+          <h3>Date & Time</h3>
+          <p class="muted">Pick when you want to play</p>
+          <div class="chips block">
+            <button *ngFor="let date of dates" [class.active]="selectedDate === date" (click)="selectedDate = date">{{ date }}</button>
+          </div>
+          <div class="chips block">
+            <button *ngFor="let time of times" [class.active]="selectedTime === time" (click)="selectedTime = time">{{ time }}</button>
+          </div>
+        </div>
+
+        <div *ngSwitchCase="4">
+          <h3>Team Size</h3>
+          <p class="muted">Choose match format</p>
+          <div class="grid-2 picker-grid">
+            <button class="card picker" *ngFor="let size of teamSizes" [class.selected]="selectedTeamSize === size" (click)="selectedTeamSize = size">
+              <strong>{{ size }}</strong>
+            </button>
+          </div>
+        </div>
+
+        <div *ngSwitchCase="5">
+          <h3>Confirm Match</h3>
+          <div class="card summary">
+            <p><strong>Sport:</strong> {{ selectedSport | titlecase }}</p>
+            <p><strong>Venue:</strong> {{ selectedVenue }}</p>
+            <p><strong>When:</strong> {{ selectedDate }} {{ selectedTime }}</p>
+            <p><strong>Team:</strong> {{ selectedTeamSize }}</p>
+          </div>
+        </div>
+      </ng-container>
+    </section>
+  </div>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-button expand="block" (click)="next()" [disabled]="!canProceed()">
+      {{ currentStep === steps.length ? 'Create Game' : 'Continue' }}
+    </ion-button>
+  </ion-toolbar>
+</ion-footer>

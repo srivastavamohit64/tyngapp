@@ -1,0 +1,292 @@
+/* ============================================================
+   Coach Schedule Page
+   Figma reference: /app/coach/schedule
+   ============================================================ */
+
+.sched-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  background: var(--app-background);
+  position: relative;
+}
+
+/* ── Sticky Header ─────────────────────────── */
+.sched-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--app-card);
+  border-bottom: 1px solid var(--app-border);
+  padding-top: calc(16px + var(--safe-area-top));
+  padding-left: calc(20px + var(--safe-area-left));
+  padding-right: calc(20px + var(--safe-area-right));
+  padding-bottom: 0;
+}
+
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.back-btn {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--app-muted);
+  border: 1px solid var(--app-border);
+  color: var(--app-foreground);
+  cursor: pointer;
+  flex-shrink: 0;
+  appearance: none;
+  font: inherit;
+
+  ion-icon {
+    font-size: 18px;
+  }
+}
+
+.sched-header h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--app-foreground);
+}
+
+.filter-icon-btn {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(37, 99, 235, 0.15);
+  border: none;
+  cursor: pointer;
+  appearance: none;
+  font: inherit;
+
+  ion-icon {
+    font-size: 18px;
+    color: var(--app-primary);
+  }
+}
+
+/* ── Filter chips row ────────────────────────── */
+.filter-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 14px;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar { display: none; }
+}
+
+.filter-chip {
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: none;
+  background: var(--app-muted);
+  color: #94a3b8;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+  cursor: pointer;
+  appearance: none;
+  transition: background 0.15s ease, color 0.15s ease;
+
+  &.is-active {
+    background: var(--app-primary);
+    color: #ffffff;
+  }
+}
+
+/* ── Body scroll area ────────────────────────── */
+.sched-body {
+  flex: 1;
+  padding: 24px calc(20px + var(--safe-area-right)) calc(var(--app-tab-bar-height) + var(--safe-area-bottom) + 80px) calc(20px + var(--safe-area-left));
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* ── Day group ───────────────────────────────── */
+.day-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.day-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--app-foreground);
+
+  ion-icon {
+    font-size: 18px;
+    color: var(--app-primary);
+  }
+}
+
+/* ── Session list ────────────────────────────── */
+.session-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ── Session card ────────────────────────────── */
+.session-card {
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid var(--app-border);
+  background: var(--app-card);
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
+
+  &:hover {
+    border-color: rgba(37, 99, 235, 0.4);
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.08);
+  }
+
+  &:active {
+    transform: scale(0.99);
+  }
+}
+
+.session-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 12px;
+}
+
+.session-left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.session-time {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.meta-icon {
+  font-size: 14px;
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+.session-team {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--app-foreground);
+}
+
+/* ── Type badge ──────────────────────────────── */
+.type-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  align-self: flex-start;
+}
+
+.type-training  { background: rgba(37, 99, 235, 0.15); color: var(--app-primary); }
+.type-match     { background: rgba(124, 58, 237, 0.15); color: var(--app-violet); }
+.type-scrimmage { background: rgba(249, 115, 22, 0.15); color: var(--app-accent); }
+.type-eval      { background: rgba(34, 197, 94, 0.15);  color: var(--app-secondary); }
+.type-fitness   { background: rgba(56, 189, 248, 0.15); color: var(--app-info); }
+.type-tactical  { background: rgba(249, 115, 22, 0.15); color: var(--app-accent); }
+.type-default   { background: var(--app-muted); color: #94a3b8; }
+
+/* ── Attendees badge ─────────────────────────── */
+.attendees-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--app-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  ion-icon {
+    font-size: 14px;
+  }
+}
+
+/* ── Session venue ───────────────────────────── */
+.session-venue {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+/* ── Floating Action Button ──────────────────── */
+.plan-fab {
+  position: fixed;
+  bottom: calc(var(--app-tab-bar-height) + var(--safe-area-bottom) + 16px);
+  right: calc(20px + var(--safe-area-right));
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--app-primary);
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  appearance: none;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.4);
+  z-index: 200;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  ion-icon {
+    font-size: 26px;
+  }
+
+  &:hover {
+    transform: scale(1.08);
+    box-shadow: 0 12px 32px rgba(37, 99, 235, 0.5);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+/* Constrain FAB within mobile frame on desktop */
+@media (min-width: 480px) {
+  .plan-fab {
+    right: calc(50% - 225px + 20px);
+  }
+}

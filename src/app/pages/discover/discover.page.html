@@ -1,0 +1,263 @@
+<ion-content fullscreen>
+  <main class="page-with-tab-bar min-h-full bg-background text-white flex flex-col justify-between">
+
+    <!-- Header -->
+    <header class="bg-card border-b border-white/10 px-6 py-4 sticky top-0 z-20 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <button (click)="goHome()"
+          class="text-slate-400 flex items-center bg-transparent active:scale-95 transition-all">
+          <ion-icon name="chevron-back-outline" class="text-2xl text-white"></ion-icon>
+        </button>
+        <div>
+          <h2 class="text-xl font-bold tracking-tight text-white">Discover Players</h2>
+          <div class="text-xs text-slate-400 font-medium">{{ filteredPlayers.length - currentIndex > 0 ?
+            filteredPlayers.length - currentIndex : 0 }} nearby</div>
+        </div>
+      </div>
+      <button (click)="toggleFilters(true)"
+        class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary active:scale-95 transition-all">
+        <ion-icon name="options-outline" class="text-xl"></ion-icon>
+      </button>
+    </header>
+
+    <!-- Main Card Container -->
+    <section class="flex-1 flex items-center justify-center p-6 relative overflow-hidden select-none">
+
+      <div *ngIf="currentIndex < filteredPlayers.length; else noPlayers"
+        class="card-deck w-full max-w-sm h-[520px] relative">
+
+        <!-- Cards stack under top card for visual depth -->
+        <div *ngFor="let offset of [2, 1]"
+          class="absolute inset-0 bg-card border border-white/10 rounded-3xl opacity-40 transform origin-bottom pointer-events-none"
+          [style.transform]="'translateY(' + (offset * 8) + 'px) scale(' + (1 - offset * 0.04) + ')'"
+          [style.zIndex]="10 - offset"></div>
+
+        <!-- Main Active Card -->
+        <div
+          class="active-card absolute inset-0 bg-card border-2 border-primary/20 rounded-3xl overflow-hidden shadow-2xl flex flex-col cursor-grab active:cursor-grabbing select-none"
+          [style.zIndex]="10" [style.transform]="getTransformStyle()" [style.opacity]="getOpacityStyle()"
+          [style.transition]="isDragging ? 'none' : 'transform 0.3s ease-out, opacity 0.3s ease-out'"
+          (touchstart)="onTouchStart($event)" (touchmove)="onTouchMove($event)" (touchend)="onTouchEnd()"
+          (mousedown)="onMouseDown($event)" (mousemove)="onMouseMove($event)" (mouseup)="onMouseUp()"
+          (mouseleave)="onMouseUp()">
+          <!-- Player Photo/Hero Image -->
+          <div class="relative h-64 w-full overflow-hidden bg-slate-900 pointer-events-none">
+            <img [src]="currentPlayer.photo" [alt]="currentPlayer.name" class="w-full h-full object-cover"
+              draggable="false" />
+            <!-- Gradient overlay -->
+            <div class="absolute inset-0 bg-gradient-to-t from-[#111827] via-transparent to-transparent"></div>
+
+            <!-- Availability Badge -->
+            <div class="absolute top-4 left-4">
+              <span
+                class="px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 bg-secondary/20 text-secondary border border-secondary/40">
+                <ion-icon name="time-outline"></ion-icon>
+                {{ currentPlayer.availability }}
+              </span>
+            </div>
+
+            <!-- Mascot Badges -->
+            <div class="absolute top-4 right-4 flex gap-1.5">
+              <div *ngFor="let badge of currentPlayer.mascotBadges"
+                class="w-9 h-9 bg-black/50 backdrop-blur-md rounded-full flex items-center justify-center border border-white/10 shadow-lg text-lg text-white">
+                {{ badge }}
+              </div>
+            </div>
+
+            <!-- Distance Badge -->
+            <div
+              class="absolute bottom-4 right-4 px-3 py-1 bg-black/60 backdrop-blur-md rounded-full text-xs font-bold flex items-center gap-1 border border-white/10 text-white">
+              <ion-icon name="location-outline" class="text-primary"></ion-icon>
+              {{ currentPlayer.distance }}km away
+            </div>
+          </div>
+
+          <!-- Player Details -->
+          <div class="p-5 flex-1 flex flex-col justify-between space-y-4 pointer-events-none">
+            <!-- Name & Bio -->
+            <div>
+              <div class="flex items-baseline gap-2 mb-1">
+                <h3 class="text-2xl font-bold text-white">{{ currentPlayer.name }}</h3>
+                <span class="text-lg text-slate-400 font-semibold">{{ currentPlayer.age }}</span>
+              </div>
+              <p class="text-xs text-slate-400 leading-relaxed line-clamp-2">{{ currentPlayer.bio }}</p>
+            </div>
+
+            <!-- Sports Badges -->
+            <div class="flex flex-wrap gap-2">
+              <div *ngFor="let sport of currentPlayer.sports"
+                class="px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-xl flex items-center gap-2">
+                <span class="text-lg">{{ sport.emoji }}</span>
+                <div class="text-left">
+                  <div class="text-[10px] font-bold text-white leading-none">{{ sport.name }}</div>
+                  <div class="text-[9px] text-slate-400 leading-none mt-0.5">{{ sport.level }}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stats Row -->
+            <div class="grid grid-cols-4 gap-2 pt-2 border-t border-white/5">
+              <div class="bg-slate-800/30 rounded-xl p-2.5 text-center border border-white/5">
+                <ion-icon name="flash-outline" class="text-accent text-lg mb-1"></ion-icon>
+                <div class="text-sm font-bold text-white leading-none">{{ currentPlayer.tp }}</div>
+                <div class="text-[9px] text-slate-400 mt-1 leading-none">TP</div>
+              </div>
+              <div class="bg-slate-800/30 rounded-xl p-2.5 text-center border border-white/5">
+                <ion-icon name="shield-checkmark-outline" class="text-secondary text-lg mb-1"></ion-icon>
+                <div class="text-sm font-bold text-white leading-none">{{ currentPlayer.reliabilityScore }}%</div>
+                <div class="text-[9px] text-slate-400 mt-1 leading-none">Reliable</div>
+              </div>
+              <div class="bg-slate-800/30 rounded-xl p-2.5 text-center border border-white/5">
+                <ion-icon name="trophy-outline" class="text-primary text-lg mb-1"></ion-icon>
+                <div class="text-sm font-bold text-white leading-none">{{ currentPlayer.winRate }}%</div>
+                <div class="text-[9px] text-slate-400 mt-1 leading-none">Win</div>
+              </div>
+              <div class="bg-slate-800/30 rounded-xl p-2.5 text-center border border-white/5">
+                <ion-icon name="disc-outline" class="text-violet text-lg mb-1"></ion-icon>
+                <div class="text-sm font-bold text-white leading-none">{{ currentPlayer.gamesPlayed }}</div>
+                <div class="text-[9px] text-slate-400 mt-1 leading-none">Games</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #noPlayers>
+        <div class="text-center py-12">
+          <span class="text-6xl mb-4 block">🎯</span>
+          <h3 class="text-xl font-bold mb-2 text-white">No more players nearby</h3>
+          <p class="text-slate-400 mb-6 text-sm">Adjust your filters to see more players</p>
+          <button (click)="resetDiscovery()"
+            class="px-6 py-3 bg-primary text-white rounded-xl font-semibold shadow-lg active:scale-95 transition-all">
+            Reset Discovery
+          </button>
+        </div>
+      </ng-template>
+    </section>
+
+    <!-- Swipe Action Buttons at bottom -->
+    <footer *ngIf="currentIndex < filteredPlayers.length" class="px-6 pb-6 flex justify-center gap-6 z-20 mb-20">
+      <button (click)="swipe('left')"
+        class="w-16 h-16 rounded-full bg-red-500/10 border-2 border-red-500/30 flex items-center justify-center shadow-lg active:scale-90 hover:bg-red-500/20 transition-all text-red-500 bg-transparent">
+        <ion-icon name="close-outline" class="text-3xl"></ion-icon>
+      </button>
+      <button (click)="swipe('right')"
+        class="w-16 h-16 rounded-full bg-secondary/10 border-2 border-secondary/30 flex items-center justify-center shadow-lg active:scale-90 hover:bg-secondary/20 transition-all text-secondary bg-transparent">
+        <ion-icon name="checkmark-outline" class="text-3xl"></ion-icon>
+      </button>
+    </footer>
+
+    <!-- Filters Overlay Modal -->
+    <div 
+      *ngIf="showFilters" 
+      class="fixed inset-0 bg-background/95 backdrop-blur-md z-[999] overflow-y-auto transition-all duration-300"
+    >
+      <div class="min-h-screen px-6 py-6 pb-32 max-w-lg mx-auto">
+
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between mb-8">
+          <h2 class="text-2xl font-bold text-white">Advanced Filters</h2>
+          <button (click)="toggleFilters(false)"
+            class="w-10 h-10 rounded-full bg-card border border-white/10 flex items-center justify-center text-white active:scale-95 transition-all">
+            <ion-icon name="close-outline" class="text-2xl"></ion-icon>
+          </button>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="space-y-6">
+
+          <!-- Sport -->
+          <div>
+            <label class="text-sm font-semibold mb-3 block text-slate-300">Sport</label>
+            <div class="filter-options flex flex-wrap gap-2">
+              <button *ngFor="let s of ['All', 'Cricket', 'Football', 'Basketball', 'Tennis', 'Badminton']"
+                (click)="filters.sport = s"
+                [ngClass]="filters.sport === s ? 'bg-primary text-white border-transparent' : 'bg-card border-white/10 text-slate-400'"
+                class="filter-chip bubble_border px-4 py-2 border rounded-xl text-sm font-medium transition-all active:scale-95 bg-transparent">
+                {{ s }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Skill Level -->
+          <div>
+            <label class="text-sm font-semibold mb-3 block text-slate-300">Skill Level</label>
+            <div class="filter-options flex flex-wrap gap-2">
+              <button *ngFor="let lvl of ['All', 'Beginner', 'Intermediate', 'Advanced', 'Expert']"
+                (click)="filters.skill = lvl"
+                [ngClass]="filters.skill === lvl ? 'bg-secondary text-white border-transparent' : 'bg-card border-white/10 text-slate-400'"
+                class="filter-chip px-4 py-2 border rounded-xl text-sm font-medium transition-all active:scale-95 bg-transparent">
+                {{ lvl }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Distance -->
+          <div class="space-y-2">
+            <div class="flex justify-between text-sm font-semibold text-slate-300">
+              <span>Maximum Distance</span>
+              <span class="text-primary">{{ filters.distance }} km</span>
+            </div>
+            <input type="range" min="1" max="50" [(ngModel)]="filters.distance"
+              class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-primary" />
+          </div>
+
+          <!-- Age Range -->
+          <div class="space-y-2">
+            <div class="flex justify-between text-sm font-semibold text-slate-300">
+              <span>Age Range</span>
+              <span class="text-secondary">{{ filters.ageMin }} - {{ filters.ageMax }} yrs</span>
+            </div>
+            <div class="flex gap-4">
+              <input type="range" min="18" max="50" [(ngModel)]="filters.ageMin"
+                class="flex-1 h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-secondary" />
+              <input type="range" min="18" max="50" [(ngModel)]="filters.ageMax"
+                class="flex-1 h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-secondary" />
+            </div>
+          </div>
+
+          <!-- Competitive Level -->
+          <div>
+            <label class="text-sm font-semibold mb-3 block text-slate-300">Competitive Level</label>
+            <div class="filter-options flex gap-2">
+              <button *ngFor="let comp of ['All', 'Recreational', 'Competitive', 'Professional']"
+                (click)="filters.competitiveLevel = comp"
+                [ngClass]="filters.competitiveLevel === comp ? 'bg-accent text-white border-transparent' : 'bg-card border-white/10 text-slate-400'"
+                class="filter-chip flex-1 py-2 border rounded-xl text-xs font-semibold transition-all active:scale-95 bg-transparent">
+                {{ comp }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Availability -->
+          <div>
+            <label class="text-sm font-semibold mb-3 block text-slate-300">Availability</label>
+            <div class="grid grid-cols-2 gap-2">
+              <button *ngFor="let avail of ['All', 'Available Now', 'Available Today', 'This Week']"
+                (click)="filters.availability = avail"
+                [ngClass]="filters.availability === avail ? 'bg-violet text-white border-transparent' : 'bg-card border-white/10 text-slate-400'"
+                class="py-2.5 border rounded-xl text-xs font-semibold transition-all active:scale-95 bg-transparent">
+                {{ avail }}
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Filter Actions Footer -->
+        <div class="mt-12 flex gap-3">
+          <button (click)="resetFilters()"
+            class="flex-1 h-14 rounded-2xl border border-white/10 text-white font-bold text-sm bg-transparent active:scale-[0.98] transition-all">
+            Clear All
+          </button>
+          <button (click)="toggleFilters(false)"
+            class="flex-1 h-14 rounded-2xl bg-primary text-white font-bold text-sm active:scale-[0.98] transition-all">
+            Apply Filters
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+</ion-content>

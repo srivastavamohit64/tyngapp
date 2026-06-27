@@ -1,0 +1,27 @@
+<ion-content fullscreen>
+  <div class="page-safe">
+    <section class="hero">
+      <h2>Book Venue</h2>
+      <p class="muted">Premium sports facilities near Lucknow</p>
+    </section>
+
+    <section class="content-pad list">
+      <div class="card venue-row" *ngFor="let venue of venues">
+        <div class="icon-box">{{ venue.emoji }}</div>
+        <div class="venue-info">
+          <div class="header-row">
+            <strong>{{ venue.name }}</strong>
+            <span class="badge orange">★ {{ venue.rating }}</span>
+          </div>
+          <p class="caption muted">{{ venue.location }} · {{ venue.distance }}</p>
+          <div class="header-row">
+            <div class="sports">
+              <span class="badge" *ngFor="let sport of venue.sports">{{ sport }}</span>
+            </div>
+            <strong class="price">₹{{ venue.price }}/hr</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</ion-content>

@@ -1,0 +1,74 @@
+/* Home Page Specific SCSS */
+
+:host {
+  display: block;
+}
+
+/* Quick Suggestions Card Gradient and styling */
+.quick-suggestion-card {
+  position: relative;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(37, 99, 235, 0.25);
+  transition: transform 0.2s ease;
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+/* Quick Action button structures */
+.quick-action-btn {
+  background-color: var(--color-card);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 16px;
+  transition: all 0.2s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 110px;
+  text-align: center;
+  width: 100%;
+
+  &:hover {
+    border-color: var(--color-primary);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+/* Live sports map banner animations */
+.live-map-banner {
+  background: linear-gradient(90deg, rgba(124, 58, 237, 0.15) 0%, rgba(37, 99, 235, 0.15) 50%, rgba(34, 197, 94, 0.15) 100%);
+  border: 1px solid rgba(37, 99, 235, 0.3) !important;
+  border-radius: 20px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: var(--color-primary) !important;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+/* Recent Activity indicator icon */
+.activity-badge {
+  display: grid;
+  height: 32px;
+  width: 32px;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  font-size: 16px;
+}
+
+.live_block {
+  padding: 10px;
+}
