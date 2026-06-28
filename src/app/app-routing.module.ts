@@ -1,16 +1,25 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+import { SplashPage } from './pages/splash/splash.page';
 
 const routes: Routes = [
   {
     path: '',
-    loadComponent: () => import('./pages/welcome/welcome.page').then((m) => m.WelcomePage),
+    component: SplashPage,
     pathMatch: 'full',
+  },
+  {
+    path: 'splash',
+    component: SplashPage,
   },
   {
     path: 'login',
     loadComponent: () => import('./pages/auth/auth.page').then((m) => m.AuthPage),
+  },
+  {
+    path: 'welcome',
+    loadComponent: () => import('./pages/welcome/welcome.page').then((m) => m.WelcomePage),
   },
   {
     path: 'auth',

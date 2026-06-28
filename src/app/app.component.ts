@@ -1,6 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { MenuController } from '@ionic/angular';
+import { MenuController, Platform } from '@ionic/angular';
 import { PlatformService } from './core/services/platform.service';
 import { ThemeService } from './core/services/theme.service';
 import { AuthService } from './core/services/auth.service';
@@ -13,6 +13,7 @@ import { AuthService } from './core/services/auth.service';
 })
 export class AppComponent implements OnInit {
   private readonly platform = inject(PlatformService);
+  private readonly ionicPlatform = inject(Platform);
   readonly theme = inject(ThemeService);
   readonly auth = inject(AuthService);
   private readonly menu = inject(MenuController);
@@ -20,6 +21,10 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     void this.platform.init();
+  }
+
+  isAndroid(): boolean {
+    return this.ionicPlatform.is('android');
   }
 
   getRoleEmoji(): string {
@@ -37,6 +42,6 @@ export class AppComponent implements OnInit {
   async logout() {
     await this.menu.close();
     this.auth.logout();
-    void this.router.navigateByUrl('/login');
+    void this.router.navigateByUrl('/welcome');
   }
 }

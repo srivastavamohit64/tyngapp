@@ -42,6 +42,7 @@
   --app-card: #111827;
   --app-foreground: #ffffff;
   --app-muted: #1e293b;
+  --app-muted-text: #94a3b8;
   --app-border: rgba(255, 255, 255, 0.1);
   --app-primary: #2563eb;
   --app-secondary: #22c55e;
@@ -74,6 +75,7 @@
   --app-card: #ffffff;
   --app-foreground: #0d1240;
   --app-muted: #e4eaff;
+  --app-muted-text: #5262a0;
   --app-border: rgba(33, 48, 212, 0.12);
   --app-primary: #2130d4;
   --app-secondary: #00c977;
@@ -118,11 +120,11 @@ ion-content {
 }
 
 /* ============================================================
-   LIGHT MODE — Component-level overrides
-   Fix hardcoded dark colours used across pages
+   LIGHT MODE — Comprehensive text colour overrides
+   Catches every Tailwind + hardcoded white text that templates use
    ============================================================ */
 
-/* Heading & text colours */
+/* All heading levels */
 .light-mode h1,
 .light-mode h2,
 .light-mode h3,
@@ -132,18 +134,104 @@ ion-content {
   color: var(--app-foreground) !important;
 }
 
-/* Tailwind text helpers — deep navy-based tones */
-.light-mode .text-slate-400 {
+/* text-white → foreground (deep navy) */
+.light-mode .text-white {
+  color: var(--app-foreground) !important;
+}
+
+/* Paragraph / span body text */
+.light-mode p,
+.light-mode span:not(.sport-check):not(.intent-check):not(.time-check):not(.type-badge):not(.attendees-badge):not(.drill-tag) {
+  color: var(--app-foreground);
+}
+
+/* Tailwind slate shades → navy-blue spectrum */
+.light-mode .text-slate-50   { color: #0d1240 !important; }
+.light-mode .text-slate-100  { color: #0d1240 !important; }
+.light-mode .text-slate-200  { color: #1a2260 !important; }
+.light-mode .text-slate-300  { color: #3d4f8a !important; }
+.light-mode .text-slate-400  { color: #5262a0 !important; }
+.light-mode .text-slate-500  { color: #2a3870 !important; }
+.light-mode .text-slate-600  { color: #1e2e60 !important; }
+.light-mode .text-slate-700  { color: #172451 !important; }
+.light-mode .text-slate-800  { color: #0f1840 !important; }
+.light-mode .text-slate-900  { color: #0a1030 !important; }
+
+/* Gray shades */
+.light-mode .text-gray-400   { color: #5262a0 !important; }
+.light-mode .text-gray-500   { color: #2a3870 !important; }
+
+/* Inline hardcoded colours used in templates */
+.light-mode [style*="color: #94A3B8"],
+.light-mode [style*="color: #94a3b8"] { color: #5262a0 !important; }
+.light-mode [style*="color: #64748B"],
+.light-mode [style*="color: #64748b"] { color: #3d4f8a !important; }
+
+/* ── Specific component text ─────────────────────────── */
+
+/* Feature card text in any page */
+.light-mode .font-bold,
+.light-mode .font-semibold {
+  color: var(--app-foreground);
+}
+
+/* Session/booking customer names */
+.light-mode .session-team,
+.light-mode .session-venue,
+.light-mode .session-time,
+.light-mode .day-label {
+  color: var(--app-foreground) !important;
+}
+
+/* Venue quick action card labels */
+.light-mode .feature-text {
+  color: var(--app-foreground) !important;
+}
+
+/* Coach dashboard card text */
+.light-mode .font-bold.text-base,
+.light-mode .font-bold.text-white,
+.light-mode .font-semibold.text-white {
+  color: var(--app-foreground) !important;
+}
+
+/* Booking/request customer name rows */
+.light-mode .text-base { color: var(--app-foreground); }
+
+/* Muted secondary text across cards */
+.light-mode .text-xs.text-slate-400,
+.light-mode .text-xs.text-slate-500,
+.light-mode .text-sm.text-slate-400,
+.light-mode .text-sm.text-slate-500 {
   color: #5262a0 !important;
 }
 
-.light-mode .text-slate-300 {
-  color: #3d4f8a !important;
+/* ion-icon inside cards */
+.light-mode .meta-icon,
+.light-mode .day-icon,
+.light-mode .field-icon {
+  color: #5262a0 !important;
 }
 
-.light-mode .text-slate-500 {
-  color: #2a3870 !important;
+/* Onboarding text */
+.light-mode .skill-title,
+.light-mode .skill-desc,
+.light-mode .intent-title,
+.light-mode .intent-desc,
+.light-mode .time-range,
+.light-mode .name-label {
+  color: var(--app-foreground) !important;
 }
+
+/* Settings list items */
+.light-mode ion-item,
+.light-mode ion-label {
+  --color: var(--app-foreground) !important;
+  color: var(--app-foreground) !important;
+}
+
+/* Discover page — covered by .text-slate-400 above */
+
 
 /* Tailwind dark background helpers */
 .light-mode .bg-slate-800 {
@@ -311,6 +399,189 @@ ion-content {
 .light-mode .rounded-xl.bg-card,
 .light-mode .rounded-2xl.bg-card {
   box-shadow: 0 2px 12px rgba(33, 48, 212, 0.07);
+}
+
+/* ============================================================
+   LIGHT MODE — Glossy / Glass Finish
+   Premium frosted-glass feel across all surfaces
+   ============================================================ */
+
+/* ── Page background: soft radial shimmer ─────────────────── */
+.light-mode ion-content {
+  --background: linear-gradient(145deg, #eef2ff 0%, #f0f4ff 40%, #e8f5ff 70%, #f5f0ff 100%) !important;
+}
+
+/* ── Body and app root ────────────────────────────────────── */
+.light-mode,
+.light-mode ion-app {
+  background: linear-gradient(145deg, #eef2ff 0%, #f0f4ff 50%, #e8f5ff 100%) !important;
+}
+
+/* ── Glass card surface ───────────────────────────────────── */
+.light-mode .bg-card,
+.light-mode ion-card {
+  background: rgba(255, 255, 255, 0.82) !important;
+  backdrop-filter: blur(20px) saturate(1.6) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(1.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.75) !important;
+  /* Layered shadow: ambient + depth + colour tint */
+  box-shadow:
+    0 1px 0 0 rgba(255, 255, 255, 0.9) inset,   /* top gloss highlight */
+    0 -1px 0 0 rgba(33, 48, 212, 0.04) inset,    /* bottom edge */
+    0 2px 6px rgba(33, 48, 212, 0.05),
+    0 8px 24px rgba(33, 48, 212, 0.08),
+    0 20px 48px rgba(33, 48, 212, 0.05) !important;
+  transition: box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Hover lift on interactive glass cards */
+.light-mode .bg-card:hover,
+.light-mode ion-card:hover {
+  box-shadow:
+    0 1px 0 0 rgba(255, 255, 255, 0.95) inset,
+    0 4px 12px rgba(33, 48, 212, 0.10),
+    0 16px 40px rgba(33, 48, 212, 0.12),
+    0 32px 64px rgba(33, 48, 212, 0.07) !important;
+  transform: translateY(-1px);
+}
+
+/* ── Section hero gradient header (home/venue/coach) ──────── */
+.light-mode .bg-gradient-to-b.from-primary\/20,
+.light-mode section.bg-gradient-to-b {
+  background: linear-gradient(
+    180deg,
+    rgba(33, 48, 212, 0.09) 0%,
+    rgba(33, 48, 212, 0.03) 60%,
+    transparent 100%
+  ) !important;
+  position: relative;
+}
+
+/* Frosted glass top bar overlay */
+.light-mode .bg-gradient-to-b.from-primary\/20::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* ── Icon circles (action icons inside cards) ─────────────── */
+.light-mode .bg-primary\/20 {
+  background: linear-gradient(135deg,
+    rgba(33, 48, 212, 0.12) 0%,
+    rgba(79, 107, 255, 0.08) 100%) !important;
+  box-shadow:
+    0 0 0 1px rgba(33, 48, 212, 0.12),
+    0 2px 8px rgba(33, 48, 212, 0.10) !important;
+}
+
+.light-mode .bg-secondary\/20 {
+  background: linear-gradient(135deg,
+    rgba(0, 201, 119, 0.14) 0%,
+    rgba(0, 180, 100, 0.08) 100%) !important;
+  box-shadow:
+    0 0 0 1px rgba(0, 201, 119, 0.15),
+    0 2px 8px rgba(0, 201, 119, 0.10) !important;
+}
+
+.light-mode .bg-accent\/20 {
+  background: linear-gradient(135deg,
+    rgba(255, 92, 53, 0.12) 0%,
+    rgba(255, 120, 80, 0.07) 100%) !important;
+  box-shadow:
+    0 0 0 1px rgba(255, 92, 53, 0.12),
+    0 2px 8px rgba(255, 92, 53, 0.08) !important;
+}
+
+/* ── Primary buttons: glossy pill ────────────────────────── */
+.light-mode button.bg-primary,
+.light-mode .btn-primary {
+  background: linear-gradient(
+    160deg,
+    #3d55f0 0%,
+    #2130d4 45%,
+    #1a26b8 100%
+  ) !important;
+  box-shadow:
+    0 1px 0 0 rgba(255, 255, 255, 0.3) inset,   /* gloss line */
+    0 -1px 0 0 rgba(0, 0, 0, 0.15) inset,
+    0 4px 16px rgba(33, 48, 212, 0.35),
+    0 1px 4px rgba(33, 48, 212, 0.25) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.light-mode button.bg-primary:hover,
+.light-mode .btn-primary:hover {
+  box-shadow:
+    0 1px 0 0 rgba(255, 255, 255, 0.35) inset,
+    0 6px 24px rgba(33, 48, 212, 0.45),
+    0 2px 8px rgba(33, 48, 212, 0.30) !important;
+  transform: translateY(-1px);
+}
+
+/* ── Inputs: glass style ─────────────────────────────────── */
+.light-mode input,
+.light-mode select,
+.light-mode textarea,
+.light-mode .search-input {
+  background: rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(33, 48, 212, 0.15) !important;
+  box-shadow:
+    0 1px 0 0 rgba(255, 255, 255, 1) inset,
+    0 2px 8px rgba(33, 48, 212, 0.06) !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.light-mode input:focus,
+.light-mode select:focus,
+.light-mode textarea:focus {
+  border-color: rgba(33, 48, 212, 0.40) !important;
+  box-shadow:
+    0 1px 0 0 rgba(255, 255, 255, 1) inset,
+    0 0 0 3px rgba(33, 48, 212, 0.10),
+    0 4px 12px rgba(33, 48, 212, 0.10) !important;
+  outline: none !important;
+}
+
+/* ── Tab bar: frosted glass ──────────────────────────────── */
+.light-mode ion-tab-bar,
+.light-mode .tab-bar {
+  background: rgba(255, 255, 255, 0.88) !important;
+  backdrop-filter: blur(20px) saturate(1.8) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(1.8) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.6) !important;
+  box-shadow:
+    0 -1px 0 rgba(33, 48, 212, 0.08),
+    0 -8px 32px rgba(33, 48, 212, 0.07) !important;
+}
+
+/* ── Side menu: frosted ──────────────────────────────────── */
+.light-mode ion-menu ion-content,
+.light-mode ion-menu {
+  --background: rgba(240, 244, 255, 0.95) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  box-shadow: 4px 0 32px rgba(33, 48, 212, 0.10) !important;
+}
+
+/* ── Stat/badge chips: glass pill ────────────────────────── */
+.light-mode .rounded-full.bg-accent\/20,
+.light-mode .rounded-full.bg-secondary\/20,
+.light-mode .rounded-full.bg-primary\/20 {
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+}
+
+/* ── Smooth transition on ALL light-mode elements ────────── */
+.light-mode * {
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 /* ============================================================

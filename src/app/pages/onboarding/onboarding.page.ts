@@ -12,19 +12,27 @@ import { AuthService } from '../../core/services/auth.service';
     <ion-content fullscreen>
       <main class="onboarding-shell">
         <header class="onboarding-header">
+          <!-- Progress dots: 4 for player/coach, 2 for venue -->
           <div class="progress-track">
-            <div
-              *ngFor="let item of [1, 2, 3, 4]"
-              class="progress-segment"
-              [class.is-filled]="item <= step"
-            ></div>
+            <ng-container *ngIf="!isVenue">
+              <div
+                *ngFor="let item of [1, 2, 3, 4]"
+                class="progress-segment"
+                [class.is-filled]="item <= step"
+              ></div>
+            </ng-container>
+            <ng-container *ngIf="isVenue">
+              <div class="progress-segment" [class.is-filled]="step >= 1"></div>
+              <div class="progress-segment" [class.is-filled]="step >= 4"></div>
+            </ng-container>
           </div>
           <h1>{{ heading }}</h1>
           <p>{{ description }}</p>
         </header>
 
         <section class="onboarding-content">
-          <div *ngIf="step === 1" class="step1-container">
+          <!-- STEP 1: Player/Coach — name + sport selection -->
+          <div *ngIf="step === 1 && !isVenue" class="step1-container">
             <div class="name-field-container">
               <label class="name-label">{{ isCoach ? 'Coach Name' : 'Full Name' }}</label>
               <input
@@ -63,6 +71,39 @@ import { AuthService } from '../../core/services/auth.service';
                   ✓
                 </span>
               </button>
+            </div>
+          </div>
+
+          <!-- STEP 1: Venue — name only (no sports / skill) -->
+          <div *ngIf="step === 1 && isVenue" class="step1-container">
+            <div class="name-field-container">
+              <label class="name-label">Venue Name</label>
+              <input
+                type="text"
+                class="name-input"
+                [value]="name"
+                (input)="name = $any($event.target).value"
+                placeholder="e.g. Phoenix Arena"
+              />
+            </div>
+            <div class="name-field-container" style="margin-top: 16px">
+              <label class="name-label">Venue Type</label>
+              <select
+                class="name-input"
+                [value]="venueType"
+                (change)="venueType = $any($event.target).value"
+              >
+                <option value="">Select venue type…</option>
+                <option value="multi-sport">Multi-Sport Complex</option>
+                <option value="football">Football Ground</option>
+                <option value="cricket">Cricket Ground</option>
+                <option value="basketball">Basketball Court</option>
+                <option value="swimming">Swimming Pool</option>
+                <option value="tennis">Tennis Court</option>
+                <option value="badminton">Badminton Court</option>
+                <option value="gym">Gym / Fitness Centre</option>
+                <option value="other">Other</option>
+              </select>
             </div>
           </div>
 
@@ -158,9 +199,9 @@ import { AuthService } from '../../core/services/auth.service';
         </section>
 
         <footer class="onboarding-footer">
-          <button *ngIf="step > 1" type="button" class="btn-secondary" (click)="step = step - 1">Back</button>
+          <button *ngIf="step > 1" type="button" class="btn-secondary" (click)="back()">Back</button>
           <button type="button" class="btn-primary" [disabled]="!canProceed" (click)="next()">
-            {{ step === 4 ? 'Complete Setup' : 'Continue' }}
+            {{ lastStep ? 'Complete Setup' : 'Continue' }}
           </button>
         </footer>
       </main>
@@ -177,9 +218,19 @@ export class OnboardingPage {
   skillLevel = '';
   playingStyle = '';
   timeSlots: string[] = [];
+  venueType = '';
 
   get isCoach() {
     return this.auth.user()?.role === 'coach';
+  }
+
+  get isVenue() {
+    return this.auth.user()?.role === 'venue';
+  }
+
+  /** The step that completes the flow (4 for all roles) */
+  get lastStep() {
+    return this.step === 4;
   }
 
   readonly sports = [
@@ -236,6 +287,9 @@ export class OnboardingPage {
   ];
 
   get heading() {
+    if (this.isVenue) {
+      return this.step === 1 ? 'Set up your venue' : 'Operating hours';
+    }
     return [
       this.isCoach ? 'Select your coaching specialties' : 'Select your sports',
       this.isCoach ? 'Coaching Experience' : 'Your skill level',
@@ -245,6 +299,11 @@ export class OnboardingPage {
   }
 
   get description() {
+    if (this.isVenue) {
+      return this.step === 1
+        ? 'Tell players and coaches about your facility'
+        : 'When are you typically open for bookings?';
+    }
     return [
       this.isCoach ? 'Choose one or more sports you coach' : 'Choose one or more sports you play',
       this.isCoach ? 'Select your years of coaching experience' : 'Select your current skill level',
@@ -254,10 +313,21 @@ export class OnboardingPage {
   }
 
   get canProceed() {
-    if (this.step === 1) return this.name.trim().length > 0 && this.selectedSports.length > 0;
+    if (this.step === 1) {
+      if (this.isVenue) return this.name.trim().length > 0 && this.venueType.length > 0;
+      return this.name.trim().length > 0 && this.selectedSports.length > 0;
+    }
     if (this.step === 2) return !!this.skillLevel;
     if (this.step === 3) return !!this.playingStyle;
     return this.timeSlots.length > 0;
+  }
+
+  back() {
+    if (this.isVenue && this.step === 4) {
+      this.step = 1; // venue skips 2 and 3
+    } else {
+      this.step = this.step - 1;
+    }
   }
 
   toggle(collection: string[], id: string) {
@@ -268,6 +338,11 @@ export class OnboardingPage {
 
   next() {
     if (!this.canProceed) return;
+    // Venue: skip skill (2) and intent (3) — jump straight to availability (4)
+    if (this.isVenue && this.step === 1) {
+      this.step = 4;
+      return;
+    }
     if (this.step < 4) {
       this.step += 1;
       return;

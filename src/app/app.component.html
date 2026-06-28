@@ -75,6 +75,7 @@
         </div>
 
         <button 
+          *ngIf="!isAndroid()"
           (click)="logout()" 
           class="w-full h-12 flex items-center justify-center gap-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 font-bold text-sm hover:bg-red-500/20 transition-all"
         >
