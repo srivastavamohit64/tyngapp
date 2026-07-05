@@ -17,12 +17,12 @@ export class AuthService {
   private readonly storageKey = 'tyng_user';
   readonly user = signal<AuthUser | null>(this.readUser());
 
-  loginAs(role: UserRole) {
+  loginAs(role: UserRole, options?: { name?: string; isOnboarded?: boolean }) {
     const user: AuthUser = {
       id: `user_${Date.now()}`,
-      name: role === 'coach' ? 'Coach Arvind' : role === 'player' ? 'Rahul Sharma' : role === 'venue' ? 'Phoenix Arena' : 'User',
+      name: options?.name ?? '',
       role,
-      isOnboarded: false,
+      isOnboarded: options?.isOnboarded ?? false,
     };
     localStorage.setItem(this.storageKey, JSON.stringify(user));
     this.user.set(user);

@@ -1,24 +1,111 @@
+/* Tyng design tokens — matched to Figma Sports theme.css */
+
 :root {
   --ion-font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  /* Light theme (Figma default) */
+  --ion-background-color: #fafbfc;
+  --ion-background-color-rgb: 250, 251, 252;
+  --ion-text-color: #111827;
+  --ion-text-color-rgb: 17, 24, 39;
+  --ion-border-color: #e5e7eb;
+
+  --ion-color-primary: #8cf000;
+  --ion-color-primary-rgb: 140, 240, 0;
+  --ion-color-primary-contrast: #111827;
+  --ion-color-primary-contrast-rgb: 17, 24, 39;
+  --ion-color-primary-shade: #7bd300;
+  --ion-color-primary-tint: #97f11a;
+
+  --ion-color-secondary: #ff7a00;
+  --ion-color-secondary-rgb: 255, 122, 0;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --ion-color-secondary-shade: #e06c00;
+  --ion-color-secondary-tint: #ff871a;
+
+  --ion-color-tertiary: #38bdf8;
+  --ion-color-tertiary-rgb: 56, 189, 248;
+  --ion-color-tertiary-contrast: #ffffff;
+  --ion-color-tertiary-shade: #31a6da;
+  --ion-color-tertiary-tint: #4cc4f9;
+
+  --ion-color-success: #8cf000;
+  --ion-color-success-rgb: 140, 240, 0;
+  --ion-color-success-contrast: #111827;
+  --ion-color-success-shade: #7bd300;
+  --ion-color-success-tint: #97f11a;
+
+  --ion-color-warning: #ff7a00;
+  --ion-color-warning-rgb: 255, 122, 0;
+  --ion-color-warning-contrast: #ffffff;
+  --ion-color-warning-shade: #e06c00;
+  --ion-color-warning-tint: #ff871a;
+
+  --ion-color-danger: #ef4444;
+  --ion-color-danger-rgb: 239, 68, 68;
+  --ion-color-danger-contrast: #ffffff;
+  --ion-color-danger-shade: #d23c3c;
+  --ion-color-danger-tint: #f15757;
+
+  --ion-color-medium: #6b7280;
+  --ion-color-medium-rgb: 107, 114, 128;
+  --ion-color-medium-contrast: #ffffff;
+  --ion-color-medium-shade: #5e6471;
+  --ion-color-medium-tint: #7a808d;
+
+  --ion-color-light: #f3f4f6;
+  --ion-color-light-rgb: 243, 244, 246;
+  --ion-color-light-contrast: #111827;
+  --ion-color-light-shade: #d6d7d8;
+  --ion-color-light-tint: #f4f5f7;
+
+  /* App tokens */
+  --app-background: #fafbfc;
+  --app-background-secondary: #fafbfc;
+  --app-background-surface: #f3f4f6;
+  --app-card: #ffffff;
+  --app-foreground: #111827;
+  --app-foreground-secondary: #6b7280;
+  --app-foreground-muted: #9ca3af;
+  --app-muted: #f3f4f6;
+  --app-muted-text: #6b7280;
+  --app-border: #e5e7eb;
+  --app-primary: #8cf000;
+  --app-primary-to: #a3e635;
+  --app-secondary: #ff7a00;
+  --app-accent: #38bdf8;
+  --app-violet: #7c3aed;
+  --app-info: #38bdf8;
+  --app-error: #ef4444;
+  --app-input: #f9fafb;
+  --app-radius-card: 20px;
+  --app-radius-button: 16px;
+  --app-radius-input: 14px;
+  --app-tab-bar-height: 72px;
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-left: env(safe-area-inset-left, 0px);
+  --safe-area-right: env(safe-area-inset-right, 0px);
+}
+
+.dark-mode,
+.dark {
   --ion-background-color: #0a0f1c;
   --ion-background-color-rgb: 10, 15, 28;
   --ion-text-color: #ffffff;
   --ion-text-color-rgb: 255, 255, 255;
   --ion-border-color: rgba(255, 255, 255, 0.1);
 
-  --ion-color-primary: #2563eb;
-  --ion-color-primary-rgb: 37, 99, 235;
-  --ion-color-primary-contrast: #ffffff;
-  --ion-color-primary-shade: #2157cf;
-  --ion-color-primary-tint: #3b73ed;
-
-  --ion-color-secondary: #22c55e;
-  --ion-color-secondary-rgb: 34, 197, 94;
-  --ion-color-secondary-contrast: #ffffff;
-  --ion-color-secondary-shade: #1ead53;
-  --ion-color-secondary-tint: #38cb6e;
-
-  --ion-color-warning: #f97316;
-  --ion-color-warning-rgb: 249, 115, 22;
-  --ion-color-warning-contrast: #ffffff;
+  --app-background: #0a0f1c;
+  --app-background-secondary: #111827;
+  --app-background-surface: #1e293b;
+  --app-card: #111827;
+  --app-foreground: #ffffff;
+  --app-foreground-secondary: #94a3b8;
+  --app-foreground-muted: #64748b;
+  --app-muted: #1e293b;
+  --app-muted-text: #64748b;
+  --app-border: rgba(255, 255, 255, 0.1);
+  --app-input: #1e293b;
 }

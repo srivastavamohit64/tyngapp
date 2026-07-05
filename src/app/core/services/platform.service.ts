@@ -10,9 +10,10 @@ export class PlatformService {
     }
 
     try {
-      await StatusBar.setOverlaysWebView({ overlay: true });
-      await StatusBar.setStyle({ style: Style.Dark });
-      await StatusBar.setBackgroundColor({ color: '#0a0f1c' });
+      // Keep webview below the status bar so headers never sit under system UI.
+      await StatusBar.setOverlaysWebView({ overlay: false });
+      await StatusBar.setStyle({ style: Style.Light });
+      await StatusBar.setBackgroundColor({ color: '#ffffff' });
     } catch (error) {
       console.warn('StatusBar initialization failed', error);
     }

@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
-import { IonicModule } from '@ionic/angular';
+import { Component, inject } from '@angular/core';
+import { IonicModule, MenuController } from '@ionic/angular';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
+import { SportTab, SportTabsComponent } from '../../shared/components/sport-tabs/sport-tabs.component';
 
 interface LeaderboardPlayer {
   rank: number;
@@ -16,14 +18,24 @@ interface LeaderboardPlayer {
 @Component({
   selector: 'app-leaderboard-page',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, BrandHeaderShellComponent, SportTabsComponent],
   styleUrls: ['./leaderboard.page.scss'],
   templateUrl: './leaderboard.page.html',
 })
 export class LeaderboardPage {
+  private readonly menu = inject(MenuController);
   selectedSport = 'all';
 
+  async openMenu() {
+    await this.menu.open();
+  }
+
   readonly sports = ['all', 'football', 'cricket', 'basketball', 'badminton'];
+
+  readonly sportTabs: SportTab[] = this.sports.map((s) => ({
+    id: s,
+    label: s.charAt(0).toUpperCase() + s.slice(1),
+  }));
 
   readonly leaderboard: LeaderboardPlayer[] = [
     {

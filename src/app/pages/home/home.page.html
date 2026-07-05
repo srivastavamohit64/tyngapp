@@ -1,420 +1,700 @@
-<ion-content fullscreen>
-  <main class="safe-area-top page-with-tab-bar min-h-full bg-background text-white">
+<ion-content [fullscreen]="true" class="has-tabs">
+  <app-brand-header-shell>
+  <main class="page-shell bg-[#FAFBFC]">
 
+    <!-- ────────────────────────────────────────────────── -->
     <!-- COACH DASHBOARD -->
+    <!-- ────────────────────────────────────────────────── -->
     <ng-container *ngIf="auth.user()?.role === 'coach'">
-      <section class="bg-gradient-to-b from-primary/20 to-transparent px-6 pb-8 pt-6">
-        <div class="mb-6 flex items-center justify-between">
-          <button (click)="openMenu()"
-            class="grid h-12 w-12 place-items-center rounded-full bg-card border border-white/10 text-white hover:border-primary transition-all">
-            <ion-icon name="menu-outline" class="text-2xl"></ion-icon>
-          </button>
-          <div class="text-center">
-            <p class="text-xs text-slate-400 leading-none">Welcome back,</p>
-            <h1 class="text-lg font-bold tracking-tight mt-1">Coach {{ auth.user()?.name || 'Arvind' }}</h1>
+      <div class="px-5 pt-4 pb-2 bg-white border-b border-[#F3F4F6]">
+        <p class="text-[12px] text-[#9CA3AF] font-medium leading-none">{{ greeting }}</p>
+        <h1 class="text-[18px] font-black text-[#111827] mt-1 mb-3">Coach Arvind</h1>
+        <div class="flex items-center gap-2 bg-[#FAFBFC] rounded-2xl px-4 py-3 border border-[#8CF000]/35 shadow-sm mb-3">
+          <div class="w-2.5 h-2.5 rounded-full bg-[#8CF000] animate-pulse flex-shrink-0"></div>
+          <p class="text-[12px] font-semibold text-[#6B7280]">
+            <strong class="text-[#111827] font-black">Today's Focus</strong>
+            &nbsp;4 Sessions · 3 Requests · <span class="text-[#22C55E] font-black">₹4,250 Expected</span>
+          </p>
+        </div>
+      </div>
+
+      <div class="px-5 pt-4 pb-12 space-y-5">
+        <!-- Coach Pulse -->
+        <div class="section-card">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest">Coach Pulse</p>
+              <p class="text-[11px] text-[#9CA3AF]">Your day at a glance</p>
+            </div>
+            <div class="w-8 h-8 rounded-full bg-[#8CF000] flex items-center justify-center shadow-md">
+              <ion-icon name="flash" class="text-white text-base"></ion-icon>
+            </div>
           </div>
-          <button
-            class="relative grid h-12 w-12 place-items-center rounded-full bg-card border border-white/10 text-white">
-            <ion-icon name="notifications-outline" class="text-xl"></ion-icon>
-            <span class="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-accent"></span>
-          </button>
+          <div class="grid grid-cols-2 gap-3">
+            <div *ngFor="let metric of coachPulseMetrics" class="rounded-[18px] p-3.5 relative overflow-hidden"
+              [style.backgroundColor]="metric.accent + '10'" [style.border]="'1.5px solid ' + metric.accent + '25'">
+              <div class="absolute -bottom-3 -right-3 w-12 h-12 rounded-full opacity-20" [style.backgroundColor]="metric.accent"></div>
+              <div class="relative">
+                <span class="text-xl">{{ metric.icon }}</span>
+                <p class="text-[22px] font-black text-[#111827] mt-1 leading-none">{{ metric.value }}</p>
+                <p class="text-[10px] text-[#6B7280] mt-0.5 font-medium">{{ metric.label }}</p>
+              </div>
+            </div>
+          </div>
+          <div class="mt-4 pt-4 border-t border-[#F3F4F6]">
+            <div class="flex justify-between text-[11px] mb-1.5">
+              <span class="text-[#9CA3AF] font-medium">Daily Goal Progress</span>
+              <span class="text-[#8CF000] font-black">62%</span>
+            </div>
+            <div class="h-2 bg-[#F3F4F6] rounded-full overflow-hidden">
+              <div class="h-full rounded-full" style="width: 62%; background: linear-gradient(90deg, #8CF000, #A3E635);"></div>
+            </div>
+          </div>
         </div>
 
-        <!-- Stats Grid -->
-        <div class="grid grid-cols-3 gap-3">
-          <div
-            class="rounded-xl border border-white/10 bg-card p-4 text-center hover:border-primary transition-all duration-300">
-            <ion-icon name="people-outline" class="mx-auto mb-2 text-2xl text-primary"></ion-icon>
-            <div class="text-xl font-bold">3</div>
-            <div class="text-xs text-[#94A3B8]">Active Teams</div>
-          </div>
-          <div
-            class="rounded-xl border border-white/10 bg-card p-4 text-center hover:border-primary transition-all duration-300">
-            <ion-icon name="calendar-outline" class="mx-auto mb-2 text-2xl text-secondary"></ion-icon>
-            <div class="text-xl font-bold">12</div>
-            <div class="text-xs text-[#94A3B8]">Sessions/Wk</div>
-          </div>
-          <div
-            class="rounded-xl border border-white/10 bg-card p-4 text-center hover:border-primary transition-all duration-300">
-            <ion-icon name="trending-up-outline" class="mx-auto mb-2 text-2xl text-accent"></ion-icon>
-            <div class="text-xl font-bold">45</div>
-            <div class="text-xs text-[#94A3B8]">Total Players</div>
+        <!-- Profile Completion banner -->
+        <div *ngIf="!coachProfileDismissed()" class="profile-comp-banner">
+          <div class="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-[#8CF000]/10"></div>
+          <div class="absolute -bottom-4 right-16 w-16 h-16 rounded-full bg-[#FF7A00]/10"></div>
+          <div class="relative">
+            <div class="flex items-start justify-between mb-3">
+              <div>
+                <p class="text-[14px] font-black text-white">Complete Your Coach Profile</p>
+                <p class="text-[11px] text-white/50 mt-0.5">You're 40% complete</p>
+              </div>
+              <button (click)="coachProfileDismissed.set(true)" class="text-white/30 text-xl font-bold w-6 h-6 flex items-center justify-center bg-transparent">×</button>
+            </div>
+            <div class="mb-3">
+              <div class="h-2 bg-white/10 rounded-full overflow-hidden">
+                <div class="h-full rounded-full" style="width: 40%; background: linear-gradient(90deg, #8CF000, #A3E635);"></div>
+              </div>
+              <p class="text-[10px] text-white/30 mt-1 text-right">40 / 100</p>
+            </div>
+            <div class="space-y-1.5 mb-4">
+              <div *ngFor="let perk of ['Verified Coach Badge', 'Higher Search Ranking', 'More Student Bookings']" class="flex items-center gap-2">
+                <div class="w-4 h-4 rounded-full bg-[#8CF000]/20 flex items-center justify-center">
+                  <ion-icon name="checkmark" class="text-[9px] text-[#8CF000] font-bold"></ion-icon>
+                </div>
+                <span class="text-[11px] text-white/60">{{ perk }}</span>
+              </div>
+            </div>
+            <button (click)="go('/app/coach/complete-profile')" class="btn-orange-gradient w-full h-11 rounded-2xl text-[13px] font-black text-white">
+              Complete Profile →
+            </button>
           </div>
         </div>
-      </section>
 
-      <section class="space-y-6 px-6 pb-6">
         <!-- Quick Actions -->
         <div>
-          <h2 class="mb-4 text-xl font-bold">Quick Actions</h2>
+          <div class="section-title">Quick Actions</div>
           <div class="grid grid-cols-2 gap-3">
-            <button
-              class="padding10 rounded-xl border border-white/10 bg-card p-4 text-center hover:border-primary hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 active:scale-[0.98]"
-              (click)="go('/app/coach/plan')">
-              <div class="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-xl bg-primary/20 text-primary">
-                <ion-icon name="add-outline" class="text-2xl"></ion-icon>
+            <button *ngFor="let action of coachQuickActions" (click)="go(action.path)" class="action-card-btn"
+              [style.borderColor]="action.color + '20'" [style.boxShadow]="'0 2px 16px ' + action.color + '18, 0 1px 4px rgba(0,0,0,0.05)'">
+              <div class="w-11 h-11 rounded-2xl flex items-center justify-center mb-3" [style.backgroundColor]="action.color + '18'">
+                <ion-icon [name]="action.icon" class="text-xl" [style.color]="action.color"></ion-icon>
               </div>
-              <p class="font-semibold text-sm">New Session</p>
-            </button>
-            <button
-              class="rounded-xl border border-white/10 bg-card p-4 text-center hover:border-primary hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 active:scale-[0.98]"
-              (click)="go('/app/coach/evaluate')">
-              <div class="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-xl bg-secondary/20 text-secondary">
-                <ion-icon name="analytics-outline" class="text-2xl"></ion-icon>
-              </div>
-              <p class="font-semibold text-sm">Evaluate Player</p>
+              <p class="text-[14px] font-black text-[#111827]">{{ action.label }}</p>
+              <p class="text-[11px] text-[#9CA3AF] mt-0.5">{{ action.sub }}</p>
             </button>
           </div>
         </div>
 
-        <!-- Upcoming Sessions -->
+        <!-- Today's Sessions -->
         <div>
-          <div class="mb-4 flex items-center justify-between">
-            <h2 class="text-xl font-bold">Upcoming Sessions</h2>
-            <button class="text-sm font-semibold text-primary" (click)="go('/app/schedule')">See all ›</button>
+          <div class="section-header-row">
+            <span class="section-title">Today's Sessions</span>
+            <button (click)="go('/app/schedule')" class="see-all-btn">View All <ion-icon name="chevron-forward-outline"></ion-icon></button>
+          </div>
+          <div class="space-y-4">
+            <div *ngFor="let session of coachSessions" class="session-card">
+              <div class="relative h-[130px] overflow-hidden rounded-t-[24px] bg-slate-200">
+                <img [src]="session.image" [alt]="session.sport" class="w-full h-full object-cover" />
+                <div class="absolute inset-0 bg-gradient-to-t from-black/55 to-transparent"></div>
+                <span class="absolute top-3 left-3 text-[10px] font-bold px-2.5 py-1 rounded-full"
+                  [style.backgroundColor]="getStatusStyle(session.status).bg"
+                  [style.color]="getStatusStyle(session.status).color">
+                  {{ session.status === 'completed' ? 'Completed' : session.type }}
+                </span>
+                <div *ngIf="session.status !== 'completed'" class="absolute top-3 right-3 bg-[#FF7A00] px-2.5 py-1 rounded-full flex items-center gap-1.5">
+                  <div class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></div>
+                  <span class="text-[10px] font-black text-white">{{ session.startsIn }}</span>
+                </div>
+                <div class="absolute bottom-3 left-3 right-3 flex items-end justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="text-2xl">{{ session.emoji }}</span>
+                    <p class="text-white font-black text-[15px] drop-shadow-md">{{ session.title }}</p>
+                  </div>
+                  <p class="text-white/80 text-[13px] font-semibold">{{ session.time }}</p>
+                </div>
+              </div>
+              <div class="px-4 py-3.5">
+                <p class="text-[13px] text-[#6B7280] mb-1.5 flex items-center gap-1.5">
+                  <ion-icon name="people-outline" class="text-slate-400"></ion-icon>{{ session.team }}
+                </p>
+                <p class="text-[11px] text-[#9CA3AF] flex items-center gap-1 mb-3">
+                  <ion-icon name="location-outline"></ion-icon>{{ session.venue }}
+                </p>
+                <button (click)="go('/app/schedule')" class="btn-green-gradient w-full h-9 rounded-xl text-[13px] font-bold text-[#111827]">
+                  View Details
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI Student Match -->
+        <div class="ai-recommend-card">
+          <div class="absolute top-0 right-0 w-28 h-28 rounded-full bg-white/10 -translate-y-8 translate-x-8"></div>
+          <div class="relative flex items-start gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-[#111827]/15 flex items-center justify-center flex-shrink-0">
+              <ion-icon name="locate-outline" class="text-[#111827] text-lg"></ion-icon>
+            </div>
+            <div class="flex-1">
+              <p class="text-[11px] font-black text-[#111827]/60 uppercase tracking-wider mb-0.5">AI Match</p>
+              <p class="text-[15px] font-black text-[#111827] leading-snug">8 Beginner Badminton Players Looking for a Coach</p>
+              <p class="text-[12px] text-[#111827]/60 mt-1">2 km Away · Weekend Availability</p>
+            </div>
+          </div>
+          <button (click)="go('/app/teams')" class="btn-orange-gradient mt-4 w-full h-10 rounded-2xl text-[13px] font-black text-white">
+            View Requests →
+          </button>
+        </div>
+
+        <!-- Student Progress -->
+        <div class="section-card p-5">
+          <div class="section-header-row">
+            <span class="section-title">Today's Student Progress</span>
+            <button (click)="go('/app/coach/evaluate')" class="see-all-btn">Analytics <ion-icon name="chevron-forward-outline"></ion-icon></button>
+          </div>
+          <div class="grid grid-cols-3 gap-3">
+            <div *ngFor="let prog of [{ emoji:'🏆', label:'2 Students Won Matches', bg:'#FFFBEB', color:'#D97706' }, { emoji:'📈', label:'5 Players Improved Rating', bg:'#F0FDF4', color:'#16A34A' }, { emoji:'⭐', label:'3 New Reviews Today', bg:'#F5F3FF', color:'#7C3AED' }]"
+              class="rounded-[18px] p-3 text-center" [style.backgroundColor]="prog.bg">
+              <span class="text-2xl">{{ prog.emoji }}</span>
+              <p class="text-[10px] font-semibold mt-1.5 leading-snug" [style.color]="prog.color">{{ prog.label }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Activity Timeline -->
+        <div>
+          <div class="section-title">Recent Activity</div>
+          <div class="section-card px-4 py-2">
+            <div *ngFor="let activity of coachActivities; let i = index" class="flex items-center gap-3 py-3"
+              [class.border-b]="i < coachActivities.length - 1" [style.borderBottomColor]="'#F9FAFB'">
+              <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold"
+                [style.backgroundColor]="activity.bg" [style.color]="activity.color">
+                {{ activity.icon }}
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-[13px] font-semibold text-[#111827] leading-snug">{{ activity.text }}</p>
+                <p class="text-[10px] text-[#9CA3AF] mt-0.5">{{ activity.time }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Coach Insights -->
+        <div class="section-card p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <div class="w-8 h-8 rounded-xl bg-[#8CF000]/15 flex items-center justify-center">
+              <ion-icon name="flame-outline" class="text-[#8CF000] text-base"></ion-icon>
+            </div>
+            <p class="text-[14px] font-black text-[#111827]">Coach Insights</p>
+            <span class="text-[9px] bg-[#8CF000]/15 text-[#16A34A] font-black px-2 py-0.5 rounded-full">AI</span>
+          </div>
+          <div class="bg-[#F9FAFB] rounded-2xl px-4 py-3.5 mb-3">
+            <p class="text-[13px] text-[#6B7280] leading-relaxed">
+              <strong class="text-[#111827] font-bold">Tuesday evenings</strong> are your busiest coaching hours. Increasing availability may boost bookings by <span class="text-[#8CF000] font-black">+18%</span>.
+            </p>
+          </div>
+          <button (click)="go('/app/coach/evaluate')" class="btn-green-ghost w-full h-10 rounded-2xl text-[13px] font-bold text-[#111827]">
+            View Full Insights →
+          </button>
+        </div>
+
+        <!-- Earnings Snapshot -->
+        <div class="section-card p-5">
+          <div class="section-header-row">
+            <span class="section-title">Earnings Snapshot</span>
+            <button (click)="go('/app/coach/settings')" class="see-all-btn">View All <ion-icon name="chevron-forward-outline"></ion-icon></button>
+          </div>
+          <div class="grid grid-cols-3 gap-3 mb-3">
+            <div *ngFor="let earn of [{ period:'Today', amount:'₹1,500', trend:'+12%' }, { period:'This Week', amount:'₹8,250', trend:'+8%' }, { period:'This Month', amount:'₹32,000', trend:'+22%' }]"
+              class="bg-[#F9FAFB] rounded-2xl p-3 text-center">
+              <p class="text-[10px] text-[#9CA3AF] mb-1">{{ earn.period }}</p>
+              <p class="text-[14px] font-black text-[#111827]">{{ earn.amount }}</p>
+              <p class="text-[10px] font-bold text-[#22C55E] mt-0.5">{{ earn.trend }}</p>
+            </div>
+          </div>
+          <div class="h-10 bg-[#F9FAFB] rounded-2xl flex items-end justify-around px-3 pb-1.5">
+            <div *ngFor="let h of [40, 65, 50, 80, 55, 90, 70]; let i = index" class="w-3 rounded-t-sm"
+              [style.height]="h + '%'" [style.backgroundColor]="i === 5 ? '#8CF000' : '#E5E7EB'" style="max-height: 36px;"></div>
+          </div>
+        </div>
+
+        <!-- Venue Availability -->
+        <div>
+          <div class="section-header-row">
+            <span class="section-title">Venue Availability</span>
+            <button (click)="go('/app/venues')" class="see-all-btn">See All <ion-icon name="chevron-forward-outline"></ion-icon></button>
+          </div>
+          <div class="flex gap-3 overflow-x-auto pb-1 no-scrollbar">
+            <div *ngFor="let venue of coachVenues" class="flex-shrink-0 w-[175px] bg-white rounded-[22px] overflow-hidden border border-[#F3F4F6] shadow-sm">
+              <div class="h-[95px] overflow-hidden bg-slate-200">
+                <img [src]="venue.image" [alt]="venue.name" class="w-full h-full object-cover" />
+              </div>
+              <div class="p-3">
+                <p class="text-[12px] font-bold text-[#111827] truncate">{{ venue.name }}</p>
+                <div class="flex items-center gap-2 mt-0.5 mb-2">
+                  <span class="text-[10px] text-[#9CA3AF]">{{ venue.distance }}</span>
+                  <span class="text-[10px] text-[#22C55E] font-bold">{{ venue.slots }} slots</span>
+                </div>
+                <button (click)="go('/app/coach/book-venue')" class="btn-green-gradient w-full h-7 rounded-xl text-[10px] font-black text-[#111827]">
+                  Book Venue
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Community -->
+        <div>
+          <div class="section-header-row">
+            <span class="section-title">Community</span>
+            <button class="see-all-btn">Explore <ion-icon name="chevron-forward-outline"></ion-icon></button>
+          </div>
+          <div class="flex gap-3 overflow-x-auto pb-1 no-scrollbar">
+            <div *ngFor="let com of coachCommunity" class="flex-shrink-0 w-[185px] bg-white rounded-[22px] overflow-hidden border border-[#F3F4F6] shadow-sm">
+              <div class="relative h-[95px] overflow-hidden bg-slate-200">
+                <img [src]="com.image" [alt]="com.title" class="w-full h-full object-cover" />
+                <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+                <span class="absolute top-2 left-2 text-[9px] font-bold bg-[#FF7A00] text-white px-2 py-0.5 rounded-full">{{ com.tag }}</span>
+              </div>
+              <div class="p-3">
+                <p class="text-[12px] font-bold text-[#111827]">{{ com.title }}</p>
+                <p class="text-[10px] text-[#9CA3AF] mt-0.5 mb-2">{{ com.sub }}</p>
+                <button class="text-[10px] font-black text-[#8CF000] flex items-center gap-0.5 bg-transparent">
+                  Learn More <ion-icon name="chevron-forward-outline" style="font-size: 10px;"></ion-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Reviews -->
+        <div>
+          <div class="section-header-row">
+            <span class="section-title">Recent Reviews</span>
+            <button (click)="go('/app/coach/evaluate')" class="see-all-btn">View All <ion-icon name="chevron-forward-outline"></ion-icon></button>
           </div>
           <div class="space-y-3">
-            <div *ngFor="let session of upcomingSessions"
-              class="rounded-xl border border-white/10 bg-card p-4 hover:border-primary hover:-translate-y-0.5 hover:shadow-md transition-all duration-300 cursor-pointer"
-              (click)="go('/app/schedule')">
-              <div class="mb-3 flex items-start justify-between">
+            <div *ngFor="let rev of coachReviews" class="section-card p-4">
+              <div class="flex items-center gap-3 mb-2.5">
+                <img [src]="rev.photo" [alt]="rev.name" class="w-9 h-9 rounded-full object-cover" />
                 <div>
-                  <div class="mb-1 flex items-center gap-2">
-                    <span class="font-bold">{{ session.team }}</span>
-                    <span class="rounded-full bg-primary/20 px-2 py-0.5 text-xs text-primary">{{ session.type }}</span>
+                  <p class="text-[13px] font-bold text-[#111827]">{{ rev.name }}</p>
+                  <div class="flex gap-0.5">
+                    <ion-icon *ngFor="let star of [1,2,3,4,5]" name="star" class="text-[#F59E0B] text-[10px]"></ion-icon>
                   </div>
-                  <div class="text-sm text-[#94A3B8]">{{ session.time }}</div>
                 </div>
-                <span class="rounded-full bg-secondary/20 px-3 py-1 text-xs text-secondary flex items-center gap-1">
-                  <ion-icon name="people-outline"></ion-icon>
-                  {{ session.attendees }}
+              </div>
+              <p class="text-[12px] text-[#6B7280] leading-relaxed">"{{ rev.text }}"</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Milestone -->
+        <div class="section-card p-5 relative overflow-hidden bg-gradient-to-br from-[#7C3AED] to-[#6D28D9] text-white">
+          <div class="absolute -top-5 -right-5 w-20 h-20 rounded-full bg-white/10"></div>
+          <div class="flex items-start gap-4 relative">
+            <span class="text-4xl">🏆</span>
+            <div class="flex-1">
+              <p class="text-[11px] font-black text-white/50 uppercase tracking-wider mb-1">Milestone</p>
+              <p class="text-[17px] font-black text-white leading-tight">100 Coaching Sessions Completed!</p>
+              <p class="text-[12px] text-white/60 mt-1">You've helped hundreds of athletes grow.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Weather -->
+        <div class="section-card px-5 py-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-2xl bg-[#FFFBEB] flex items-center justify-center">
+                <ion-icon name="sunny" class="text-[#F59E0B] text-2xl"></ion-icon>
+              </div>
+              <div>
+                <p class="text-[11px] text-[#9CA3AF] font-medium">Today · Lucknow</p>
+                <div class="flex items-baseline gap-1.5">
+                  <p class="text-[24px] font-black text-[#111827]">28°</p>
+                  <p class="text-[13px] font-semibold text-[#6B7280]">Sunny</p>
+                </div>
+              </div>
+            </div>
+            <div class="bg-[#F0FDF4] rounded-2xl px-3 py-2 text-right">
+              <p class="text-[10px] font-black text-[#16A34A] uppercase tracking-wider">Outdoor</p>
+              <p class="text-[10px] text-[#22C55E] font-semibold">Perfect Today</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Help support -->
+        <div (click)="go('/app/home')" class="section-card p-5 flex items-center gap-4 cursor-pointer hover:border-[#8CF000] border border-transparent transition-all">
+          <div class="w-12 h-12 rounded-2xl bg-[#EFF6FF] flex items-center justify-center flex-shrink-0">
+            <ion-icon name="chatbubble-ellipses-outline" class="text-[#2563EB] text-xl"></ion-icon>
+          </div>
+          <div class="flex-1">
+            <p class="text-[14px] font-bold text-[#111827]">Need Help?</p>
+            <p class="text-[12px] text-[#9CA3AF]">Chat with TYNG Support</p>
+          </div>
+          <ion-icon name="chevron-forward-outline" class="text-[#9CA3AF]"></ion-icon>
+        </div>
+
+      </div>
+    </ng-container>
+
+    <!-- ────────────────────────────────────────────────── -->
+    <!-- VENUE DASHBOARD -->
+    <!-- ────────────────────────────────────────────────── -->
+    <ng-container *ngIf="auth.user()?.role === 'venue'">
+      <div class="px-5 pt-4 pb-3 bg-white border-b border-[#F3F4F6]">
+        <p class="text-[12px] text-[#9CA3AF] font-medium leading-none">{{ greeting }}</p>
+        <h1 class="text-[18px] font-black text-[#111827] mt-1">Phoenix Sports Hub</h1>
+      </div>
+
+      <div class="px-4 pt-4 pb-12 space-y-5">
+        <!-- Venue Pulse -->
+        <div class="section-card p-5 relative overflow-hidden bg-gradient-to-br from-[#111827] to-[#1F2937] text-white">
+          <div class="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-[#8CF000]/10"></div>
+          <div class="relative">
+            <div class="flex items-center gap-2 mb-4">
+              <ion-icon name="flash" class="text-[#8CF000] text-base"></ion-icon>
+              <p class="text-[12px] font-black text-[#8CF000] uppercase tracking-widest">Venue Pulse</p>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div *ngFor="let metric of venuePulseMetrics" class="bg-white/10 rounded-2xl p-3.5 relative overflow-hidden">
+                <div class="absolute -bottom-2 -right-2 w-10 h-10 rounded-full opacity-20" [style.backgroundColor]="metric.accent"></div>
+                <span class="text-xl relative">{{ metric.icon }}</span>
+                <p class="text-[22px] font-black text-white mt-1 relative">{{ metric.value }}</p>
+                <p class="text-[10px] text-white/40 relative font-medium">{{ metric.label }}</p>
+              </div>
+            </div>
+            <div class="mt-4 pt-4 border-t border-white/10">
+              <div class="flex justify-between text-[11px] mb-1.5">
+                <span class="text-white/40">Daily Revenue Goal</span>
+                <span class="text-[#8CF000] font-black">83%</span>
+              </div>
+              <div class="h-2 bg-white/10 rounded-full overflow-hidden">
+                <div class="h-full rounded-full" style="width: 83%; background: linear-gradient(90deg, #8CF000, #A3E635);"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Venue Completion Checklist -->
+        <div *ngIf="!venueProfileDismissed()" class="section-card p-5 relative overflow-hidden bg-gradient-to-br from-[#111827] to-[#1F2937] text-white">
+          <div class="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-[#8CF000]/10"></div>
+          <button (click)="venueProfileDismissed.set(true)" class="absolute top-4 right-4 w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-white/40 text-lg leading-none border-none">×</button>
+          <div class="relative">
+            <p class="text-[11px] font-black text-[#8CF000] uppercase tracking-widest mb-1">Complete Your Venue Profile</p>
+            <p class="text-[11px] text-white/40 mb-3 leading-relaxed">Unlock bookings, verification, coach partnerships and improve search ranking.</p>
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-[10px] text-white/40 font-medium">Profile Completion</span>
+              <span class="text-[11px] font-black text-[#8CF000]">40%</span>
+            </div>
+            <div class="h-2 bg-white/10 rounded-full overflow-hidden mb-3">
+              <div class="h-full rounded-full" style="width: 40%; background: linear-gradient(90deg, #8CF000, #FF7A00);"></div>
+            </div>
+            <div class="grid grid-cols-2 gap-1.5 mb-3.5">
+              <div *ngFor="let check of venueChecklist" class="flex items-center gap-1.5">
+                <div class="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
+                  [style.backgroundColor]="check.done ? '#8CF000' : 'rgba(255,255,255,0.10)'">
+                  <ion-icon *ngIf="check.done" name="checkmark" class="text-[9px] text-[#111827] font-bold"></ion-icon>
+                  <div *ngIf="!check.done" class="w-1.5 h-1.5 rounded-full bg-white/20"></div>
+                </div>
+                <span class="text-[10px] font-medium" [style.color]="check.done ? 'rgba(255,255,255,0.70)' : 'rgba(255,255,255,0.30)'">{{ check.label }}</span>
+              </div>
+            </div>
+            <button (click)="go('/app/venue-complete-profile')" class="btn-green-gradient w-full h-11 rounded-2xl text-[13px] font-black text-[#111827]">
+              Complete Profile →
+            </button>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div>
+          <div class="section-title">Quick Actions</div>
+          <div class="grid grid-cols-2 gap-3">
+            <button *ngFor="let act of [{ icon:'⏰', label:'Block Time Slot', sub:'Maintenance or closure', color:'#38BDF8', path:'/app/venue/calendar' }, { icon:'🎉', label:'Create Event', sub:'Tournament or camp', color:'#FF7A00', path:'/app/venue/calendar' }, { icon:'🏟️', label:'Manage Courts', sub:'Courts & configuration', color:'#8CF000', path:'/app/venue/facilities' }, { icon:'🏷️', label:'Create Offer', sub:'Discounts & promotions', color:'#7C3AED', path:'/app/venue/analytics' }]"
+              (click)="go(act.path)" class="action-card-btn"
+              [style.borderColor]="act.color + '20'" [style.boxShadow]="'0 2px 16px ' + act.color + '18, 0 1px 4px rgba(0,0,0,0.05)'">
+              <span class="text-3xl mb-3 block text-left">{{ act.icon }}</span>
+              <p class="text-[14px] font-black text-[#111827]">{{ act.label }}</p>
+              <p class="text-[11px] text-[#9CA3AF] mt-0.5">{{ act.sub }}</p>
+            </button>
+          </div>
+        </div>
+
+        <!-- Today's Bookings -->
+        <div class="section-card p-5">
+          <div class="section-header-row">
+            <span class="section-title">Today's Bookings</span>
+            <button (click)="go('/app/venue/bookings')" class="see-all-btn">See All <ion-icon name="chevron-forward-outline"></ion-icon></button>
+          </div>
+          <div class="space-y-3">
+            <div *ngFor="let booking of venueBookings" class="flex items-center gap-3 bg-[#F9FAFB] rounded-2xl px-3.5 py-3">
+              <div class="relative flex-shrink-0">
+                <img [src]="booking.photo" [alt]="booking.name" class="w-11 h-11 rounded-full object-cover" />
+                <div *ngIf="booking.type === 'coach'" class="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-[#FF7A00] flex items-center justify-center border-2 border-white">
+                  <span class="text-[7px]">🏋️</span>
+                </div>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-[13px] font-bold text-[#111827] truncate">{{ booking.name }}</p>
+                <p class="text-[11px] text-[#9CA3AF]">{{ booking.sport }} · {{ booking.court }} · {{ booking.time }}</p>
+              </div>
+              <div class="text-right flex-shrink-0">
+                <p class="text-[13px] font-black text-[#111827]">{{ booking.amount }}</p>
+                <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                  [style.backgroundColor]="getStatusStyle(booking.status).bg"
+                  [style.color]="getStatusStyle(booking.status).color">
+                  {{ booking.status }}
                 </span>
               </div>
-              <div class="flex items-center gap-2 text-sm text-[#94A3B8]">
-                <ion-icon name="pin-outline"></ion-icon>
-                {{ session.venue }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Court Occupancy heatmap -->
+        <div class="section-card p-5">
+          <div class="section-title">Court Occupancy</div>
+          <div class="space-y-4">
+            <div *ngFor="let court of venueCourts">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-[12px] font-bold text-[#111827]">{{ court.name }}</span>
+                <span class="text-[11px] text-[#9CA3AF]">
+                  {{ court.bookedCount }}/{{ court.totalCount }} booked
+                </span>
+              </div>
+              <div class="flex gap-[3px] overflow-x-auto pb-1 no-scrollbar">
+                <div *ngFor="let booked of court.slots; let si = index"
+                  class="flex-shrink-0 w-[18px] h-[28px] rounded-[5px]"
+                  [style.backgroundColor]="booked ? '#8CF000' : '#F3F4F6'">
+                </div>
+              </div>
+              <div class="flex justify-between text-[9px] text-[#C4C9D4] mt-1">
+                <span>6AM</span><span>12PM</span><span>6PM</span><span>9PM</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-4 pt-1">
+              <div class="flex items-center gap-1.5"><div class="w-3 h-3 rounded bg-[#8CF000]"></div><span class="text-[10px] text-[#9CA3AF]">Booked</span></div>
+              <div class="flex items-center gap-1.5"><div class="w-3 h-3 rounded bg-[#F3F4F6]"></div><span class="text-[10px] text-[#9CA3AF]">Available</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upcoming Coach Sessions -->
+        <div class="section-card p-5">
+          <div class="section-title">Upcoming Coach Sessions</div>
+          <div class="space-y-3">
+            <div *ngFor="let sess of venueCoachSessions" class="flex items-center gap-3 bg-[#F9FAFB] rounded-2xl px-3.5 py-3">
+              <img [src]="sess.photo" [alt]="sess.name" class="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+              <div class="flex-1 min-w-0">
+                <p class="text-[13px] font-bold text-[#111827]">{{ sess.name }}</p>
+                <p class="text-[11px] text-[#9CA3AF]">{{ sess.sport }} · {{ sess.court }} · {{ sess.students }} students</p>
+              </div>
+              <div class="text-right flex-shrink-0">
+                <p class="text-[13px] font-black text-[#111827]">{{ sess.time }}</p>
+                <span class="text-[9px] font-bold text-[#FF7A00] bg-[#FFF7ED] px-1.5 py-0.5 rounded-full">Coach</span>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Recent Activity -->
-        <div>
-          <h2 class="mb-4 text-xl font-bold">Recent Activity</h2>
-          <div class="rounded-xl border border-white/10 bg-card p-4 space-y-3">
-            <div *ngFor="let act of recentActivity" class="flex items-start gap-3">
-              <div class="activity-badge">
-                🏃
-              </div>
-              <div class="flex-1">
-                <div class="text-sm">
-                  <span class="font-semibold">{{ act.player }}</span>
-                  <span class="text-slate-400"> {{ act.action }}</span>
-                </div>
-                <div class="text-xs text-slate-500 mt-1">{{ act.time }}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </ng-container>
-
-    <!-- VENUE DASHBOARD -->
-    <ng-container *ngIf="auth.user()?.role === 'venue'">
-      <section class="bg-gradient-to-b from-primary/20 to-transparent px-6 pb-8 pt-6">
-        <div class="mb-6 flex items-center justify-between">
-          <button (click)="openMenu()"
-            class="grid h-12 w-12 place-items-center rounded-full bg-card border border-white/10 text-white hover:border-primary transition-all">
-            <ion-icon name="menu-outline" class="text-2xl"></ion-icon>
-          </button>
-          <div class="text-center">
-            <p class="text-xs text-slate-400 leading-none">Welcome back,</p>
-            <h1 class="text-lg font-bold tracking-tight mt-1">{{ auth.user()?.name || 'Phoenix Arena' }}</h1>
-          </div>
-          <button
-            class="relative grid h-12 w-12 place-items-center rounded-full bg-card border border-white/10 text-white">
-            <ion-icon name="notifications-outline" class="text-xl"></ion-icon>
-            <span class="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-accent"></span>
-          </button>
-        </div>
-
-        <!-- Venue Stats Grid: Today's Bookings | Revenue | Occupancy -->
-        <div class="grid grid-cols-3 gap-3">
-          <div *ngFor="let stat of venueStats"
-            class="rounded-xl border border-white/10 bg-card p-4 text-center hover:border-primary transition-all duration-300">
-            <ion-icon [name]="stat.icon" class="mx-auto mb-2 text-2xl" [class]="stat.color"></ion-icon>
-            <div class="text-xl font-bold">{{ stat.value }}</div>
-            <div class="text-xs text-slate-400 leading-tight mt-0.5">{{ stat.label }}</div>
-          </div>
-        </div>
-      </section>
-
-      <section class="space-y-6 px-6 pb-6">
-
-        <!-- TODAY'S BOOKINGS -->
-        <div>
-          <div class="mb-4 flex items-center justify-between">
-            <h2 class="text-xl font-bold">Today's Bookings</h2>
-            <button class="text-sm font-semibold text-primary" (click)="go('/app/venue/bookings')">See all ›</button>
-          </div>
-          <div class="space-y-3">
-            <div *ngFor="let booking of todayBookings"
-              class="rounded-xl border border-white/10 bg-card p-4 hover:border-primary transition-all duration-300 cursor-pointer active:scale-[0.99]"
-              (click)="go('/app/venue/bookings')">
-              <div class="flex items-start justify-between">
-                <div class="flex-1">
-                  <div class="flex items-center gap-1.5 mb-1.5 text-slate-400 text-xs">
-                    <ion-icon name="time-outline"></ion-icon>
-                    <span>{{ booking.time }}</span>
-                  </div>
-                  <div class="font-bold text-base mb-0.5">{{ booking.customer }}</div>
-                  <div class="text-xs text-slate-500">{{ booking.court }}</div>
-                </div>
-                <div class="flex flex-col items-end gap-1.5 ml-3">
-                  <div class="font-bold text-base">{{ booking.amount }}</div>
-                  <span *ngIf="booking.status === 'completed'"
-                    class="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-slate-700/60 text-slate-300">
-                    <ion-icon name="checkmark-circle-outline"></ion-icon> Completed
-                  </span>
-                  <span *ngIf="booking.status === 'confirmed'"
-                    class="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-secondary/20 text-secondary">
-                    <ion-icon name="checkmark-circle-outline"></ion-icon> Confirmed
-                  </span>
-                  <span *ngIf="booking.status === 'pending'"
-                    class="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-accent/20 text-accent">
-                    <ion-icon name="alert-circle-outline"></ion-icon> Pending
-                  </span>
-                </div>
+        <div class="section-card px-5 py-5">
+          <div class="section-title">Recent Activity</div>
+          <div class="space-y-0">
+            <div *ngFor="let act of venueActivities; let i = index" class="flex items-center gap-3 py-3"
+              [class.border-b]="i < venueActivities.length - 1" [style.borderBottomColor]="'#F9FAFB'">
+              <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-sm"
+                [style.backgroundColor]="act.bg">{{ act.emoji }}</div>
+              <div class="flex-1 min-w-0">
+                <p class="text-[12px] font-semibold text-[#111827] leading-snug">{{ act.text }}</p>
+                <p class="text-[10px] text-[#9CA3AF] mt-0.5">{{ act.time }}</p>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- PENDING REQUESTS -->
-        <div>
-          <div class="mb-4 flex items-center justify-between">
-            <h2 class="text-xl font-bold">Pending Requests</h2>
-            <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-accent/20 text-accent">{{ pendingRequests.length }} new</span>
-          </div>
-          <div class="space-y-3">
-            <div *ngFor="let req of pendingRequests"
-              class="rounded-xl border border-white/10 bg-card p-4 hover:border-primary transition-all duration-300">
-              <div class="flex items-center gap-3 mb-3">
-                <div class="h-10 w-10 flex-shrink-0 rounded-full bg-gradient-to-br from-primary to-secondary grid place-items-center text-lg">👤</div>
-                <div class="flex-1 min-w-0">
-                  <div class="font-bold text-base leading-tight">{{ req.customer }}</div>
-                  <div class="text-xs text-slate-400">{{ req.court }}</div>
-                </div>
-              </div>
-              <div class="flex items-center gap-2 text-sm text-slate-400 mb-3">
-                <ion-icon name="calendar-outline"></ion-icon>
-                <span>{{ req.time }}</span>
-              </div>
-              <div class="flex gap-2">
-                <button class="flex-1 bg-primary text-white py-2.5 rounded-xl font-semibold text-sm active:scale-[0.98] transition-all"
-                  (click)="acceptRequest(req.id)">Accept</button>
-                <button class="px-5 py-2.5 border border-white/10 rounded-xl font-semibold text-sm bg-transparent text-slate-400 hover:border-red-500 hover:text-red-400 transition-colors active:scale-[0.98]"
-                  (click)="declineRequest(req.id)">Decline</button>
+        <!-- AI Insights -->
+        <div class="section-card p-5 relative overflow-hidden bg-gradient-to-br from-[#8CF000] to-[#A3E635] text-[#111827] shadow-lg shadow-[#8CF000]/20">
+          <div class="absolute top-0 right-0 w-28 h-28 rounded-full bg-white/10 -translate-y-8 translate-x-8"></div>
+          <div class="relative">
+            <div class="flex items-center gap-2 mb-3">
+              <ion-icon name="flash-outline" class="text-[#111827] text-base"></ion-icon>
+              <p class="text-[14px] font-black text-[#111827]">TYNG AI Insights</p>
+              <span class="text-[9px] bg-[#111827]/15 text-[#111827] font-black px-2 py-0.5 rounded-full">AI</span>
+            </div>
+            <div class="space-y-2 mb-4">
+              <div *ngFor="let tip of venueAiTips" class="flex items-start gap-2.5 bg-white/25 backdrop-blur-sm rounded-2xl px-3.5 py-2.5">
+                <span class="text-base flex-shrink-0 mt-0.5">{{ tip.emoji }}</span>
+                <p class="text-[12px] font-semibold text-[#111827] leading-relaxed">{{ tip.text }}</p>
               </div>
             </div>
-            <div *ngIf="pendingRequests.length === 0" class="text-center py-8 text-slate-500">
-              <ion-icon name="checkmark-circle-outline" class="text-4xl mb-2 text-secondary"></ion-icon>
-              <p class="text-sm">All requests cleared!</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- QUICK ACTIONS 2x2 -->
-        <div>
-          <h2 class="mb-4 text-xl font-bold">Quick Actions</h2>
-          <div class="grid grid-cols-2 gap-3">
-            <button class="rounded-xl border border-white/10 bg-card p-4 text-center hover:border-primary hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 active:scale-[0.98] flex flex-col items-center justify-center min-h-[110px]"
-              (click)="go('/app/venue/bookings')">
-              <div class="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-full bg-primary/20 text-primary">
-                <ion-icon name="calendar-outline" class="text-2xl"></ion-icon>
-              </div>
-              <p class="font-semibold text-sm">Bookings</p>
-            </button>
-            <button class="rounded-xl border border-white/10 bg-card p-4 text-center hover:border-secondary hover:-translate-y-1 hover:shadow-lg hover:shadow-secondary/10 transition-all duration-300 active:scale-[0.98] flex flex-col items-center justify-center min-h-[110px]"
-              (click)="go('/app/venue/calendar')">
-              <div class="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-full bg-secondary/20 text-secondary">
-                <ion-icon name="calendar-clear-outline" class="text-2xl"></ion-icon>
-              </div>
-              <p class="font-semibold text-sm">Calendar</p>
+            <button (click)="go('/app/venue/analytics')" class="btn-orange-gradient w-full h-10 rounded-2xl text-[13px] font-black text-white">
+              View Recommendations →
             </button>
           </div>
         </div>
 
-        <!-- Pending Booking Requests -->
-        <div>
-          <h2 class="mb-4 text-xl font-bold">Pending Requests</h2>
-          <div class="space-y-3">
-            <div *ngFor="let req of pendingRequests"
-              class="rounded-xl border border-white/10 bg-card p-4 hover:border-primary transition-all duration-300">
-              <div class="mb-3">
-                <div class="font-bold text-white text-base mb-1">{{ req.customer }}</div>
-                <div class="text-sm text-slate-400 flex items-center gap-2">
-                  <ion-icon name="time-outline"></ion-icon>
-                  <span>{{ req.time }}</span>
-                  <span class="mx-1">•</span>
-                  <span>{{ req.court }}</span>
-                </div>
+        <!-- Weather -->
+        <div class="section-card px-5 py-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-2xl bg-[#FFFBEB] flex items-center justify-center">
+                <ion-icon name="sunny" class="text-[#F59E0B] text-2xl"></ion-icon>
               </div>
-              <div class="flex gap-2">
-                <button class="flex-1 bg-primary text-white py-2 rounded-lg font-semibold active:scale-[0.98]"
-                  (click)="acceptRequest(req.id)">
-                  Accept
-                </button>
-                <button
-                  class="px-4 py-2 border border-white/10 rounded-lg hover:border-red-500 hover:text-red-500 transition-colors font-semibold active:scale-[0.98] bg-transparent text-slate-400"
-                  (click)="declineRequest(req.id)">
-                  Decline
-                </button>
-              </div>
-            </div>
-            <div *ngIf="pendingRequests.length === 0" class="text-center py-6 text-slate-500">
-              <ion-icon name="checkmark-circle-outline" class="text-4xl mb-2 text-secondary"></ion-icon>
-              <p class="text-sm">All requests cleared!</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Today's Bookings List -->
-        <div>
-          <div class="mb-4 flex items-center justify-between">
-            <h2 class="text-xl font-bold">Today's Bookings</h2>
-            <button class="text-sm font-semibold text-primary" (click)="go('/app/venue/bookings')">See all ›</button>
-          </div>
-          <div class="space-y-3">
-            <div *ngFor="let booking of todayBookings"
-              class="rounded-xl border border-white/10 bg-card p-4 flex items-center justify-between hover:border-primary transition-all duration-300">
               <div>
-                <div class="text-xs text-slate-400 mb-1 flex items-center gap-1">
-                  <ion-icon name="time-outline"></ion-icon>
-                  {{ booking.time }}
+                <p class="text-[11px] text-[#9CA3AF] font-medium">Today · Lucknow</p>
+                <div class="flex items-baseline gap-1.5">
+                  <p class="text-[24px] font-black text-[#111827]">28°</p>
+                  <p class="text-[13px] font-semibold text-[#6B7280]">Sunny</p>
                 </div>
-                <div class="font-semibold text-white mb-0.5">{{ booking.customer }}</div>
-                <div class="text-xs text-slate-500">{{ booking.court }}</div>
               </div>
-              <div class="text-right">
-                <div class="font-bold text-white mb-1.5">{{ booking.amount }}</div>
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" [ngClass]="{
-                  'bg-secondary/20 text-secondary': booking.status === 'confirmed',
-                  'bg-accent/20 text-accent': booking.status === 'pending',
-                  'bg-slate-800 text-slate-400': booking.status === 'completed'
-                }">
-                  {{ booking.status | titlecase }}
-                </span>
-              </div>
+            </div>
+            <div class="bg-[#F0FDF4] rounded-2xl px-3 py-2 text-right">
+              <p class="text-[10px] font-black text-[#16A34A] uppercase tracking-wider">Outdoor</p>
+              <p class="text-[10px] text-[#22C55E] font-semibold">Excellent Conditions</p>
             </div>
           </div>
         </div>
-      </section>
+
+        <!-- Pending Actions -->
+        <div class="section-card p-5">
+          <div class="section-title">Pending Actions</div>
+          <div class="space-y-2.5">
+            <div *ngFor="let task of venuePendingActions" class="flex items-center gap-3 bg-[#F9FAFB] rounded-2xl px-4 py-3.5">
+              <div class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                [style.backgroundColor]="getUrgencyColor(task.urgency)"></div>
+              <div class="flex-1 min-w-0">
+                <p class="text-[13px] font-bold text-[#111827]">{{ task.label }}</p>
+                <p class="text-[11px] text-[#9CA3AF] truncate">{{ task.sub }}</p>
+              </div>
+              <button (click)="go('/app/venue/bookings')" class="btn-green-gradient px-3 py-1.5 rounded-xl text-[11px] font-bold text-[#111827]">
+                Act
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
     </ng-container>
 
-    <!-- PLAYER DASHBOARD -->
+    <!-- ────────────────────────────────────────────────── -->
+    <!-- PLAYER DASHBOARD (Figma HomeScreen) -->
+    <!-- ────────────────────────────────────────────────── -->
     <ng-container *ngIf="auth.user()?.role !== 'coach' && auth.user()?.role !== 'venue'">
-      <section class="bg-gradient-to-b from-primary/20 to-transparent px-6 pb-8 pt-6">
-        <div class="mb-6 flex items-center justify-between">
-          <button (click)="openMenu()"
-            class="grid h-12 w-12 place-items-center rounded-full bg-card border border-white/10 text-white hover:border-primary transition-all">
-            <ion-icon name="menu-outline" class="text-2xl"></ion-icon>
-          </button>
-          <div class="flex items-center gap-2">
-            <ion-icon name="location-outline" class="text-xl text-primary"></ion-icon>
-            <div>
-              <p class="text-xs text-slate-400 leading-none">Location</p>
-              <p class="font-semibold text-sm leading-none mt-1">Lucknow <ion-icon name="chevron-forward-outline"
-                  class="text-xs"></ion-icon></p>
-            </div>
-          </div>
-          <button
-            class="relative grid h-12 w-12 place-items-center rounded-full bg-card border border-white/10 text-white">
-            <ion-icon name="notifications-outline" class="text-xl"></ion-icon>
-            <span class="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-accent"></span>
-          </button>
-        </div>
-        <app-search placeholder="Find players, games, venues"></app-search>
-      </section>
-
-      <section class="space-y-6 px-6 pb-6">
-        <!-- Quick Suggestion Card with Hover effects and transitions -->
-        <div
-          class="-mt-4 rounded-2xl bg-gradient-to-r from-primary to-secondary p-6 hover:shadow-xl hover:shadow-secondary/15 transition-all duration-300 active:scale-[0.99]">
-          <div class="mb-3 flex justify-between">
-            <div>
-              <p class="text-sm text-white/80 font-medium">Quick Suggestion</p>
-              <p class="font-bold text-lg mt-0.5 text-white">4 players available near you</p>
-            </div>
-            <div class="grid h-12 w-12 place-items-center rounded-full bg-white/20 text-white">
-              <ion-icon name="people-outline" class="text-2xl"></ion-icon>
-            </div>
-          </div>
-          <p class="mb-4 flex items-center gap-2 text-sm text-white/90"><ion-icon
-              name="time-outline"></ion-icon>Available at 7 PM today</p>
-          <button class="h-12 w-full rounded-full bg-white font-bold text-primary active:scale-[0.98] transition-all"
-            (click)="go('/app/discover')">View Players</button>
+      <section class="player-home">
+        <div class="loc-row">
+          <ion-icon name="location" class="loc-icon"></ion-icon>
+          <span class="loc-city">Lucknow</span>
+          <ion-icon name="chevron-forward" class="loc-chevron"></ion-icon>
+          <span class="loc-area">Gomti Nagar</span>
         </div>
 
-        <!-- Live Sports Map with pulsing animation, hovering stops the pulsing -->
-        <button
-          class="live_block flex w-full items-center justify-between rounded-2xl border border-primary/30 bg-gradient-to-r from-violet/20 to-primary/20 p-4 text-left animate-pulse hover:animate-none hover:border-primary transition-all duration-300 active:scale-[0.98] cursor-pointer"
-          (click)="go('/app/map')">
-          <div class="flex items-center gap-3">
-            <div class="grid h-12 w-12 place-items-center rounded-xl bg-primary/30 text-primary">
-              <ion-icon name="map-outline" class="text-2xl"></ion-icon>
-            </div>
+        <app-search-bar
+          class="search-block"
+          placeholder="Find players, games, venues…"
+          [(ngModel)]="searchQuery"
+        ></app-search-bar>
+
+        <!-- Quick Suggestion -->
+        <div class="suggest-card">
+          <div class="suggest-top">
             <div>
-              <p class="font-bold text-white text-base">Live Sports Map</p>
-              <p class="text-xs text-slate-400 mt-0.5">View nearby games & players</p>
+              <p class="suggest-label">Quick Suggestion</p>
+              <p class="suggest-title">4 players available near you</p>
+            </div>
+            <div class="suggest-icon">
+              <ion-icon name="people-outline"></ion-icon>
             </div>
           </div>
-          <span class="rounded-full bg-accent/20 px-3 py-1 text-xs text-accent font-bold">⚡ 4 Live</span>
+          <div class="suggest-meta">
+            <ion-icon name="time-outline"></ion-icon>
+            <span>Available at 7 PM today</span>
+          </div>
+          <button type="button" (click)="go('/app/discover')" class="suggest-cta">View Players</button>
+        </div>
+
+        <!-- Live Sports Map -->
+        <button type="button" class="map-banner" (click)="go('/app/map')">
+          <div class="map-left">
+            <div class="map-icon-wrap">
+              <ion-icon name="map-outline"></ion-icon>
+            </div>
+            <div>
+              <p class="map-title">Live Sports Map</p>
+              <p class="map-sub">View nearby games &amp; players</p>
+            </div>
+          </div>
+          <div class="map-right">
+            <span class="live-pill"><ion-icon name="flash"></ion-icon> 4 Live</span>
+            <ion-icon name="chevron-forward" class="map-chevron"></ion-icon>
+          </div>
         </button>
 
-        <!-- Quick Actions with innovative hover translation and shadow animations -->
-        <div>
-          <h2 class="mb-4 text-xl font-bold">Quick Actions</h2>
-          <div class="grid grid-cols-3 gap-3">
-            <button
-              class="rounded-xl border border-white/10 bg-card p-4 hover:border-primary hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 active:scale-[0.98] flex flex-col items-center justify-center min-h-[110px] text-center w-full cursor-pointer"
-              (click)="go('/app/discover')">
-              <div class="mx-auto mb-2.5 grid h-12 w-12 place-items-center rounded-full bg-primary/20 text-primary">
-                <ion-icon name="add-outline" class="text-2xl"></ion-icon>
+        <!-- Quick Actions -->
+        <div class="qa-section">
+          <p class="qa-heading">Quick Actions</p>
+          <div class="qa-grid">
+            <button type="button" class="qa-card qa-green" (click)="go('/app/ongoing')">
+              <div class="qa-glow"></div>
+              <div class="qa-icon qa-icon-green">
+                <ion-icon name="time-outline"></ion-icon>
               </div>
-              <p class="font-semibold text-sm text-center leading-none text-white">Join Game</p>
+              <p class="qa-title">Ongoing<br />Games</p>
+              <p class="qa-sub">Join live games near you</p>
             </button>
-            <button
-              class="rounded-xl border border-white/10 bg-card p-4 hover:border-primary hover:-translate-y-1 hover:shadow-lg hover:shadow-secondary/10 transition-all duration-300 active:scale-[0.98] flex flex-col items-center justify-center min-h-[110px] text-center w-full cursor-pointer"
-              (click)="go('/app/game/create')">
-              <div class="mx-auto mb-2.5 grid h-12 w-12 place-items-center rounded-full bg-secondary/20 text-secondary">
-                <ion-icon name="people-outline" class="text-2xl"></ion-icon>
+
+            <button type="button" class="qa-card qa-dark" (click)="go('/app/game/create')">
+              <div class="qa-glow qa-glow-orange"></div>
+              <div class="qa-icon qa-icon-orange">
+                <ion-icon name="add-circle-outline"></ion-icon>
               </div>
-              <p class="font-semibold text-sm text-center leading-none text-white">Create Game</p>
+              <p class="qa-title qa-title-white">Create<br />Game</p>
+              <p class="qa-sub qa-sub-white">New match fast</p>
             </button>
-            <button
-              class="rounded-xl border border-white/10 bg-card p-4 hover:border-primary hover:-translate-y-1 hover:shadow-lg hover:shadow-accent/10 transition-all duration-300 active:scale-[0.98] flex flex-col items-center justify-center min-h-[110px] text-center w-full cursor-pointer"
-              (click)="go('/app/venues')">
-              <div class="mx-auto mb-2.5 grid h-12 w-12 place-items-center rounded-full bg-accent/20 text-accent">
-                <ion-icon name="business-outline" class="text-2xl"></ion-icon>
+
+            <button type="button" class="qa-card qa-blue" (click)="go('/app/venues')">
+              <div class="qa-glow qa-glow-blue"></div>
+              <div class="qa-icon qa-icon-blue">
+                <ion-icon name="location-outline"></ion-icon>
               </div>
-              <p class="font-semibold text-sm text-center leading-none text-white">Book Venue</p>
+              <p class="qa-title">Book<br />Venues</p>
+              <p class="qa-sub">Reserve nearby</p>
             </button>
           </div>
         </div>
 
-        <div>
-          <div class="mb-4 flex items-center justify-between">
-            <h2 class="text-xl font-bold">Nearby Games</h2>
-            <button class="text-sm font-semibold text-primary">See all ›</button>
-          </div>
-          <div class="max-h-72 space-y-3 overflow-y-auto pr-1">
-            <app-event-card *ngFor="let game of data.games" [event]="game"
-              (open)="go('/app/game/' + game.id)"></app-event-card>
+        <!-- Nearby Games -->
+        <div class="nearby">
+          <app-section-header
+            title="Nearby Games"
+            actionLabel="See all"
+            (action)="go('/app/ongoing')"
+          ></app-section-header>
+          <div class="nearby-list">
+            <app-event-card
+              *ngFor="let game of data.games"
+              [event]="game"
+              (open)="go('/app/game/' + game.id)"
+            ></app-event-card>
           </div>
         </div>
       </section>
     </ng-container>
 
   </main>
+  </app-brand-header-shell>
 </ion-content>

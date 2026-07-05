@@ -10,9 +10,8 @@ import { PlayerDiscoverPage } from './player-discover.page';
 import { PlayerVenuesPage } from './player-venues.page';
 import { PlayerLeaderboardPage } from './player-leaderboard.page';
 import { PlayerProfilePage } from './player-profile.page';
-import { CreateGamePage } from './create-game.page';
-import { LiveMapPage } from './live-map.page';
 
+/** Legacy module — primary app uses standalone routes in app-routing.module.ts */
 const routes: Routes = [
   {
     path: '',
@@ -26,8 +25,6 @@ const routes: Routes = [
       { path: '', redirectTo: 'home', pathMatch: 'full' },
     ],
   },
-  { path: 'game/create', component: CreateGamePage },
-  { path: 'map', component: LiveMapPage },
 ];
 
 @NgModule({
@@ -38,8 +35,6 @@ const routes: Routes = [
     PlayerVenuesPage,
     PlayerLeaderboardPage,
     PlayerProfilePage,
-    CreateGamePage,
-    LiveMapPage,
   ],
   imports: [CommonModule, FormsModule, IonicModule, RouterModule.forChild(routes)],
 })

@@ -2,17 +2,19 @@ import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, MenuController } from '@ionic/angular';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 
 @Component({
   selector: 'app-discover-page',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule],
+  imports: [CommonModule, IonicModule, FormsModule, BrandHeaderShellComponent],
   styleUrls: ['./discover.page.scss'],
   templateUrl: './discover.page.html',
 })
 export class DiscoverPage {
   private readonly router = inject(Router);
+  private readonly menu = inject(MenuController);
 
   currentIndex = 0;
   swipeDirection: 'left' | 'right' | null = null;
@@ -271,6 +273,10 @@ export class DiscoverPage {
   }
 
   goHome() {
-    this.router.navigateByUrl('/app/home');
+    void this.router.navigateByUrl('/app/home');
+  }
+
+  async openMenu() {
+    await this.menu.open();
   }
 }

@@ -3,11 +3,12 @@ import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule, MenuController } from '@ionic/angular';
 import { AuthService } from '../../core/services/auth.service';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 
 @Component({
   selector: 'app-profile-page',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, BrandHeaderShellComponent],
   styleUrls: ['./profile.page.scss'],
   templateUrl: './profile.page.html',
 })

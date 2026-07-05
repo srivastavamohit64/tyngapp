@@ -1,86 +1,128 @@
+<!-- LEFT DRAWER matching Figma LeftDrawer.tsx -->
 <ion-menu contentId="main-content" type="overlay">
-  <ion-content class="bg-card text-white select-none">
-    <div class="flex flex-col h-full justify-between p-6">
-      
-      <!-- Top Section: Logo & Profile -->
-      <div class="space-y-6">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-xl">
-            🏆
+  <ion-content>
+    <div class="drawer-shell">
+
+      <!-- Profile Header with lime green gradient top -->
+      <div class="drawer-profile-header">
+        <!-- Close hint area (clicking backdrop closes) -->
+        
+        <!-- Avatar + level badge -->
+        <div class="drawer-avatar-wrap" (click)="navigateTo('/app/profile')">
+          <div class="drawer-avatar">
+            <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=160&h=160&fit=crop&auto=format" alt="Arjun Sharma" class="drawer-avatar-img" />
           </div>
-          <div>
-            <h2 class="text-lg font-bold tracking-tight text-white leading-none">TYNG Sports</h2>
-            <p class="text-[10px] text-slate-400 font-semibold leading-none mt-1">Networking App</p>
-          </div>
+          <div class="drawer-level-badge">28</div>
         </div>
 
-        <div class="p-4 rounded-2xl bg-background border border-white/10 flex items-center gap-3">
-          <div class="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-2xl">
-            {{ getRoleEmoji() }}
-          </div>
-          <div>
-            <div class="font-bold text-white leading-tight">{{ auth.user()?.name || 'User' }}</div>
-            <div class="text-xs text-slate-400 capitalize">{{ auth.user()?.role || 'player' }}</div>
-          </div>
-        </div>
-
-        <!-- Navigation Links -->
-        <div class="space-y-1">
-          <button (click)="navigateTo('/app/home')" class="w-full h-12 flex items-center gap-3 px-4 rounded-xl hover:bg-white/5 text-slate-300 font-semibold text-sm transition-colors text-left bg-transparent">
-            <ion-icon name="home-outline" class="text-xl"></ion-icon>
-            Home
-          </button>
-          <button (click)="navigateTo('/app/profile')" class="w-full h-12 flex items-center gap-3 px-4 rounded-xl hover:bg-white/5 text-slate-300 font-semibold text-sm transition-colors text-left bg-transparent">
-            <ion-icon name="person-outline" class="text-xl"></ion-icon>
-            Profile
-          </button>
-          <button (click)="navigateTo('/app/settings')" class="w-full h-12 flex items-center gap-3 px-4 rounded-xl hover:bg-white/5 text-slate-300 font-semibold text-sm transition-colors text-left bg-transparent">
-            <ion-icon name="settings-outline" class="text-xl"></ion-icon>
-            Settings
-          </button>
+        <!-- Name + handle -->
+        <div class="drawer-name-block" (click)="navigateTo('/app/profile')">
+          <h3 class="drawer-name">Arjun Sharma</h3>
+          <p class="drawer-handle">&#64;arjun_cricket · Lucknow</p>
         </div>
       </div>
 
-      <!-- Bottom Section: Theme & Logout -->
-      <div class="space-y-6">
-        
-        <!-- Theme Switcher Row -->
-        <div class="p-4 rounded-2xl bg-background border border-white/10">
-          <div class="flex items-center justify-between mb-3">
-            <span class="text-sm font-semibold text-slate-300">App Theme</span>
-            <span class="text-xs text-slate-400 font-medium">{{ theme.isDark() ? 'Dark Mode' : 'Light Mode' }}</span>
+      <!-- XP Card (dark with gradient) -->
+      <div class="drawer-xp-card" (click)="navigateTo('/app/leaderboard')">
+        <div class="xp-orb1"></div>
+        <div class="xp-orb2"></div>
+        <div class="xp-top">
+          <div>
+            <div class="xp-top5">🏆 Top 5%</div>
+            <div class="xp-points">1,250</div>
+            <div class="xp-lbl">TP Points</div>
           </div>
-          <div class="grid grid-cols-2 gap-2 bg-card p-1 rounded-xl border border-white/5">
-            <button 
-              (click)="theme.setTheme(false)" 
-              [class.bg-white]="!theme.isDark()"
-              [class.text-primary]="!theme.isDark()"
-              [class.text-slate-400]="theme.isDark()"
-              class="py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all bg-transparent"
-            >
-              <ion-icon name="sunny-outline" class="text-base"></ion-icon>
-              Light
-            </button>
-            <button 
-              (click)="theme.setTheme(true)" 
-              [class.bg-slate-800]="theme.isDark()"
-              [class.text-white]="theme.isDark()"
-              [class.text-slate-400]="!theme.isDark()"
-              class="py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all bg-transparent"
-            >
-              <ion-icon name="moon-outline" class="text-base"></ion-icon>
-              Dark
-            </button>
+          <div class="xp-right">
+            <div class="xp-lvl-lbl">Level</div>
+            <div class="xp-lvl">28</div>
           </div>
         </div>
+        <!-- Progress -->
+        <div class="xp-prog-row">
+          <span class="xp-prog-lbl">1,850 / 2,500 XP</span>
+          <span class="xp-prog-pct">74%</span>
+        </div>
+        <div class="xp-bar">
+          <div class="xp-fill" style="width:74%"></div>
+        </div>
+        <div class="xp-to-next">650 XP to Level 29</div>
+      </div>
 
-        <button 
-          *ngIf="!isAndroid()"
-          (click)="logout()" 
-          class="w-full h-12 flex items-center justify-center gap-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 font-bold text-sm hover:bg-red-500/20 transition-all"
-        >
-          <ion-icon name="log-out-outline" class="text-xl"></ion-icon>
-          Logout
+      <!-- Menu Items -->
+      <div class="drawer-menu">
+        <button class="menu-item" (click)="navigateTo('/app/stats')">
+          <div class="menu-icon"><ion-icon name="analytics-outline"></ion-icon></div>
+          <div class="menu-text">
+            <div class="menu-label">Personal Stats</div>
+            <div class="menu-desc">Height, weight, fitness &amp; more</div>
+          </div>
+          <ion-icon name="chevron-forward-outline" class="menu-chevron"></ion-icon>
+        </button>
+
+        <button class="menu-item" (click)="navigateTo('/app/leaderboard')">
+          <div class="menu-icon"><ion-icon name="trophy-outline"></ion-icon></div>
+          <div class="menu-text">
+            <div class="menu-label">Leaderboards</div>
+            <div class="menu-desc">City, friends &amp; sport rankings</div>
+          </div>
+          <ion-icon name="chevron-forward-outline" class="menu-chevron"></ion-icon>
+        </button>
+
+        <button class="menu-item" (click)="navigateTo('/app/my-bookings')">
+          <div class="menu-icon"><ion-icon name="time-outline"></ion-icon></div>
+          <div class="menu-text">
+            <div class="menu-label">History</div>
+            <div class="menu-desc">Games, bookings &amp; payments</div>
+          </div>
+          <ion-icon name="chevron-forward-outline" class="menu-chevron"></ion-icon>
+        </button>
+
+        <button class="menu-item" (click)="navigateTo('/app/chat')">
+          <div class="menu-icon"><ion-icon name="chatbubbles-outline"></ion-icon></div>
+          <div class="menu-text">
+            <div class="menu-label">Chat</div>
+            <div class="menu-desc">DMs, team &amp; game chats</div>
+          </div>
+          <div class="menu-badge">3</div>
+          <ion-icon name="chevron-forward-outline" class="menu-chevron"></ion-icon>
+        </button>
+
+        <button class="menu-item" (click)="navigateTo('/app/coaches')">
+          <div class="menu-icon"><ion-icon name="school-outline"></ion-icon></div>
+          <div class="menu-text">
+            <div class="menu-label">Coaches</div>
+            <div class="menu-desc">Book sessions, reviews, ratings</div>
+          </div>
+          <ion-icon name="chevron-forward-outline" class="menu-chevron"></ion-icon>
+        </button>
+
+        <button class="menu-item" (click)="navigateTo('/app/settings')">
+          <div class="menu-icon"><ion-icon name="settings-outline"></ion-icon></div>
+          <div class="menu-text">
+            <div class="menu-label">Settings</div>
+            <div class="menu-desc">Notifications, privacy, theme</div>
+          </div>
+          <ion-icon name="chevron-forward-outline" class="menu-chevron"></ion-icon>
+        </button>
+
+        <!-- Divider -->
+        <div class="menu-divider"></div>
+
+        <button class="menu-item" (click)="navigateTo('/app/home')">
+          <div class="menu-icon"><ion-icon name="headset-outline"></ion-icon></div>
+          <div class="menu-text">
+            <div class="menu-label">Support</div>
+            <div class="menu-desc">FAQs, report, contact us</div>
+          </div>
+          <ion-icon name="chevron-forward-outline" class="menu-chevron"></ion-icon>
+        </button>
+      </div>
+
+      <!-- Logout -->
+      <div class="drawer-logout">
+        <button class="logout-btn" (click)="logout()">
+          <div class="logout-icon"><ion-icon name="log-out-outline"></ion-icon></div>
+          <span class="logout-text">Log Out</span>
         </button>
       </div>
 

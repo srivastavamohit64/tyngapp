@@ -1,17 +1,23 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, MenuController } from '@ionic/angular';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 
 @Component({
   selector: 'app-venues-page',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, BrandHeaderShellComponent],
   styleUrls: ['./venues.page.scss'],
   templateUrl: './venues.page.html',
 })
 export class VenuesPage {
   private readonly router = inject(Router);
+  private readonly menu = inject(MenuController);
+
+  async openMenu() {
+    await this.menu.open();
+  }
 
   selectedSlotIndex: number | null = null;
 
@@ -43,8 +49,7 @@ export class VenuesPage {
 
   proceed() {
     if (this.selectedSlotIndex !== null) {
-      // Simulate navigate or success
-      void this.router.navigateByUrl('/app/home');
+      void this.router.navigateByUrl('/app/venue/3/book');
     }
   }
 

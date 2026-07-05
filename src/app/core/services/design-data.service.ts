@@ -15,9 +15,8 @@ export class DesignDataService {
   readonly tabs: TabItem[] = [
     { label: 'Home', icon: 'home-outline', route: '/app/home' },
     { label: 'Players', icon: 'people-outline', route: '/app/discover' },
-    { label: 'Venues', icon: 'business-outline', route: '/app/venues' },
-    { label: 'Leaderboard', icon: 'trophy-outline', route: '/app/leaderboard' },
-    { label: 'Profile', icon: 'person-outline', route: '/app/profile' },
+    { label: 'My Bookings', icon: 'calendar-outline', route: '/app/my-bookings' },
+    { label: 'Chat', icon: 'chatbubble-outline', route: '/app/chat' },
   ];
 
   readonly games: EventGame[] = [

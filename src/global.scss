@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./theme/variables.scss";
 
 @theme {
   --color-background: var(--app-background);
@@ -13,21 +14,11 @@
   --color-info: var(--app-info);
 }
 
-/*
- * App Global CSS
- * ----------------------------------------------------------------------------
- */
-
-/* Core CSS required for Ionic components to work properly */
 @import "@ionic/angular/css/core.css";
-
-/* Basic CSS for apps built with Ionic */
 @import "@ionic/angular/css/normalize.css";
 @import "@ionic/angular/css/structure.css";
 @import "@ionic/angular/css/typography.css";
 @import "@ionic/angular/css/display.css";
-
-/* Optional CSS utils that can be commented out */
 @import "@ionic/angular/css/padding.css";
 @import "@ionic/angular/css/float-elements.css";
 @import "@ionic/angular/css/text-alignment.css";
@@ -35,57 +26,7 @@
 @import "@ionic/angular/css/flex-utils.css";
 
 /* ============================================================
-   DARK MODE (default) — unchanged
-   ============================================================ */
-:root {
-  --app-background: #0a0f1c;
-  --app-card: #111827;
-  --app-foreground: #ffffff;
-  --app-muted: #1e293b;
-  --app-muted-text: #94a3b8;
-  --app-border: rgba(255, 255, 255, 0.1);
-  --app-primary: #2563eb;
-  --app-secondary: #22c55e;
-  --app-accent: #f97316;
-  --app-violet: #7c3aed;
-  --app-info: #38bdf8;
-
-  --app-tab-bar-height: 76px;
-  --safe-area-top: env(safe-area-inset-top, 0px);
-  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
-  --safe-area-left: env(safe-area-inset-left, 0px);
-  --safe-area-right: env(safe-area-inset-right, 0px);
-}
-
-/* ============================================================
-   LIGHT MODE — Tyng Brand Theme
-   ──────────────────────────────────────────────────────────
-   Derived from the Tyng logo:
-     • Background  : Ice white-blue   #f4f6ff
-     • Card        : Pure white       #ffffff
-     • Text        : Deep navy        #0d1240
-     • Primary     : Royal blue       #2130d4  (logo BG hue)
-     • Secondary   : Mint green       #00c977  (logo Y mark)
-     • Accent      : Vivid electric   #4f6bff
-     • Violet      : Indigo           #6641f5
-     • Info        : Sky cyan         #0097c4
-   ============================================================ */
-.light-mode {
-  --app-background: #f0f4ff;
-  --app-card: #ffffff;
-  --app-foreground: #0d1240;
-  --app-muted: #e4eaff;
-  --app-muted-text: #5262a0;
-  --app-border: rgba(33, 48, 212, 0.12);
-  --app-primary: #2130d4;
-  --app-secondary: #00c977;
-  --app-accent: #ff5c35;
-  --app-violet: #6641f5;
-  --app-info: #0097c4;
-}
-
-/* ============================================================
-   BASE STYLES
+   BASE — Figma light theme by default
    ============================================================ */
 html,
 body,
@@ -93,495 +34,163 @@ ion-app {
   background: var(--app-background);
   color: var(--app-foreground);
   font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-}
-
-/* Global utility theme overrides */
-.text-white {
-  color: var(--app-foreground) !important;
-}
-
-.border-white\/10 {
-  border-color: var(--app-border) !important;
-}
-
-.bg-card {
-  background-color: var(--app-card) !important;
-  transition: background-color 0.3s ease, border-color 0.3s ease;
-}
-
-.bg-background {
-  background-color: var(--app-background) !important;
-  transition: background-color 0.3s ease;
+  -webkit-font-smoothing: antialiased;
 }
 
 ion-content {
   --background: var(--app-background);
+  --color: var(--app-foreground);
+}
+
+.bg-card {
+  background-color: var(--app-card) !important;
+}
+
+.bg-background {
+  background-color: var(--app-background) !important;
+}
+
+.text-primary {
+  color: var(--app-primary) !important;
+}
+
+.text-secondary {
+  color: var(--app-secondary) !important;
+}
+
+.text-accent {
+  color: var(--app-accent) !important;
+}
+
+.bg-primary\/20 {
+  background-color: rgba(140, 240, 0, 0.2) !important;
+}
+
+.bg-secondary\/20 {
+  background-color: rgba(255, 122, 0, 0.2) !important;
+}
+
+.bg-accent\/20 {
+  background-color: rgba(56, 189, 248, 0.2) !important;
+}
+
+.btn-primary,
+.btn-green-gradient {
+  background: linear-gradient(135deg, #8cf000 0%, #a3e635 100%) !important;
+  color: #111827 !important;
+}
+
+.glow-primary {
+  box-shadow: 0 0 20px rgba(140, 240, 0, 0.35);
+}
+
+.glow-secondary {
+  box-shadow: 0 0 20px rgba(255, 122, 0, 0.3);
+}
+
+.shadow-soft {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.shadow-soft-lg {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
 }
 
 /* ============================================================
-   LIGHT MODE — Comprehensive text colour overrides
-   Catches every Tailwind + hardcoded white text that templates use
+   LIGHT MODE — Figma brand (no blue overrides)
    ============================================================ */
+.light-mode {
+  --app-background: #fafbfc;
+  --app-card: #ffffff;
+  --app-foreground: #111827;
+  --app-muted: #f3f4f6;
+  --app-muted-text: #6b7280;
+  --app-border: #e5e7eb;
+  --app-primary: #8cf000;
+  --app-secondary: #ff7a00;
+  --app-accent: #38bdf8;
+  --app-violet: #7c3aed;
+  --app-info: #38bdf8;
 
-/* All heading levels */
+  --ion-background-color: #fafbfc;
+  --ion-background-color-rgb: 250, 251, 252;
+  --ion-text-color: #111827;
+  --ion-text-color-rgb: 17, 24, 39;
+  --ion-border-color: #e5e7eb;
+  --ion-color-primary: #8cf000;
+  --ion-color-primary-rgb: 140, 240, 0;
+  --ion-color-primary-contrast: #111827;
+  --ion-color-secondary: #ff7a00;
+  --ion-color-secondary-rgb: 255, 122, 0;
+  --ion-color-secondary-contrast: #ffffff;
+}
+
+.light-mode,
+.light-mode ion-app,
+.light-mode ion-content {
+  --background: #fafbfc;
+  background: #fafbfc !important;
+}
+
 .light-mode h1,
 .light-mode h2,
 .light-mode h3,
 .light-mode h4,
 .light-mode h5,
 .light-mode h6 {
-  color: var(--app-foreground) !important;
-}
-
-/* text-white → foreground (deep navy) */
-.light-mode .text-white {
-  color: var(--app-foreground) !important;
-}
-
-/* Paragraph / span body text */
-.light-mode p,
-.light-mode span:not(.sport-check):not(.intent-check):not(.time-check):not(.type-badge):not(.attendees-badge):not(.drill-tag) {
-  color: var(--app-foreground);
-}
-
-/* Tailwind slate shades → navy-blue spectrum */
-.light-mode .text-slate-50   { color: #0d1240 !important; }
-.light-mode .text-slate-100  { color: #0d1240 !important; }
-.light-mode .text-slate-200  { color: #1a2260 !important; }
-.light-mode .text-slate-300  { color: #3d4f8a !important; }
-.light-mode .text-slate-400  { color: #5262a0 !important; }
-.light-mode .text-slate-500  { color: #2a3870 !important; }
-.light-mode .text-slate-600  { color: #1e2e60 !important; }
-.light-mode .text-slate-700  { color: #172451 !important; }
-.light-mode .text-slate-800  { color: #0f1840 !important; }
-.light-mode .text-slate-900  { color: #0a1030 !important; }
-
-/* Gray shades */
-.light-mode .text-gray-400   { color: #5262a0 !important; }
-.light-mode .text-gray-500   { color: #2a3870 !important; }
-
-/* Inline hardcoded colours used in templates */
-.light-mode [style*="color: #94A3B8"],
-.light-mode [style*="color: #94a3b8"] { color: #5262a0 !important; }
-.light-mode [style*="color: #64748B"],
-.light-mode [style*="color: #64748b"] { color: #3d4f8a !important; }
-
-/* ── Specific component text ─────────────────────────── */
-
-/* Feature card text in any page */
-.light-mode .font-bold,
-.light-mode .font-semibold {
-  color: var(--app-foreground);
-}
-
-/* Session/booking customer names */
-.light-mode .session-team,
-.light-mode .session-venue,
-.light-mode .session-time,
-.light-mode .day-label {
-  color: var(--app-foreground) !important;
-}
-
-/* Venue quick action card labels */
-.light-mode .feature-text {
-  color: var(--app-foreground) !important;
-}
-
-/* Coach dashboard card text */
-.light-mode .font-bold.text-base,
-.light-mode .font-bold.text-white,
-.light-mode .font-semibold.text-white {
-  color: var(--app-foreground) !important;
-}
-
-/* Booking/request customer name rows */
-.light-mode .text-base { color: var(--app-foreground); }
-
-/* Muted secondary text across cards */
-.light-mode .text-xs.text-slate-400,
-.light-mode .text-xs.text-slate-500,
-.light-mode .text-sm.text-slate-400,
-.light-mode .text-sm.text-slate-500 {
-  color: #5262a0 !important;
-}
-
-/* ion-icon inside cards */
-.light-mode .meta-icon,
-.light-mode .day-icon,
-.light-mode .field-icon {
-  color: #5262a0 !important;
-}
-
-/* Onboarding text */
-.light-mode .skill-title,
-.light-mode .skill-desc,
-.light-mode .intent-title,
-.light-mode .intent-desc,
-.light-mode .time-range,
-.light-mode .name-label {
-  color: var(--app-foreground) !important;
-}
-
-/* Settings list items */
-.light-mode ion-item,
-.light-mode ion-label {
-  --color: var(--app-foreground) !important;
-  color: var(--app-foreground) !important;
-}
-
-/* Discover page — covered by .text-slate-400 above */
-
-
-/* Tailwind dark background helpers */
-.light-mode .bg-slate-800 {
-  background-color: var(--app-muted) !important;
-}
-
-.light-mode .bg-slate-700 {
-  background-color: #dde1f0 !important;
-}
-
-.light-mode .bg-slate-900 {
-  background-color: var(--app-background) !important;
-}
-
-/* ── Tab bar — Tyng blue ─────────────────── */
-.light-mode ion-tab-bar,
-.light-mode .tab-bar {
-  background: #ffffff !important;
-  border-top: 1px solid rgba(33, 48, 212, 0.12) !important;
-  box-shadow: 0 -4px 24px rgba(33, 48, 212, 0.10) !important;
-}
-
-.light-mode ion-tab-button {
-  color: #7b8dc7 !important;
-}
-
-.light-mode ion-tab-button.tab-selected,
-.light-mode ion-tab-button.tab-selected ion-icon,
-.light-mode ion-tab-button.tab-selected ion-label {
-  color: #2130d4 !important;
-}
-
-/* ── Leaderboard cards — Tyng blue ──────── */
-.light-mode .player-card {
-  background-color: #ffffff !important;
-  border: 1px solid rgba(33, 48, 212, 0.12) !important;
-  box-shadow: 0 2px 16px rgba(33, 48, 212, 0.08) !important;
-}
-
-.light-mode .player-card h3 {
-  color: #0d1240 !important;
-}
-
-.light-mode .player-card .rank-number {
-  color: #2130d4 !important;
-}
-
-.light-mode .player-card .stat-item {
-  color: #5262a0 !important;
-}
-
-.light-mode .player-card .stat-item ion-icon {
-  color: #7b8dc7 !important;
-}
-
-.light-mode .player-card .badge {
-  background-color: rgba(33, 48, 212, 0.08) !important;
-  color: #2130d4 !important;
-  border-color: rgba(33, 48, 212, 0.2) !important;
-}
-
-.light-mode .points-container {
-  color: #ff5c35 !important;
-}
-
-.light-mode .points-container ion-icon {
-  color: #ff5c35 !important;
-}
-
-/* ── Leaderboard podium — Tyng blue/green ── */
-.light-mode .podium-section {
-  background: linear-gradient(135deg, #dce6ff 0%, #d0f5e8 60%, #e0ecff 100%) !important;
-}
-
-/* ── Search / input fields — Tyng ───────── */
-.light-mode .search-input,
-.light-mode input[type="text"],
-.light-mode input[type="email"],
-.light-mode input[type="password"],
-.light-mode textarea {
-  background-color: #ffffff !important;
-  color: #0d1240 !important;
-  border: 1px solid rgba(33, 48, 212, 0.18) !important;
-}
-
-/* ── Sport / filter chips — Tyng ─────────── */
-.light-mode .sport-filter,
-.light-mode .filter-chip {
-  background-color: #ffffff !important;
-  color: #2130d4 !important;
-  border: 1px solid rgba(33, 48, 212, 0.22) !important;
-}
-
-.light-mode .sport-filter.active,
-.light-mode .filter-chip.active {
-  background: linear-gradient(135deg, #2130d4 0%, #4f6bff 100%) !important;
-  color: #ffffff !important;
-  border-color: transparent !important;
-}
-
-/* ── Action buttons — Tyng royal blue ────── */
-.light-mode .btn-primary,
-.light-mode button.bg-primary {
-  background: linear-gradient(135deg, #2130d4 0%, #4f6bff 100%) !important;
-  color: #ffffff !important;
-}
-
-/* ── Gradient hero sections — Tyng brand ─── */
-.light-mode .bg-gradient-to-b,
-.light-mode [class*="from-primary"] {
-  --tw-gradient-from: rgba(33, 48, 212, 0.10);
-}
-
-/* ── Card hover borders — Tyng ───────────── */
-.light-mode .hover\:border-primary:hover {
-  border-color: #2130d4 !important;
-}
-
-/* ── Side menu — Tyng ────────────────────── */
-.light-mode ion-menu ion-content,
-.light-mode ion-menu {
-  --background: #ffffff;
-}
-
-.light-mode ion-menu ion-list {
-  background: #ffffff !important;
-}
-
-/* ── Discover + badge chips in light ─────── */
-.light-mode .bg-primary\/20 {
-  background-color: rgba(33, 48, 212, 0.10) !important;
-}
-
-.light-mode .bg-secondary\/20 {
-  background-color: rgba(0, 201, 119, 0.12) !important;
-}
-
-.light-mode .bg-accent\/20 {
-  background-color: rgba(255, 92, 53, 0.10) !important;
+  color: #111827;
 }
 
 .light-mode .text-primary {
-  color: #2130d4 !important;
+  color: #8cf000 !important;
 }
 
 .light-mode .text-secondary {
-  color: #00a862 !important;
+  color: #ff7a00 !important;
 }
 
 .light-mode .text-accent {
-  color: #e04a28 !important;
+  color: #38bdf8 !important;
 }
 
-/* ── bg-muted in light mode ──────────────── */
-.light-mode .bg-muted {
-  background-color: #e4eaff !important;
-}
-
-/* ── bg-gradient hero (venue/coach header) ─ */
-.light-mode .from-primary\/20 {
-  --tw-gradient-from: rgba(33, 48, 212, 0.09) !important;
-}
-
-/* ── Quick action icons tint ─────────────── */
-.light-mode .rounded-xl.bg-card,
-.light-mode .rounded-2xl.bg-card {
-  box-shadow: 0 2px 12px rgba(33, 48, 212, 0.07);
-}
-
-/* ============================================================
-   LIGHT MODE — Glossy / Glass Finish
-   Premium frosted-glass feel across all surfaces
-   ============================================================ */
-
-/* ── Page background: soft radial shimmer ─────────────────── */
-.light-mode ion-content {
-  --background: linear-gradient(145deg, #eef2ff 0%, #f0f4ff 40%, #e8f5ff 70%, #f5f0ff 100%) !important;
-}
-
-/* ── Body and app root ────────────────────────────────────── */
-.light-mode,
-.light-mode ion-app {
-  background: linear-gradient(145deg, #eef2ff 0%, #f0f4ff 50%, #e8f5ff 100%) !important;
-}
-
-/* ── Glass card surface ───────────────────────────────────── */
-.light-mode .bg-card,
-.light-mode ion-card {
-  background: rgba(255, 255, 255, 0.82) !important;
-  backdrop-filter: blur(20px) saturate(1.6) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(1.6) !important;
-  border: 1px solid rgba(255, 255, 255, 0.75) !important;
-  /* Layered shadow: ambient + depth + colour tint */
-  box-shadow:
-    0 1px 0 0 rgba(255, 255, 255, 0.9) inset,   /* top gloss highlight */
-    0 -1px 0 0 rgba(33, 48, 212, 0.04) inset,    /* bottom edge */
-    0 2px 6px rgba(33, 48, 212, 0.05),
-    0 8px 24px rgba(33, 48, 212, 0.08),
-    0 20px 48px rgba(33, 48, 212, 0.05) !important;
-  transition: box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-              transform 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
-
-/* Hover lift on interactive glass cards */
-.light-mode .bg-card:hover,
-.light-mode ion-card:hover {
-  box-shadow:
-    0 1px 0 0 rgba(255, 255, 255, 0.95) inset,
-    0 4px 12px rgba(33, 48, 212, 0.10),
-    0 16px 40px rgba(33, 48, 212, 0.12),
-    0 32px 64px rgba(33, 48, 212, 0.07) !important;
-  transform: translateY(-1px);
-}
-
-/* ── Section hero gradient header (home/venue/coach) ──────── */
-.light-mode .bg-gradient-to-b.from-primary\/20,
-.light-mode section.bg-gradient-to-b {
-  background: linear-gradient(
-    180deg,
-    rgba(33, 48, 212, 0.09) 0%,
-    rgba(33, 48, 212, 0.03) 60%,
-    transparent 100%
-  ) !important;
-  position: relative;
-}
-
-/* Frosted glass top bar overlay */
-.light-mode .bg-gradient-to-b.from-primary\/20::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  pointer-events: none;
-  border-radius: inherit;
-}
-
-/* ── Icon circles (action icons inside cards) ─────────────── */
 .light-mode .bg-primary\/20 {
-  background: linear-gradient(135deg,
-    rgba(33, 48, 212, 0.12) 0%,
-    rgba(79, 107, 255, 0.08) 100%) !important;
-  box-shadow:
-    0 0 0 1px rgba(33, 48, 212, 0.12),
-    0 2px 8px rgba(33, 48, 212, 0.10) !important;
+  background-color: rgba(140, 240, 0, 0.2) !important;
 }
 
 .light-mode .bg-secondary\/20 {
-  background: linear-gradient(135deg,
-    rgba(0, 201, 119, 0.14) 0%,
-    rgba(0, 180, 100, 0.08) 100%) !important;
-  box-shadow:
-    0 0 0 1px rgba(0, 201, 119, 0.15),
-    0 2px 8px rgba(0, 201, 119, 0.10) !important;
+  background-color: rgba(255, 122, 0, 0.2) !important;
 }
 
 .light-mode .bg-accent\/20 {
-  background: linear-gradient(135deg,
-    rgba(255, 92, 53, 0.12) 0%,
-    rgba(255, 120, 80, 0.07) 100%) !important;
-  box-shadow:
-    0 0 0 1px rgba(255, 92, 53, 0.12),
-    0 2px 8px rgba(255, 92, 53, 0.08) !important;
+  background-color: rgba(56, 189, 248, 0.2) !important;
 }
 
-/* ── Primary buttons: glossy pill ────────────────────────── */
-.light-mode button.bg-primary,
-.light-mode .btn-primary {
-  background: linear-gradient(
-    160deg,
-    #3d55f0 0%,
-    #2130d4 45%,
-    #1a26b8 100%
-  ) !important;
-  box-shadow:
-    0 1px 0 0 rgba(255, 255, 255, 0.3) inset,   /* gloss line */
-    0 -1px 0 0 rgba(0, 0, 0, 0.15) inset,
-    0 4px 16px rgba(33, 48, 212, 0.35),
-    0 1px 4px rgba(33, 48, 212, 0.25) !important;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+.light-mode .bg-card,
+.light-mode ion-card {
+  background: #ffffff !important;
+  border-color: #e5e7eb !important;
 }
 
-.light-mode button.bg-primary:hover,
-.light-mode .btn-primary:hover {
-  box-shadow:
-    0 1px 0 0 rgba(255, 255, 255, 0.35) inset,
-    0 6px 24px rgba(33, 48, 212, 0.45),
-    0 2px 8px rgba(33, 48, 212, 0.30) !important;
-  transform: translateY(-1px);
+.light-mode ion-menu,
+.light-mode ion-menu ion-content {
+  --background: #ffffff;
 }
 
-/* ── Inputs: glass style ─────────────────────────────────── */
-.light-mode input,
-.light-mode select,
-.light-mode textarea,
-.light-mode .search-input {
-  background: rgba(255, 255, 255, 0.9) !important;
-  backdrop-filter: blur(8px) !important;
-  -webkit-backdrop-filter: blur(8px) !important;
-  border: 1px solid rgba(33, 48, 212, 0.15) !important;
-  box-shadow:
-    0 1px 0 0 rgba(255, 255, 255, 1) inset,
-    0 2px 8px rgba(33, 48, 212, 0.06) !important;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+.light-mode ion-item,
+.light-mode ion-label {
+  --color: #111827;
+  color: #111827;
 }
 
-.light-mode input:focus,
-.light-mode select:focus,
-.light-mode textarea:focus {
-  border-color: rgba(33, 48, 212, 0.40) !important;
-  box-shadow:
-    0 1px 0 0 rgba(255, 255, 255, 1) inset,
-    0 0 0 3px rgba(33, 48, 212, 0.10),
-    0 4px 12px rgba(33, 48, 212, 0.10) !important;
-  outline: none !important;
-}
-
-/* ── Tab bar: frosted glass ──────────────────────────────── */
-.light-mode ion-tab-bar,
-.light-mode .tab-bar {
-  background: rgba(255, 255, 255, 0.88) !important;
-  backdrop-filter: blur(20px) saturate(1.8) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(1.8) !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.6) !important;
-  box-shadow:
-    0 -1px 0 rgba(33, 48, 212, 0.08),
-    0 -8px 32px rgba(33, 48, 212, 0.07) !important;
-}
-
-/* ── Side menu: frosted ──────────────────────────────────── */
-.light-mode ion-menu ion-content,
-.light-mode ion-menu {
-  --background: rgba(240, 244, 255, 0.95) !important;
-  backdrop-filter: blur(24px) !important;
-  -webkit-backdrop-filter: blur(24px) !important;
-  box-shadow: 4px 0 32px rgba(33, 48, 212, 0.10) !important;
-}
-
-/* ── Stat/badge chips: glass pill ────────────────────────── */
-.light-mode .rounded-full.bg-accent\/20,
-.light-mode .rounded-full.bg-secondary\/20,
-.light-mode .rounded-full.bg-primary\/20 {
-  backdrop-filter: blur(4px) !important;
-  -webkit-backdrop-filter: blur(4px) !important;
-}
-
-/* ── Smooth transition on ALL light-mode elements ────────── */
-.light-mode * {
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+/* ============================================================
+   DARK MODE
+   ============================================================ */
+.dark-mode,
+.dark-mode ion-app,
+.dark-mode ion-content {
+  --background: #0a0f1c;
+  background: #0a0f1c !important;
+  color: #ffffff;
 }
 
 /* ============================================================
@@ -608,8 +217,25 @@ ion-content {
   padding-left: calc(var(--safe-area-left) + 1.5rem);
 }
 
-.page-with-tab-bar {
-  padding-bottom: calc(var(--app-tab-bar-height) + var(--safe-area-bottom));
+/* Tab bar clearance: pill (72) + outer pad (20) + safe area + breathing room */
+.page-with-tab-bar,
+.page-shell,
+.has-tab-bar {
+  padding-bottom: calc(72px + 20px + 24px + var(--safe-area-bottom)) !important;
+}
+
+ion-content.has-tabs {
+  --padding-bottom: calc(72px + 20px + 24px + env(safe-area-inset-bottom, 0px));
+}
+
+/* Standalone pages (no tabs): still respect gesture nav */
+.page-safe-bottom {
+  padding-bottom: calc(24px + var(--safe-area-bottom));
+}
+
+/* Auth / welcome screens need top safe area when no app-header */
+.page-safe-top {
+  padding-top: var(--safe-area-top);
 }
 
 .safe-area-input-bar {
@@ -621,76 +247,57 @@ ion-content {
 /* ============================================================
    GLOBAL ELEMENT RESETS
    ============================================================ */
-
-/* Global button reset and styling */
 button {
   appearance: none;
   border: 0;
   font: inherit;
-  border-radius: 16px;
+  border-radius: var(--app-radius-button);
   cursor: pointer;
+  box-sizing: border-box;
 }
 
-/* Global card styling */
+/* Horizontal pill buttons — prevent label clipping in scroll rows */
+.scroll-pills button,
+button.action-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  min-height: unset;
+  min-width: unset;
+  width: auto;
+  white-space: nowrap;
+  flex-shrink: 0;
+  overflow: visible;
+  line-height: 1.25;
+  box-sizing: border-box;
+}
+
 .bg-card,
 ion-card,
 article,
 .card,
 .active-card,
-.card-deck>div,
 app-event-card button,
 app-player-card article,
 app-profile-card article {
-  border-radius: 20px;
+  border-radius: var(--app-radius-card);
 }
 
-/* Global input/form element styling */
 input,
 select,
 textarea,
 ion-input,
 .search-input {
-  border-radius: 14px;
+  border-radius: var(--app-radius-input);
 }
 
-/* ============================================================
-   MOBILE VIEWPORT MOCK FRAME (web preview on wider screens)
-   ============================================================ */
-@media (min-width: 480px) {
-
-  html,
-  body,
-  ion-app {
-    max-width: 450px !important;
-    margin: 0 auto !important;
-    position: relative !important;
-    box-shadow: 0 10px 50px rgba(0, 0, 0, 0.7);
-    border-inline: 1px solid rgba(255, 255, 255, 0.1);
-    background-color: #05070c !important;
-  }
-
-  .tab-bar {
-    max-width: 450px !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    right: auto !important;
-    z-index: 9999 !important;
-  }
-}
-
-.tab-bar {
-  z-index: 9999 !important;
-}
-
-/* Button focus outline reset */
 button:focus,
 button:active,
 .button-native:focus {
   outline: none !important;
-  box-shadow: none !important;
 }
 
-/* Guarantee borders are visible for elements with border classes */
 .border,
 [class*="border-white/10"],
 [class*="border-border"] {
@@ -700,4 +307,17 @@ button:active,
 
 .padding10 {
   padding: 10px;
+}
+
+/* Mobile viewport frame for web preview */
+@media (min-width: 480px) {
+  html,
+  body,
+  ion-app {
+    max-width: 450px !important;
+    margin: 0 auto !important;
+    position: relative !important;
+    box-shadow: 0 10px 50px rgba(0, 0, 0, 0.15);
+    border-inline: 1px solid rgba(0, 0, 0, 0.06);
+  }
 }
