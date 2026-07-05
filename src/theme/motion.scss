@@ -1,0 +1,571 @@
+/* ============================================================
+   TYNG Premium Motion System
+   Reusable utilities — transform & opacity only (60fps)
+   ============================================================ */
+
+:root {
+  --app-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --app-ease-spring: cubic-bezier(0.34, 1.2, 0.64, 1);
+  --app-ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --app-duration-fast: 150ms;
+  --app-duration-normal: 280ms;
+  --app-duration-micro: 250ms;
+  --app-duration-slow: 420ms;
+  --app-ion-transition: 250ms;
+
+  /* Layered premium shadows — no harsh black */
+  --app-shadow-premium: 0 1px 2px rgba(17, 24, 39, 0.04),
+    0 4px 16px rgba(17, 24, 39, 0.06);
+  --app-shadow-premium-lg: 0 2px 8px rgba(17, 24, 39, 0.05),
+    0 12px 32px rgba(17, 24, 39, 0.08);
+  --app-shadow-lift: 0 8px 28px rgba(17, 24, 39, 0.1),
+    0 2px 8px rgba(17, 24, 39, 0.04);
+
+  /* Glow tokens */
+  --app-glow-primary: 0 4px 24px rgba(140, 240, 0, 0.35);
+  --app-glow-primary-soft: 0 2px 16px rgba(140, 240, 0, 0.22);
+  --app-glow-primary-strong: 0 8px 36px rgba(140, 240, 0, 0.42),
+    0 0 0 1px rgba(140, 240, 0, 0.1);
+  --app-glow-secondary: 0 4px 24px rgba(255, 122, 0, 0.3);
+  --app-glow-accent: 0 4px 20px rgba(56, 189, 248, 0.28);
+  --app-glow-focus: 0 0 0 3px rgba(140, 240, 0, 0.26),
+    0 4px 20px rgba(140, 240, 0, 0.16);
+  --app-glow-selected: 0 4px 20px rgba(140, 240, 0, 0.32),
+    0 0 0 1px rgba(140, 240, 0, 0.14);
+}
+
+/* ── Keyframes ── */
+@keyframes glow-pulse {
+  0%,
+  100% {
+    box-shadow: var(--app-glow-primary-soft);
+  }
+  50% {
+    box-shadow: 0 4px 28px rgba(140, 240, 0, 0.45);
+  }
+}
+
+@keyframes breathe-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(140, 240, 0, 0.35),
+      0 4px 16px rgba(140, 240, 0, 0.25);
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(140, 240, 0, 0),
+      0 6px 24px rgba(140, 240, 0, 0.4);
+    transform: translate(-50%, -50%) scale(1.03);
+  }
+}
+
+@keyframes live-breathe {
+  0%,
+  100% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+  50% {
+    opacity: 0.92;
+    filter: brightness(1.06);
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes rank-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes trophy-shimmer {
+  0% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.12);
+  }
+  100% {
+    filter: brightness(1);
+  }
+}
+
+@keyframes tick-check {
+  from {
+    opacity: 0;
+    transform: scale(0.5) rotate(-8deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateX(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes ripple-spread {
+  from {
+    opacity: 0.45;
+    transform: scale(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(2.8);
+  }
+}
+
+/* ── Press & card base ── */
+.interactive-press,
+.premium-press {
+  transition:
+    transform var(--app-duration-micro) var(--app-ease-spring),
+    box-shadow var(--app-duration-normal) var(--app-ease-out),
+    background var(--app-duration-fast) var(--app-ease-smooth),
+    color var(--app-duration-fast) var(--app-ease-smooth),
+    border-color var(--app-duration-fast) var(--app-ease-smooth),
+    filter var(--app-duration-normal) var(--app-ease-smooth);
+  -webkit-tap-highlight-color: transparent;
+  will-change: transform;
+}
+
+.interactive-press:active:not(:disabled),
+.premium-press:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.interactive-card,
+.premium-card {
+  transition:
+    transform var(--app-duration-normal) var(--app-ease-out),
+    box-shadow var(--app-duration-normal) var(--app-ease-out),
+    border-color var(--app-duration-normal) var(--app-ease-smooth),
+    filter var(--app-duration-normal) var(--app-ease-smooth);
+  -webkit-tap-highlight-color: transparent;
+  will-change: transform;
+}
+
+.interactive-card:active,
+.premium-card:active {
+  transform: scale(0.985);
+  box-shadow: var(--app-shadow-premium-lg);
+}
+
+/* ── Selected / active state (chips, tabs, filters) ── */
+.premium-active,
+.chip.active,
+.segment-btn.active,
+.sport-tab.active,
+.active-sport-tab {
+  transform: scale(1.03);
+  filter: brightness(1.03);
+  box-shadow: var(--app-glow-selected) !important;
+  transition:
+    transform var(--app-duration-micro) var(--app-ease-spring),
+    box-shadow var(--app-duration-normal) var(--app-ease-out),
+    background var(--app-duration-normal) var(--app-ease-smooth),
+    color var(--app-duration-normal) var(--app-ease-smooth),
+    filter var(--app-duration-normal) var(--app-ease-smooth),
+    border-color var(--app-duration-normal) var(--app-ease-smooth);
+}
+
+.chip:active:not(.active),
+.sport-tab:active:not(.active),
+.segment-btn:active:not(.active) {
+  transform: scale(0.97);
+}
+
+.premium-active:active {
+  transform: scale(1.02);
+  filter: brightness(1.04);
+}
+
+/* ── Primary button ── */
+.premium-btn {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  transition:
+    transform var(--app-duration-micro) var(--app-ease-spring),
+    box-shadow var(--app-duration-normal) var(--app-ease-out),
+    filter var(--app-duration-normal) var(--app-ease-smooth);
+  will-change: transform;
+}
+
+.premium-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.35) 0%, transparent 65%);
+  opacity: 0;
+  transform: scale(0);
+  pointer-events: none;
+}
+
+.premium-btn:active:not(:disabled)::after {
+  animation: ripple-spread 450ms var(--app-ease-out) forwards;
+}
+
+.premium-btn:active:not(:disabled) {
+  transform: scale(0.97);
+  box-shadow: var(--app-glow-primary-soft);
+}
+
+.premium-btn.is-loading {
+  pointer-events: none;
+  opacity: 0.88;
+}
+
+.premium-btn.is-loading .btn-content {
+  opacity: 0;
+}
+
+.btn-spinner {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(17, 24, 39, 0.15);
+  border-top-color: #111827;
+  border-radius: 50%;
+  animation: spin 0.65s linear infinite;
+}
+
+/* ── Bottom tab active ── */
+.premium-tab-active {
+  transform: scale(1.03);
+  box-shadow: var(--app-glow-primary) !important;
+  animation: glow-pulse 3s var(--app-ease-smooth) infinite;
+}
+
+.premium-tab-indicator {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%) scale(0);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #8cf000;
+  box-shadow: 0 0 10px rgba(140, 240, 0, 0.75);
+  transition: transform var(--app-duration-micro) var(--app-ease-spring);
+}
+
+.premium-tab-indicator.is-visible {
+  transform: translateX(-50%) scale(1);
+}
+
+/* ── Live map ── */
+.live-breathe {
+  animation: breathe-glow 2.8s var(--app-ease-smooth) infinite;
+}
+
+.live-marker-pulse {
+  animation: live-breathe 2.4s var(--app-ease-smooth) infinite;
+}
+
+/* ── Icons ── */
+.premium-icon-btn {
+  transition:
+    transform var(--app-duration-micro) var(--app-ease-spring),
+    box-shadow var(--app-duration-normal) var(--app-ease-out),
+    background var(--app-duration-fast) var(--app-ease-smooth),
+    filter var(--app-duration-normal) var(--app-ease-smooth);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.premium-icon-btn:active {
+  transform: scale(0.92);
+  box-shadow: var(--app-glow-primary-soft);
+  filter: brightness(1.05);
+}
+
+.premium-icon-glow {
+  transition:
+    transform var(--app-duration-micro) var(--app-ease-spring),
+    box-shadow var(--app-duration-normal) var(--app-ease-out),
+    filter var(--app-duration-normal) var(--app-ease-smooth);
+}
+
+.trophy-shimmer {
+  animation: trophy-shimmer 2.6s var(--app-ease-smooth) infinite;
+}
+
+/* ── Leaderboard ── */
+.podium-card {
+  transition:
+    transform var(--app-duration-normal) var(--app-ease-out),
+    box-shadow var(--app-duration-normal) var(--app-ease-out),
+    border-color var(--app-duration-normal) var(--app-ease-smooth);
+}
+
+.podium-card:active {
+  transform: scale(1.02);
+  box-shadow: var(--app-glow-selected);
+}
+
+.podium-card-gold {
+  box-shadow: var(--app-glow-primary-soft), var(--app-shadow-premium-lg);
+}
+
+.podium-card-gold:active {
+  transform: scale(1.02);
+  box-shadow: var(--app-glow-primary), var(--app-shadow-lift);
+}
+
+.rank-badge-animate {
+  animation: rank-pop var(--app-duration-normal) var(--app-ease-spring) both;
+}
+
+/* ── Focus inputs ── */
+.premium-focus:focus-within,
+.field.focused {
+  box-shadow: var(--app-glow-focus) !important;
+}
+
+/* ── Checkbox ── */
+.premium-check-on {
+  box-shadow: var(--app-glow-primary-soft) !important;
+  transform: scale(1.06);
+}
+
+.premium-check-on .tick {
+  animation: tick-check var(--app-duration-micro) var(--app-ease-spring) both;
+}
+
+/* ── Glow utilities ── */
+.glow-primary {
+  box-shadow: var(--app-glow-primary);
+}
+
+.glow-primary-soft {
+  box-shadow: var(--app-glow-primary-soft);
+}
+
+.glow-secondary {
+  box-shadow: var(--app-glow-secondary);
+}
+
+.glow-focus {
+  box-shadow: var(--app-glow-focus);
+}
+
+.shadow-premium {
+  box-shadow: var(--app-shadow-premium);
+}
+
+.shadow-premium-lg {
+  box-shadow: var(--app-shadow-premium-lg);
+}
+
+/* ── Entrance & list ── */
+.animate-in {
+  animation: fade-in-up var(--app-duration-slow) var(--app-ease-out) both;
+}
+
+.animate-in-fast {
+  animation: fade-in-up var(--app-duration-normal) var(--app-ease-out) both;
+}
+
+.animate-fade {
+  animation: fade-in var(--app-duration-normal) var(--app-ease-out) both;
+}
+
+.animate-scale {
+  animation: scale-in var(--app-duration-normal) var(--app-ease-spring) both;
+}
+
+.stagger-children > * {
+  animation: fade-in-up var(--app-duration-slow) var(--app-ease-out) both;
+}
+
+.stagger-children > *:nth-child(1) {
+  animation-delay: 0ms;
+}
+.stagger-children > *:nth-child(2) {
+  animation-delay: 45ms;
+}
+.stagger-children > *:nth-child(3) {
+  animation-delay: 90ms;
+}
+.stagger-children > *:nth-child(4) {
+  animation-delay: 135ms;
+}
+.stagger-children > *:nth-child(5) {
+  animation-delay: 180ms;
+}
+.stagger-children > *:nth-child(6) {
+  animation-delay: 225ms;
+}
+.stagger-children > *:nth-child(7) {
+  animation-delay: 270ms;
+}
+.stagger-children > *:nth-child(8) {
+  animation-delay: 315ms;
+}
+
+/* ── Skeleton loaders ── */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #f3f4f6 0%,
+    #eceef2 40%,
+    #f3f4f6 80%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s var(--app-ease-smooth) infinite;
+  border-radius: var(--app-radius-input);
+}
+
+.skeleton-text {
+  height: 12px;
+  margin-bottom: 8px;
+}
+
+.skeleton-text:last-child {
+  width: 70%;
+  margin-bottom: 0;
+}
+
+.skeleton-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.skeleton-card {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  border-radius: var(--app-radius-card);
+  background: #fff;
+  border: 1px solid #f3f4f6;
+}
+
+/* ── Scroll ── */
+.smooth-scroll,
+.scroll-momentum {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Menu items ── */
+.menu-item,
+.logout-btn {
+  transition:
+    transform var(--app-duration-micro) var(--app-ease-spring),
+    background var(--app-duration-normal) var(--app-ease-smooth),
+    box-shadow var(--app-duration-normal) var(--app-ease-out);
+}
+
+.menu-item:active,
+.logout-btn:active {
+  transform: scale(0.98);
+  background: #f9fafb;
+  box-shadow: var(--app-glow-primary-soft);
+}
+
+.menu-item:active .menu-icon {
+  transform: scale(1.05);
+  box-shadow: var(--app-glow-primary-soft);
+}
+
+.menu-icon {
+  transition:
+    transform var(--app-duration-micro) var(--app-ease-spring),
+    box-shadow var(--app-duration-normal) var(--app-ease-out),
+    background var(--app-duration-fast) var(--app-ease-smooth);
+}
+
+/* ── Auto-enhance known card patterns (no template change needed) ── */
+.coach-card,
+.detail-card,
+.booking-card,
+.venue-card,
+.player-card {
+  box-shadow: var(--app-shadow-premium);
+}
+
+.coach-card:active,
+.detail-card:active,
+.booking-card:active,
+.venue-card:active {
+  transform: scale(0.985);
+  box-shadow: var(--app-glow-selected);
+  border-color: rgba(140, 240, 0, 0.35) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

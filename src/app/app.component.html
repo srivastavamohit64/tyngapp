@@ -1,132 +1,199 @@
-<!-- LEFT DRAWER matching Figma LeftDrawer.tsx -->
+<!-- LEFT DRAWER — role-aware (Figma LeftDrawer / CoachLeftDrawer) -->
 <ion-menu contentId="main-content" type="overlay">
   <ion-content>
-    <div class="drawer-shell">
-
-      <!-- Profile Header with lime green gradient top -->
-      <div class="drawer-profile-header">
-        <!-- Close hint area (clicking backdrop closes) -->
-        
-        <!-- Avatar + level badge -->
-        <div class="drawer-avatar-wrap" (click)="navigateTo('/app/profile')">
+    <!-- Coach drawer -->
+    <div class="drawer-shell" *ngIf="auth.user()?.role === 'coach'; else playerDrawer">
+      <div class="drawer-profile-header coach-drawer-header">
+        <div class="drawer-avatar-wrap" (click)="navigateTo('/app/coach/profile')">
           <div class="drawer-avatar">
-            <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=160&h=160&fit=crop&auto=format" alt="Arjun Sharma" class="drawer-avatar-img" />
+            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=160&h=160&fit=crop&auto=format" alt="Rajesh Pandey" class="drawer-avatar-img" />
           </div>
-          <div class="drawer-level-badge">28</div>
+          <div class="drawer-verified-badge">
+            <ion-icon name="checkmark" class="verified-icon"></ion-icon>
+          </div>
         </div>
-
-        <!-- Name + handle -->
-        <div class="drawer-name-block" (click)="navigateTo('/app/profile')">
-          <h3 class="drawer-name">Arjun Sharma</h3>
-          <p class="drawer-handle">&#64;arjun_cricket · Lucknow</p>
+        <div class="drawer-name-block" (click)="navigateTo('/app/coach/profile')">
+          <h3 class="drawer-name">Rajesh Pandey</h3>
+          <p class="drawer-handle">Cricket · Football Coach</p>
+        </div>
+        <div class="coach-rating-row">
+          <div class="coach-rating">
+            <ion-icon name="star" class="star-icon"></ion-icon>
+            <span class="rating-value">4.8</span>
+            <span class="rating-count">(128)</span>
+          </div>
+          <div class="verified-pill">
+            <ion-icon name="shield-checkmark-outline"></ion-icon>
+            <span>Verified Coach</span>
+          </div>
         </div>
       </div>
 
-      <!-- XP Card (dark with gradient) -->
-      <div class="drawer-xp-card" (click)="navigateTo('/app/leaderboard')">
+      <div class="coach-completion-card" (click)="navigateTo('/app/coach/complete-profile')">
         <div class="xp-orb1"></div>
         <div class="xp-orb2"></div>
-        <div class="xp-top">
-          <div>
-            <div class="xp-top5">🏆 Top 5%</div>
-            <div class="xp-points">1,250</div>
-            <div class="xp-lbl">TP Points</div>
+        <div class="coach-completion-inner">
+          <div class="coach-completion-top">
+            <p class="coach-completion-label">Profile Completion</p>
+            <span class="coach-completion-pct">40%</span>
           </div>
-          <div class="xp-right">
-            <div class="xp-lvl-lbl">Level</div>
-            <div class="xp-lvl">28</div>
+          <div class="coach-completion-bar">
+            <div class="coach-completion-fill" style="width:40%"></div>
+          </div>
+          <p class="coach-completion-desc">Complete your profile to receive more bookings and unlock your Verified Coach badge.</p>
+          <div class="coach-completion-cta">
+            <ion-icon name="clipboard-outline"></ion-icon>
+            Complete Profile
           </div>
         </div>
-        <!-- Progress -->
-        <div class="xp-prog-row">
-          <span class="xp-prog-lbl">1,850 / 2,500 XP</span>
-          <span class="xp-prog-pct">74%</span>
-        </div>
-        <div class="xp-bar">
-          <div class="xp-fill" style="width:74%"></div>
-        </div>
-        <div class="xp-to-next">650 XP to Level 29</div>
       </div>
 
-      <!-- Menu Items -->
       <div class="drawer-menu">
-        <button class="menu-item" (click)="navigateTo('/app/stats')">
-          <div class="menu-icon"><ion-icon name="analytics-outline"></ion-icon></div>
+        <button class="menu-item" *ngFor="let item of coachMenuItems" (click)="navigateTo(item.path)">
+          <div class="menu-icon"><ion-icon [name]="item.icon"></ion-icon></div>
           <div class="menu-text">
-            <div class="menu-label">Personal Stats</div>
-            <div class="menu-desc">Height, weight, fitness &amp; more</div>
+            <div class="menu-label">{{ item.label }}</div>
+            <div class="menu-desc">{{ item.sub }}</div>
           </div>
-          <ion-icon name="chevron-forward-outline" class="menu-chevron"></ion-icon>
+          <div *ngIf="item.badge" class="menu-badge">{{ item.badge }}</div>
+          <ion-icon *ngIf="!item.badge" name="chevron-forward-outline" class="menu-chevron"></ion-icon>
         </button>
 
-        <button class="menu-item" (click)="navigateTo('/app/leaderboard')">
-          <div class="menu-icon"><ion-icon name="trophy-outline"></ion-icon></div>
-          <div class="menu-text">
-            <div class="menu-label">Leaderboards</div>
-            <div class="menu-desc">City, friends &amp; sport rankings</div>
-          </div>
-          <ion-icon name="chevron-forward-outline" class="menu-chevron"></ion-icon>
-        </button>
-
-        <button class="menu-item" (click)="navigateTo('/app/my-bookings')">
-          <div class="menu-icon"><ion-icon name="time-outline"></ion-icon></div>
-          <div class="menu-text">
-            <div class="menu-label">History</div>
-            <div class="menu-desc">Games, bookings &amp; payments</div>
-          </div>
-          <ion-icon name="chevron-forward-outline" class="menu-chevron"></ion-icon>
-        </button>
-
-        <button class="menu-item" (click)="navigateTo('/app/chat')">
-          <div class="menu-icon"><ion-icon name="chatbubbles-outline"></ion-icon></div>
-          <div class="menu-text">
-            <div class="menu-label">Chat</div>
-            <div class="menu-desc">DMs, team &amp; game chats</div>
-          </div>
-          <div class="menu-badge">3</div>
-          <ion-icon name="chevron-forward-outline" class="menu-chevron"></ion-icon>
-        </button>
-
-        <button class="menu-item" (click)="navigateTo('/app/coaches')">
-          <div class="menu-icon"><ion-icon name="school-outline"></ion-icon></div>
-          <div class="menu-text">
-            <div class="menu-label">Coaches</div>
-            <div class="menu-desc">Book sessions, reviews, ratings</div>
-          </div>
-          <ion-icon name="chevron-forward-outline" class="menu-chevron"></ion-icon>
-        </button>
-
-        <button class="menu-item" (click)="navigateTo('/app/settings')">
-          <div class="menu-icon"><ion-icon name="settings-outline"></ion-icon></div>
-          <div class="menu-text">
-            <div class="menu-label">Settings</div>
-            <div class="menu-desc">Notifications, privacy, theme</div>
-          </div>
-          <ion-icon name="chevron-forward-outline" class="menu-chevron"></ion-icon>
-        </button>
-
-        <!-- Divider -->
         <div class="menu-divider"></div>
 
-        <button class="menu-item" (click)="navigateTo('/app/home')">
-          <div class="menu-icon"><ion-icon name="headset-outline"></ion-icon></div>
-          <div class="menu-text">
-            <div class="menu-label">Support</div>
-            <div class="menu-desc">FAQs, report, contact us</div>
+        <div *ngIf="showLogoutConfirm; else logoutBtn" class="logout-confirm">
+          <p class="logout-confirm-title">Log out of TYNG?</p>
+          <p class="logout-confirm-desc">Your sessions and profile data will be preserved.</p>
+          <div class="logout-confirm-actions">
+            <button type="button" class="logout-cancel" (click)="showLogoutConfirm = false">Cancel</button>
+            <button type="button" class="logout-confirm-btn" (click)="logout()">Log Out</button>
           </div>
-          <ion-icon name="chevron-forward-outline" class="menu-chevron"></ion-icon>
-        </button>
+        </div>
+        <ng-template #logoutBtn>
+          <button class="logout-btn" (click)="showLogoutConfirm = true">
+            <div class="logout-icon"><ion-icon name="log-out-outline"></ion-icon></div>
+            <span class="logout-text">Log Out</span>
+          </button>
+        </ng-template>
       </div>
-
-      <!-- Logout -->
-      <div class="drawer-logout">
-        <button class="logout-btn" (click)="logout()">
-          <div class="logout-icon"><ion-icon name="log-out-outline"></ion-icon></div>
-          <span class="logout-text">Log Out</span>
-        </button>
-      </div>
-
     </div>
+
+    <!-- Player drawer -->
+    <ng-template #playerDrawer>
+      <div class="drawer-shell">
+        <div class="drawer-profile-header">
+          <div class="drawer-avatar-wrap" (click)="navigateTo('/app/profile')">
+            <div class="drawer-avatar">
+              <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=160&h=160&fit=crop&auto=format" alt="Arjun Sharma" class="drawer-avatar-img" />
+            </div>
+            <div class="drawer-level-badge">28</div>
+          </div>
+          <div class="drawer-name-block" (click)="navigateTo('/app/profile')">
+            <h3 class="drawer-name">Arjun Sharma</h3>
+            <p class="drawer-handle">&#64;arjun_cricket · Lucknow</p>
+          </div>
+        </div>
+
+        <div class="drawer-xp-card" (click)="navigateTo('/app/leaderboard')">
+          <div class="xp-orb1"></div>
+          <div class="xp-orb2"></div>
+          <div class="xp-top">
+            <div>
+              <div class="xp-top5">🏆 Top 5%</div>
+              <div class="xp-points">1,250</div>
+              <div class="xp-lbl">TP Points</div>
+            </div>
+            <div class="xp-right">
+              <div class="xp-lvl-lbl">Level</div>
+              <div class="xp-lvl">28</div>
+            </div>
+          </div>
+          <div class="xp-prog-row">
+            <span class="xp-prog-lbl">1,850 / 2,500 XP</span>
+            <span class="xp-prog-pct">74%</span>
+          </div>
+          <div class="xp-bar">
+            <div class="xp-fill" style="width:74%"></div>
+          </div>
+          <div class="xp-to-next">650 XP to Level 29</div>
+        </div>
+
+        <div class="drawer-menu">
+          <button class="menu-item" (click)="navigateTo('/app/stats')">
+            <div class="menu-icon"><ion-icon name="analytics-outline"></ion-icon></div>
+            <div class="menu-text">
+              <div class="menu-label">Personal Stats</div>
+              <div class="menu-desc">Height, weight, fitness &amp; more</div>
+            </div>
+            <ion-icon name="chevron-forward-outline" class="menu-chevron"></ion-icon>
+          </button>
+
+          <button class="menu-item" (click)="navigateTo('/app/leaderboard')">
+            <div class="menu-icon"><ion-icon name="trophy-outline"></ion-icon></div>
+            <div class="menu-text">
+              <div class="menu-label">Leaderboards</div>
+              <div class="menu-desc">City, friends &amp; sport rankings</div>
+            </div>
+            <ion-icon name="chevron-forward-outline" class="menu-chevron"></ion-icon>
+          </button>
+
+          <button class="menu-item" (click)="navigateTo('/app/my-bookings')">
+            <div class="menu-icon"><ion-icon name="time-outline"></ion-icon></div>
+            <div class="menu-text">
+              <div class="menu-label">History</div>
+              <div class="menu-desc">Games, bookings &amp; payments</div>
+            </div>
+            <ion-icon name="chevron-forward-outline" class="menu-chevron"></ion-icon>
+          </button>
+
+          <button class="menu-item" (click)="navigateTo('/app/chat')">
+            <div class="menu-icon"><ion-icon name="chatbubbles-outline"></ion-icon></div>
+            <div class="menu-text">
+              <div class="menu-label">Chat</div>
+              <div class="menu-desc">DMs, team &amp; game chats</div>
+            </div>
+            <div class="menu-badge">3</div>
+            <ion-icon name="chevron-forward-outline" class="menu-chevron"></ion-icon>
+          </button>
+
+          <button class="menu-item" (click)="navigateTo('/app/coaches')">
+            <div class="menu-icon"><ion-icon name="school-outline"></ion-icon></div>
+            <div class="menu-text">
+              <div class="menu-label">Coaches</div>
+              <div class="menu-desc">Book sessions, reviews, ratings</div>
+            </div>
+            <ion-icon name="chevron-forward-outline" class="menu-chevron"></ion-icon>
+          </button>
+
+          <button class="menu-item" (click)="navigateTo('/app/settings')">
+            <div class="menu-icon"><ion-icon name="settings-outline"></ion-icon></div>
+            <div class="menu-text">
+              <div class="menu-label">Settings</div>
+              <div class="menu-desc">Notifications, privacy, theme</div>
+            </div>
+            <ion-icon name="chevron-forward-outline" class="menu-chevron"></ion-icon>
+          </button>
+
+          <div class="menu-divider"></div>
+
+          <button class="menu-item" (click)="navigateTo('/app/home')">
+            <div class="menu-icon"><ion-icon name="headset-outline"></ion-icon></div>
+            <div class="menu-text">
+              <div class="menu-label">Support</div>
+              <div class="menu-desc">FAQs, report, contact us</div>
+            </div>
+            <ion-icon name="chevron-forward-outline" class="menu-chevron"></ion-icon>
+          </button>
+        </div>
+
+        <div class="drawer-logout">
+          <button class="logout-btn" (click)="logout()">
+            <div class="logout-icon"><ion-icon name="log-out-outline"></ion-icon></div>
+            <span class="logout-text">Log Out</span>
+          </button>
+        </div>
+      </div>
+    </ng-template>
   </ion-content>
 </ion-menu>
 

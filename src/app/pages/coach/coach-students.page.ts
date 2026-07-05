@@ -4,7 +4,6 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
-import { FilterChip, FilterChipsComponent } from '../../shared/components/filter-chips/filter-chips.component';
 
 interface Student {
   id: number;
@@ -107,66 +106,118 @@ const STUDENTS: Student[] = [
 @Component({
   selector: 'app-coach-students',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule, BrandHeaderShellComponent, FilterChipsComponent],
+  imports: [CommonModule, IonicModule, FormsModule, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true" class="has-tabs">
       <app-brand-header-shell>
       <div class="students-page">
-        <!-- Sticky Header -->
-        <div class="sticky-header flex items-center justify-between px-5 h-14 bg-white border-b border-[#F3F4F6]">
-          <button (click)="back()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
-            <ion-icon name="chevron-back-outline" class="text-xl text-[#111827]"></ion-icon>
-          </button>
-          <p class="text-[17px] font-black text-[#111827] m-0">My Students</p>
-          <button (click)="go('/app/coach/enroll-student')" class="w-10 h-10 flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
-            <ion-icon name="person-add-outline" class="text-xl text-[#111827]"></ion-icon>
-          </button>
-        </div>
+        <div class="sticky-header">
+          <div class="flex items-center justify-between px-5 h-14 bg-white border-b border-[#F3F4F6]">
+            <button (click)="back()" class="hdr-icon-btn">
+              <ion-icon name="chevron-back-outline" class="text-xl text-[#111827]"></ion-icon>
+            </button>
+            <p class="text-[17px] font-black text-[#111827] m-0">My Students</p>
+            <div class="flex gap-1">
+              <button (click)="searchOpen.set(!searchOpen())" class="hdr-icon-btn hdr-icon-btn--sm">
+                <ion-icon [name]="searchOpen() ? 'close-outline' : 'search-outline'" class="text-base text-[#111827]"></ion-icon>
+              </button>
+              <button class="hdr-icon-btn hdr-icon-btn--sm">
+                <ion-icon name="options-outline" class="text-base text-[#111827]"></ion-icon>
+              </button>
+            </div>
+          </div>
 
-        <!-- Search bar -->
-        <div class="px-5 pt-4 bg-[#FAFBFC]">
-          <div class="flex items-center gap-2 bg-white rounded-2xl px-4 h-12 border border-[#F3F4F6] shadow-sm">
-            <ion-icon name="search-outline" class="text-[#9CA3AF] text-lg"></ion-icon>
-            <input [(ngModel)]="searchQ" placeholder="Search by name, sport, skill..." class="flex-1 bg-transparent text-[14px] text-[#111827] focus:outline-none min-h-0 border-none" />
-            <button class="bg-transparent border-none p-0 flex"><ion-icon name="options-outline" class="text-[#9CA3AF] text-lg"></ion-icon></button>
+          <div *ngIf="searchOpen()" class="search-expand px-4 pb-3 bg-white border-b border-[#F3F4F6]">
+            <div class="flex items-center gap-2 bg-[#F3F4F6] rounded-2xl px-4 h-10">
+              <ion-icon name="search-outline" class="text-[#9CA3AF] text-base"></ion-icon>
+              <input [(ngModel)]="searchQ" placeholder="Search students or sports…" class="flex-1 bg-transparent text-[14px] text-[#111827] focus:outline-none min-h-0 border-none" />
+            </div>
+          </div>
+
+          <div class="filter-track px-5 pb-4 pt-3 bg-white border-b border-[#F3F4F6]">
+            <div class="flex gap-2 overflow-x-auto no-scrollbar">
+              <button *ngFor="let f of filterOptions" (click)="selectedFilter.set(f)"
+                class="filter-chip flex-shrink-0"
+                [class.filter-chip--active]="selectedFilter() === f">
+                {{ f }}
+              </button>
+            </div>
           </div>
         </div>
 
-        <!-- Filter chips track -->
-        <div class="px-5 py-3 bg-[#FAFBFC]">
-          <app-filter-chips
-            [chips]="filterChips"
-            [value]="selectedFilter()"
-            (valueChange)="selectedFilter.set($event)"
-          ></app-filter-chips>
-        </div>
-
-        <!-- Students List -->
-        <div class="px-5 pb-32 space-y-3">
-          <div *ngIf="filteredStudents().length === 0" class="text-center py-12">
-            <p class="text-slate-400 text-sm font-semibold">No students found matching filters.</p>
+        <div class="px-4 pt-4 pb-32 space-y-4">
+          <div class="overview-card">
+            <div class="flex items-center justify-between mb-4">
+              <p class="text-[14px] font-black text-[#111827] m-0">Student Overview</p>
+              <span class="text-[11px] font-semibold text-[#9CA3AF]">{{ students.length }} total</span>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div *ngFor="let m of overviewMetrics()" class="metric-tile"
+                [style.backgroundColor]="m.accent + '10'" [style.border]="'1.5px solid ' + m.accent + '22'">
+                <div class="metric-orb" [style.backgroundColor]="m.accent"></div>
+                <span class="text-xl">{{ m.emoji }}</span>
+                <p class="text-[20px] font-black text-[#111827] mt-1 mb-0">{{ m.value }}</p>
+                <p class="text-[10px] text-[#6B7280] mt-0.5">{{ m.label }}</p>
+              </div>
+            </div>
           </div>
 
-          <div *ngFor="let s of filteredStudents()" (click)="go('/app/coach/student/' + s.id)" class="student-card p-4 flex items-center gap-3 cursor-pointer">
-            <img [src]="s.photo" class="w-12 h-12 rounded-full object-cover flex-shrink-0" />
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center gap-2 mb-1">
-                <h3 class="text-[14px] font-bold text-[#111827] m-0 truncate">{{ s.name }}</h3>
-                <span class="text-[9px] font-bold px-2 py-0.5 rounded-full"
+          <div *ngIf="filteredStudents().length === 0" class="empty-state">
+            <div class="text-6xl mb-3">👥</div>
+            <p class="text-[18px] font-black text-[#111827] mb-2">Your coaching journey starts here.</p>
+            <p class="text-[13px] text-[#9CA3AF] mb-6">Students will appear once they join your sessions.</p>
+            <button (click)="go('/app/coach/enroll-student')" class="invite-btn">Invite Students</button>
+          </div>
+
+          <div *ngFor="let s of filteredStudents(); let i = index" class="student-card">
+            <div class="relative h-[120px] overflow-hidden bg-slate-200">
+              <img [src]="s.cover" [alt]="s.name" class="w-full h-full object-cover" />
+              <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+              <span class="absolute top-3 right-3 text-[10px] font-bold px-2.5 py-1 rounded-full"
+                [style.backgroundColor]="s.membershipStatus === 'Active' ? '#F0FDF4' : '#FEF2F2'"
+                [style.color]="s.membershipStatus === 'Active' ? '#16A34A' : '#DC2626'">
+                {{ s.membershipStatus }}
+              </span>
+              <div class="absolute bottom-3 left-3">
+                <span class="text-[11px] font-bold bg-black/50 backdrop-blur-sm text-white px-2.5 py-1 rounded-full">
+                  {{ s.emoji }} {{ s.sport }}
+                </span>
+              </div>
+            </div>
+            <div class="px-4 -mt-7 pb-4">
+              <div class="flex items-end justify-between mb-3">
+                <div class="relative">
+                  <img [src]="s.photo" class="w-14 h-14 rounded-2xl border-[3px] border-white object-cover shadow-lg" />
+                  <div class="session-badge">{{ s.sessionsCompleted }}</div>
+                </div>
+                <span class="text-[11px] font-bold px-2.5 py-1 rounded-full"
                   [style.backgroundColor]="getSkillStyle(s.skillLevel).bg"
                   [style.color]="getSkillStyle(s.skillLevel).color">
                   {{ s.skillLevel }}
                 </span>
               </div>
-              <p class="text-[11px] text-[#9CA3AF] m-0">
-                {{ s.emoji }} {{ s.sport }} · {{ s.attendance }}% attendance · last session {{ s.lastSession }}
-              </p>
-            </div>
-            <div class="flex items-center gap-2 flex-shrink-0">
-              <button (click)="$event.stopPropagation(); go('/app/chat')" class="w-8 h-8 rounded-full bg-[#FAFBFC] border border-[#F3F4F6] flex items-center justify-center">
-                <ion-icon name="chatbubble-ellipses-outline" class="text-slate-600 text-sm"></ion-icon>
-              </button>
-              <ion-icon name="chevron-forward-outline" class="text-[#D1D5DB]"></ion-icon>
+              <div class="flex items-baseline gap-2 mb-1">
+                <h3 class="text-[16px] font-black text-[#111827] m-0">{{ s.name }}</h3>
+                <span class="text-[12px] text-[#9CA3AF]">Age {{ s.age }}</span>
+              </div>
+              <div class="flex items-center gap-3 text-[11px] text-[#9CA3AF] mb-3">
+                <span class="font-semibold text-[#111827]">{{ s.sessionsCompleted }} sessions</span>
+                <div class="w-1 h-1 rounded-full bg-[#E5E7EB]"></div>
+                <span class="font-semibold" [style.color]="s.attendance >= 90 ? '#16A34A' : s.attendance >= 75 ? '#D97706' : '#DC2626'">
+                  {{ s.attendance }}% attendance
+                </span>
+              </div>
+              <div class="flex flex-wrap gap-1.5 mb-3">
+                <span *ngFor="let focus of s.trainingFocus" class="focus-chip">{{ focus }}</span>
+              </div>
+              <div class="flex gap-2">
+                <button (click)="go('/app/coach/chat')" class="chat-btn">
+                  <ion-icon name="chatbubble-ellipses-outline"></ion-icon>
+                </button>
+                <button (click)="go('/app/coach/student/' + s.id)" class="profile-btn">
+                  View Profile <ion-icon name="chevron-forward-outline"></ion-icon>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -175,68 +226,112 @@ const STUDENTS: Student[] = [
     </ion-content>
   `,
   styles: [`
-    .students-page {
-      background: #FAFBFC;
-      min-height: 100%;
+    .students-page { background: #FAFBFC; min-height: 100%; }
+    .sticky-header { position: sticky; top: 0; z-index: 30; }
+    .hdr-icon-btn {
+      width: 40px; height: 40px; border-radius: 12px; background: #F3F4F6; border: none;
+      display: flex; align-items: center; justify-content: center;
     }
-
-    .sticky-header {
-      position: sticky;
-      top: 0;
-      z-index: 30;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    .hdr-icon-btn--sm { width: 36px; height: 36px; }
+    .filter-track { scrollbar-width: none; }
+    .filter-chip {
+      padding: 8px 14px; border-radius: 999px; font-size: 12px; font-weight: 700;
+      background: #F3F4F6; color: #6B7280; border: none;
     }
-
+    .filter-chip--active {
+      background: #8CF000; color: #111827; box-shadow: 0 2px 8px rgba(140,240,0,0.30);
+    }
+    .overview-card {
+      background: white; border-radius: 24px; padding: 20px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+    }
+    .metric-tile {
+      border-radius: 18px; padding: 14px; position: relative; overflow: hidden;
+    }
+    .metric-orb {
+      position: absolute; bottom: -12px; right: -12px; width: 48px; height: 48px;
+      border-radius: 50%; opacity: 0.2;
+    }
     .student-card {
-      background: #FFFFFF;
-      border-radius: 20px;
-      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-      border: 1px solid #F3F4F6;
-      transition: transform 0.2s;
-
-      &:active {
-        transform: scale(0.98);
-      }
+      background: white; border-radius: 24px; overflow: hidden;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.07), 0 1px 4px rgba(0,0,0,0.04);
     }
-
-    .no-scrollbar {
-      scrollbar-width: none;
-      &::-webkit-scrollbar {
-        display: none;
-      }
+    .session-badge {
+      position: absolute; bottom: -4px; right: -4px; width: 20px; height: 20px;
+      border-radius: 50%; background: #8CF000; border: 2px solid white;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 8px; font-weight: 900; color: #111827;
     }
+    .focus-chip {
+      font-size: 10px; font-weight: 600; color: #6B7280; background: #F9FAFB;
+      padding: 4px 8px; border-radius: 999px;
+    }
+    .chat-btn {
+      width: 36px; height: 36px; border-radius: 12px; border: none;
+      background: rgba(56,189,248,0.10); color: #38BDF8;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .profile-btn {
+      flex: 1; height: 36px; border-radius: 12px; border: none;
+      background: linear-gradient(135deg,#8CF000,#A3E635);
+      box-shadow: 0 2px 8px rgba(140,240,0,0.30);
+      font-size: 12px; font-weight: 900; color: #111827;
+      display: flex; align-items: center; justify-content: center; gap: 4px;
+    }
+    .empty-state { text-align: center; padding: 48px 16px; }
+    .invite-btn {
+      height: 48px; padding: 0 28px; border-radius: 999px; border: none;
+      background: linear-gradient(135deg,#8CF000,#A3E635);
+      box-shadow: 0 4px 16px rgba(140,240,0,0.40);
+      font-size: 14px; font-weight: 900; color: #111827;
+    }
+    .no-scrollbar { scrollbar-width: none; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
   `]
 })
 export class CoachStudentsPage {
   private readonly router = inject(Router);
 
   searchQ = '';
+  searchOpen = signal(false);
   selectedFilter = signal('All');
+  readonly students = STUDENTS;
 
-  readonly filterOptions = ['All', 'Active', 'Inactive', 'Beginner', 'Intermediate', 'Advanced', 'Expert'];
+  readonly filterOptions = ['All', 'Active', 'Inactive', 'Recently Added', 'Beginner', 'Intermediate', 'Advanced'];
 
-  readonly filterChips: FilterChip[] = this.filterOptions.map((f) => ({ id: f, label: f }));
+  readonly overviewMetrics = computed(() => {
+    const active = STUDENTS.filter((s) => s.membershipStatus === 'Active').length;
+    const avgAttendance = Math.round(STUDENTS.reduce((sum, s) => sum + s.attendance, 0) / STUDENTS.length);
+    const avgRating = (
+      STUDENTS.reduce((sum, s) => sum + Object.values(s.evaluation).reduce((a, b) => a + b, 0) / 6, 0) / STUDENTS.length
+    ).toFixed(1);
+    return [
+      { emoji: '👥', label: 'Active Students', value: String(active), accent: '#8CF000' },
+      { emoji: '⭐', label: 'Average Rating', value: avgRating, accent: '#F59E0B' },
+      { emoji: '✅', label: 'Average Attendance', value: `${avgAttendance}%`, accent: '#38BDF8' },
+      { emoji: '📈', label: 'Monthly Growth', value: '+2 Students', accent: '#FF7A00' },
+    ];
+  });
 
   filteredStudents = computed(() => {
     const query = this.searchQ.toLowerCase().trim();
     const filter = this.selectedFilter();
+    let result = [...STUDENTS];
 
-    return STUDENTS.filter(s => {
-      // Search query filter
-      const matchesQuery = !query || s.name.toLowerCase().includes(query) || s.sport.toLowerCase().includes(query);
-
-      // Category filter
-      let matchesFilter = true;
-      if (filter === 'Active') matchesFilter = s.membershipStatus === 'Active';
-      else if (filter === 'Inactive') matchesFilter = s.membershipStatus === 'Inactive';
-      else if (filter !== 'All') matchesFilter = s.skillLevel === filter;
-
-      return matchesQuery && matchesFilter;
-    });
+    if (query) {
+      result = result.filter((s) => s.name.toLowerCase().includes(query) || s.sport.toLowerCase().includes(query));
+    }
+    if (filter === 'Active') result = result.filter((s) => s.membershipStatus === 'Active');
+    else if (filter === 'Inactive') result = result.filter((s) => s.membershipStatus === 'Inactive');
+    else if (filter === 'Recently Added') result = result.sort((a, b) => b.id - a.id);
+    else if (['Beginner', 'Intermediate', 'Advanced'].includes(filter)) {
+      result = result.filter((s) => s.skillLevel === filter);
+    }
+    return result;
   });
 
   back() {
-    this.router.navigateByUrl('/app/home');
+    this.router.navigateByUrl('/app/coach/dashboard');
   }
 
   go(path: string) {

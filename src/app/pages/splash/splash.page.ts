@@ -441,7 +441,8 @@ export class SplashPage implements OnInit, OnDestroy {
       if (user.isOnboarded) {
         void this.router.navigateByUrl("/app/home", { replaceUrl: true });
       } else {
-        void this.router.navigateByUrl("/onboarding", { replaceUrl: true });
+        const path = user.role === 'coach' ? '/coach-onboarding' : '/onboarding';
+        void this.router.navigateByUrl(path, { replaceUrl: true });
       }
     } else {
       void this.router.navigateByUrl("/welcome", { replaceUrl: true });

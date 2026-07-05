@@ -378,7 +378,7 @@ export class CoachNotificationsPage {
   }
 
   back() {
-    this.router.navigateByUrl('/app/home');
+    this.router.navigateByUrl('/app/coach/dashboard');
   }
 
   go(path: string) {

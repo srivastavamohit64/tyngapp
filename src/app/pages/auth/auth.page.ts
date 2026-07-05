@@ -168,10 +168,6 @@ const HERO_IMAGE =
               </svg>
               <span>Google</span>
             </button>
-            <button type="button" class="social apple" (click)="handleSocial()">
-              <ion-icon name="logo-apple"></ion-icon>
-              <span>Apple</span>
-            </button>
           </div>
 
           <p class="bottom-msg">🏙️ Join thousands of players across your city.</p>
@@ -494,17 +490,6 @@ const HERO_IMAGE =
         color: #111827;
       }
 
-      .social.apple {
-        background: #111827;
-        color: #fff;
-        border-color: #111827;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-      }
-
-      .social.apple ion-icon {
-        font-size: 18px;
-      }
-
       .bottom-msg {
         text-align: center;
         margin: 28px 32px 16px;
@@ -575,7 +560,7 @@ export class AuthPage implements OnInit {
     if (!this.canSubmit) return;
     if (this.isSignup) {
       this.auth.loginAs(this.selectedRole, { name: this.name.trim() });
-      void this.router.navigateByUrl('/onboarding');
+      void this.router.navigateByUrl(this.selectedRole === 'coach' ? '/coach-onboarding' : '/onboarding');
       return;
     }
     this.auth.loginAs(this.selectedRole, { isOnboarded: true });
@@ -585,7 +570,7 @@ export class AuthPage implements OnInit {
   handleSocial() {
     if (this.isSignup) {
       this.auth.loginAs(this.selectedRole);
-      void this.router.navigateByUrl('/onboarding');
+      void this.router.navigateByUrl(this.selectedRole === 'coach' ? '/coach-onboarding' : '/onboarding');
       return;
     }
     this.auth.loginAs(this.selectedRole, { isOnboarded: true });

@@ -267,6 +267,20 @@ const FUNNEL = [
             </div>
           </div>
 
+          <!-- Coach Tip CTA -->
+          <button (click)="go('/app/coach/complete-profile')" class="coach-tip-cta w-full rounded-[24px] p-5 text-left relative overflow-hidden border-none">
+            <div class="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-white/10"></div>
+            <div class="relative">
+              <p class="text-[11px] font-black text-white/60 uppercase tracking-wider mb-1 m-0">Coach Tip</p>
+              <p class="text-[15px] font-black text-white mb-1 m-0">Boost your growth score to 100</p>
+              <p class="text-[12px] text-white/70 m-0">Complete your profile to unlock higher search rankings and verified coach status.</p>
+              <div class="flex items-center gap-1.5 mt-3">
+                <span class="text-[13px] font-black text-white">Complete Profile</span>
+                <ion-icon name="chevron-forward-outline" class="text-white text-sm"></ion-icon>
+              </div>
+            </div>
+          </button>
+
         </div>
       </div>
     </ion-content>
@@ -327,6 +341,12 @@ const FUNNEL = [
     .toggle-thumb-on {
       transform: translateX(22px);
     }
+
+    .coach-tip-cta {
+      background: linear-gradient(135deg, #FF7A00 0%, #FF9A40 100%);
+      box-shadow: 0 4px 20px rgba(255, 122, 0, 0.35);
+      cursor: pointer;
+    }
   `]
 })
 export class CoachInsightsPage {
@@ -348,7 +368,11 @@ export class CoachInsightsPage {
   ];
 
   back() {
-    this.router.navigateByUrl('/app/home');
+    this.router.navigateByUrl('/app/coach/dashboard');
+  }
+
+  go(path: string) {
+    this.router.navigateByUrl(path);
   }
 
   getIconName(id: string): string {

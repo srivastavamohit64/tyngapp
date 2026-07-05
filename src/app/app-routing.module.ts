@@ -30,6 +30,10 @@ const routes: Routes = [
     loadComponent: () => import('./pages/onboarding/onboarding.page').then((m) => m.OnboardingPage),
   },
   {
+    path: 'coach-onboarding',
+    loadComponent: () => import('./pages/coach/coach-onboarding.page').then((m) => m.CoachOnboardingPage),
+  },
+  {
     path: 'app/onboarding',
     loadComponent: () => import('./pages/onboarding/onboarding.page').then((m) => m.OnboardingPage),
   },
@@ -73,6 +77,10 @@ const routes: Routes = [
         loadComponent: () => import('./pages/home/home.page').then((m) => m.HomePage),
       },
       {
+        path: 'coach/dashboard',
+        loadComponent: () => import('./pages/home/home.page').then((m) => m.HomePage),
+      },
+      {
         path: 'discover',
         loadComponent: () => import('./pages/discover/discover.page').then((m) => m.DiscoverPage),
       },
@@ -102,6 +110,10 @@ const routes: Routes = [
       },
       {
         path: 'schedule',
+        loadComponent: () => import('./pages/coach/schedule/schedule.page').then((m) => m.CoachSchedulePage),
+      },
+      {
+        path: 'coach/schedule',
         loadComponent: () => import('./pages/coach/schedule/schedule.page').then((m) => m.CoachSchedulePage),
       },
       {
@@ -168,6 +180,18 @@ const routes: Routes = [
       {
         path: 'chat',
         loadComponent: () => import('./pages/player/chat-list.page').then((m) => m.ChatListPage),
+      },
+      {
+        path: 'coach/chat',
+        loadComponent: () => import('./pages/coach/coach-chat.page').then((m) => m.CoachChatPage),
+      },
+      {
+        path: 'coach/profile',
+        loadComponent: () => import('./pages/profile/profile.page').then((m) => m.ProfilePage),
+      },
+      {
+        path: 'coach/teams',
+        loadComponent: () => import('./pages/coach/teams/teams.page').then((m) => m.CoachTeamsPage),
       },
       {
         path: 'chat/:id',

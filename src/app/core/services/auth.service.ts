@@ -10,6 +10,8 @@ export interface AuthUser {
   experience?: string;
   focus?: string;
   availability?: string[];
+  formats?: string[];
+  personality?: string;
 }
 
 @Injectable({ providedIn: 'root' })

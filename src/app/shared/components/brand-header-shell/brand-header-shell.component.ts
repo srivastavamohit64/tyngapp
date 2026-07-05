@@ -16,6 +16,7 @@ import { HeaderComponent } from '../header/header.component';
       *ngIf="showBrand"
       variant="brand"
       [notificationRoute]="resolvedNotificationRoute"
+      [homeRoute]="resolvedHomeRoute"
       (menuClick)="openMenu()"
     ></app-header>
     <ng-content></ng-content>
@@ -31,6 +32,13 @@ export class BrandHeaderShellComponent {
   get resolvedNotificationRoute(): string {
     if (this.notificationRoute) return this.notificationRoute;
     return this.auth.user()?.role === 'coach' ? '/app/coach/notifications' : '/app/notifications';
+  }
+
+  get resolvedHomeRoute(): string {
+    const role = this.auth.user()?.role;
+    if (role === 'coach') return '/app/coach/dashboard';
+    if (role === 'venue') return '/app/home';
+    return '/app/home';
   }
 
   async openMenu() {

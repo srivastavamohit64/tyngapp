@@ -57,7 +57,13 @@ export class TabsPage {
     if (path.includes('/book-venue')) return false;
 
     if (user?.role === 'coach') {
-      const coachPrimary = ['/app/home', '/app/teams', '/app/coach/students', '/app/schedule', '/app/chat', '/app/profile'];
+      const coachPrimary = [
+        '/app/coach/dashboard',
+        '/app/home',
+        '/app/coach/students',
+        '/app/coach/schedule',
+        '/app/schedule',
+      ];
       return coachPrimary.some((p) => path === p || path.startsWith(p + '/'));
     }
     if (user?.role === 'venue') {
@@ -74,10 +80,10 @@ export class TabsPage {
     const user = this.auth.user();
     if (user?.role === 'coach') {
       return [
-        { label: 'Home', icon: 'home-outline', route: '/app/home' },
-        { label: 'Students', icon: 'people-outline', route: '/app/coach/students' },
-        { label: 'Schedule', icon: 'calendar-outline', route: '/app/schedule' },
-        { label: 'Chat', icon: 'chatbubble-outline', route: '/app/chat' },
+        { label: 'Home', icon: 'home-outline', route: '/app/coach/dashboard' },
+        { label: 'My Students', icon: 'people-outline', route: '/app/coach/students' },
+        { label: 'My Schedule', icon: 'calendar-outline', route: '/app/coach/schedule' },
+        { label: 'Chat', icon: 'chatbubble-outline', route: '/app/coach/chat' },
       ];
     }
     if (user?.role === 'venue') {

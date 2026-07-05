@@ -90,7 +90,7 @@ import { TabItem } from '../../models/app.models';
       }
 
       .tab-icon-wrap.tab-icon-active .tab-icon {
-        color: #ffffff;
+        color: #111827;
       }
 
       .tab-label {

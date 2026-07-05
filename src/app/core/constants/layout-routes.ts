@@ -12,11 +12,11 @@ export const PLAYER_BRAND_HEADER_ROUTES = [
 
 /** Coach primary tab routes with brand top bar. */
 export const COACH_BRAND_HEADER_ROUTES = [
+  '/app/coach/dashboard',
   '/app/home',
   '/app/coach/students',
+  '/app/coach/schedule',
   '/app/schedule',
-  '/app/chat',
-  '/app/profile',
 ];
 
 /** Venue primary tab routes with brand top bar. */

@@ -1,0 +1,324 @@
+/* ============================================================
+   TYNG Premium Glossy Polish — layered glow & glass finish
+   No layout changes — visual enhancement only
+   ============================================================ */
+
+:root {
+  /* Layered primary glow (visible but elegant) */
+  --glow-l1: 0 0 0 1px rgba(140, 240, 0, 0.28);
+  --glow-l2: 0 1px 0 rgba(255, 255, 255, 0.55) inset;
+  --glow-l3: 0 -1px 0 rgba(17, 24, 39, 0.04) inset;
+  --glow-l4: 0 4px 14px rgba(140, 240, 0, 0.28);
+  --glow-l5: 0 10px 32px rgba(140, 240, 0, 0.16);
+  --glow-l6: 0 20px 48px rgba(17, 24, 39, 0.06);
+
+  --app-glow-primary:
+    var(--glow-l1), var(--glow-l2), var(--glow-l3), var(--glow-l4), var(--glow-l5), var(--glow-l6);
+
+  --app-glow-primary-soft:
+    0 0 0 1px rgba(140, 240, 0, 0.18),
+    0 1px 0 rgba(255, 255, 255, 0.4) inset,
+    0 4px 12px rgba(140, 240, 0, 0.2),
+    0 8px 20px rgba(140, 240, 0, 0.1);
+
+  --app-glow-primary-strong:
+    0 0 0 1.5px rgba(140, 240, 0, 0.38),
+    0 1px 0 rgba(255, 255, 255, 0.65) inset,
+    0 6px 20px rgba(140, 240, 0, 0.35),
+    0 14px 40px rgba(140, 240, 0, 0.2),
+    0 24px 56px rgba(17, 24, 39, 0.08);
+
+  --app-glow-selected:
+    0 0 0 1px rgba(140, 240, 0, 0.32),
+    0 1px 0 rgba(255, 255, 255, 0.5) inset,
+    0 4px 16px rgba(140, 240, 0, 0.3),
+    0 10px 28px rgba(140, 240, 0, 0.16);
+
+  --app-glow-focus:
+    0 0 0 1px rgba(140, 240, 0, 0.4),
+    0 1px 0 rgba(255, 255, 255, 0.7) inset,
+    0 4px 18px rgba(140, 240, 0, 0.26),
+    0 8px 28px rgba(140, 240, 0, 0.12);
+
+  --app-glow-secondary:
+    0 0 0 1px rgba(255, 122, 0, 0.22),
+    0 1px 0 rgba(255, 255, 255, 0.35) inset,
+    0 4px 16px rgba(255, 122, 0, 0.28),
+    0 10px 28px rgba(255, 122, 0, 0.14);
+
+  --app-shadow-premium:
+    0 1px 0 rgba(255, 255, 255, 0.85) inset,
+    0 1px 2px rgba(17, 24, 39, 0.04),
+    0 6px 20px rgba(17, 24, 39, 0.07);
+
+  --app-shadow-premium-lg:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 2px 6px rgba(17, 24, 39, 0.05),
+    0 12px 36px rgba(17, 24, 39, 0.1),
+    0 24px 56px rgba(17, 24, 39, 0.05);
+
+  --app-shadow-lift:
+    0 1px 0 rgba(255, 255, 255, 0.75) inset,
+    0 8px 28px rgba(17, 24, 39, 0.1),
+    0 16px 48px rgba(140, 240, 0, 0.08);
+
+  --glass-highlight: linear-gradient(
+    165deg,
+    rgba(255, 255, 255, 0.52) 0%,
+    rgba(255, 255, 255, 0.14) 24%,
+    rgba(255, 255, 255, 0) 50%,
+    rgba(255, 255, 255, 0.06) 100%
+  );
+
+  --gold-shimmer-gradient: linear-gradient(
+    110deg,
+    rgba(255, 215, 100, 0) 0%,
+    rgba(255, 230, 140, 0.45) 45%,
+    rgba(255, 215, 100, 0) 90%
+  );
+}
+
+@keyframes shine-sweep-bg {
+  0% {
+    background-position: 220% 0;
+  }
+  100% {
+    background-position: -220% 0;
+  }
+}
+
+@keyframes gold-shimmer {
+  0% {
+    background-position: -180% 0;
+  }
+  100% {
+    background-position: 220% 0;
+  }
+}
+
+@keyframes tab-float {
+  0%,
+  100% {
+    transform: translateY(0) scale(1.06);
+  }
+  50% {
+    transform: translateY(-2px) scale(1.08);
+  }
+}
+
+@keyframes breathe-glow-strong {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 2px rgba(255, 255, 255, 0.9),
+      0 0 0 4px rgba(140, 240, 0, 0.15),
+      0 4px 16px rgba(140, 240, 0, 0.35),
+      0 8px 28px rgba(140, 240, 0, 0.2);
+    transform: translate(-50%, -50%) scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    box-shadow:
+      0 0 0 2px rgba(255, 255, 255, 0.95),
+      0 0 0 8px rgba(140, 240, 0, 0),
+      0 6px 24px rgba(140, 240, 0, 0.48),
+      0 12px 36px rgba(140, 240, 0, 0.28);
+    transform: translate(-50%, -50%) scale(1.04);
+    filter: brightness(1.08);
+  }
+}
+
+@keyframes page-enter-premium {
+  from {
+    opacity: 0;
+    transform: translateX(8px) scale(0.992);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+/* ── Glossy surface (cards, tabs, chips) ── */
+.glossy-surface {
+  position: relative;
+  isolation: isolate;
+}
+
+.glossy-surface::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+  background: var(--glass-highlight);
+}
+
+.premium-btn.glossy-surface::before {
+  background: linear-gradient(
+    110deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0) 42%,
+    rgba(255, 255, 255, 0.48) 50%,
+    rgba(255, 255, 255, 0) 58%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 220% 100%;
+  animation: shine-sweep-bg 4s var(--app-ease-smooth) infinite;
+}
+
+.glossy-surface > *,
+.glossy-surface .btn-content {
+  position: relative;
+  z-index: 2;
+}
+
+.glass-edge {
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow:
+    0 0 0 1px rgba(17, 24, 39, 0.04),
+    var(--app-shadow-premium);
+}
+
+/* ── Buttons: shine + glossy + layered glow ── */
+.premium-btn.glossy-surface {
+  box-shadow: var(--app-glow-primary);
+}
+
+.premium-btn:active:not(:disabled) {
+  box-shadow: var(--app-glow-primary-strong);
+  filter: brightness(1.04);
+}
+
+/* ── Active selection: visible layered glow ── */
+.premium-active,
+.chip.active,
+.segment-btn.active,
+.sport-tab.active,
+.active-sport-tab {
+  transform: scale(1.03);
+  filter: brightness(1.05);
+  border-color: rgba(140, 240, 0, 0.45) !important;
+  box-shadow: var(--app-glow-selected) !important;
+}
+
+.premium-active.glossy-surface::before,
+.chip.active.glossy-surface::before,
+.sport-tab.active.glossy-surface::before {
+  opacity: 1;
+}
+
+/* ── Cards: float + glossy ── */
+.premium-card.glossy-surface,
+.coach-card.glossy-surface,
+.podium-card.glossy-surface,
+.detail-card.glossy-surface {
+  box-shadow: var(--app-shadow-premium-lg);
+  border-color: rgba(229, 231, 235, 0.9);
+}
+
+.premium-card:active,
+.coach-card:active,
+.podium-card:active,
+.detail-card:active,
+.player-card:active {
+  transform: scale(0.985);
+  box-shadow: var(--app-glow-selected), var(--app-shadow-premium-lg);
+  filter: brightness(1.02);
+}
+
+.float-subtle {
+  transition: transform var(--app-duration-normal) var(--app-ease-out);
+}
+
+.float-subtle:active {
+  transform: translateY(-1px) scale(0.985);
+}
+
+/* ── Bottom navigation ── */
+.tab-bar-pill.glossy-surface {
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.95) inset,
+    0 -1px 0 rgba(17, 24, 39, 0.03),
+    0 8px 32px rgba(17, 24, 39, 0.12),
+    0 16px 48px rgba(17, 24, 39, 0.06);
+}
+
+.premium-tab-active.glossy-surface {
+  box-shadow: var(--app-glow-primary-strong) !important;
+  animation: tab-float 2.8s var(--app-ease-smooth) infinite;
+}
+
+.premium-tab-indicator.is-visible {
+  width: 5px;
+  height: 5px;
+  box-shadow:
+    0 0 0 2px rgba(140, 240, 0, 0.2),
+    0 0 12px rgba(140, 240, 0, 0.65);
+}
+
+/* ── Leaderboard gold ── */
+.podium-card-gold.glossy-surface {
+  box-shadow: var(--app-glow-primary-soft), var(--app-shadow-premium-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+.podium-card-gold.glossy-surface::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+  background: var(--gold-shimmer-gradient);
+  background-size: 200% 100%;
+  animation: gold-shimmer 3.2s var(--app-ease-smooth) infinite;
+}
+
+.gold-shimmer {
+  animation: gold-shimmer 3.2s var(--app-ease-smooth) infinite;
+}
+
+.trophy-shimmer {
+  box-shadow: var(--app-glow-primary-soft);
+  animation: trophy-shimmer 2.6s var(--app-ease-smooth) infinite;
+}
+
+/* ── Live map breathing ── */
+.live-breathe {
+  animation: breathe-glow-strong 2.6s var(--app-ease-smooth) infinite;
+}
+
+/* ── Inputs: premium focus ring ── */
+.premium-focus:focus-within,
+.field.focused.premium-focus {
+  border-color: rgba(140, 240, 0, 0.55) !important;
+  box-shadow: var(--app-glow-focus) !important;
+  filter: brightness(1.01);
+}
+
+/* ── Menu drawer items ── */
+.menu-item.glossy-surface:active,
+.menu-item:active {
+  box-shadow: var(--app-glow-selected);
+  filter: brightness(1.03);
+}
+
+.menu-item:active .menu-icon {
+  box-shadow: var(--app-glow-primary-soft);
+  filter: brightness(1.06);
+}
+
+/* ── Page transitions ── */
+ion-router-outlet > .ion-page {
+  animation: page-enter-premium var(--app-ion-transition) var(--app-ease-out) both;
+}
+
+/* ── Segment sliding pill ── */
+.segment-pill {
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    var(--app-glow-selected) !important;
+}

@@ -40,15 +40,17 @@ export class ProfilePage {
     { sport: 'Cricket', date: 'Apr 12, 2024', result: 'Won', score: '88/2 vs 84/10' },
   ];
 
-  // Coach-specific items
-  readonly achievements = [
-    { name: 'Championship 2024', icon: 'trophy-outline' },
-    { name: 'Elite Mentor', icon: 'ribbon-outline' },
+  readonly coachAchievements = [
+    { name: 'Elite Coach', icon: 'star-outline', color: '#FF7A00' },
+    { name: 'Team Builder', icon: 'people-outline', color: '#8CF000' },
+    { name: 'Season Winner', icon: 'trophy-outline', color: '#FF7A00' },
+    { name: 'Development Expert', icon: 'ribbon-outline', color: '#2563EB' },
   ];
 
-  readonly recentSessions = [
-    { team: 'Elite Football Squad', date: 'Today, 4:00 PM', type: 'Training' },
-    { team: 'Junior Cricket Team', date: 'Yesterday, 6:00 AM', type: 'Match Prep' },
+  readonly coachRecentSessions = [
+    { team: 'Elite Football Squad', date: 'Apr 20, 2026', type: 'Training' },
+    { team: 'Junior Cricket Team', date: 'Apr 18, 2026', type: 'Match Prep' },
+    { team: 'Basketball Academy', date: 'Apr 15, 2026', type: 'Scrimmage' },
   ];
 
   // Venue-specific items

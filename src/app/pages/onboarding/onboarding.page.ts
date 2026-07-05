@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { AuthService } from '../../core/services/auth.service';
@@ -203,9 +203,15 @@ interface OnboardingSport {
   `,
   styleUrl: './onboarding.page.scss',
 })
-export class OnboardingPage {
+export class OnboardingPage implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+
+  ngOnInit() {
+    if (this.auth.user()?.role === 'coach') {
+      void this.router.navigateByUrl('/coach-onboarding', { replaceUrl: true });
+    }
+  }
 
   step = 1;
   name = this.auth.user()?.name || '';

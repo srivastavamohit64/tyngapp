@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 import { FilterChip, FilterChipsComponent } from '../../shared/components/filter-chips/filter-chips.component';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-chat-list',
@@ -16,7 +17,7 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
       <app-brand-header-shell>
       <main class="page-with-tab-bar min-h-full bg-[#FAFBFC] text-[#111827] flex flex-col">
         <app-page-header
-          title="Chats"
+          [title]="isCoach() ? 'Chat' : 'Chats'"
           titleSize="md"
           [badge]="7"
           [showActions]="true"
@@ -42,7 +43,7 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
           </div>
 
           <app-filter-chips
-            [chips]="filters"
+            [chips]="filters()"
             [value]="activeTab"
             (valueChange)="activeTab = $event"
           ></app-filter-chips>
@@ -422,16 +423,28 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
 })
 export class ChatListPage {
   private readonly router = inject(Router);
+  private readonly auth = inject(AuthService);
 
   activeTab = 'all';
   searchOpen = false;
   searchQuery = '';
 
-  readonly filters: FilterChip[] = [
-    { id: 'all', label: 'All', count: 7 },
-    { id: 'team', label: 'Team Chats', count: 4 },
-    { id: 'direct', label: 'Direct Messages', count: 2 },
-  ];
+  readonly isCoach = computed(() => this.auth.user()?.role === 'coach');
+
+  readonly filters = computed<FilterChip[]>(() =>
+    this.isCoach()
+      ? [
+          { id: 'all', label: 'All', count: 10 },
+          { id: 'students', label: 'Students', count: 4 },
+          { id: 'team', label: 'Teams', count: 3 },
+          { id: 'community', label: 'Community', count: 3 },
+        ]
+      : [
+          { id: 'all', label: 'All', count: 7 },
+          { id: 'team', label: 'Team Chats', count: 4 },
+          { id: 'direct', label: 'Direct Messages', count: 2 },
+        ]
+  );
 
   readonly teamChats = [
     {

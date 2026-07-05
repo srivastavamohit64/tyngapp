@@ -54,8 +54,8 @@ export class HomePage {
     { id: 3, sport: 'Badminton', emoji: '🏸', image: 'https://images.unsplash.com/photo-1722087642932-9b070e9a066e?w=700&h=300&fit=crop&auto=format', title: 'Individual Coaching', team: 'Priya Verma · 1 Student', venue: 'Sports Complex', time: '4:00 PM', type: 'One-on-One', status: 'completed', startsIn: null },
   ];
   readonly coachQuickActions = [
-    { icon: 'add-outline', label: 'New Session', sub: 'Schedule a slot', color: '#8CF000', path: '/app/coach/plan' },
-    { icon: 'calendar-outline', label: 'Manage Schedule', sub: 'View your calendar', color: '#FF7A00', path: '/app/schedule' },
+    { icon: 'add-outline', label: 'New Session', sub: 'Schedule a slot', color: '#8CF000', path: '/app/coach/create-session' },
+    { icon: 'calendar-outline', label: 'Manage Schedule', sub: 'View your calendar', color: '#FF7A00', path: '/app/coach/schedule' },
     { icon: 'person-add-outline', label: 'Add Student', sub: 'Onboard a new player', color: '#38BDF8', path: '/app/coach/enroll-student' },
     { icon: 'analytics-outline', label: 'Evaluate Player', sub: 'Track progress', color: '#7C3AED', path: '/app/coach/evaluate' },
   ];

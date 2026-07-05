@@ -461,7 +461,7 @@ export class CoachEarningsPage {
   readonly Math = Math;
 
   back() {
-    this.router.navigateByUrl('/app/home');
+    this.router.navigateByUrl('/app/coach/dashboard');
   }
 
   go(path: string) {
