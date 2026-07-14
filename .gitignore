@@ -53,6 +53,9 @@ yarn-error.log
 .history/*
 
 
+# Environment secrets
+.env
+
 # Miscellaneous
 /.angular
 /.angular/cache

@@ -21,11 +21,11 @@ export const COACH_BRAND_HEADER_ROUTES = [
 
 /** Venue primary tab routes with brand top bar. */
 export const VENUE_BRAND_HEADER_ROUTES = [
+  '/app/venue/dashboard',
   '/app/home',
   '/app/venue/bookings',
   '/app/venue/calendar',
   '/app/chat',
-  '/app/profile',
 ];
 
 export function shouldShowBrandHeader(path: string, role?: string): boolean {

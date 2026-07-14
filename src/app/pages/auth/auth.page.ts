@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { IonicModule } from '@ionic/angular';
+import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { UserRole } from '../../shared/models/app.models';
 import { TextInputComponent } from '../../shared/components/text-input/text-input.component';
@@ -134,11 +135,19 @@ const HERO_IMAGE =
             <app-primary-button
               class="cta-wrap"
               icon="arrow-forward"
-              [disabled]="!canSubmit"
+              [disabled]="!canSubmit || submitting"
               (pressed)="handleSubmit()"
             >
-              {{ isSignup ? 'Continue' : 'Log In' }}
+              {{ submitting ? 'Please wait...' : (isSignup ? 'Continue' : 'Log In') }}
             </app-primary-button>
+
+            <p *ngIf="!isSignup" class="forgot-wrap">
+              <button type="button" class="auth-switch-link" (click)="router.navigateByUrl('/forgot-password')">
+                Forgot password?
+              </button>
+            </p>
+
+            <p *ngIf="errorMessage" class="form-error">{{ errorMessage }}</p>
 
             <p class="auth-switch">
               <ng-container *ngIf="isSignup">
@@ -497,12 +506,27 @@ const HERO_IMAGE =
         color: #9ca3af;
         line-height: 1.5;
       }
+
+      .forgot-wrap {
+        text-align: center;
+        margin: 12px 0 0;
+      }
+
+      .form-error {
+        margin: 12px 16px 0;
+        padding: 10px 12px;
+        border-radius: 12px;
+        background: #fef2f2;
+        color: #dc2626;
+        font-size: 13px;
+        line-height: 1.4;
+      }
     `,
   ],
 })
 export class AuthPage implements OnInit {
-  private readonly auth = inject(AuthService);
-  private readonly router = inject(Router);
+  readonly auth = inject(AuthService);
+  readonly router = inject(Router);
 
   heroImage = HERO_IMAGE;
   mode: 'signup' | 'login' = 'signup';
@@ -513,6 +537,8 @@ export class AuthPage implements OnInit {
   showPassword = false;
   agreed = false;
   selectedRole: UserRole = 'player';
+  submitting = false;
+  errorMessage = '';
 
   readonly sportTags = ['⚽ Football', '🏀 Basketball', '🏏 Cricket'];
 
@@ -556,25 +582,38 @@ export class AuthPage implements OnInit {
     void this.router.navigateByUrl(mode === 'signup' ? '/auth' : '/login', { replaceUrl: true });
   }
 
-  handleSubmit() {
-    if (!this.canSubmit) return;
-    if (this.isSignup) {
-      this.auth.loginAs(this.selectedRole, { name: this.name.trim() });
-      void this.router.navigateByUrl(this.selectedRole === 'coach' ? '/coach-onboarding' : '/onboarding');
-      return;
+  async handleSubmit() {
+    if (!this.canSubmit || this.submitting) return;
+    this.submitting = true;
+    this.errorMessage = '';
+
+    try {
+      if (this.isSignup) {
+        const user = await firstValueFrom(this.auth.register({
+          name: this.name.trim(),
+          phone: this.phone,
+          email: this.email.trim() || undefined,
+          password: this.password,
+          role: this.selectedRole,
+        }));
+        this.auth.navigateAfterAuth(user);
+        return;
+      }
+
+      const user = await firstValueFrom(this.auth.login({
+        phone: this.phone,
+        password: this.password,
+      }));
+      this.auth.navigateAfterAuth(user);
+    } catch (error) {
+      this.errorMessage = String(error);
+    } finally {
+      this.submitting = false;
     }
-    this.auth.loginAs(this.selectedRole, { isOnboarded: true });
-    void this.router.navigateByUrl('/app/home');
   }
 
   handleSocial() {
-    if (this.isSignup) {
-      this.auth.loginAs(this.selectedRole);
-      void this.router.navigateByUrl(this.selectedRole === 'coach' ? '/coach-onboarding' : '/onboarding');
-      return;
-    }
-    this.auth.loginAs(this.selectedRole, { isOnboarded: true });
-    void this.router.navigateByUrl('/app/home');
+    this.errorMessage = 'Google sign-in is not available yet. Please use mobile login.';
   }
 
   private syncModeFromRoute() {

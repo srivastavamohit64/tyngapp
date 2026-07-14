@@ -1,110 +1,229 @@
 <ion-content fullscreen class="has-tabs">
   <app-brand-header-shell>
-  <main class="page-with-tab-bar min-h-full bg-[#FAFBFC] text-slate-800">
-
-    <div class="px-5 pt-4 pb-2">
-      <h2 class="text-[20px] font-bold tracking-tight text-slate-900 m-0">Book Venue</h2>
-    </div>
-
-    <!-- Venue Hero/Visual section -->
-    <section class="px-5 pt-2">
-      <div
-        class="bg-gradient-to-br from-[#8CF000]/20 to-[#FF7A00]/20 w-full h-44 rounded-3xl flex items-center justify-center gap-6 relative overflow-hidden shadow-sm"
-      >
-        <span class="text-5xl">Stadium 🏟️</span>
-      </div>
-    </section>
-
-    <!-- Venue Info -->
-    <section class="px-6 py-5 space-y-2">
-      <div class="flex items-start justify-between">
-        <h1 class="text-[26px] font-black tracking-tight text-[#111827] leading-tight">Phoenix Arena</h1>
-        <div class="flex items-center gap-1 rounded-full bg-[#FF7A00]/10 px-3 py-1.5 text-sm text-[#FF7A00] font-bold">
-          <ion-icon name="star" class="text-base"></ion-icon>
-          <span>4.8</span>
-        </div>
-      </div>
-      <p class="text-sm text-slate-500 font-medium">342 reviews</p>
-      <div class="flex items-center gap-1 text-sm text-slate-500 font-medium pt-1">
-        <ion-icon name="location-outline" class="text-slate-500 text-base"></ion-icon>
-        <span>Gomti Nagar, Lucknow</span>
-        <span class="mx-1.5">•</span>
-        <span>2.3 km away</span>
-      </div>
-    </section>
-
-    <!-- Amenities Grid -->
-    <section class="px-6 py-3">
-      <h3 class="text-base font-extrabold text-slate-900 mb-4 uppercase tracking-wider">Amenities</h3>
-      <div class="grid grid-cols-2 gap-3">
-        <div *ngFor="let amenity of amenities"
-          class="flex items-center gap-3 bg-white border border-slate-100 rounded-2xl p-4 transition-all duration-300 hover:border-[#8CF000]">
-          <div class="w-10 h-10 rounded-full bg-[#8CF000]/15 flex items-center justify-center text-[#73C000]">
-            <ion-icon [name]="amenity.icon" class="text-xl"></ion-icon>
+    <div class="min-h-full bg-[#FAFBFC] pb-36 text-[#111827]">
+      <!-- Sticky header -->
+      <div class="sticky top-0 z-30 bg-white border-b border-[#F3F4F6]">
+        <!-- Location + Title -->
+        <div class="flex items-center justify-between px-5 pt-4 pb-3">
+          <div class="text-left">
+            <p class="text-[11px] text-[#9CA3AF] font-bold uppercase tracking-wider m-0 leading-none">Book a Court</p>
+            <button (click)="showCityPicker.set(true)" class="flex items-center gap-1.5 mt-1 border-none bg-transparent p-0 outline-none">
+              <ion-icon name="location-outline" class="text-lg text-[#8CF000] font-bold"></ion-icon>
+              <span class="text-[17px] font-black text-[#111827]">{{ city() }}</span>
+              <ion-icon name="chevron-down-outline" class="text-xs text-[#9CA3AF]"></ion-icon>
+            </button>
           </div>
-          <span class="text-sm font-bold text-slate-800">{{ amenity.name }}</span>
+          <div class="flex items-center gap-1.5 text-right">
+            <span class="text-[22px] font-black text-[#111827] leading-none">{{ filteredCourts().length }}</span>
+            <span class="text-[11px] text-[#9CA3AF] leading-tight font-semibold text-left">courts<br/>available</span>
+          </div>
+        </div>
+
+        <!-- Search bar -->
+        <div class="px-5 pb-3">
+          <div class="flex items-center gap-3 bg-[#F3F4F6] rounded-2xl px-4 h-11 relative">
+            <ion-icon name="search-outline" class="text-slate-400 text-base flex-shrink-0"></ion-icon>
+            <input
+              [ngModel]="searchQuery()"
+              (ngModelChange)="searchQuery.set($event)"
+              placeholder="Search stadiums, courts or locality"
+              class="flex-1 bg-transparent text-[14px] text-[#111827] placeholder:text-[#9CA3AF] font-semibold border-none outline-none min-h-0"
+              style="box-shadow: none;"
+            />
+            <button *ngIf="searchQuery()" (click)="searchQuery.set('')" class="border-none bg-transparent p-0 outline-none flex items-center justify-center">
+              <ion-icon name="close-circle-outline" class="text-slate-400 text-base"></ion-icon>
+            </button>
+          </div>
+        </div>
+
+        <!-- Sports selector -->
+        <div class="flex gap-3.5 px-5 pb-4 overflow-x-auto no-scrollbar">
+          <button
+            *ngFor="let sport of sports"
+            (click)="activeSport.set(sport.id)"
+            class="flex flex-col items-center gap-1.5 flex-shrink-0 border-none bg-transparent p-0 outline-none"
+          >
+            <div
+              class="w-[52px] h-[52px] rounded-full overflow-hidden transition-all duration-200"
+              [style.border]="activeSport() === sport.id ? '2.5px solid #8CF000' : '2.5px solid transparent'"
+              [style.boxShadow]="activeSport() === sport.id ? '0 0 0 3px rgba(140,240,0,0.20)' : 'none'"
+            >
+              <img [src]="sport.image" [alt]="sport.label" class="w-full h-full object-cover" />
+            </div>
+            <span
+              class="text-[10px] font-semibold leading-tight whitespace-nowrap"
+              [style.color]="activeSport() === sport.id ? '#111827' : '#9CA3AF'"
+            >
+              {{ sport.label }}
+            </span>
+          </button>
+        </div>
+
+        <!-- Filter chips -->
+        <div class="flex gap-2 px-5 pb-3.5 overflow-x-auto no-scrollbar">
+          <button
+            *ngFor="let f of filterChips"
+            (click)="toggleFilter(f.id)"
+            class="flex-shrink-0 flex items-center gap-1 px-3.5 py-2 rounded-full text-[12px] font-bold transition-all border-none"
+            [style.backgroundColor]="activeFilters().includes(f.id) ? '#8CF000' : 'white'"
+            [style.color]="activeFilters().includes(f.id) ? '#111827' : '#6B7280'"
+            [style.border]="activeFilters().includes(f.id) ? '1.5px solid #8CF000' : '1.5px solid #E5E7EB'"
+            [style.boxShadow]="activeFilters().includes(f.id) ? '0 2px 8px rgba(140,240,0,0.30)' : '0 1px 3px rgba(0,0,0,0.06)'"
+          >
+            <ion-icon *ngIf="activeFilters().includes(f.id)" name="checkmark-outline" class="text-xs text-[#111827] font-black"></ion-icon>
+            {{ f.label }}
+          </button>
         </div>
       </div>
-    </section>
 
-    <!-- Special Offers Box -->
-    <section class="px-6 py-4">
-      <div class="bg-gradient-to-r from-orange-50/50 to-orange-100/50 rounded-2xl p-5 border border-orange-200/50 relative overflow-hidden">
-        <h3 class="text-base font-extrabold text-[#FF7A00] mb-3 uppercase tracking-wider">Special Offers</h3>
-        <ul class="space-y-2">
-          <li *ngFor="let offer of offers" class="flex items-center gap-2.5 text-sm font-semibold text-slate-800">
-            <ion-icon name="checkmark-circle" class="text-[#FF7A00] text-lg"></ion-icon>
-            {{ offer }}
-          </li>
-        </ul>
-      </div>
-    </section>
+      <!-- Court listings -->
+      <div class="px-4 pt-4 pb-36 space-y-4">
+        <!-- Results label -->
+        <div class="flex items-center justify-between px-1">
+          <p class="text-[13px] font-semibold text-[#6B7280] m-0">
+            {{ filteredCourts().length }} {{ filteredCourts().length === 1 ? 'court' : 'courts' }} in {{ city() }}
+          </p>
+          <button *ngIf="activeFilters().length > 0" (click)="activeFilters.set([])" class="text-[12px] font-bold text-[#EF4444] border-none bg-transparent p-0 outline-none">
+            Clear filters
+          </button>
+        </div>
 
-    <!-- Available Slots -->
-    <section class="px-6 py-4">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-base font-extrabold text-slate-900 uppercase tracking-wider">Available Slots</h3>
-        <span class="text-sm text-slate-500 font-black">
-          ₹1500/hr
-        </span>
-      </div>
-      <div class="space-y-3">
-        <button *ngFor="let slot of slots; let i = index" (click)="selectSlot(i)" [disabled]="slot.booked"
-          [class.selected-slot]="selectedSlotIndex === i" [class.booked-slot]="slot.booked"
-          class="w-full bg-white border border-slate-100 rounded-[20px] p-4 flex items-center justify-between transition-all duration-300 hover:border-primary active:scale-[0.99] text-left bg-transparent select-none"
-          [style.borderColor]="selectedSlotIndex === i ? '#8CF000' : null"
-          [style.backgroundColor]="selectedSlotIndex === i ? 'rgba(140,240,0,0.06)' : null"
+        <div *ngIf="filteredCourts().length === 0" class="py-20 text-center">
+          <div class="text-5xl mb-3">🏟️</div>
+          <p class="text-[16px] font-bold text-[#111827] mb-1 m-0">No courts found</p>
+          <p class="text-[13px] text-[#9CA3AF] mb-4 m-0">Try changing your sport or filters</p>
+          <button
+            (click)="resetAll()"
+            class="px-5 py-2.5 rounded-full bg-[#8CF000] text-[#111827] text-[13px] font-black border-none"
+          >
+            Reset All
+          </button>
+        </div>
+
+        <!-- Court Card -->
+        <div
+          *ngFor="let court of filteredCourts(); let i = index"
+          class="bg-white overflow-hidden rounded-[24px] shadow-sm border border-[#F3F4F6] text-left"
         >
-          <div class="flex items-center gap-3">
-            <ion-icon name="time-outline"
-              [class]="selectedSlotIndex === i ? 'text-primary text-xl' : 'text-slate-400 text-xl'"></ion-icon>
-            <div>
-              <span class="font-bold text-sm" [ngClass]="{
-                  'text-slate-900': selectedSlotIndex === i,
-                  'text-slate-700': selectedSlotIndex !== i && !slot.booked,
-                  'text-slate-400': slot.booked
-                }">{{ slot.time }}</span>
-              <div *ngIf="slot.booked" class="text-xs text-red-500 font-bold mt-0.5">Booked</div>
+          <!-- Hero image -->
+          <div class="relative h-[180px] overflow-hidden bg-gray-200">
+            <img [src]="court.image" [alt]="court.courtName" class="w-full h-full object-cover" />
+            <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+
+            <!-- Indoor/Outdoor badge + Open Now -->
+            <div class="absolute top-3 left-3 flex gap-1.5">
+              <span class="text-[10px] font-bold text-white bg-black/45 backdrop-blur-sm px-2.5 py-1 rounded-full">
+                {{ court.isIndoor ? '🏢 Indoor' : '🌿 Outdoor' }}
+              </span>
+              <span *ngIf="court.isOpenNow" class="text-[10px] font-bold bg-[#8CF000] text-[#111827] px-2.5 py-1 rounded-full">
+                Open Now
+              </span>
+            </div>
+
+            <!-- Price -->
+            <div class="absolute top-3 right-3 bg-white/95 backdrop-blur-sm px-2.5 py-1.5 rounded-xl text-center">
+              <p class="text-[14px] font-black text-[#111827] m-0">₹{{ court.pricePerHour.toLocaleString() }}</p>
+              <p class="text-[9px] text-[#9CA3AF] text-center m-0 mt-0.5 leading-none">per hour</p>
+            </div>
+
+            <!-- Court name overlay -->
+            <div class="absolute bottom-3 left-3 right-3 text-left">
+              <p class="text-white font-black text-[16px] leading-tight drop-shadow-md m-0">{{ court.courtName }}</p>
+              <p class="text-white/70 text-[12px] font-medium m-0 mt-0.5">{{ court.venueName }}</p>
             </div>
           </div>
-          <span class="font-bold text-sm" [ngClass]="{
-              'text-slate-900': selectedSlotIndex === i,
-              'text-slate-700': selectedSlotIndex !== i && !slot.booked,
-              'text-slate-400': slot.booked
-            }">{{ slot.price }}</span>
-        </button>
+
+          <!-- Card body -->
+          <div class="px-4 pt-3.5 pb-4">
+            <!-- Rating + Distance + Timing row -->
+            <div class="flex items-center gap-3 mb-3 text-left flex-wrap">
+              <div class="flex items-center gap-1 leading-none">
+                <ion-icon name="star" class="text-[#F59E0B] text-xs font-bold"></ion-icon>
+                <span class="text-[13px] font-bold text-[#111827]">{{ court.rating }}</span>
+                <span class="text-[11px] text-[#9CA3AF]">({{ court.ratingCount }})</span>
+              </div>
+              <div class="w-1 h-1 rounded-full bg-[#E5E7EB]"></div>
+              <div class="flex items-center gap-1 leading-none">
+                <ion-icon name="location-outline" class="text-[#9CA3AF] text-xs"></ion-icon>
+                <span class="text-[11px] text-[#9CA3AF]">{{ court.distance }} km</span>
+              </div>
+              <div class="w-1 h-1 rounded-full bg-[#E5E7EB]"></div>
+              <div class="flex items-center gap-1 leading-none">
+                <ion-icon name="time-outline" class="text-[#9CA3AF] text-xs"></ion-icon>
+                <span class="text-[11px] text-[#9CA3AF]">{{ court.openTime }} – {{ court.closeTime }}</span>
+              </div>
+            </div>
+
+            <!-- Amenities icons -->
+            <div class="flex items-center gap-2 mb-4 flex-wrap">
+              <ng-container *ngFor="let am of court.amenities.slice(0, 5)">
+                <div *ngIf="amenityMap[am]" class="flex items-center gap-1 bg-[#F3F4F6] px-2.5 py-1 rounded-full leading-none">
+                  <ion-icon [name]="amenityMap[am].icon" class="text-[#6B7280] text-[10px]"></ion-icon>
+                  <span class="text-[9px] text-[#6B7280] font-bold">{{ amenityMap[am].label }}</span>
+                </div>
+              </ng-container>
+              <span *ngIf="court.amenities.length > 5" class="text-[9px] text-[#9CA3AF] font-bold">+{{ court.amenities.length - 5 }}</span>
+            </div>
+
+            <!-- Stats + CTA row -->
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <!-- Rental gear -->
+                <div class="flex items-center gap-1.5 leading-none">
+                  <div
+                    class="w-3.5 h-3.5 rounded-full flex items-center justify-center bg-slate-100"
+                    [style.backgroundColor]="court.hasRentalGear ? '#F0FDF4' : '#FEF2F2'"
+                  >
+                    <div class="w-2 h-2 rounded-full" [style.backgroundColor]="court.hasRentalGear ? '#22C55E' : '#EF4444'"></div>
+                  </div>
+                  <span class="text-[10px] font-black" [style.color]="court.hasRentalGear ? '#16A34A' : '#9CA3AF'">
+                    {{ court.hasRentalGear ? 'Gear Available' : 'No Rental' }}
+                  </span>
+                </div>
+
+                <!-- Games played -->
+                <div class="flex items-center gap-1 bg-[#F3F4F6] px-2.5 py-1 rounded-full leading-none">
+                  <span class="text-[10px] font-black text-[#6B7280]">{{ court.gamesPlayed }}</span>
+                  <span class="text-[9px] text-[#9CA3AF] font-bold">games</span>
+                </div>
+              </div>
+
+              <!-- Book Now -->
+              <button
+                (click)="bookNow(court)"
+                class="px-4 h-10 rounded-2xl text-[13px] font-black text-white border-none flex items-center justify-center shadow-md active:scale-95 transition-all outline-none"
+                style="background: linear-gradient(135deg, #FF7A00 0%, #FF9A40 100%); box-shadow: 0 3px 12px rgba(255,122,0,0.38);"
+              >
+                Book Now
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
-    </section>
 
-    <!-- Proceed Button inside scroll flow -->
-    <div class="px-6 py-6 mt-6">
-      <button (click)="proceed()" [disabled]="selectedSlotIndex === null"
-        class="w-full h-12 rounded-full bg-gradient-to-r from-[#8CF000] to-[#A3E635] text-[#111827] font-extrabold text-base shadow-md disabled:bg-none disabled:bg-[#F3F4F6] disabled:text-[#9CA3AF] disabled:opacity-100 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+      <!-- City Picker modal -->
+      <div *ngIf="showCityPicker()" class="fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px] transition-all" (click)="showCityPicker.set(false)"></div>
+      <div
+        *ngIf="showCityPicker()"
+        class="fixed bottom-0 left-0 right-0 z-50 max-w-md mx-auto bg-white rounded-t-[28px] px-5 pt-5 pb-10 shadow-2xl transition-transform duration-300"
       >
-        <span>Proceed to Payment</span>
-      </button>
+        <div class="w-10 h-1.5 rounded-full bg-[#E5E7EB] mx-auto mb-4"></div>
+        <p class="text-[17px] font-black text-[#111827] mb-4">Select City</p>
+        <div class="grid grid-cols-2 gap-2.5">
+          <button
+            *ngFor="let c of cities"
+            (click)="selectCity(c)"
+            class="py-3.5 rounded-2xl text-[14px] font-black border-none flex items-center justify-center gap-1.5 transition-all outline-none"
+            [style.backgroundColor]="city() === c ? 'rgba(140,240,0,0.12)' : '#F3F4F6'"
+            [style.color]="city() === c ? '#111827' : '#6B7280'"
+            [style.border]="city() === c ? '2px solid #8CF000' : '2px solid transparent'"
+          >
+            <ion-icon name="location-outline" [style.color]="city() === c ? '#8CF000' : '#9CA3AF'"></ion-icon>
+            <span>{{ c }}</span>
+            <ion-icon *ngIf="city() === c" name="checkmark-outline" class="text-xs font-black text-[#8CF000] ml-1"></ion-icon>
+          </button>
+        </div>
+      </div>
     </div>
-
-  </main>
   </app-brand-header-shell>
 </ion-content>

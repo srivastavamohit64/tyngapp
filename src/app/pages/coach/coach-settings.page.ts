@@ -96,7 +96,7 @@ const STATUSES: StatusItem[] = [
           <div class="section-card p-5 bg-white text-left">
             <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-4 m-0">Account</p>
             <div class="space-y-1">
-              <button *ngFor="let r of [{ icon:'person-outline', label:'Edit Profile', sub:'Name, photo, bio, sports', color:'#8CF000' }, { icon:'phone-portrait-outline', label:'Change Mobile Number', sub:'+91 98765 XXXXX', color:'#FF7A00' }, { icon:'mail-outline', label:'Change Email Address', sub:'coach@example.com', color:'#38BDF8' }, { icon:'lock-closed-outline', label:'Change Password', sub:'Last changed 30 days ago', color:'#7C3AED' }]"
+              <button *ngFor="let r of accountRows" (click)="goAccount(r.action)"
                 class="nav-row-btn w-full flex items-center gap-3.5 py-3 border-none bg-white text-left">
                 <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" [style.backgroundColor]="r.color + '15'">
                   <ion-icon [name]="r.icon" [style.color]="r.color" class="text-base"></ion-icon>
@@ -573,6 +573,12 @@ export class CoachSettingsPage {
     { id: 'apple', label: 'Apple', emoji: '⚫' },
     { id: 'whatsapp', label: 'WhatsApp', emoji: '🟢' },
   ];
+  readonly accountRows = [
+    { icon: 'person-outline', label: 'Edit Profile', sub: 'Name, photo, bio, sports', color: '#8CF000', action: 'edit-profile' },
+    { icon: 'phone-portrait-outline', label: 'Change Mobile Number', sub: 'Update registered mobile', color: '#FF7A00', action: 'edit-profile' },
+    { icon: 'mail-outline', label: 'Change Email Address', sub: 'Update email address', color: '#38BDF8', action: 'edit-profile' },
+    { icon: 'lock-closed-outline', label: 'Change Password', sub: 'Update account password', color: '#7C3AED', action: 'change-password' },
+  ];
 
   readonly helpRows = [
     { icon: 'help-circle-outline', label: 'Help Centre', sub: 'Browse articles & guides', color: '#8CF000' },
@@ -714,8 +720,15 @@ export class CoachSettingsPage {
     return subs[key] ?? '';
   }
 
+  goAccount(action: string) {
+    if (action === 'change-password') {
+      void this.router.navigateByUrl('/app/change-password');
+      return;
+    }
+    void this.router.navigateByUrl('/app/profile/edit');
+  }
+
   confirmLogout() {
-    this.auth.logout();
-    this.router.navigateByUrl('/welcome');
+    this.auth.logout().subscribe();
   }
 }

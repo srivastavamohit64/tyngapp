@@ -512,6 +512,6 @@ export class VenueFacilitiesPage {
   }
 
   goBack() {
-    this.router.navigateByUrl('/app/home');
+    this.router.navigateByUrl('/app/venue/dashboard');
   }
 }

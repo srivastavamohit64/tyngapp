@@ -5,7 +5,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { HeaderComponent } from '../header/header.component';
 
 /**
- * Wraps page content with the Figma brand top bar on primary tab routes.
+ * Wraps page content with the Figma top bar on primary tab routes.
  */
 @Component({
   selector: 'app-brand-header-shell',
@@ -14,7 +14,9 @@ import { HeaderComponent } from '../header/header.component';
   template: `
     <app-header
       *ngIf="showBrand"
-      variant="brand"
+      [variant]="headerVariant"
+      [venueName]="venueDisplayName"
+      [venueGreeting]="venueGreetingText"
       [notificationRoute]="resolvedNotificationRoute"
       [homeRoute]="resolvedHomeRoute"
       (menuClick)="openMenu()"
@@ -29,15 +31,33 @@ export class BrandHeaderShellComponent {
   @Input() showBrand = true;
   @Input() notificationRoute?: string;
 
+  get headerVariant(): 'brand' | 'venue' {
+    return this.auth.user()?.role === 'venue' ? 'venue' : 'brand';
+  }
+
+  get venueDisplayName(): string {
+    return this.auth.user()?.name?.trim() || 'Phoenix Arena';
+  }
+
+  get venueGreetingText(): string {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good Morning,';
+    if (hour < 17) return 'Good Afternoon,';
+    return 'Good Evening,';
+  }
+
   get resolvedNotificationRoute(): string {
     if (this.notificationRoute) return this.notificationRoute;
-    return this.auth.user()?.role === 'coach' ? '/app/coach/notifications' : '/app/notifications';
+    const role = this.auth.user()?.role;
+    if (role === 'coach') return '/app/coach/notifications';
+    if (role === 'venue') return '/app/venue/notifications';
+    return '/app/notifications';
   }
 
   get resolvedHomeRoute(): string {
     const role = this.auth.user()?.role;
     if (role === 'coach') return '/app/coach/dashboard';
-    if (role === 'venue') return '/app/home';
+    if (role === 'venue') return '/app/venue/dashboard';
     return '/app/home';
   }
 

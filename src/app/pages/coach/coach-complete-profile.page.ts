@@ -3,6 +3,7 @@ import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
+import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 
 const LANGUAGES = ['English','Hindi','Tamil','Telugu','Kannada','Malayalam','Punjabi','Marathi','Gujarati','Bengali','Other'];
@@ -858,8 +859,8 @@ export class CoachCompleteProfilePage {
   }
 
   finishOnboarding() {
-    this.auth.completeOnboarding({ name: this.auth.user()?.name || 'Coach' });
-    this.router.navigateByUrl('/app/home');
+    void firstValueFrom(this.auth.completeOnboarding({ name: this.auth.user()?.name || 'Coach' }))
+      .finally(() => this.router.navigateByUrl('/app/coach/dashboard'));
   }
 
   back() {

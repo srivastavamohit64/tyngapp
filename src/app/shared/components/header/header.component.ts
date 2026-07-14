@@ -3,7 +3,7 @@ import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule, MenuController } from '@ionic/angular';
 
-export type AppHeaderVariant = 'brand' | 'page';
+export type AppHeaderVariant = 'brand' | 'page' | 'venue';
 
 /**
  * Figma TopBar — brand: hamburger | tyng. | bell
@@ -18,7 +18,7 @@ export type AppHeaderVariant = 'brand' | 'page';
       <div class="app-header-inner">
         <!-- Brand: menu -->
         <button
-          *ngIf="variant === 'brand'"
+          *ngIf="variant === 'brand' || variant === 'venue'"
           type="button"
           class="hdr-btn"
           aria-label="Open menu"
@@ -54,15 +54,21 @@ export type AppHeaderVariant = 'brand' | 'page';
           tyng<span class="dot">.</span>
         </button>
 
+        <!-- Venue: greeting + venue name -->
+        <div *ngIf="variant === 'venue'" class="venue-title-block">
+          <p class="venue-greeting">{{ venueGreeting }}</p>
+          <p class="venue-name">{{ venueName }}</p>
+        </div>
+
         <!-- Page title (absolutely centered) -->
         <div *ngIf="variant === 'page'" class="title-block">
           <h1 class="title">{{ title }}</h1>
           <p *ngIf="subtitle" class="subtitle">{{ subtitle }}</p>
         </div>
 
-        <!-- Brand: notifications -->
+        <!-- Venue / Brand: notifications -->
         <button
-          *ngIf="variant === 'brand' && showNotifications"
+          *ngIf="(variant === 'brand' || variant === 'venue') && showNotifications"
           type="button"
           class="hdr-btn bell"
           aria-label="Notifications"
@@ -78,7 +84,7 @@ export type AppHeaderVariant = 'brand' | 'page';
           <div *ngIf="!hasProjectedEnd" class="hdr-spacer"></div>
         </div>
 
-        <div *ngIf="variant === 'brand' && !showNotifications" class="hdr-spacer"></div>
+        <div *ngIf="(variant === 'brand' || variant === 'venue') && !showNotifications" class="hdr-spacer"></div>
       </div>
     </header>
   `,
@@ -104,7 +110,7 @@ export type AppHeaderVariant = 'brand' | 'page';
         display: flex;
         align-items: center;
         justify-content: space-between;
-        height: 56px;
+        height: 60px;
         padding: 0 20px;
       }
 
@@ -247,8 +253,30 @@ export type AppHeaderVariant = 'brand' | 'page';
         min-width: 40px;
       }
 
-      .page-variant .app-header-inner {
-        /* same metrics */
+      .venue-title-block {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        z-index: 1;
+        pointer-events: none;
+      }
+
+      .venue-greeting {
+        margin: 0;
+        font-size: 12px;
+        font-weight: 500;
+        color: #9ca3af;
+        line-height: 1.2;
+      }
+
+      .venue-name {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 900;
+        color: #111827;
+        line-height: 1.2;
       }
     `,
   ],
@@ -265,6 +293,8 @@ export class HeaderComponent {
   @Input() hasNotification = true;
   @Input() notificationRoute = '/app/notifications';
   @Input() homeRoute = '/app/home';
+  @Input() venueName = 'Phoenix Arena';
+  @Input() venueGreeting = '';
   /** When true, end slot has projected content (avoids double spacer). */
   @Input() hasProjectedEnd = false;
 

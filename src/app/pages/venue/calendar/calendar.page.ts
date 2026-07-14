@@ -191,6 +191,6 @@ export class VenueCalendarPage {
   }
 
   goHome() {
-    this.router.navigateByUrl('/app/home');
+    this.router.navigateByUrl('/app/venue/dashboard');
   }
 }

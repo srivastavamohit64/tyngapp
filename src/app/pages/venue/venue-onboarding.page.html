@@ -1,0 +1,146 @@
+<ion-content [fullscreen]="true">
+  <div class="coach-onboarding">
+    <header class="coach-onboarding-header">
+      <div class="coach-onboarding-header-row">
+        <button type="button" class="hdr-btn" (click)="back()">
+          <ion-icon name="chevron-back-outline"></ion-icon>
+        </button>
+        <div class="hdr-title">
+          <p class="hdr-title-main">Create Venue Profile</p>
+          <p class="hdr-title-sub">Step {{ step }} of {{ totalSteps }}</p>
+        </div>
+        <button type="button" class="hdr-btn" [class.hdr-btn--next-ready]="canProceed() && step > 1"
+          [disabled]="!canProceed() || step === 1" (click)="next()">
+          <ion-icon name="chevron-forward-outline"></ion-icon>
+        </button>
+      </div>
+      <div class="progress-pills">
+        <div *ngFor="let n of stepNumbers; let i = index" class="progress-pill-wrap">
+          <div
+            class="progress-pill"
+            [class.progress-pill--active]="step === n"
+            [class.progress-pill--done]="step > n"
+          ></div>
+          <div
+            *ngIf="i < stepNumbers.length - 1"
+            class="progress-pill-line"
+            [class.progress-pill-line--done]="step > n"
+          ></div>
+        </div>
+      </div>
+    </header>
+
+    <div class="coach-onboarding-body">
+      <!-- Step 1 Welcome -->
+      <div *ngIf="step === 1" class="step-panel step-panel--welcome">
+        <div class="welcome-hero">
+          <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=600&fit=crop&auto=format" alt="Sports venue" class="welcome-hero-img" />
+          <div class="welcome-hero-gradient"></div>
+          <div class="welcome-badge">
+            <span class="welcome-badge-dot"></span>
+            <span>TYNG Venues</span>
+          </div>
+          <div class="welcome-float-pill">🏟️ List your venue for free</div>
+        </div>
+        <div class="welcome-content">
+          <h1 class="welcome-heading">Welcome to<br />TYNG Venues 🏟️</h1>
+          <p class="welcome-desc">List your sports facility, receive bookings, partner with coaches, and grow your business with TYNG.</p>
+          <div class="feature-pills">
+            <div *ngFor="let f of welcomeFeatures" class="feature-pill">
+              <span class="feature-pill-check">✓</span>
+              <span>{{ f }}</span>
+            </div>
+          </div>
+          <button type="button" class="btn-green-lg" (click)="step = 2">Let's Get Started →</button>
+        </div>
+      </div>
+
+      <!-- Step 2 Venue Type -->
+      <div *ngIf="step === 2" class="step-panel">
+        <h2 class="step-title">What type of venue do you own?</h2>
+        <p class="step-sub">Choose the category that best describes your sports facility.</p>
+        <div class="sport-grid">
+          <button *ngFor="let vt of venueTypes" type="button" class="sport-card"
+            [class.sport-card--selected]="venueType === vt.id" (click)="venueType = vt.id">
+            <img [src]="vt.image" [alt]="vt.label" class="sport-card-img" />
+            <div class="sport-card-overlay"></div>
+            <span *ngIf="venueType === vt.id" class="sport-card-check">✓</span>
+            <p class="sport-card-label">{{ vt.label }}</p>
+          </button>
+        </div>
+        <button type="button" class="btn-green" [class.btn-green--disabled]="!venueType" [disabled]="!venueType" (click)="next()">
+          {{ venueType ? 'Continue with ' + getVenueTypeLabel() : 'Select a venue type' }}
+        </button>
+      </div>
+
+      <!-- Step 3 Details -->
+      <div *ngIf="step === 3" class="step-panel">
+        <h2 class="step-title">Tell us about your venue</h2>
+        <p class="step-sub">Basic details — you can add more later.</p>
+        <div class="field-list">
+          <div class="field-group">
+            <label class="field-label">Venue Name <span class="req">*</span></label>
+            <div class="field-input"><ion-icon name="business-outline"></ion-icon>
+              <input type="text" [(ngModel)]="venueName" placeholder="e.g. Elite Sports Arena" /></div>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Business Name</label>
+            <div class="field-input"><ion-icon name="business-outline"></ion-icon>
+              <input type="text" [(ngModel)]="businessName" placeholder="Optional" /></div>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Owner / Manager Name <span class="req">*</span></label>
+            <div class="field-input"><ion-icon name="person-outline"></ion-icon>
+              <input type="text" [(ngModel)]="ownerName" placeholder="Your full name" /></div>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Mobile Number <span class="req">*</span></label>
+            <div class="field-input"><ion-icon name="call-outline"></ion-icon>
+              <input type="tel" [ngModel]="mobile" (ngModelChange)="onMobileInput($event)" placeholder="+91 XXXXX XXXXX" /></div>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Email Address</label>
+            <div class="field-input"><ion-icon name="mail-outline"></ion-icon>
+              <input type="email" [(ngModel)]="email" placeholder="venue@example.com" /></div>
+          </div>
+          <div class="field-group">
+            <label class="field-label">City <span class="req">*</span></label>
+            <div class="field-input"><ion-icon name="location-outline"></ion-icon>
+              <input type="text" [(ngModel)]="city" placeholder="e.g. Lucknow" /></div>
+          </div>
+          <app-location-field
+            label="Venue Address"
+            placeholder="Full address with landmark"
+            [(ngModel)]="address"
+          ></app-location-field>
+        </div>
+        <div *ngIf="showMapPreview()" class="map-preview">
+          <iframe [src]="mapEmbedSafeUrl()" title="Venue location" loading="lazy"></iframe>
+        </div>
+        <button type="button" class="btn-green" [class.btn-green--disabled]="!canProceed()" [disabled]="!canProceed()" (click)="next()">Continue</button>
+      </div>
+
+      <!-- Step 4 Sports -->
+      <div *ngIf="step === 4" class="step-panel">
+        <h2 class="step-title">Which sports can be played here?</h2>
+        <p class="step-sub">
+          Select all sports available at your venue
+          <span *ngIf="sports.length" class="step-sub-accent"> · {{ sports.length }} selected</span>
+        </p>
+        <div class="sport-grid">
+          <button *ngFor="let s of sportsList" type="button" class="sport-card"
+            [class.sport-card--selected]="sports.includes(s.id)" (click)="toggleSport(s.id)">
+            <img [src]="s.image" [alt]="s.label" class="sport-card-img" />
+            <div class="sport-card-overlay"></div>
+            <span *ngIf="sports.includes(s.id)" class="sport-card-check">✓</span>
+            <p class="sport-card-label">{{ s.label }}</p>
+          </button>
+        </div>
+        <button type="button" class="btn-orange" [class.btn-orange--disabled]="!sports.length" [disabled]="!sports.length" (click)="next()">
+          {{ sports.length ? 'Start Managing My Venue →' : 'Select at least one sport' }}
+        </button>
+        <p class="step-footnote">You can complete your venue profile later to unlock bookings and partnerships.</p>
+      </div>
+    </div>
+  </div>
+</ion-content>

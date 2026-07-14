@@ -135,8 +135,11 @@ export class HomePage {
   constructor() {
     const hour = new Date().getHours();
     this.greeting = hour < 12 ? 'Good Morning ☀️' : hour < 17 ? 'Good Afternoon 🌤️' : hour < 21 ? 'Good Evening 🌇' : 'Good Night 🌙';
-    if (this.auth.user()?.role === 'admin') {
+    const role = this.auth.user()?.role;
+    if (role === 'admin') {
       void this.router.navigateByUrl('/app/admin/dashboard', { replaceUrl: true });
+    } else if (role === 'venue') {
+      void this.router.navigateByUrl('/app/venue/dashboard', { replaceUrl: true });
     }
   }
 

@@ -1,0 +1,209 @@
+<ion-content [fullscreen]="true" class="has-tabs">
+  <app-brand-header-shell>
+    <div class="venue-page">
+      <div class="venue-page-inner">
+
+        <!-- Venue Pulse -->
+        <section class="venue-hero-dark">
+          <div class="venue-hero-orb venue-hero-orb--lg"></div>
+          <div class="venue-pulse-label">
+            <ion-icon name="flash"></ion-icon>
+            <span>Venue Pulse</span>
+          </div>
+          <div class="venue-metrics-grid">
+            <div *ngFor="let m of pulseMetrics" class="venue-metric">
+              <div class="venue-metric-accent" [style.backgroundColor]="m.accent"></div>
+              <span class="venue-metric-emoji">{{ m.emoji }}</span>
+              <p class="venue-metric-value">{{ m.value }}</p>
+              <p class="venue-metric-label">{{ m.label }}</p>
+            </div>
+          </div>
+          <div class="venue-goal-row">
+            <div class="venue-goal-labels">
+              <span>Daily Revenue Goal</span>
+              <span>83%</span>
+            </div>
+            <div class="venue-progress-track">
+              <div class="venue-progress-fill" style="width: 83%"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Complete Profile -->
+        <section *ngIf="!profileDismissed()" class="venue-completion-card">
+          <div class="venue-hero-orb venue-hero-orb--sm"></div>
+          <button type="button" class="venue-completion-dismiss" (click)="profileDismissed.set(true)">×</button>
+          <div class="venue-completion-kicker">Complete Your Venue Profile</div>
+          <p class="venue-completion-desc">Unlock bookings, verification, coach partnerships and improve search ranking.</p>
+          <div class="venue-completion-meta">
+            <span>Profile Completion</span>
+            <span>40%</span>
+          </div>
+          <div class="venue-progress-track">
+            <div class="venue-progress-fill" style="width: 40%; background: linear-gradient(90deg, #8cf000, #ff7a00)"></div>
+          </div>
+          <div class="venue-checklist">
+            <div *ngFor="let c of checklist" class="venue-check-item">
+              <div class="venue-check-dot" [style.backgroundColor]="c.done ? '#8CF000' : 'rgba(255,255,255,0.10)'">
+                <ion-icon *ngIf="c.done" name="checkmark"></ion-icon>
+                <div *ngIf="!c.done" class="venue-check-dot--pending"></div>
+              </div>
+              <span class="venue-check-label" [style.color]="c.done ? 'rgba(255,255,255,0.70)' : 'rgba(255,255,255,0.30)'">{{ c.label }}</span>
+            </div>
+          </div>
+          <button type="button" class="venue-btn-green" (click)="go('/app/venue/complete-profile')">Complete Profile →</button>
+        </section>
+
+        <!-- Quick Actions -->
+        <section>
+          <h3 class="venue-section-title">Quick Actions</h3>
+          <div class="venue-quick-grid">
+            <button *ngFor="let act of quickActions" type="button" class="venue-quick-card"
+              [style.borderColor]="act.color + '33'"
+              [style.boxShadow]="'0 2px 16px ' + act.color + '18, 0 1px 4px rgba(0,0,0,0.05)'"
+              (click)="go(act.path)">
+              <span class="venue-quick-emoji">{{ act.emoji }}</span>
+              <p class="venue-quick-title">{{ act.label }}</p>
+              <p class="venue-quick-sub">{{ act.sub }}</p>
+            </button>
+          </div>
+        </section>
+
+        <!-- Today's Bookings -->
+        <section class="venue-card venue-card-padded">
+          <div class="venue-section-header">
+            <h3 class="venue-section-title">Today's Bookings</h3>
+            <button type="button" class="venue-see-all" (click)="go('/app/venue/bookings')">
+              See All <ion-icon name="chevron-forward-outline"></ion-icon>
+            </button>
+          </div>
+          <div *ngFor="let b of bookings" class="venue-list-row">
+            <div class="venue-avatar-wrap">
+              <img [src]="b.photo" [alt]="b.name" class="venue-avatar" />
+              <div *ngIf="b.type === 'coach'" class="venue-coach-badge">🏋️</div>
+            </div>
+            <div class="venue-list-body">
+              <p class="venue-list-name">{{ b.name }}</p>
+              <p class="venue-list-meta">{{ b.sport }} · {{ b.court }} · {{ b.time }}</p>
+            </div>
+            <div class="venue-list-end">
+              <p class="venue-list-amount">{{ b.amount }}</p>
+              <span class="venue-status-pill"
+                [style.backgroundColor]="getStatusStyle(b.status).bg"
+                [style.color]="getStatusStyle(b.status).color">{{ b.status }}</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Court Occupancy -->
+        <section class="venue-card venue-card-padded">
+          <h3 class="venue-section-title">Court Occupancy</h3>
+          <div *ngFor="let court of courts" class="venue-heatmap-row">
+            <div class="venue-heatmap-header">
+              <span class="venue-heatmap-name">{{ court.name }}</span>
+              <span class="venue-heatmap-count">{{ bookedCount(court) }}/{{ court.slots.length }} booked</span>
+            </div>
+            <div class="venue-heatmap-slots">
+              <div *ngFor="let booked of court.slots"
+                class="venue-slot"
+                [class.venue-slot--booked]="booked"
+                [class.venue-slot--free]="!booked"></div>
+            </div>
+            <div class="venue-slot-labels">
+              <span>6AM</span><span>12PM</span><span>6PM</span><span>9PM</span>
+            </div>
+          </div>
+          <div class="venue-legend">
+            <div class="venue-legend-item">
+              <div class="venue-legend-swatch" style="background: #8cf000"></div>
+              <span>Booked</span>
+            </div>
+            <div class="venue-legend-item">
+              <div class="venue-legend-swatch" style="background: #f3f4f6"></div>
+              <span>Available</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Upcoming Coach Sessions -->
+        <section class="venue-card venue-card-padded">
+          <h3 class="venue-section-title">Upcoming Coach Sessions</h3>
+          <div *ngFor="let s of coachSessions" class="venue-list-row">
+            <img [src]="s.photo" [alt]="s.name" class="venue-avatar venue-avatar--sm" />
+            <div class="venue-list-body">
+              <p class="venue-list-name">{{ s.name }}</p>
+              <p class="venue-list-meta">{{ s.sport }} · {{ s.court }} · {{ s.students }} students</p>
+            </div>
+            <div class="venue-list-end">
+              <p class="venue-list-amount">{{ s.time }}</p>
+              <span class="venue-coach-pill">Coach</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Recent Activity -->
+        <section class="venue-card venue-card-padded">
+          <h3 class="venue-section-title">Recent Activity</h3>
+          <div *ngFor="let act of activities" class="venue-activity-row">
+            <div class="venue-activity-icon" [style.backgroundColor]="act.bg">{{ act.emoji }}</div>
+            <div>
+              <p class="venue-activity-text">{{ act.text }}</p>
+              <p class="venue-activity-time">{{ act.time }}</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- AI Insights -->
+        <section class="venue-ai-card">
+          <div class="venue-ai-orb"></div>
+          <div class="venue-ai-header">
+            <ion-icon name="flash-outline"></ion-icon>
+            <span>TYNG AI Insights</span>
+            <span class="venue-ai-badge">AI</span>
+          </div>
+          <div *ngFor="let tip of aiTips" class="venue-ai-tip">
+            <span>{{ tip.emoji }}</span>
+            <p>{{ tip.text }}</p>
+          </div>
+          <button type="button" class="venue-btn-orange" (click)="go('/app/venue/analytics')">View Recommendations →</button>
+        </section>
+
+        <!-- Weather -->
+        <section class="venue-card venue-card-padded">
+          <div class="venue-weather-row">
+            <div class="venue-weather-left">
+              <div class="venue-weather-icon">
+                <ion-icon name="sunny"></ion-icon>
+              </div>
+              <div>
+                <p class="venue-weather-place">Today · Lucknow</p>
+                <div class="venue-weather-temp">
+                  <strong>28°</strong>
+                  <span>Sunny</span>
+                </div>
+              </div>
+            </div>
+            <div class="venue-weather-tag">
+              <p>Outdoor</p>
+              <p>Excellent Conditions</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Pending Actions -->
+        <section class="venue-card venue-card-padded">
+          <h3 class="venue-section-title">Pending Actions</h3>
+          <div *ngFor="let task of pendingActions" class="venue-pending-row">
+            <div class="venue-urgency-dot" [style.backgroundColor]="getUrgencyColor(task.urgency)"></div>
+            <div class="venue-pending-body">
+              <p class="venue-pending-title">{{ task.label }}</p>
+              <p class="venue-pending-sub">{{ task.sub }}</p>
+            </div>
+            <button type="button" class="venue-act-btn" (click)="go('/app/venue/bookings')">Act</button>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </app-brand-header-shell>
+</ion-content>

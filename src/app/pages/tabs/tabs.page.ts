@@ -67,7 +67,7 @@ export class TabsPage {
       return coachPrimary.some((p) => path === p || path.startsWith(p + '/'));
     }
     if (user?.role === 'venue') {
-      const venuePrimary = ['/app/home', '/app/venue/bookings', '/app/venue/calendar', '/app/chat', '/app/profile'];
+      const venuePrimary = ['/app/venue/dashboard', '/app/home', '/app/venue/bookings', '/app/venue/calendar', '/app/chat'];
       return venuePrimary.some((p) => path === p || path.startsWith(p + '/'));
     }
     if (user?.role === 'admin') {
@@ -88,9 +88,9 @@ export class TabsPage {
     }
     if (user?.role === 'venue') {
       return [
-        { label: 'Home', icon: 'home-outline', route: '/app/home' },
+        { label: 'Home', icon: 'home-outline', route: '/app/venue/dashboard' },
         { label: 'Bookings', icon: 'calendar-outline', route: '/app/venue/bookings' },
-        { label: 'Calendar', icon: 'calendar-number-outline', route: '/app/venue/calendar' },
+        { label: 'Events', icon: 'sparkles-outline', route: '/app/venue/calendar' },
         { label: 'Chat', icon: 'chatbubble-outline', route: '/app/chat' },
       ];
     }

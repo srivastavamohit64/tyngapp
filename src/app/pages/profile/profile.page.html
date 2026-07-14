@@ -10,7 +10,10 @@
       </div>
 
       <div class="flex flex-col items-center">
-        <div class="relative mb-4 grid h-24 w-24 place-items-center rounded-full bg-gradient-to-br from-[#8CF000] to-[#FF7A00] text-5xl shadow-md">👨‍🏫</div>
+        <div class="relative mb-4 grid h-24 w-24 place-items-center rounded-full bg-gradient-to-br from-[#8CF000] to-[#FF7A00] text-5xl shadow-md overflow-hidden">
+          <img *ngIf="auth.user()?.profileImage" [src]="auth.user()?.profileImage" alt="" class="h-full w-full object-cover" />
+          <span *ngIf="!auth.user()?.profileImage">👨‍🏫</span>
+        </div>
         <h1 class="mb-1 text-[24px] font-black text-[#111827]">{{ auth.user()?.name || 'Coach Arvind' }}</h1>
         <div class="mb-3 text-sm text-[#9CA3AF]">Football & Cricket</div>
         <div class="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 shadow-sm border border-[#F3F4F6]">

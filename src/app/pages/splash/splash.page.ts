@@ -439,9 +439,18 @@ export class SplashPage implements OnInit, OnDestroy {
     const user = this.auth.user();
     if (user) {
       if (user.isOnboarded) {
-        void this.router.navigateByUrl("/app/home", { replaceUrl: true });
+        const path = user.role === 'coach'
+          ? '/app/coach/dashboard'
+          : user.role === 'venue'
+            ? '/app/venue/dashboard'
+            : '/app/home';
+        void this.router.navigateByUrl(path, { replaceUrl: true });
       } else {
-        const path = user.role === 'coach' ? '/coach-onboarding' : '/onboarding';
+        const path = user.role === 'coach'
+          ? '/coach-onboarding'
+          : user.role === 'venue'
+            ? '/venue-onboarding'
+            : '/onboarding';
         void this.router.navigateByUrl(path, { replaceUrl: true });
       }
     } else {

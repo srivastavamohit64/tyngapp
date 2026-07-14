@@ -1,0 +1,153 @@
+<ion-content [fullscreen]="true">
+  <div class="player-onboarding">
+    <header class="player-onboarding-header">
+      <div class="progress-track">
+        <div
+          *ngFor="let s of stepNumbers"
+          class="progress-segment"
+          [class.is-filled]="s <= step"
+        ></div>
+      </div>
+      <h2 class="step-heading">{{ heading }}</h2>
+      <p class="step-description">{{ description }}</p>
+    </header>
+
+    <section class="player-onboarding-body">
+      <!-- Step 1: Sports -->
+      <div *ngIf="step === 1" class="sports-scroll">
+        <div class="sports-grid">
+          <button
+            *ngFor="let sport of sports"
+            type="button"
+            class="sport-tile"
+            [class.sport-tile--selected]="selectedSports.includes(sport.id)"
+            (click)="toggleSport(sport.id)"
+          >
+            <img [src]="sport.image" [alt]="sport.name" class="sport-tile-img" />
+            <div class="sport-tile-gradient"></div>
+            <div *ngIf="selectedSports.includes(sport.id)" class="sport-tile-tint" [style.background-color]="sport.accent + '28'"></div>
+            <div class="sport-tile-border" [class.sport-tile-border--selected]="selectedSports.includes(sport.id)"></div>
+            <span class="sport-tile-name">{{ sport.name }}</span>
+            <span *ngIf="selectedSports.includes(sport.id)" class="sport-tile-check">
+              <svg width="14" height="11" viewBox="0 0 14 11" fill="none" aria-hidden="true">
+                <path d="M1.5 5.5L5.5 9.5L12.5 1.5" stroke="#111827" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 2: Skill level -->
+      <div *ngIf="step === 2" class="stack-list">
+        <button
+          *ngFor="let skill of skills"
+          type="button"
+          class="skill-card"
+          [class.skill-card--selected]="skillLevel === skill.id"
+          (click)="skillLevel = skill.id"
+        >
+          <div class="skill-card-top">
+            <div>
+              <div class="skill-name" [class.skill-name--selected]="skillLevel === skill.id">{{ skill.name }}</div>
+              <div class="skill-desc">{{ skill.desc }}</div>
+            </div>
+            <div class="skill-percent">{{ skill.progress }}%</div>
+          </div>
+          <div class="skill-bar-track">
+            <div
+              class="skill-bar-fill"
+              [class]="skill.gradientClass"
+              [style.width.%]="skillLevel === skill.id ? skill.progress : 0"
+            ></div>
+          </div>
+          <div *ngIf="skillLevel === skill.id" class="ai-suggestion">
+            <div class="ai-suggestion-inner">
+              <div class="ai-icon">✨</div>
+              <div>
+                <div class="ai-label">AI Suggestion</div>
+                <div class="ai-text">{{ skill.aiSuggestion }}</div>
+              </div>
+            </div>
+          </div>
+        </button>
+      </div>
+
+      <!-- Step 3: Sports intent -->
+      <div *ngIf="step === 3" class="stack-list">
+        <button
+          *ngFor="let style of styles"
+          type="button"
+          class="intent-card"
+          [class.intent-card--selected]="playingStyle === style.id"
+          [style.background]="playingStyle === style.id ? style.bgPattern : null"
+          (click)="playingStyle = style.id"
+        >
+          <div *ngIf="playingStyle === style.id" class="intent-gradient" [class]="style.gradientClass"></div>
+          <div class="intent-content">
+            <div class="intent-top">
+              <div>
+                <div class="intent-name" [class.intent-name--selected]="playingStyle === style.id">{{ style.name }}</div>
+                <div class="intent-desc">{{ style.desc }}</div>
+              </div>
+              <span *ngIf="playingStyle === style.id" class="intent-check" [class]="style.gradientClass">✓</span>
+            </div>
+            <div class="feature-grid">
+              <span
+                *ngFor="let feat of style.features"
+                class="feature-chip"
+                [class.feature-chip--selected]="playingStyle === style.id"
+              >
+                <span class="feature-dot">●</span>{{ feat }}
+              </span>
+            </div>
+          </div>
+        </button>
+      </div>
+
+      <!-- Step 4: Time slots -->
+      <div *ngIf="step === 4" class="timeline-wrap">
+        <div class="timeline-line"></div>
+        <div class="timeline-list">
+          <button
+            *ngFor="let slot of times"
+            type="button"
+            class="time-card"
+            [class.time-card--selected]="timeSlots.includes(slot.id)"
+            [style.border-color]="timeSlots.includes(slot.id) ? slot.color : null"
+            (click)="toggleTimeSlot(slot.id)"
+          >
+            <div
+              class="time-icon"
+              [class.time-icon--selected]="timeSlots.includes(slot.id)"
+              [style.background-color]="timeSlots.includes(slot.id) ? slot.color : null"
+            >
+              <span>{{ slot.emoji }}</span>
+            </div>
+            <div class="time-copy">
+              <div
+                class="time-name"
+                [class.time-name--selected]="timeSlots.includes(slot.id)"
+                [style.color]="timeSlots.includes(slot.id) ? slot.color : null"
+              >
+                {{ slot.name }}
+              </div>
+              <div class="time-range">{{ slot.timeRange }}</div>
+            </div>
+            <span
+              *ngIf="timeSlots.includes(slot.id)"
+              class="time-check"
+              [style.background-color]="slot.color"
+            >✓</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <footer class="player-onboarding-footer">
+      <button *ngIf="step > 1" type="button" class="btn-back" (click)="back()">Back</button>
+      <button type="button" class="btn-continue" [disabled]="!canProceed" (click)="next()">
+        {{ step === 4 ? 'Complete Setup' : 'Continue' }}
+      </button>
+    </footer>
+  </div>
+</ion-content>

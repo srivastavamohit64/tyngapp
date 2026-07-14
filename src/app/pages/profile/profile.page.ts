@@ -91,7 +91,6 @@ export class ProfilePage {
   }
 
   logout() {
-    this.auth.logout();
-    this.router.navigateByUrl('/welcome');
+    this.auth.logout().subscribe();
   }
 }

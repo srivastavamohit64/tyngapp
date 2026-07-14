@@ -1,0 +1,188 @@
+// Figma onboarding design tokens
+$ob-bg: #fafbfc;
+$ob-text: #111827;
+$ob-muted: #9ca3af;
+$ob-muted-foreground: #6b7280;
+$ob-border: #e5e7eb;
+$ob-surface: #f3f4f6;
+$ob-input-bg: #f9fafb;
+$ob-primary: #8cf000;
+$ob-orange: #ff7a00;
+
+@mixin ob-safe-page {
+  min-height: 100%;
+  background: $ob-bg;
+  color: $ob-text;
+  box-sizing: border-box;
+}
+
+@mixin ob-sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: #fff;
+  border-bottom: 1px solid #f3f4f6;
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.btn-ob-green {
+  width: 100%;
+  border: none;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #8cf000 0%, #a3e635 100%);
+  box-shadow: 0 4px 20px rgba(140, 240, 0, 0.4);
+  color: $ob-text;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+
+  &:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  &:disabled {
+    background: $ob-surface;
+    color: #c4c9d4;
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+
+  &--52 {
+    height: 52px;
+    font-size: 15px;
+  }
+
+  &--56 {
+    height: 56px;
+    font-size: 16px;
+  }
+}
+
+.btn-ob-orange {
+  width: 100%;
+  border: none;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #ff7a00 0%, #ff9a40 100%);
+  box-shadow: 0 4px 20px rgba(255, 122, 0, 0.4);
+  color: #fff;
+  font-weight: 900;
+  cursor: pointer;
+
+  &:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  &:disabled {
+    background: $ob-surface;
+    color: #c4c9d4;
+    box-shadow: none;
+  }
+
+  &--56 {
+    height: 56px;
+    font-size: 16px;
+  }
+
+  &--17 {
+    height: 56px;
+    font-size: 17px;
+    box-shadow: 0 6px 24px rgba(255, 122, 0, 0.45);
+  }
+}
+
+.step-title-block {
+  margin-bottom: 20px;
+
+  h2 {
+    margin: 0 0 4px;
+    font-size: 22px;
+    font-weight: 900;
+    color: $ob-text;
+    line-height: 1.2;
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+    color: $ob-muted;
+    line-height: 1.5;
+  }
+}
+
+.image-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.image-card {
+  position: relative;
+  overflow: hidden;
+  border: 2.5px solid transparent;
+  border-radius: 20px;
+  aspect-ratio: 3 / 4;
+  padding: 0;
+  cursor: pointer;
+  background: #e5e7eb;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:active {
+    transform: scale(0.94);
+  }
+
+  &--selected {
+    border-color: $ob-primary;
+    box-shadow: 0 0 0 3px rgba(140, 240, 0, 0.22), 0 4px 16px rgba(140, 240, 0, 0.18);
+  }
+}
+
+.image-card-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0.2) 50%, transparent 100%);
+}
+
+.image-card-tint {
+  position: absolute;
+  inset: 0;
+  background: rgba(140, 240, 0, 0.15);
+}
+
+.image-card-check {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: $ob-primary;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 900;
+  color: $ob-text;
+}
+
+.image-card-label {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 10px;
+  margin: 0;
+  font-size: 11px;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1.2;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}

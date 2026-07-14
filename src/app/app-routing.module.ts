@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+import { guestGuard } from './core/guards/guest.guard';
 import { SplashPage } from './pages/splash/splash.page';
 
 const routes: Routes = [
@@ -15,6 +16,7 @@ const routes: Routes = [
   },
   {
     path: 'login',
+    canActivate: [guestGuard],
     loadComponent: () => import('./pages/auth/auth.page').then((m) => m.AuthPage),
   },
   {
@@ -23,15 +25,33 @@ const routes: Routes = [
   },
   {
     path: 'auth',
+    canActivate: [guestGuard],
     loadComponent: () => import('./pages/auth/auth.page').then((m) => m.AuthPage),
   },
   {
+    path: 'forgot-password',
+    canActivate: [guestGuard],
+    loadComponent: () => import('./pages/auth/forgot-password.page').then((m) => m.ForgotPasswordPage),
+  },
+  {
+    path: 'reset-password',
+    canActivate: [guestGuard],
+    loadComponent: () => import('./pages/auth/reset-password.page').then((m) => m.ResetPasswordPage),
+  },
+  {
     path: 'onboarding',
+    canActivate: [authGuard],
     loadComponent: () => import('./pages/onboarding/onboarding.page').then((m) => m.OnboardingPage),
   },
   {
     path: 'coach-onboarding',
+    canActivate: [authGuard],
     loadComponent: () => import('./pages/coach/coach-onboarding.page').then((m) => m.CoachOnboardingPage),
+  },
+  {
+    path: 'venue-onboarding',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/venue/venue-onboarding.page').then((m) => m.VenueOnboardingPage),
   },
   {
     path: 'app/onboarding',
@@ -66,6 +86,16 @@ const routes: Routes = [
     path: 'app/settings',
     canActivate: [authGuard],
     loadComponent: () => import('./pages/settings/settings.page').then((m) => m.SettingsPage),
+  },
+  {
+    path: 'app/profile/edit',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/profile/edit-profile.page').then((m) => m.EditProfilePage),
+  },
+  {
+    path: 'app/change-password',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/profile/change-password.page').then((m) => m.ChangePasswordPage),
   },
   {
     path: 'app',
@@ -250,10 +280,21 @@ const routes: Routes = [
         path: 'coach/notifications',
         loadComponent: () => import('./pages/coach/coach-notifications.page').then((m) => m.CoachNotificationsPage),
       },
-      // Venue new routes
+      {
+        path: 'venue/dashboard',
+        loadComponent: () => import('./pages/venue/venue-dashboard.page').then((m) => m.VenueDashboardPage),
+      },
+      {
+        path: 'venue/notifications',
+        loadComponent: () => import('./pages/venue/venue-notifications.page').then((m) => m.VenueNotificationsPage),
+      },
       {
         path: 'venue/complete-profile',
         loadComponent: () => import('./pages/venue/venue-complete-profile.page').then((m) => m.VenueCompleteProfilePage),
+      },
+      {
+        path: 'venue/earnings',
+        loadComponent: () => import('./pages/venue/earnings/earnings.page').then((m) => m.VenueEarningsPage),
       },
       {
         path: 'venue/profile',

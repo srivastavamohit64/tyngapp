@@ -152,10 +152,10 @@ export class VenueProfilePage {
   ];
 
   back() {
-    this.router.navigateByUrl('/app/home');
+    this.router.navigateByUrl('/app/venue/dashboard');
   }
 
   completeProfile() {
-    this.router.navigateByUrl('/app/venue-complete-profile');
+    this.router.navigateByUrl('/app/venue/complete-profile');
   }
 }

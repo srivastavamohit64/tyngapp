@@ -1,20 +1,21 @@
 <!-- LEFT DRAWER — role-aware (Figma LeftDrawer / CoachLeftDrawer) -->
-<ion-menu contentId="main-content" type="overlay">
+<ion-menu contentId="main-content" type="overlay" (ionWillOpen)="refreshProfile()">
   <ion-content>
     <!-- Coach drawer -->
-    <div class="drawer-shell" *ngIf="auth.user()?.role === 'coach'; else playerDrawer">
-      <div class="drawer-profile-header coach-drawer-header">
+    <div class="drawer-shell" *ngIf="auth.user()?.role === 'coach'; else venueOrPlayerDrawer">
+        <div class="drawer-profile-header coach-drawer-header">
         <div class="drawer-avatar-wrap" (click)="navigateTo('/app/coach/profile')">
           <div class="drawer-avatar">
-            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=160&h=160&fit=crop&auto=format" alt="Rajesh Pandey" class="drawer-avatar-img" />
+            <img *ngIf="avatarUrl(); else coachEmoji" [src]="avatarUrl()" [alt]="displayName()" class="drawer-avatar-img" />
+            <ng-template #coachEmoji><span class="drawer-avatar-emoji">{{ getRoleEmoji() }}</span></ng-template>
           </div>
-          <div class="drawer-verified-badge">
+          <div class="drawer-verified-badge" *ngIf="user()?.isOnboarded">
             <ion-icon name="checkmark" class="verified-icon"></ion-icon>
           </div>
         </div>
         <div class="drawer-name-block" (click)="navigateTo('/app/coach/profile')">
-          <h3 class="drawer-name">Rajesh Pandey</h3>
-          <p class="drawer-handle">Cricket · Football Coach</p>
+          <h3 class="drawer-name">{{ displayName() }}</h3>
+          <p class="drawer-handle">{{ coachSubtitle() }}</p>
         </div>
         <div class="coach-rating-row">
           <div class="coach-rating">
@@ -35,10 +36,10 @@
         <div class="coach-completion-inner">
           <div class="coach-completion-top">
             <p class="coach-completion-label">Profile Completion</p>
-            <span class="coach-completion-pct">40%</span>
+            <span class="coach-completion-pct">{{ profileCompletion() }}%</span>
           </div>
           <div class="coach-completion-bar">
-            <div class="coach-completion-fill" style="width:40%"></div>
+            <div class="coach-completion-fill" [style.width.%]="profileCompletion()"></div>
           </div>
           <p class="coach-completion-desc">Complete your profile to receive more bookings and unlock your Verified Coach badge.</p>
           <div class="coach-completion-cta">
@@ -78,19 +79,86 @@
       </div>
     </div>
 
+    <!-- Venue drawer -->
+    <ng-template #venueOrPlayerDrawer>
+      <div class="drawer-shell" *ngIf="auth.user()?.role === 'venue'; else playerDrawer">
+        <div class="venue-drawer-header">
+          <div class="venue-drawer-identity">
+            <div class="venue-drawer-icon">🏟️</div>
+            <div>
+              <p class="venue-drawer-name">{{ venueDisplayName() }}</p>
+              <p class="venue-drawer-location">{{ venueLocation() }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="venue-drawer-completion" (click)="navigateTo('/app/venue/complete-profile')">
+          <div class="xp-orb1"></div>
+          <div class="xp-orb2"></div>
+          <div class="venue-drawer-completion-inner">
+            <div class="venue-drawer-completion-top">
+              <p class="venue-drawer-completion-label">Profile Completion</p>
+              <span class="venue-drawer-completion-pct">{{ profileCompletion() }}%</span>
+            </div>
+            <div class="venue-drawer-completion-bar">
+              <div class="venue-drawer-completion-fill" [style.width.%]="profileCompletion()"></div>
+            </div>
+            <div class="venue-drawer-checklist">
+              <div *ngFor="let item of venueChecklistPreview" class="venue-drawer-check">
+                <div class="venue-drawer-check-dot" [class.venue-drawer-check-dot--done]="item.done">
+                  <ion-icon *ngIf="item.done" name="checkmark"></ion-icon>
+                </div>
+                <span [class.venue-drawer-check-done]="item.done">{{ item.label }}</span>
+              </div>
+            </div>
+            <div class="venue-drawer-completion-cta">Complete Profile →</div>
+          </div>
+        </div>
+
+        <div class="drawer-menu">
+          <button class="menu-item" *ngFor="let item of venueMenuItems" (click)="navigateTo(item.path)">
+            <div class="menu-icon"><ion-icon [name]="item.icon"></ion-icon></div>
+            <div class="menu-text">
+              <div class="menu-label">{{ item.label }}</div>
+              <div class="menu-desc">{{ item.sub }}</div>
+            </div>
+            <div *ngIf="item.badge" class="menu-badge">{{ item.badge }}</div>
+            <ion-icon *ngIf="!item.badge" name="chevron-forward-outline" class="menu-chevron"></ion-icon>
+          </button>
+
+          <div class="menu-divider"></div>
+
+          <div *ngIf="showLogoutConfirm; else venueLogoutBtn" class="logout-confirm">
+            <p class="logout-confirm-title">Log out of TYNG?</p>
+            <p class="logout-confirm-desc">Your venue profile will be preserved.</p>
+            <div class="logout-confirm-actions">
+              <button type="button" class="logout-cancel" (click)="showLogoutConfirm = false">Cancel</button>
+              <button type="button" class="logout-confirm-btn" (click)="logout()">Log Out</button>
+            </div>
+          </div>
+          <ng-template #venueLogoutBtn>
+            <button class="logout-btn" (click)="showLogoutConfirm = true">
+              <div class="logout-icon"><ion-icon name="log-out-outline"></ion-icon></div>
+              <span class="logout-text">Log Out</span>
+            </button>
+          </ng-template>
+        </div>
+      </div>
+
     <!-- Player drawer -->
     <ng-template #playerDrawer>
       <div class="drawer-shell">
         <div class="drawer-profile-header">
           <div class="drawer-avatar-wrap" (click)="navigateTo('/app/profile')">
             <div class="drawer-avatar">
-              <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=160&h=160&fit=crop&auto=format" alt="Arjun Sharma" class="drawer-avatar-img" />
+              <img *ngIf="avatarUrl(); else playerEmoji" [src]="avatarUrl()" [alt]="displayName()" class="drawer-avatar-img" />
+              <ng-template #playerEmoji><span class="drawer-avatar-emoji">{{ getRoleEmoji() }}</span></ng-template>
             </div>
-            <div class="drawer-level-badge">28</div>
+            <div class="drawer-level-badge">{{ level() }}</div>
           </div>
           <div class="drawer-name-block" (click)="navigateTo('/app/profile')">
-            <h3 class="drawer-name">Arjun Sharma</h3>
-            <p class="drawer-handle">&#64;arjun_cricket · Lucknow</p>
+            <h3 class="drawer-name">{{ displayName() }}</h3>
+            <p class="drawer-handle">{{ userHandle() }}</p>
           </div>
         </div>
 
@@ -99,23 +167,23 @@
           <div class="xp-orb2"></div>
           <div class="xp-top">
             <div>
-              <div class="xp-top5">🏆 Top 5%</div>
-              <div class="xp-points">1,250</div>
+              <div class="xp-top5" *ngIf="percentileLabel()">🏆 {{ percentileLabel() }}</div>
+              <div class="xp-points">{{ tpPoints() }}</div>
               <div class="xp-lbl">TP Points</div>
             </div>
             <div class="xp-right">
               <div class="xp-lvl-lbl">Level</div>
-              <div class="xp-lvl">28</div>
+              <div class="xp-lvl">{{ level() }}</div>
             </div>
           </div>
           <div class="xp-prog-row">
-            <span class="xp-prog-lbl">1,850 / 2,500 XP</span>
-            <span class="xp-prog-pct">74%</span>
+            <span class="xp-prog-lbl">{{ xpLabel() }}</span>
+            <span class="xp-prog-pct">{{ xpProgressPct() }}%</span>
           </div>
           <div class="xp-bar">
-            <div class="xp-fill" style="width:74%"></div>
+            <div class="xp-fill" [style.width.%]="xpProgressPct()"></div>
           </div>
-          <div class="xp-to-next">650 XP to Level 29</div>
+          <div class="xp-to-next">{{ xpToNextLabel() }}</div>
         </div>
 
         <div class="drawer-menu">
@@ -193,6 +261,7 @@
           </button>
         </div>
       </div>
+    </ng-template>
     </ng-template>
   </ion-content>
 </ion-menu>
