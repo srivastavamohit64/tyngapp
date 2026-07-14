@@ -468,6 +468,7 @@ export const VENUE_DATA: VenueDetail[] = [
   ]
 })
 export class VenueDetailPage implements OnInit {
+  readonly Math = Math;
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly sanitizer = inject(DomSanitizer);
