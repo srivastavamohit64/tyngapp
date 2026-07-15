@@ -1,11 +1,34 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit, QueryList, ViewChildren, ElementRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, ToastController } from '@ionic/angular';
+import { firstValueFrom } from 'rxjs';
+import { ApiService } from '../../core/services/api.service';
+import { BookingService } from '../../core/services/booking.service';
 import { DesignDataService } from '../../core/services/design-data.service';
 import { HeaderComponent } from '../../shared/components/header/header.component';
 import { PrimaryButtonComponent } from '../../shared/components/primary-button/primary-button.component';
+import { Venue } from '../../shared/models/app.models';
+
+interface VenueApi {
+  id: number;
+  name: string;
+  location?: string | null;
+  distance?: string | null;
+  price?: number | null;
+  rating?: number | null;
+  emoji?: string | null;
+  sports?: string[] | null;
+}
+
+interface DateOption {
+  key: string;
+  label: string;
+  subLabel: string;
+  date: Date;
+  isToday: boolean;
+}
 
 @Component({
   selector: 'app-create-game',
@@ -68,19 +91,25 @@ import { PrimaryButtonComponent } from '../../shared/components/primary-button/p
             <h3>Choose Venue</h3>
             <p class="muted">Select a venue for your match</p>
             <div class="list">
+              <div class="muted" *ngIf="venuesLoading">Loading venues...</div>
+              <div class="muted" *ngIf="!venuesLoading && venues.length === 0">No venues available.</div>
               <button
                 type="button"
                 class="venue-row"
-                *ngFor="let venue of data.venues"
+                *ngFor="let venue of venues"
                 [class.selected]="selectedVenue === venue.id"
                 (click)="selectedVenue = venue.id"
               >
-                <div class="venue-emoji">{{ venue.emoji }}</div>
+                <div class="venue-emoji">{{ venue.emoji || '🏟️' }}</div>
                 <div class="venue-info">
                   <strong>{{ venue.name }}</strong>
-                  <span>{{ venue.location }} · {{ venue.distance }}</span>
+                  <span>
+                    {{ venue.location || '—' }}
+                    <ng-container *ngIf="venue.distance"> · {{ venue.distance }}</ng-container>
+                  </span>
                 </div>
-                <strong class="price">₹{{ venue.price }}/hr</strong>
+                <strong class="price" *ngIf="venue.price !== null && venue.price !== undefined">₹{{ venue.price }}/hr</strong>
+                <strong class="price" *ngIf="venue.price === null || venue.price === undefined">—</strong>
               </button>
             </div>
           </ng-container>
@@ -92,21 +121,23 @@ import { PrimaryButtonComponent } from '../../shared/components/primary-button/p
             <div class="chip-row">
               <button
                 type="button"
-                class="chip"
-                *ngFor="let d of dates"
-                [class.active]="selectedDate === d"
-                (click)="selectedDate = d"
+                class="chip date-chip"
+                *ngFor="let d of dateOptions; let i = index"
+                [class.active]="selectedDateKey === d.key"
+                (click)="selectDate(d)"
+                #dateChip
               >
-                {{ d }}
+                <span class="chip-label">{{ d.label }}</span>
+                <span class="chip-sub">{{ d.subLabel }}</span>
               </button>
             </div>
             <div class="chip-row mt">
               <button
                 type="button"
                 class="chip"
-                *ngFor="let t of times"
+                *ngFor="let t of timeSlots"
                 [class.active]="selectedTime === t"
-                (click)="selectedTime = t"
+                (click)="selectTime(t)"
               >
                 {{ t }}
               </button>
@@ -138,11 +169,11 @@ import { PrimaryButtonComponent } from '../../shared/components/primary-button/p
             <div class="summary-card">
               <div class="sum-row"><span>Sport</span><strong>{{ sportName }}</strong></div>
               <div class="sum-row"><span>Venue</span><strong>{{ venueName }}</strong></div>
-              <div class="sum-row"><span>When</span><strong>{{ selectedDate }} · {{ selectedTime }}</strong></div>
+              <div class="sum-row"><span>When</span><strong>{{ selectedDateDisplay }} · {{ selectedTime }}</strong></div>
               <div class="sum-row"><span>Format</span><strong>{{ selectedTeamSize }}</strong></div>
             </div>
-            <app-primary-button icon="checkmark-circle" (pressed)="confirm()">
-              Create Game
+            <app-primary-button icon="checkmark-circle" [disabled]="submitting" (pressed)="confirm()">
+              {{ submitting ? 'Creating...' : 'Create Game' }}
             </app-primary-button>
           </ng-container>
         </section>
@@ -367,12 +398,37 @@ import { PrimaryButtonComponent } from '../../shared/components/primary-button/p
         font-size: 14px;
         font-weight: 600;
         min-height: unset;
+        transition: transform 180ms ease, background 180ms ease, border-color 180ms ease, color 180ms ease;
       }
 
       .chip.active {
         background: #8cf000;
         border-color: #8cf000;
         color: #111827;
+        transform: translateY(-1px) scale(1.02);
+      }
+
+      .date-chip {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+        min-width: 72px;
+      }
+
+      .chip-label {
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .chip-sub {
+        font-size: 11px;
+        color: #9ca3af;
+      }
+
+      .chip.active .chip-sub {
+        color: #111827;
+        opacity: 0.8;
       }
 
       .summary-card {
@@ -415,9 +471,27 @@ import { PrimaryButtonComponent } from '../../shared/components/primary-button/p
     `,
   ],
 })
-export class CreateGamePage {
+export class CreateGamePage implements OnInit {
   private readonly router = inject(Router);
   readonly data = inject(DesignDataService);
+  private readonly api = inject(ApiService);
+  private readonly bookingService = inject(BookingService);
+  private readonly toastCtrl = inject(ToastController);
+
+  @ViewChildren('dateChip') dateChips?: QueryList<ElementRef<HTMLElement>>;
+
+  submitting = false;
+  venues: Venue[] = [];
+  venuesLoading = false;
+
+  openingTime = '06:00';
+  closingTime = '20:00';
+  slotIntervalMinutes = 60;
+
+  dateOptions: DateOption[] = [];
+  timeSlots: string[] = [];
+  selectedDateKey = '';
+  selectedDateLabel = '';
 
   currentStep = 1;
   steps = [
@@ -430,12 +504,9 @@ export class CreateGamePage {
 
   selectedSport = '';
   selectedVenue: number | string = '';
-  selectedDate = '';
   selectedTime = '';
   selectedTeamSize = '';
 
-  dates = ['Today', 'Tomorrow', 'Fri', 'Sat', 'Sun'];
-  times = ['6:00 AM', '7:00 AM', '6:00 PM', '7:00 PM', '8:00 PM'];
   teamSizes = ['5v5', '7v7', '11v11', 'Custom'];
 
   get activeStepName() {
@@ -447,7 +518,165 @@ export class CreateGamePage {
   }
 
   get venueName() {
-    return this.data.venues.find((v) => v.id === this.selectedVenue)?.name || '—';
+    return this.venues.find((v) => v.id === this.selectedVenue)?.name || '—';
+  }
+
+  get selectedDateDisplay() {
+    return this.selectedDateLabel || '—';
+  }
+
+  ngOnInit() {
+    this.venues = [...this.data.venues];
+    void this.loadVenues();
+    this.initializeDates();
+  }
+
+  private async loadVenues() {
+    this.venuesLoading = true;
+    try {
+      const response = await firstValueFrom(this.api.get<VenueApi[]>('/venues'));
+      if (response.success && Array.isArray(response.data)) {
+        this.venues = response.data.map((venue) => ({
+          id: venue.id,
+          name: venue.name,
+          location: venue.location ?? undefined,
+          distance: venue.distance ?? null,
+          price: venue.price ?? null,
+          rating: venue.rating ?? null,
+          emoji: venue.emoji ?? '🏟️',
+          sports: venue.sports ?? [],
+        }));
+      }
+    } catch (e) {
+      console.error('Failed to load venues', e);
+    } finally {
+      this.venuesLoading = false;
+    }
+  }
+
+  private initializeDates() {
+    this.dateOptions = this.buildDateOptions();
+    const todayOption = this.dateOptions[0];
+    if (todayOption) {
+      this.selectDate(todayOption, false);
+    }
+  }
+
+  private buildDateOptions(): DateOption[] {
+    const today = this.startOfDay(new Date());
+    const options: DateOption[] = [];
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      const label = i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : this.formatWeekday(date);
+      options.push({
+        key: this.formatDateKey(date),
+        label,
+        subLabel: this.formatShortDate(date),
+        date,
+        isToday: i === 0,
+      });
+    }
+    return options;
+  }
+
+  selectDate(option: DateOption, scrollIntoView = true) {
+    this.selectedDateKey = option.key;
+    this.selectedDateLabel = `${option.label} · ${option.subLabel}`;
+    this.generateSlots(option);
+    if (scrollIntoView) {
+      this.scrollSelectedChipIntoView();
+    }
+  }
+
+  selectTime(slot: string) {
+    this.selectedTime = slot;
+  }
+
+  private generateSlots(option: DateOption) {
+    const openingMinutes = this.timeToMinutes(this.openingTime);
+    const closingMinutes = this.timeToMinutes(this.closingTime);
+    const now = new Date();
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+
+    let slots = this.buildTimeSlots(openingMinutes, closingMinutes, this.slotIntervalMinutes);
+
+    if (option.isToday) {
+      slots = slots.filter((slot) => this.timeToMinutes(slot, true) >= nowMinutes);
+      if (slots.length === 0) {
+        const tomorrow = this.dateOptions[1];
+        if (tomorrow) {
+          this.selectDate(tomorrow);
+        }
+        return;
+      }
+    }
+
+    this.timeSlots = slots;
+    this.selectedTime = slots[0] ?? '';
+  }
+
+  private buildTimeSlots(openingMinutes: number, closingMinutes: number, intervalMinutes: number) {
+    const slots: string[] = [];
+    for (let minutes = openingMinutes; minutes <= closingMinutes; minutes += intervalMinutes) {
+      slots.push(this.formatTime(minutes));
+    }
+    return slots;
+  }
+
+  private formatTime(totalMinutes: number): string {
+    const hours24 = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    const period = hours24 >= 12 ? 'PM' : 'AM';
+    const hours12 = hours24 % 12 === 0 ? 12 : hours24 % 12;
+    return `${hours12}:${minutes.toString().padStart(2, '0')} ${period}`;
+  }
+
+  private timeToMinutes(time: string, isDisplay = false): number {
+    const normalized = time.trim();
+    const hasPeriod = normalized.includes('AM') || normalized.includes('PM');
+
+    if (!isDisplay && !hasPeriod) {
+      const [hourStr, minuteStr] = normalized.split(':');
+      return parseInt(hourStr, 10) * 60 + parseInt(minuteStr, 10);
+    }
+
+    const [timePart, period] = normalized.split(' ');
+    const [hourStr, minuteStr] = timePart.split(':');
+    let hours = parseInt(hourStr, 10);
+    const minutes = parseInt(minuteStr, 10);
+    if (period === 'PM' && hours !== 12) hours += 12;
+    if (period === 'AM' && hours === 12) hours = 0;
+    return hours * 60 + minutes;
+  }
+
+  private formatWeekday(date: Date): string {
+    return new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(date);
+  }
+
+  private formatShortDate(date: Date): string {
+    return new Intl.DateTimeFormat('en-US', { day: '2-digit', month: 'short' }).format(date);
+  }
+
+  private formatDateKey(date: Date): string {
+    const year = date.getFullYear();
+    const month = `${date.getMonth() + 1}`.padStart(2, '0');
+    const day = `${date.getDate()}`.padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  private startOfDay(date: Date): Date {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+
+  private scrollSelectedChipIntoView() {
+    requestAnimationFrame(() => {
+      const index = this.dateOptions.findIndex((d) => d.key === this.selectedDateKey);
+      const chip = this.dateChips?.get(index)?.nativeElement;
+      chip?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    });
   }
 
   back() {
@@ -467,7 +696,7 @@ export class CreateGamePage {
   canProceed() {
     if (this.currentStep === 1) return !!this.selectedSport;
     if (this.currentStep === 2) return !!this.selectedVenue;
-    if (this.currentStep === 3) return !!this.selectedDate && !!this.selectedTime;
+    if (this.currentStep === 3) return !!this.selectedDateKey && !!this.selectedTime;
     if (this.currentStep === 4) return !!this.selectedTeamSize;
     return true;
   }
@@ -477,7 +706,49 @@ export class CreateGamePage {
     setTimeout(() => this.next(), 180);
   }
 
-  confirm() {
-    void this.router.navigateByUrl('/app/home');
+  async confirm() {
+    if (this.submitting) return;
+    this.submitting = true;
+    try {
+      const response = await firstValueFrom(
+        this.bookingService.bookGame({
+          sport: this.selectedSport,
+          venue_id: this.selectedVenue,
+          date: this.selectedDateKey,
+          time: this.selectedTime,
+          team_size: this.selectedTeamSize,
+        })
+      );
+      if (response.success) {
+        const toast = await this.toastCtrl.create({
+          message: response.message || 'Game created successfully!',
+          duration: 2000,
+          color: 'success',
+          position: 'bottom'
+        });
+        await toast.present();
+        const bookingId = response.data?.id;
+        void this.router.navigateByUrl(bookingId ? `/app/my-bookings/${bookingId}` : '/app/my-bookings');
+      } else {
+        const toast = await this.toastCtrl.create({
+          message: response.message || 'Failed to create game.',
+          duration: 3000,
+          color: 'danger',
+          position: 'bottom'
+        });
+        await toast.present();
+      }
+    } catch (e: any) {
+      console.error(e);
+      const toast = await this.toastCtrl.create({
+        message: e?.error?.message || 'Error occurred while creating game.',
+        duration: 3000,
+        color: 'danger',
+        position: 'bottom'
+      });
+      await toast.present();
+    } finally {
+      this.submitting = false;
+    }
   }
 }

@@ -25,6 +25,12 @@ export class ApiService {
     return this.http.put<ApiResponse<T>>(this.url(path), formData);
   }
 
+  delete<T>(path: string, body?: unknown): Observable<ApiResponse<T>> {
+    return this.http.delete<ApiResponse<T>>(this.url(path), {
+      body: body ?? {},
+    });
+  }
+
   private url(path: string): string {
     const normalized = path.startsWith('/') ? path : `/${path}`;
     return `${this.baseUrl}${normalized}`;

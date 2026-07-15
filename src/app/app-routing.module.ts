@@ -196,6 +196,10 @@ const routes: Routes = [
         loadComponent: () => import('./pages/player/my-bookings.page').then((m) => m.MyBookingsPage),
       },
       {
+        path: 'my-bookings/:id',
+        loadComponent: () => import('./pages/player/booking-detail.page').then((m) => m.BookingDetailPage),
+      },
+      {
         path: 'notifications',
         loadComponent: () => import('./pages/player/notifications.page').then((m) => m.NotificationsPage),
       },
@@ -205,6 +209,10 @@ const routes: Routes = [
       },
       {
         path: 'team/manage',
+        loadComponent: () => import('./pages/player/team-management.page').then((m) => m.TeamManagementPage),
+      },
+      {
+        path: 'friends',
         loadComponent: () => import('./pages/player/team-management.page').then((m) => m.TeamManagementPage),
       },
       {

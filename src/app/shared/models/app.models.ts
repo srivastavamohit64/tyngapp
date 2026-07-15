@@ -34,12 +34,12 @@ export interface EventGame {
 export interface Venue {
   id: number;
   name: string;
-  location: string;
-  distance: string;
-  price: number;
-  rating: number;
-  emoji: string;
-  sports: string[];
+  location?: string;
+  distance?: string | null;
+  price?: number | null;
+  rating?: number | null;
+  emoji?: string | null;
+  sports?: string[];
 }
 
 export interface ChatMessage {
