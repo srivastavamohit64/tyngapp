@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ApiResponse } from '../models/api.model';
+import { ApiResponse, AuthUser } from '../models/api.model';
 import { ApiService } from './api.service';
 
 export interface VenueCourtCard {
@@ -173,10 +173,17 @@ export class VenueService {
     return this.api.put('/venue/profile', payload);
   }
 
-  uploadGallery(files: File[]): Observable<ApiResponse<{ uploaded: string[]; gallery: string[] }>> {
+  uploadGallery(files: File[]): Observable<ApiResponse<{
+    uploaded: string[];
+    gallery: string[];
+    profileImage?: string | null;
+    user?: AuthUser;
+  }>> {
     const form = new FormData();
-    files.forEach((file) => form.append('photos[]', file));
-    return this.api.postForm<{ uploaded: string[]; gallery: string[] }>('/venue/gallery', form);
+    files.forEach((file, index) => {
+      form.append('photos[]', file, file.name || `venue-${Date.now()}-${index}.jpg`);
+    });
+    return this.api.postForm('/venue/gallery', form);
   }
 
   uploadDocument(docId: string, file: File): Observable<ApiResponse<{

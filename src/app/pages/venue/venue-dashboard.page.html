@@ -48,18 +48,20 @@
             <span>{{ completionPercent }}%</span>
           </div>
           <div class="venue-progress-track">
-            <div class="venue-progress-fill" [style.width.%]="completionPercent" style="background: linear-gradient(90deg, #8cf000, #ff7a00)"></div>
+            <div class="venue-progress-fill" [style.width.%]="completionPercent"></div>
           </div>
           <div class="venue-checklist">
             <div *ngFor="let c of checklist" class="venue-check-item">
-              <div class="venue-check-dot" [style.backgroundColor]="c.done ? '#8CF000' : 'rgba(255,255,255,0.10)'">
+              <div class="venue-check-dot" [class.is-done]="c.done" [class.is-pending]="!c.done">
                 <ion-icon *ngIf="c.done" name="checkmark"></ion-icon>
                 <div *ngIf="!c.done" class="venue-check-dot--pending"></div>
               </div>
-              <span class="venue-check-label" [style.color]="c.done ? 'rgba(255,255,255,0.70)' : 'rgba(255,255,255,0.30)'">{{ c.label }}</span>
+              <span class="venue-check-label" [class.is-done]="c.done" [class.is-pending]="!c.done">{{ c.label }}</span>
             </div>
           </div>
-          <button type="button" class="venue-btn-green" (click)="go('/app/venue/complete-profile')">Complete Profile →</button>
+          <button type="button" class="venue-btn-green" (click)="go(completionCtaPath())">
+            {{ completionPercent >= 100 ? 'View Profile →' : (hasPendingVerification() ? 'Finish Verification →' : 'Complete Profile →') }}
+          </button>
         </section>
 
         <!-- Quick Actions -->

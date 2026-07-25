@@ -108,7 +108,7 @@ export class AuthService {
           formData.append(String(key), String(value));
         }
       });
-      formData.append('profile_image', profileImage);
+      formData.append('profile_image', profileImage, profileImage.name || `profile-${Date.now()}.jpg`);
 
       return this.api.putForm<{ user: AuthUser }>('/profile', formData).pipe(
         map((res) => {
@@ -201,8 +201,29 @@ export class AuthService {
   }
 
   private setUser(user: AuthUser): void {
-    localStorage.setItem(USER_KEY, JSON.stringify(user));
-    this.user.set(user);
+    const unwrapped = this.unwrapUser(user);
+    const normalized: AuthUser = {
+      ...unwrapped,
+      // Bust image caches so Profile / drawer / edit screens refresh immediately.
+      profileImage: this.withCacheBust(unwrapped.profileImage, unwrapped.updatedAt || String(Date.now())),
+    };
+    localStorage.setItem(USER_KEY, JSON.stringify(normalized));
+    this.user.set(normalized);
+  }
+
+  private unwrapUser(user: AuthUser | { data?: AuthUser }): AuthUser {
+    const maybeWrapped = user as { data?: AuthUser };
+    if (maybeWrapped?.data && typeof maybeWrapped.data === 'object' && (maybeWrapped.data as AuthUser).id) {
+      return maybeWrapped.data;
+    }
+    return user as AuthUser;
+  }
+
+  private withCacheBust(url: string | null | undefined, version: string): string | null {
+    if (!url) return null;
+    const clean = url.split('?')[0];
+    const stamp = encodeURIComponent(version);
+    return `${clean}?v=${stamp}`;
   }
 
   private readCachedUser(): AuthUser | null {
@@ -222,9 +243,18 @@ export class AuthService {
 
   private extractError(err: unknown): string {
     const httpErr = err as {
+      status?: number;
       error?: { message?: string; errors?: Record<string, string[]> };
       message?: string;
     };
+
+    if (httpErr.status === 0) {
+      return 'Unable to reach the server. Check your internet connection, then try again. If this continues after an update, the live API may still need the latest profile-upload fix.';
+    }
+
+    if (httpErr.status === 405) {
+      return 'Profile photo upload is not supported on this API version yet. Please update the live server, then try again.';
+    }
 
     const fieldErrors = httpErr.error?.errors;
     if (fieldErrors) {

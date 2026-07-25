@@ -39,12 +39,17 @@ ion-menu ion-content {
   overflow: hidden;
   border: 3px solid white;
   box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  display: grid;
+  place-items: center;
+  background: #e5e7eb;
 }
 
 .drawer-avatar-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
+  display: block;
 }
 
 .drawer-avatar-emoji {
@@ -532,6 +537,19 @@ ion-menu ion-content {
   place-items: center;
   font-size: 28px;
   flex-shrink: 0;
+  overflow: hidden;
+
+  &.has-photo {
+    background: #e5e7eb;
+    padding: 0;
+  }
+}
+
+.venue-drawer-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .venue-drawer-name {

@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { IonicModule, MenuController } from '@ionic/angular';
+import { IonicModule, MenuController, ViewWillEnter } from '@ionic/angular';
 import { AuthService } from '../../core/services/auth.service';
 import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
@@ -13,13 +13,14 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
   styleUrls: ['./profile.page.scss'],
   templateUrl: './profile.page.html',
 })
-export class ProfilePage {
+export class ProfilePage implements ViewWillEnter {
   readonly auth = inject(AuthService);
   readonly router = inject(Router);
   private readonly menu = inject(MenuController);
 
   readonly displayName = computed(() => this.auth.user()?.name?.trim() || 'Player');
   readonly initials = computed(() => this.displayName().charAt(0).toUpperCase());
+  readonly profileImage = computed(() => this.auth.user()?.profileImage || null);
   readonly level = computed(() => this.auth.user()?.level ?? 1);
   readonly tpPoints = computed(() => this.auth.user()?.tpPoints ?? 0);
   readonly xpProgress = computed(() => Math.min(100, Math.max(0, this.auth.user()?.xpProgressPct ?? 0)));
@@ -80,6 +81,12 @@ export class ProfilePage {
     { customer: 'Arjun Sharma', rating: '5.0', comment: 'Excellent turf, very well maintained. The lights are great for night matches.', date: '2 days ago' },
     { customer: 'Priya Verma', rating: '4.5', comment: 'Good amenities and parking space. Highly recommended.', date: '1 week ago' },
   ];
+
+  ionViewWillEnter() {
+    if (this.auth.getToken()) {
+      this.auth.fetchMe().subscribe();
+    }
+  }
 
   async openMenu() {
     await this.menu.open();

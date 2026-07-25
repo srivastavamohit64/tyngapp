@@ -214,115 +214,149 @@ $venue-card-shadow: 0 2px 16px rgba(0, 0, 0, 0.07);
 }
 
 .venue-completion-card {
-  border-radius: 24px;
-  padding: 20px;
+  border-radius: 22px;
+  padding: 18px 18px 16px;
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
-  box-shadow: 0 4px 24px rgba(140, 240, 0, 0.18);
-  border: 1.5px solid rgba(140, 240, 0, 0.22);
+  background: #111827;
+  box-shadow: 0 10px 28px rgba(17, 24, 39, 0.18);
+  border: 1px solid rgba(140, 240, 0, 0.28);
   color: #fff;
 }
 
 .venue-completion-dismiss {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 28px;
-  height: 28px;
+  top: 12px;
+  right: 12px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   border: none;
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.75);
   font-size: 18px;
   line-height: 1;
   cursor: pointer;
+  z-index: 2;
 }
 
 .venue-completion-kicker {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 900;
   color: $venue-primary;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin: 0 0 4px;
+  letter-spacing: 0.06em;
+  margin: 0 28px 6px 0;
 }
 
 .venue-completion-desc {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.4);
-  margin: 0 0 12px;
-  line-height: 1.5;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.62);
+  margin: 0 0 14px;
+  line-height: 1.45;
+  max-width: 92%;
 }
 
 .venue-completion-meta {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 6px;
-  font-size: 10px;
+  margin-bottom: 8px;
+  font-size: 11px;
 
   span:first-child {
-    color: rgba(255, 255, 255, 0.4);
-    font-weight: 500;
+    color: rgba(255, 255, 255, 0.55);
+    font-weight: 600;
   }
 
   span:last-child {
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 900;
     color: $venue-primary;
   }
 }
 
+.venue-completion-card .venue-progress-track {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+
+.venue-completion-card .venue-progress-fill {
+  background: linear-gradient(90deg, #8cf000 0%, #b8f54a 100%);
+}
+
 .venue-checklist {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 6px;
-  margin-bottom: 14px;
+  gap: 10px 12px;
+  margin-bottom: 16px;
 }
 
 .venue-check-item {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .venue-check-dot {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  border: 1.5px solid transparent;
 
   ion-icon {
-    font-size: 9px;
-    color: $venue-text;
+    font-size: 11px;
+    color: #111827;
     font-weight: 700;
   }
+}
+
+.venue-check-dot.is-done {
+  background: #8cf000 !important;
+  border-color: #8cf000;
+}
+
+.venue-check-dot.is-pending {
+  background: transparent !important;
+  border-color: rgba(255, 255, 255, 0.35);
 }
 
 .venue-check-dot--pending {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  margin: 0 5px;
+  background: rgba(255, 255, 255, 0.45);
+  margin: 0;
 }
 
 .venue-check-label {
-  font-size: 10px;
-  font-weight: 500;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.venue-check-label.is-done {
+  color: rgba(255, 255, 255, 0.88) !important;
+}
+
+.venue-check-label.is-pending {
+  color: rgba(255, 255, 255, 0.48) !important;
 }
 
 .venue-btn-green {
   width: 100%;
-  height: 44px;
+  height: 46px;
   border: none;
-  border-radius: 16px;
-  background: linear-gradient(135deg, #8cf000, #a3e635);
-  box-shadow: 0 3px 14px rgba(140, 240, 0, 0.4);
+  border-radius: 14px;
+  background: #8cf000;
+  box-shadow: 0 4px 16px rgba(140, 240, 0, 0.28);
   font-size: 13px;
   font-weight: 900;
   color: $venue-text;

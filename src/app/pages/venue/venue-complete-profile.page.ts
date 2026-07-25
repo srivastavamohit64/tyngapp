@@ -2,11 +2,15 @@ import { CommonModule } from '@angular/common';
 import { Component, signal, inject, ElementRef, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { ActionSheetController, IonicModule, ViewWillEnter } from '@ionic/angular';
+import { Capacitor } from '@capacitor/core';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { ActionSheetController, AlertController, IonicModule, ViewWillEnter } from '@ionic/angular';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
+import { MediaPermissionService } from '../../core/services/media-permission.service';
 import { VenueService, SportsEquipmentItem } from '../../core/services/venue.service';
+import { fetchWebPathAsImageFile, normalizeImageFile } from '../../core/utils/image-file.util';
 import { LocationFieldComponent } from '../../shared/components/location-field/location-field.component';
 import { sportEmoji } from '../../core/utils/booking.utils';
 
@@ -30,8 +34,8 @@ const VERIFICATION_DOCS = [
   { id: 'gst', label: 'GST Certificate', required: true },
   { id: 'pan', label: 'PAN Card', required: true },
   { id: 'cheque', label: 'Cancelled Cheque', required: true },
-  { id: 'bank', label: 'Bank Details', required: true },
-  { id: 'id', label: 'Owner Government ID', required: true },
+  { id: 'bank', label: 'Bank Details', required: false },
+  { id: 'id', label: 'Owner Government ID', required: false },
   { id: 'licence', label: 'Venue Licence', required: false },
   { id: 'insurance', label: 'Insurance', required: false },
 ];
@@ -99,7 +103,9 @@ const STEP_TITLES = [
               <ion-icon name="chevron-back-outline" class="text-xl text-[#111827]"></ion-icon>
             </button>
             <div class="text-center">
-              <p class="text-[14px] font-black text-[#111827] m-0 leading-none">Complete Venue Profile</p>
+              <p class="text-[14px] font-black text-[#111827] m-0 leading-none">
+                {{ isEditingReadyProfile() ? 'Edit Venue Profile' : 'Complete Venue Profile' }}
+              </p>
               <p class="text-[11px] text-[#9CA3AF] m-0 font-bold mt-1">
                 Step {{ step() }} of {{ totalSteps }} · {{ stepTitle() }}
               </p>
@@ -518,6 +524,14 @@ const STEP_TITLES = [
                       ? 'Uploading…'
                       : (isDocUploaded(doc.id) ? ('✓ ' + (docFileName(doc.id) || 'Uploaded successfully')) : 'Tap to upload PDF/Image') }}
                   </p>
+                  <button
+                    *ngIf="docPreviewUrl(doc.id) as previewUrl"
+                    type="button"
+                    class="doc-preview-btn"
+                    (click)="$event.preventDefault(); $event.stopPropagation(); openDocumentPreview(previewUrl)"
+                  >
+                    Preview document
+                  </button>
                 </div>
                 <ion-icon
                   name="cloud-upload-outline"
@@ -827,6 +841,16 @@ const STEP_TITLES = [
       text-transform: uppercase;
     }
 
+    .doc-preview-btn {
+      margin-top: 6px;
+      border: none;
+      background: transparent;
+      color: #2563EB;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 0;
+    }
+
     .cloud-idle {
       color: #C4C9D4;
     }
@@ -854,6 +878,8 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
   private readonly venueService = inject(VenueService);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly actionSheetCtrl = inject(ActionSheetController);
+  private readonly alertCtrl = inject(AlertController);
+  private readonly mediaPermissions = inject(MediaPermissionService);
 
   readonly totalSteps = TOTAL_STEPS;
   readonly stepNumbers = Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1);
@@ -931,6 +957,10 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
     return this.stepTitles[this.step() - 1] || '';
   }
 
+  isEditingReadyProfile(): boolean {
+    return this.auth.user()?.venueProfileReady === true;
+  }
+
   constructor() {
     const user = this.auth.user();
     if (user) {
@@ -953,13 +983,9 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
   }
 
   ionViewWillEnter() {
-    // Ionic may keep this page cached after "Go to Dashboard" bounce.
-    if (this.auth.user()?.venueProfileReady === true) {
-      this.isSuccess.set(false);
-      void this.router.navigateByUrl('/app/venue/dashboard', { replaceUrl: true });
-      return;
-    }
-    if (this.isSuccess() && this.auth.user()?.venueProfileReady === false) {
+    // Allow re-opening this wizard to edit even when venueProfileReady=true.
+    // (Previously we hard-redirected to dashboard, which blocked Edit / side-menu.)
+    if (this.isSuccess()) {
       this.isSuccess.set(false);
     }
   }
@@ -1094,13 +1120,64 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
     const sheet = await this.actionSheetCtrl.create({
       header: 'Add venue photo',
       buttons: [
-        { text: 'Take photo', icon: 'camera-outline', handler: () => this.galleryCameraInput?.nativeElement.click() },
-        { text: 'Photo library', icon: 'images-outline', handler: () => this.galleryLibraryInput?.nativeElement.click() },
-        { text: 'Browse files', icon: 'folder-outline', handler: () => this.galleryLibraryInput?.nativeElement.click() },
+        { text: 'Take photo', icon: 'camera-outline', handler: () => { void this.openGalleryCamera(); } },
+        { text: 'Photo library', icon: 'images-outline', handler: () => { void this.openGalleryLibrary(); } },
+        { text: 'Browse files', icon: 'folder-outline', handler: () => { void this.openGalleryLibrary(); } },
         { text: 'Cancel', role: 'cancel' },
       ],
     });
     await sheet.present();
+  }
+
+  private async openGalleryCamera() {
+    const allowed = await this.mediaPermissions.ensureCamera();
+    if (!allowed) {
+      await this.showMediaPermissionDenied('Camera access is required to take venue photos. Enable it in App settings.');
+      return;
+    }
+
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const photo = await Camera.getPhoto({
+          quality: 85,
+          resultType: CameraResultType.Uri,
+          source: CameraSource.Camera,
+          correctOrientation: true,
+          saveToGallery: false,
+        });
+        if (!photo.webPath) {
+          this.saveError.set('Camera did not return an image. Please try again.');
+          return;
+        }
+        const file = await fetchWebPathAsImageFile(photo.webPath, 'venue-camera');
+        await this.uploadNormalizedGallery([file]);
+        return;
+      } catch (error: unknown) {
+        const message = String((error as { message?: string })?.message || error || '');
+        if (/cancel/i.test(message)) return;
+        console.warn('Capacitor camera failed, falling back to file input', error);
+      }
+    }
+
+    this.galleryCameraInput?.nativeElement.click();
+  }
+
+  private async openGalleryLibrary() {
+    const allowed = await this.mediaPermissions.ensurePhotos();
+    if (!allowed) {
+      await this.showMediaPermissionDenied('Photo library access is required to choose venue photos. Enable it in App settings.');
+      return;
+    }
+    this.galleryLibraryInput?.nativeElement.click();
+  }
+
+  private async showMediaPermissionDenied(message: string) {
+    const alert = await this.alertCtrl.create({
+      header: 'Permission needed',
+      message,
+      buttons: ['OK'],
+    });
+    await alert.present();
   }
 
   async onGalleryFilesSelected(event: Event) {
@@ -1109,6 +1186,16 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
     input.value = '';
     if (!files.length) return;
 
+    try {
+      const normalized = await Promise.all(files.map((file, i) => normalizeImageFile(file, `venue-${i}`)));
+      await this.uploadNormalizedGallery(normalized);
+    } catch {
+      this.saveError.set('Unable to read one or more images. Please try again.');
+    }
+  }
+
+  private async uploadNormalizedGallery(files: File[]) {
+    if (!files.length) return;
     this.photoUploading.set(true);
     this.saveError.set('');
     try {
@@ -1117,14 +1204,22 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
         this.saveError.set(response.message || 'Unable to upload photos.');
         return;
       }
-      const payload = response.data as { uploaded?: string[]; gallery?: string[] };
+      const payload = response.data as {
+        uploaded?: string[];
+        gallery?: string[];
+        profileImage?: string | null;
+        user?: { id: string; profileImage?: string | null; updatedAt?: string | null } & Record<string, unknown>;
+      };
       if (Array.isArray(payload.gallery) && payload.gallery.length) {
         this.uploadedPhotos.set(payload.gallery.map((url) => String(url)));
       } else if (Array.isArray(payload.uploaded) && payload.uploaded.length) {
         this.uploadedPhotos.update((list) => [...list, ...payload.uploaded!.map((url) => String(url))]);
       }
+      if (payload.user || payload.profileImage) {
+        await firstValueFrom(this.auth.fetchMe());
+      }
     } catch (error: any) {
-      this.saveError.set(error?.error?.message || 'Unable to upload photos.');
+      this.saveError.set(error?.error?.message || error?.message || 'Unable to upload photos.');
     } finally {
       this.photoUploading.set(false);
     }
@@ -1177,6 +1272,16 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
 
   docFileName(id: string): string {
     return this.uploadedDocs()[id]?.name || '';
+  }
+
+  docPreviewUrl(id: string): string | null {
+    const url = this.uploadedDocs()[id]?.url;
+    return url ? String(url) : null;
+  }
+
+  openDocumentPreview(url: string) {
+    if (!url) return;
+    window.open(url, '_blank', 'noopener,noreferrer');
   }
 
   private applyVerificationDocuments(raw: unknown) {
@@ -1242,7 +1347,7 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
   handleBack() {
     this.saveError.set('');
     if (this.step() === 1) {
-      void this.router.navigateByUrl('/app/venue/dashboard');
+      void this.router.navigateByUrl('/app/venue/profile');
     } else {
       this.step.update((s) => Math.max(1, s - 1));
     }
@@ -1275,15 +1380,6 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
       if (!response.success || !response.data) return;
 
       const data = response.data as Record<string, any>;
-      const completion = data['completion'] as { ready?: boolean; missing?: string[] } | undefined;
-      const alreadyReady = data['profileCompleted'] === true || completion?.ready === true
-        || this.auth.user()?.venueProfileReady === true;
-
-      // Already live — don't trap user on this wizard/success screen.
-      if (alreadyReady) {
-        void this.router.navigateByUrl('/app/venue/dashboard', { replaceUrl: true });
-        return;
-      }
 
       if (data['venueName'] || data['displayName'] || data['name']) {
         this.venueName = String(data['venueName'] || data['displayName'] || data['name']);

@@ -21,8 +21,20 @@ export class ApiService {
     return this.http.put<ApiResponse<T>>(this.url(path), body ?? {});
   }
 
+  /**
+   * Multipart profile/file updates.
+   * PHP ignores uploaded files on real PUT, and Android WebViews often abort
+   * multipart PUT with status 0 — so we always POST and spoof PUT.
+   */
   putForm<T>(path: string, formData: FormData): Observable<ApiResponse<T>> {
-    return this.http.put<ApiResponse<T>>(this.url(path), formData);
+    if (!formData.has('_method')) {
+      formData.append('_method', 'PUT');
+    }
+    return this.http.post<ApiResponse<T>>(this.url(path), formData, {
+      headers: {
+        'X-HTTP-METHOD-OVERRIDE': 'PUT',
+      },
+    });
   }
 
   postForm<T>(path: string, formData: FormData): Observable<ApiResponse<T>> {

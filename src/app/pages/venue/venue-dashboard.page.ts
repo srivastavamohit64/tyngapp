@@ -57,7 +57,7 @@ export class VenueDashboardPage implements OnInit {
     { emoji: '📩', label: 'Pending Requests', value: '0', accent: '#F59E0B' },
   ];
 
-  checklist: { label: string; done: boolean }[] = [];
+  checklist: { id?: string; label: string; done: boolean }[] = [];
   completionPercent = 0;
   revenueGoalPct = 0;
 
@@ -127,6 +127,7 @@ export class VenueDashboardPage implements OnInit {
       .filter((item) => String(item.id || item.label || '').toLowerCase() !== 'amenities'
         && String(item.label || '').toLowerCase() !== 'amenities')
       .map((item) => ({
+        id: item.id,
         label: item.label,
         done: !!item.done,
       }));
@@ -165,5 +166,19 @@ export class VenueDashboardPage implements OnInit {
 
   go(path: string) {
     void this.router.navigateByUrl(path);
+  }
+
+  hasPendingVerification(): boolean {
+    return this.checklist.some((item) => {
+      const key = String(item.id || item.label || '').toLowerCase();
+      return key.includes('verification') && !item.done;
+    });
+  }
+
+  completionCtaPath(): string {
+    if (this.completionPercent >= 100) {
+      return '/app/venue/profile';
+    }
+    return '/app/venue/complete-profile';
   }
 }

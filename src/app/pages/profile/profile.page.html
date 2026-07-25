@@ -11,8 +11,8 @@
 
       <div class="flex flex-col items-center">
         <div class="relative mb-4 grid h-24 w-24 place-items-center rounded-full bg-gradient-to-br from-[#8CF000] to-[#FF7A00] text-5xl shadow-md overflow-hidden">
-          <img *ngIf="auth.user()?.profileImage" [src]="auth.user()?.profileImage" alt="" class="h-full w-full object-cover" />
-          <span *ngIf="!auth.user()?.profileImage">👨‍🏫</span>
+          <img *ngIf="profileImage()" [src]="profileImage()!" alt="" class="h-full w-full object-cover" />
+          <span *ngIf="!profileImage()">👨‍🏫</span>
         </div>
         <h1 class="mb-1 text-[24px] font-black text-[#111827]">{{ auth.user()?.name || 'Coach Arvind' }}</h1>
         <div class="mb-3 text-sm text-[#9CA3AF]">Football & Cricket</div>
@@ -108,9 +108,9 @@
       <section class="profile-body">
         <div class="identity-card">
           <div class="avatar-wrap">
-            <div class="avatar" [class.has-photo]="!!auth.user()?.profileImage">
-              <img *ngIf="auth.user()?.profileImage" [src]="auth.user()?.profileImage" [alt]="displayName()" />
-              <span *ngIf="!auth.user()?.profileImage">{{ initials() }}</span>
+            <div class="avatar" [class.has-photo]="!!profileImage()">
+              <img *ngIf="profileImage()" [src]="profileImage()!" [alt]="displayName()" />
+              <span *ngIf="!profileImage()">{{ initials() }}</span>
             </div>
             <div class="level-badge">L{{ level() }}</div>
           </div>

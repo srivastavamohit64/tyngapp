@@ -84,7 +84,10 @@
       <div class="drawer-shell" *ngIf="auth.user()?.role === 'venue'; else playerDrawer">
         <div class="venue-drawer-header">
           <div class="venue-drawer-identity">
-            <div class="venue-drawer-icon">🏟️</div>
+            <div class="venue-drawer-icon" [class.has-photo]="!!avatarUrl()">
+              <img *ngIf="avatarUrl(); else venueEmoji" [src]="avatarUrl()!" [alt]="venueDisplayName()" class="venue-drawer-avatar-img" />
+              <ng-template #venueEmoji>🏟️</ng-template>
+            </div>
             <div>
               <p class="venue-drawer-name">{{ venueDisplayName() }}</p>
               <p class="venue-drawer-location">{{ venueLocation() }}</p>

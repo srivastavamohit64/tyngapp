@@ -58,7 +58,7 @@
 .avatar {
   width: 96px;
   height: 96px;
-  border-radius: 999px;
+  border-radius: 50%;
   overflow: hidden;
   display: grid;
   place-items: center;
@@ -66,6 +66,7 @@
   color: #111827;
   font-size: 34px;
   font-weight: 900;
+  flex-shrink: 0;
 }
 
 .avatar.has-photo {
@@ -76,6 +77,8 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
+  display: block;
 }
 
 .level-badge {
