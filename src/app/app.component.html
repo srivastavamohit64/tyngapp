@@ -116,7 +116,7 @@
         </div>
 
         <div class="drawer-menu">
-          <button class="menu-item" *ngFor="let item of venueMenuItems" (click)="navigateTo(item.path)">
+          <button class="menu-item" *ngFor="let item of venueMenuItems()" (click)="navigateTo(item.path)">
             <div class="menu-icon"><ion-icon [name]="item.icon"></ion-icon></div>
             <div class="menu-text">
               <div class="menu-label">{{ item.label }}</div>
@@ -187,6 +187,15 @@
         </div>
 
         <div class="drawer-menu">
+          <button class="menu-item" (click)="navigateTo('/app/profile/edit')">
+            <div class="menu-icon"><ion-icon name="location-outline"></ion-icon></div>
+            <div class="menu-text">
+              <div class="menu-label">Edit Location</div>
+              <div class="menu-desc">{{ user()?.location || 'Set your city / area' }}</div>
+            </div>
+            <ion-icon name="chevron-forward-outline" class="menu-chevron"></ion-icon>
+          </button>
+
           <button class="menu-item" (click)="navigateTo('/app/stats')">
             <div class="menu-icon"><ion-icon name="analytics-outline"></ion-icon></div>
             <div class="menu-text">

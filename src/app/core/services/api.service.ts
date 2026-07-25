@@ -7,7 +7,7 @@ import { ApiResponse } from '../models/api.model';
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private readonly http = inject(HttpClient);
-  readonly baseUrl = environment.apiUrl;
+  readonly baseUrl = this.normalizeBaseUrl(environment.apiUrl);
 
   get<T>(path: string): Observable<ApiResponse<T>> {
     return this.http.get<ApiResponse<T>>(this.url(path));
@@ -25,6 +25,10 @@ export class ApiService {
     return this.http.put<ApiResponse<T>>(this.url(path), formData);
   }
 
+  postForm<T>(path: string, formData: FormData): Observable<ApiResponse<T>> {
+    return this.http.post<ApiResponse<T>>(this.url(path), formData);
+  }
+
   delete<T>(path: string, body?: unknown): Observable<ApiResponse<T>> {
     return this.http.delete<ApiResponse<T>>(this.url(path), {
       body: body ?? {},
@@ -34,5 +38,13 @@ export class ApiService {
   private url(path: string): string {
     const normalized = path.startsWith('/') ? path : `/${path}`;
     return `${this.baseUrl}${normalized}`;
+  }
+
+  private normalizeBaseUrl(url: string): string {
+    let trimmed = (url || '').trim().replace('tyngpeaople.com', 'tyngpeople.com').replace(/\/+$/, '');
+    if (trimmed && !/\/api$/i.test(trimmed)) {
+      trimmed = `${trimmed}/api`;
+    }
+    return trimmed;
   }
 }

@@ -2,13 +2,37 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { IonicModule, MenuController } from '@ionic/angular';
-import { DesignDataService } from '../../core/services/design-data.service';
+import { IonicModule, MenuController, ViewWillEnter } from '@ionic/angular';
+import { firstValueFrom } from 'rxjs';
+import { BookingRecord, DiscoverPlayer } from '../../core/models/api.model';
 import { AuthService } from '../../core/services/auth.service';
+import { BookingService } from '../../core/services/booking.service';
+import { DesignDataService } from '../../core/services/design-data.service';
+import {
+  formatBookingDate,
+  formatBookingTime,
+  sportEmoji,
+} from '../../core/utils/booking.utils';
 import { EventCardComponent } from '../../shared/components/event-card/event-card.component';
 import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 import { SearchBarComponent } from '../../shared/components/search-bar/search-bar.component';
 import { SectionHeaderComponent } from '../../shared/components/section-header/section-header.component';
+import { EventGame } from '../../shared/models/app.models';
+
+interface SearchSuggestion {
+  id: string;
+  type: 'game' | 'player';
+  title: string;
+  subtitle: string;
+  emoji: string;
+  player?: DiscoverPlayer;
+}
+
+interface QuickSuggestion {
+  id: string;
+  title: string;
+  meta: string;
+}
 
 @Component({
   selector: 'app-home-page',
@@ -25,9 +49,10 @@ import { SectionHeaderComponent } from '../../shared/components/section-header/s
   styleUrls: ['./home.page.scss'],
   templateUrl: './home.page.html',
 })
-export class HomePage {
+export class HomePage implements ViewWillEnter {
   readonly data = inject(DesignDataService);
   readonly auth = inject(AuthService);
+  private readonly bookingService = inject(BookingService);
   private readonly router = inject(Router);
   private readonly menu = inject(MenuController);
 
@@ -36,6 +61,17 @@ export class HomePage {
   );
 
   searchQuery = '';
+  searchSuggestions: SearchSuggestion[] = [];
+  searchLoading = false;
+  showSuggestions = false;
+  private searchTimer?: ReturnType<typeof setTimeout>;
+  private searchRequestId = 0;
+
+  nearbyGames: EventGame[] = [];
+  nearbyBookings: BookingRecord[] = [];
+  nearbyLoading = false;
+  nearbyError = '';
+  quickSuggestion: QuickSuggestion | null = null;
 
   // General state
   greeting = '';
@@ -139,8 +175,181 @@ export class HomePage {
     if (role === 'admin') {
       void this.router.navigateByUrl('/app/admin/dashboard', { replaceUrl: true });
     } else if (role === 'venue') {
-      void this.router.navigateByUrl('/app/venue/dashboard', { replaceUrl: true });
+      void this.router.navigateByUrl(this.auth.venueHomePath(), { replaceUrl: true });
     }
+  }
+
+  ionViewWillEnter() {
+    const role = this.auth.user()?.role;
+    if (role === 'player' || !role) {
+      void this.loadNearbyGames();
+    }
+  }
+
+  get playerLocation(): string {
+    return (this.auth.user()?.location || '').trim();
+  }
+
+  get locationCity(): string {
+    if (!this.playerLocation) return 'Set your location';
+    return this.playerLocation.split(/[>,\-\/|]/)[0]?.trim() || this.playerLocation;
+  }
+
+  get locationArea(): string {
+    if (!this.playerLocation) return '';
+    const parts = this.playerLocation.split(/[>,\-\/|]/).map((p) => p.trim()).filter(Boolean);
+    return parts.length > 1 ? parts.slice(1).join(' · ') : '';
+  }
+
+  editLocation() {
+    void this.router.navigateByUrl('/app/profile/edit');
+  }
+
+  onSearchChange(value: string) {
+    this.searchQuery = value ?? '';
+    if (this.searchTimer) clearTimeout(this.searchTimer);
+
+    const query = this.searchQuery.trim();
+    if (query.length < 2) {
+      this.showSuggestions = false;
+      this.searchSuggestions = [];
+      this.searchLoading = false;
+      return;
+    }
+
+    this.showSuggestions = true;
+    this.searchLoading = true;
+    this.searchTimer = setTimeout(() => void this.runSearch(query), 280);
+  }
+
+  openSuggestion(item: SearchSuggestion) {
+    this.showSuggestions = false;
+    this.searchQuery = '';
+    this.searchSuggestions = [];
+
+    if (item.type === 'game') {
+      void this.router.navigateByUrl(`/app/game/${item.id}`);
+      return;
+    }
+
+    void this.router.navigateByUrl(`/app/player/${item.id}`, {
+      state: { player: item.player },
+    });
+  }
+
+  async loadNearbyGames() {
+    this.nearbyLoading = true;
+    this.nearbyError = '';
+    try {
+      const response = await firstValueFrom(this.bookingService.getNearbyGames(20));
+      if (response.success && Array.isArray(response.data)) {
+        this.nearbyBookings = response.data;
+        this.nearbyGames = response.data.map((booking) => this.mapNearbyGame(booking));
+        this.quickSuggestion = this.buildQuickSuggestion(response.data);
+      } else {
+        this.nearbyBookings = [];
+        this.nearbyGames = [];
+        this.quickSuggestion = null;
+        this.nearbyError = response.message || 'Unable to load nearby games.';
+      }
+    } catch (error: any) {
+      this.nearbyBookings = [];
+      this.nearbyGames = [];
+      this.quickSuggestion = null;
+      this.nearbyError = error?.error?.message || 'Unable to load nearby games.';
+    } finally {
+      this.nearbyLoading = false;
+    }
+  }
+
+  private async runSearch(query: string) {
+    const requestId = ++this.searchRequestId;
+    try {
+      const response = await firstValueFrom(this.bookingService.search(query, 8));
+      if (requestId !== this.searchRequestId) return;
+
+      if (!response.success || !response.data) {
+        this.searchSuggestions = [];
+        return;
+      }
+
+      const games = (response.data.games || []).map((booking) => this.mapGameSuggestion(booking));
+      const players = (response.data.players || []).map((player) => this.mapPlayerSuggestion(player));
+      this.searchSuggestions = [...games, ...players].slice(0, 10);
+    } catch {
+      if (requestId !== this.searchRequestId) return;
+      this.searchSuggestions = [];
+    } finally {
+      if (requestId === this.searchRequestId) {
+        this.searchLoading = false;
+      }
+    }
+  }
+
+  private buildQuickSuggestion(bookings: BookingRecord[]): QuickSuggestion | null {
+    if (!this.playerLocation) return null;
+
+    const match = bookings.find((booking) =>
+      this.matchesPlayerLocation(
+        `${booking.venue?.location || ''} ${booking.venue?.name || ''} ${booking.host?.location || ''}`
+      )
+    );
+    if (!match) return null;
+
+    const sport = (match.sport || 'Game').replace(/\b\w/g, (c) => c.toUpperCase());
+    const venue = match.venue?.name || 'Nearby venue';
+    return {
+      id: match.id,
+      title: `${sport} near you at ${venue}`,
+      meta: `${formatBookingDate(match.bookingDate)} · ${formatBookingTime(match.startTime)} · ${match.currentPlayers}/${match.totalPlayers} joined`,
+    };
+  }
+
+  private matchesPlayerLocation(haystack: string): boolean {
+    const tokens = this.playerLocation
+      .toLowerCase()
+      .split(/[>,\-\/|]+/)
+      .map((t) => t.trim())
+      .filter((t) => t.length >= 3);
+    if (!tokens.length) return false;
+    const text = haystack.toLowerCase();
+    return tokens.some((token) => text.includes(token));
+  }
+
+  private mapNearbyGame(booking: BookingRecord): EventGame {
+    const ratio = booking.totalPlayers > 0 ? booking.currentPlayers / booking.totalPlayers : 0;
+    const sport = (booking.sport || 'Game').replace(/\b\w/g, (c) => c.toUpperCase());
+    return {
+      id: booking.id,
+      sport,
+      time: `${formatBookingDate(booking.bookingDate)} · ${formatBookingTime(booking.startTime)}`,
+      location: booking.venue?.name || 'Venue TBD',
+      distance: booking.venue?.location || 'Nearby',
+      players: `${booking.currentPlayers}/${booking.totalPlayers}`,
+      status: ratio >= 0.8 ? 'almost-full' : 'filling',
+    };
+  }
+
+  private mapGameSuggestion(booking: BookingRecord): SearchSuggestion {
+    const sport = (booking.sport || 'Game').replace(/\b\w/g, (c) => c.toUpperCase());
+    return {
+      id: booking.id,
+      type: 'game',
+      title: `${sport} · ${booking.venue?.name || 'Venue'}`,
+      subtitle: `${formatBookingDate(booking.bookingDate)} · ${formatBookingTime(booking.startTime)}`,
+      emoji: sportEmoji(booking.sport),
+    };
+  }
+
+  private mapPlayerSuggestion(player: DiscoverPlayer): SearchSuggestion {
+    return {
+      id: player.id,
+      type: 'player',
+      title: player.name,
+      subtitle: `${player.city || 'Player'} · ${(player.sports || []).slice(0, 2).join(', ') || 'Sports'}`,
+      emoji: '👤',
+      player,
+    };
   }
 
   async openMenu() {

@@ -3,6 +3,8 @@ import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { firstValueFrom } from 'rxjs';
+import { VenueService } from '../../core/services/venue.service';
 
 export interface VenueDetail {
   id: number;
@@ -155,7 +157,7 @@ export const VENUE_DATA: VenueDetail[] = [
   imports: [CommonModule, IonicModule],
   template: `
     <ion-content fullscreen>
-      <div class="min-h-screen bg-[#FAFBFC] pb-28 text-[#111827] text-left" *ngIf="venue">
+      <div class="min-h-screen bg-[#FAFBFC] venue-detail-page text-[#111827] text-left" *ngIf="venue">
         
         <!-- Image carousel -->
         <div class="relative bg-gray-900 h-[300px]">
@@ -423,11 +425,8 @@ export const VENUE_DATA: VenueDetail[] = [
 
         </div>
 
-        <!-- Sticky CTA -->
-        <div
-          class="fixed bottom-0 left-0 right-0 z-30 bg-white max-w-md mx-auto px-5 py-4 pb-8 border-t border-[#F3F4F6]"
-          style="box-shadow: 0 -4px 24px rgba(0,0,0,0.09);"
-        >
+        <!-- Sticky CTA — sits above floating tab bar -->
+        <div class="venue-detail-cta">
           <div class="flex items-center gap-4 mb-2">
             <div class="text-left">
               <p class="text-[11px] text-[#9CA3AF] m-0 font-bold">Starting from</p>
@@ -464,6 +463,24 @@ export const VENUE_DATA: VenueDetail[] = [
       .no-scrollbar::-webkit-scrollbar {
         display: none;
       }
+      /* Clear floating tab pill (72) + outer pad (20) + CTA height */
+      .venue-detail-page {
+        padding-bottom: calc(var(--app-tab-bar-height) + 20px + var(--safe-area-bottom) + 140px);
+      }
+      .venue-detail-cta {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: calc(var(--app-tab-bar-height) + 20px + var(--safe-area-bottom));
+        z-index: 30;
+        background: #ffffff;
+        max-width: 28rem;
+        margin: 0 auto;
+        padding: 16px 20px;
+        border-top: 1px solid #f3f4f6;
+        box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.09);
+        box-sizing: border-box;
+      }
     `
   ]
 })
@@ -472,6 +489,7 @@ export class VenueDetailPage implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly sanitizer = inject(DomSanitizer);
+  private readonly venueService = inject(VenueService);
 
   venueId: number | null = null;
   venue: VenueDetail | null = null;
@@ -479,20 +497,92 @@ export class VenueDetailPage implements OnInit {
   favourited = false;
   quantities: Record<string, number> = {};
   mapUrl: SafeResourceUrl | null = null;
+  loading = false;
 
   ngOnInit() {
-    this.route.paramMap.subscribe(params => {
+    this.route.paramMap.subscribe((params) => {
       const idStr = params.get('id');
-      if (idStr) {
-        this.venueId = +idStr;
-        this.venue = VENUE_DATA.find(v => v.id === this.venueId) || VENUE_DATA[0];
-        if (this.venue) {
-          this.mapUrl = this.sanitizer.bypassSecurityTrustResourceUrl(
-            `https://maps.google.com/maps?q=${encodeURIComponent(this.venue.address)}&output=embed&z=15`
-          );
-        }
+      if (!idStr || !/^\d+$/.test(idStr)) {
+        void this.router.navigateByUrl('/app/venues', { replaceUrl: true });
+        return;
       }
+      this.venueId = Number(idStr);
+      void this.loadVenue(this.venueId);
     });
+  }
+
+  private async loadVenue(id: number) {
+    if (!Number.isFinite(id) || id <= 0) {
+      void this.router.navigateByUrl('/app/venues', { replaceUrl: true });
+      return;
+    }
+    this.loading = true;
+    try {
+      const response = await firstValueFrom(this.venueService.getVenue(id));
+      const data = response.data as any;
+      if (!response.success || !data) {
+        const cached = VENUE_DATA.find((v) => v.id === id);
+        this.venue = cached || null;
+        if (cached) this.setMap(cached.address);
+        return;
+      }
+
+      const courts = Array.isArray(data.courts) ? data.courts : [];
+      const firstCourt = courts[0];
+      const amenities = (data.amenities || []).map((label: string) => ({
+        icon: 'checkmark-circle-outline',
+        label: this.titleCaseAmenity(String(label)),
+      }));
+
+      const rentalEquipment = (Array.isArray(data.rentalEquipment) ? data.rentalEquipment : []).map((item: any) => ({
+        id: String(item.id || item.label || item.name),
+        name: String(item.label || item.name || 'Equipment'),
+        emoji: String(item.emoji || '🎾'),
+        price: Number(item.price || 0),
+      }));
+
+      this.venue = {
+        id,
+        venueName: String(data.venueName || data.displayName || data.name || 'Venue'),
+        courtName: String(firstCourt?.courtName || firstCourt?.name || 'Court'),
+        sport: String(firstCourt?.sport || (data.sports?.[0] || 'Sport')),
+        address: String(data.address || data.location || ''),
+        images: Array.isArray(data.gallery) && data.gallery.length
+          ? data.gallery.map((g: unknown) => String(g))
+          : [String(data.profileImage || firstCourt?.image || 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=800')],
+        pricePerHour: Number(firstCourt?.pricePerHour || 0),
+        rating: Number(data.rating || 4.5),
+        reviewCount: Number(data.gamesPlayed || 0),
+        openTime: String(data.openTime || '6:00 AM'),
+        closeTime: String(data.closeTime || '10:00 PM'),
+        amenities,
+        rentalEquipment,
+        description: String(data.description || ''),
+        yearBuilt: Number(data.yearEstablished || 2020),
+        area: firstCourt?.areaSqft ? `${firstCourt.areaSqft} sq ft` : '—',
+        surface: String(firstCourt?.surface || '—'),
+        maxPlayers: Number(firstCourt?.maxPlayers || 10),
+        reviews: [],
+        offers: [],
+      } as VenueDetail;
+      this.setMap(this.venue.address);
+    } catch {
+      const cached = VENUE_DATA.find((v) => v.id === id);
+      this.venue = cached || null;
+      if (cached) this.setMap(cached.address);
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  private titleCaseAmenity(value: string): string {
+    return value.replace(/\b\w/g, (c) => c.toUpperCase());
+  }
+
+  private setMap(address: string) {
+    this.mapUrl = this.sanitizer.bypassSecurityTrustResourceUrl(
+      `https://maps.google.com/maps?q=${encodeURIComponent(address)}&output=embed&z=15`,
+    );
   }
 
   get rentalTotal(): number {
@@ -503,7 +593,7 @@ export class VenueDetailPage implements OnInit {
   }
 
   get avgRating(): string {
-    if (!this.venue || this.venue.reviews.length === 0) return '0.0';
+    if (!this.venue || this.venue.reviews.length === 0) return Number(this.venue?.rating || 0).toFixed(1);
     const sum = this.venue.reviews.reduce((s, r) => s + r.rating, 0);
     return (sum / this.venue.reviews.length).toFixed(1);
   }
@@ -517,7 +607,7 @@ export class VenueDetailPage implements OnInit {
   }
 
   back() {
-    this.router.navigateByUrl('/app/venues');
+    void this.router.navigateByUrl('/app/venues');
   }
 
   openDirections(address: string) {
@@ -529,8 +619,8 @@ export class VenueDetailPage implements OnInit {
     this.router.navigate([`/app/venue/${this.venue.id}/book`], {
       state: {
         venue: this.venue,
-        rentalItems: this.quantities
-      }
+        rentalItems: this.quantities,
+      },
     });
   }
 }

@@ -2,6 +2,14 @@
   <app-brand-header-shell>
     <div class="venue-page">
       <div class="venue-page-inner">
+        <div *ngIf="loading()" class="venue-card venue-card-padded" style="margin:16px;text-align:center;color:#6b7280;font-weight:600;">
+          Loading dashboard…
+        </div>
+        <div *ngIf="!loading() && errorMessage()" class="venue-card venue-card-padded" style="margin:16px;text-align:center;color:#dc2626;font-weight:600;">
+          {{ errorMessage() }}
+        </div>
+
+        <ng-container *ngIf="!loading() && !errorMessage()">
 
         <!-- Venue Pulse -->
         <section class="venue-hero-dark">
@@ -21,26 +29,26 @@
           <div class="venue-goal-row">
             <div class="venue-goal-labels">
               <span>Daily Revenue Goal</span>
-              <span>83%</span>
+              <span>{{ revenueGoalPct }}%</span>
             </div>
             <div class="venue-progress-track">
-              <div class="venue-progress-fill" style="width: 83%"></div>
+              <div class="venue-progress-fill" [style.width.%]="revenueGoalPct"></div>
             </div>
           </div>
         </section>
 
         <!-- Complete Profile -->
-        <section *ngIf="!profileDismissed()" class="venue-completion-card">
+        <section *ngIf="!profileDismissed() && completionPercent < 100" class="venue-completion-card">
           <div class="venue-hero-orb venue-hero-orb--sm"></div>
           <button type="button" class="venue-completion-dismiss" (click)="profileDismissed.set(true)">×</button>
           <div class="venue-completion-kicker">Complete Your Venue Profile</div>
           <p class="venue-completion-desc">Unlock bookings, verification, coach partnerships and improve search ranking.</p>
           <div class="venue-completion-meta">
             <span>Profile Completion</span>
-            <span>40%</span>
+            <span>{{ completionPercent }}%</span>
           </div>
           <div class="venue-progress-track">
-            <div class="venue-progress-fill" style="width: 40%; background: linear-gradient(90deg, #8cf000, #ff7a00)"></div>
+            <div class="venue-progress-fill" [style.width.%]="completionPercent" style="background: linear-gradient(90deg, #8cf000, #ff7a00)"></div>
           </div>
           <div class="venue-checklist">
             <div *ngFor="let c of checklist" class="venue-check-item">
@@ -203,6 +211,7 @@
           </div>
         </section>
 
+        </ng-container>
       </div>
     </div>
   </app-brand-header-shell>

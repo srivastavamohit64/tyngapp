@@ -7,6 +7,8 @@ import { firstValueFrom } from 'rxjs';
 import { DiscoverPlayer } from '../../core/models/api.model';
 import { SocialService } from '../../core/services/social.service';
 import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
+import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { PrimaryButtonComponent } from '../../shared/components/primary-button/primary-button.component';
 
 interface PlayerSportBadge {
   name: string;
@@ -39,7 +41,14 @@ interface DiscoverPlayerCard {
 @Component({
   selector: 'app-discover-page',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule, BrandHeaderShellComponent],
+  imports: [
+    CommonModule,
+    IonicModule,
+    FormsModule,
+    BrandHeaderShellComponent,
+    PageHeaderComponent,
+    PrimaryButtonComponent,
+  ],
   styleUrls: ['./discover.page.scss'],
   templateUrl: './discover.page.html',
 })
@@ -102,6 +111,20 @@ export class DiscoverPage {
 
   get currentPlayer() {
     return this.filteredPlayers[this.currentIndex];
+  }
+
+  get nearbyLabel(): string {
+    const remaining = Math.max(this.filteredPlayers.length - this.currentIndex, 0);
+    if (this.loading) {
+      return 'Finding players near you…';
+    }
+    if (remaining === 0) {
+      return 'No players in this view';
+    }
+    if (remaining === 1) {
+      return '1 player nearby';
+    }
+    return `${remaining} players nearby`;
   }
 
   async fetchDiscoverPlayers(reset = false): Promise<void> {
@@ -270,6 +293,7 @@ export class DiscoverPage {
   }
 
   async resetDiscovery() {
+    this.resetFilters();
     await this.fetchDiscoverPlayers(true);
   }
 

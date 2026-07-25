@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
+import { VenueService } from '../../core/services/venue.service';
 import { LocationFieldComponent } from '../../shared/components/location-field/location-field.component';
 
 interface VenueTypeOption {
@@ -65,6 +66,7 @@ const WELCOME_FEATURES = ['Receive instant bookings', 'Partner with coaches', 'M
 })
 export class VenueOnboardingPage {
   private readonly auth = inject(AuthService);
+  private readonly venueService = inject(VenueService);
   private readonly router = inject(Router);
   private readonly sanitizer = inject(DomSanitizer);
 
@@ -140,13 +142,33 @@ export class VenueOnboardingPage {
     try {
       await firstValueFrom(this.auth.completeOnboarding({
         name: this.ownerName.trim() || this.venueName.trim() || 'Venue Owner',
-        location: this.city.trim() || null,
+        location: [this.address.trim(), this.city.trim()].filter(Boolean).join(', ') || this.city.trim() || null,
         sports: this.sports,
-        experience: this.venueType,
+        venueType: this.venueType,
       }));
+      try {
+        await firstValueFrom(this.venueService.updateMyProfile({
+          name: this.venueName.trim() || this.ownerName.trim(),
+          displayName: this.venueName.trim() || this.ownerName.trim(),
+          businessName: this.businessName.trim() || this.venueName.trim(),
+          ownerName: this.ownerName.trim(),
+          phone: this.mobile.trim() || undefined,
+          email: this.email.trim() || null,
+          location: [this.address.trim(), this.city.trim()].filter(Boolean).join(', ') || null,
+          city: this.city.trim() || null,
+          address: this.address.trim() || null,
+          sports: this.sports,
+          venueType: this.venueType,
+          openTime: '6:00 AM',
+          closeTime: '10:00 PM',
+        }));
+      } catch {
+        // Profile details can be completed later.
+      }
+      await firstValueFrom(this.auth.fetchMe());
     } catch {
       // Continue navigation if API sync fails
     }
-    void this.router.navigateByUrl('/app/venue/dashboard');
+    void this.router.navigateByUrl(this.auth.venueHomePath(), { replaceUrl: true });
   }
 }

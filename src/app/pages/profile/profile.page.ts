@@ -1,14 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule, MenuController } from '@ionic/angular';
 import { AuthService } from '../../core/services/auth.service';
 import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
+import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 
 @Component({
   selector: 'app-profile-page',
   standalone: true,
-  imports: [CommonModule, IonicModule, BrandHeaderShellComponent],
+  imports: [CommonModule, IonicModule, BrandHeaderShellComponent, PageHeaderComponent],
   styleUrls: ['./profile.page.scss'],
   templateUrl: './profile.page.html',
 })
@@ -17,9 +18,20 @@ export class ProfilePage {
   readonly router = inject(Router);
   private readonly menu = inject(MenuController);
 
-  async openMenu() {
-    await this.menu.open();
-  }
+  readonly displayName = computed(() => this.auth.user()?.name?.trim() || 'Player');
+  readonly initials = computed(() => this.displayName().charAt(0).toUpperCase());
+  readonly level = computed(() => this.auth.user()?.level ?? 1);
+  readonly tpPoints = computed(() => this.auth.user()?.tpPoints ?? 0);
+  readonly xpProgress = computed(() => Math.min(100, Math.max(0, this.auth.user()?.xpProgressPct ?? 0)));
+  readonly xpLabel = computed(() => {
+    const user = this.auth.user();
+    if (!user) return '0 / 0 XP';
+    return `${user.currentXp ?? 0} / ${user.nextLevelXp ?? 0} XP`;
+  });
+  readonly sportsLabel = computed(() => this.auth.user()?.sportsLabel || this.formatSports(this.auth.user()?.sports));
+  readonly locationLabel = computed(() => this.auth.user()?.location?.trim() || 'Set your location');
+  readonly hasLocation = computed(() => !!this.auth.user()?.location?.trim());
+  readonly experience = computed(() => this.auth.user()?.experience || 'Intermediate');
 
   readonly stats = [
     { label: 'Games Played', value: '48', icon: 'disc-outline' },
@@ -28,10 +40,10 @@ export class ProfilePage {
   ];
 
   readonly badges = [
-    { name: 'Early Bird', icon: 'sunny-outline', color: 'text-amber-500' },
-    { name: 'Team Player', icon: 'people-outline', color: 'text-primary' },
-    { name: 'MVP', icon: 'ribbon-outline', color: 'text-accent' },
-    { name: 'Streak Starter', icon: 'flame-outline', color: 'text-orange-500' },
+    { name: 'Early Bird', icon: 'sunny-outline' },
+    { name: 'Team Player', icon: 'people-outline' },
+    { name: 'MVP', icon: 'ribbon-outline' },
+    { name: 'Streak Starter', icon: 'flame-outline' },
   ];
 
   readonly recentMatches = [
@@ -53,7 +65,6 @@ export class ProfilePage {
     { team: 'Basketball Academy', date: 'Apr 15, 2026', type: 'Scrimmage' },
   ];
 
-  // Venue-specific items
   readonly venueProfileStats = [
     { label: 'Bookings Today', value: '8', icon: 'calendar-outline' },
     { label: 'Revenue Today', value: '₹12,500', icon: 'cash-outline' },
@@ -70,27 +81,35 @@ export class ProfilePage {
     { customer: 'Priya Verma', rating: '4.5', comment: 'Good amenities and parking space. Highly recommended.', date: '1 week ago' },
   ];
 
-  getSpecialty(): string {
-    return 'Head Coach • Football & Cricket';
+  async openMenu() {
+    await this.menu.open();
   }
 
-  getExperienceLabel(): string {
-    return '8+ Years';
+  editProfile() {
+    void this.router.navigateByUrl('/app/profile/edit');
   }
 
-  getCertificationLabel(): string {
-    return 'A-License Certified';
+  openSettings() {
+    void this.router.navigateByUrl('/app/settings');
   }
 
   onStatClick(label: string) {
     if (label === 'Bookings Today') {
-      this.router.navigateByUrl('/app/venue/bookings');
+      void this.router.navigateByUrl('/app/venue/bookings');
     } else if (label === 'Active Facilities') {
-      this.router.navigateByUrl('/app/venue/facilities');
+      void this.router.navigateByUrl('/app/venue/facilities');
     }
   }
 
   logout() {
     this.auth.logout().subscribe();
+  }
+
+  private formatSports(sports?: string[] | null): string {
+    if (!sports?.length) return 'Player';
+    return sports
+      .slice(0, 2)
+      .map((sport) => sport.replace(/\b\w/g, (c) => c.toUpperCase()))
+      .join(' · ');
   }
 }

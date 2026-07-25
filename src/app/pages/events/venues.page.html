@@ -1,228 +1,184 @@
 <ion-content fullscreen class="has-tabs">
   <app-brand-header-shell>
-    <div class="min-h-full bg-[#FAFBFC] pb-36 text-[#111827]">
-      <!-- Sticky header -->
-      <div class="sticky top-0 z-30 bg-white border-b border-[#F3F4F6]">
-        <!-- Location + Title -->
-        <div class="flex items-center justify-between px-5 pt-4 pb-3">
-          <div class="text-left">
-            <p class="text-[11px] text-[#9CA3AF] font-bold uppercase tracking-wider m-0 leading-none">Book a Court</p>
-            <button (click)="showCityPicker.set(true)" class="flex items-center gap-1.5 mt-1 border-none bg-transparent p-0 outline-none">
-              <ion-icon name="location-outline" class="text-lg text-[#8CF000] font-bold"></ion-icon>
-              <span class="text-[17px] font-black text-[#111827]">{{ city() }}</span>
-              <ion-icon name="chevron-down-outline" class="text-xs text-[#9CA3AF]"></ion-icon>
+    <div class="venues-page">
+
+      <section class="venues-hero">
+        <div class="venues-hero-top">
+          <div>
+            <p class="venues-kicker">Book a Court</p>
+            <button type="button" class="venues-city-btn" (click)="showCityPicker.set(true)">
+              <ion-icon name="location"></ion-icon>
+              <span>{{ city() }}</span>
+              <ion-icon name="chevron-down-outline" class="chevron"></ion-icon>
             </button>
           </div>
-          <div class="flex items-center gap-1.5 text-right">
-            <span class="text-[22px] font-black text-[#111827] leading-none">{{ filteredCourts().length }}</span>
-            <span class="text-[11px] text-[#9CA3AF] leading-tight font-semibold text-left">courts<br/>available</span>
+          <div class="venues-count-pill">
+            <strong>{{ filteredCourts().length }}</strong>
+            <span>courts</span>
           </div>
         </div>
 
-        <!-- Search bar -->
-        <div class="px-5 pb-3">
-          <div class="flex items-center gap-3 bg-[#F3F4F6] rounded-2xl px-4 h-11 relative">
-            <ion-icon name="search-outline" class="text-slate-400 text-base flex-shrink-0"></ion-icon>
-            <input
-              [ngModel]="searchQuery()"
-              (ngModelChange)="searchQuery.set($event)"
-              placeholder="Search stadiums, courts or locality"
-              class="flex-1 bg-transparent text-[14px] text-[#111827] placeholder:text-[#9CA3AF] font-semibold border-none outline-none min-h-0"
-              style="box-shadow: none;"
-            />
-            <button *ngIf="searchQuery()" (click)="searchQuery.set('')" class="border-none bg-transparent p-0 outline-none flex items-center justify-center">
-              <ion-icon name="close-circle-outline" class="text-slate-400 text-base"></ion-icon>
-            </button>
-          </div>
-        </div>
-
-        <!-- Sports selector -->
-        <div class="flex gap-3.5 px-5 pb-4 overflow-x-auto no-scrollbar">
-          <button
-            *ngFor="let sport of sports"
-            (click)="activeSport.set(sport.id)"
-            class="flex flex-col items-center gap-1.5 flex-shrink-0 border-none bg-transparent p-0 outline-none"
-          >
-            <div
-              class="w-[52px] h-[52px] rounded-full overflow-hidden transition-all duration-200"
-              [style.border]="activeSport() === sport.id ? '2.5px solid #8CF000' : '2.5px solid transparent'"
-              [style.boxShadow]="activeSport() === sport.id ? '0 0 0 3px rgba(140,240,0,0.20)' : 'none'"
-            >
-              <img [src]="sport.image" [alt]="sport.label" class="w-full h-full object-cover" />
-            </div>
-            <span
-              class="text-[10px] font-semibold leading-tight whitespace-nowrap"
-              [style.color]="activeSport() === sport.id ? '#111827' : '#9CA3AF'"
-            >
-              {{ sport.label }}
-            </span>
+        <div class="venues-search">
+          <ion-icon name="search-outline"></ion-icon>
+          <input
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event)"
+            placeholder="Search stadiums, courts or locality"
+          />
+          <button *ngIf="searchQuery()" type="button" class="clear-search" (click)="searchQuery.set('')">
+            <ion-icon name="close-circle"></ion-icon>
           </button>
         </div>
+      </section>
 
-        <!-- Filter chips -->
-        <div class="flex gap-2 px-5 pb-3.5 overflow-x-auto no-scrollbar">
-          <button
-            *ngFor="let f of filterChips"
-            (click)="toggleFilter(f.id)"
-            class="flex-shrink-0 flex items-center gap-1 px-3.5 py-2 rounded-full text-[12px] font-bold transition-all border-none"
-            [style.backgroundColor]="activeFilters().includes(f.id) ? '#8CF000' : 'white'"
-            [style.color]="activeFilters().includes(f.id) ? '#111827' : '#6B7280'"
-            [style.border]="activeFilters().includes(f.id) ? '1.5px solid #8CF000' : '1.5px solid #E5E7EB'"
-            [style.boxShadow]="activeFilters().includes(f.id) ? '0 2px 8px rgba(140,240,0,0.30)' : '0 1px 3px rgba(0,0,0,0.06)'"
-          >
-            <ion-icon *ngIf="activeFilters().includes(f.id)" name="checkmark-outline" class="text-xs text-[#111827] font-black"></ion-icon>
-            {{ f.label }}
-          </button>
-        </div>
-      </div>
-
-      <!-- Court listings -->
-      <div class="px-4 pt-4 pb-36 space-y-4">
-        <!-- Results label -->
-        <div class="flex items-center justify-between px-1">
-          <p class="text-[13px] font-semibold text-[#6B7280] m-0">
-            {{ filteredCourts().length }} {{ filteredCourts().length === 1 ? 'court' : 'courts' }} in {{ city() }}
-          </p>
-          <button *ngIf="activeFilters().length > 0" (click)="activeFilters.set([])" class="text-[12px] font-bold text-[#EF4444] border-none bg-transparent p-0 outline-none">
-            Clear filters
-          </button>
-        </div>
-
-        <div *ngIf="filteredCourts().length === 0" class="py-20 text-center">
-          <div class="text-5xl mb-3">🏟️</div>
-          <p class="text-[16px] font-bold text-[#111827] mb-1 m-0">No courts found</p>
-          <p class="text-[13px] text-[#9CA3AF] mb-4 m-0">Try changing your sport or filters</p>
-          <button
-            (click)="resetAll()"
-            class="px-5 py-2.5 rounded-full bg-[#8CF000] text-[#111827] text-[13px] font-black border-none"
-          >
-            Reset All
-          </button>
-        </div>
-
-        <!-- Court Card -->
-        <div
-          *ngFor="let court of filteredCourts(); let i = index"
-          class="bg-white overflow-hidden rounded-[24px] shadow-sm border border-[#F3F4F6] text-left"
+      <section class="venues-sports">
+        <button
+          type="button"
+          class="sport-item"
+          *ngFor="let sport of sports"
+          [class.active]="activeSport() === sport.id"
+          (click)="setSport(sport.id)"
         >
-          <!-- Hero image -->
-          <div class="relative h-[180px] overflow-hidden bg-gray-200">
-            <img [src]="court.image" [alt]="court.courtName" class="w-full h-full object-cover" />
-            <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+          <span class="sport-avatar">
+            <img [src]="sport.image" [alt]="sport.label" />
+          </span>
+          <span class="sport-label">{{ sport.label }}</span>
+        </button>
+      </section>
 
-            <!-- Indoor/Outdoor badge + Open Now -->
-            <div class="absolute top-3 left-3 flex gap-1.5">
-              <span class="text-[10px] font-bold text-white bg-black/45 backdrop-blur-sm px-2.5 py-1 rounded-full">
-                {{ court.isIndoor ? '🏢 Indoor' : '🌿 Outdoor' }}
-              </span>
-              <span *ngIf="court.isOpenNow" class="text-[10px] font-bold bg-[#8CF000] text-[#111827] px-2.5 py-1 rounded-full">
-                Open Now
-              </span>
-            </div>
+      <section class="venues-filters">
+        <button
+          type="button"
+          class="filter-chip"
+          *ngFor="let f of filterChips"
+          [class.active]="activeFilters().includes(f.id)"
+          (click)="toggleFilter(f.id)"
+        >
+          <ion-icon [name]="f.icon"></ion-icon>
+          {{ f.label }}
+        </button>
+      </section>
 
-            <!-- Price -->
-            <div class="absolute top-3 right-3 bg-white/95 backdrop-blur-sm px-2.5 py-1.5 rounded-xl text-center">
-              <p class="text-[14px] font-black text-[#111827] m-0">₹{{ court.pricePerHour.toLocaleString() }}</p>
-              <p class="text-[9px] text-[#9CA3AF] text-center m-0 mt-0.5 leading-none">per hour</p>
-            </div>
-
-            <!-- Court name overlay -->
-            <div class="absolute bottom-3 left-3 right-3 text-left">
-              <p class="text-white font-black text-[16px] leading-tight drop-shadow-md m-0">{{ court.courtName }}</p>
-              <p class="text-white/70 text-[12px] font-medium m-0 mt-0.5">{{ court.venueName }}</p>
-            </div>
-          </div>
-
-          <!-- Card body -->
-          <div class="px-4 pt-3.5 pb-4">
-            <!-- Rating + Distance + Timing row -->
-            <div class="flex items-center gap-3 mb-3 text-left flex-wrap">
-              <div class="flex items-center gap-1 leading-none">
-                <ion-icon name="star" class="text-[#F59E0B] text-xs font-bold"></ion-icon>
-                <span class="text-[13px] font-bold text-[#111827]">{{ court.rating }}</span>
-                <span class="text-[11px] text-[#9CA3AF]">({{ court.ratingCount }})</span>
-              </div>
-              <div class="w-1 h-1 rounded-full bg-[#E5E7EB]"></div>
-              <div class="flex items-center gap-1 leading-none">
-                <ion-icon name="location-outline" class="text-[#9CA3AF] text-xs"></ion-icon>
-                <span class="text-[11px] text-[#9CA3AF]">{{ court.distance }} km</span>
-              </div>
-              <div class="w-1 h-1 rounded-full bg-[#E5E7EB]"></div>
-              <div class="flex items-center gap-1 leading-none">
-                <ion-icon name="time-outline" class="text-[#9CA3AF] text-xs"></ion-icon>
-                <span class="text-[11px] text-[#9CA3AF]">{{ court.openTime }} – {{ court.closeTime }}</span>
-              </div>
-            </div>
-
-            <!-- Amenities icons -->
-            <div class="flex items-center gap-2 mb-4 flex-wrap">
-              <ng-container *ngFor="let am of court.amenities.slice(0, 5)">
-                <div *ngIf="amenityMap[am]" class="flex items-center gap-1 bg-[#F3F4F6] px-2.5 py-1 rounded-full leading-none">
-                  <ion-icon [name]="amenityMap[am].icon" class="text-[#6B7280] text-[10px]"></ion-icon>
-                  <span class="text-[9px] text-[#6B7280] font-bold">{{ amenityMap[am].label }}</span>
-                </div>
-              </ng-container>
-              <span *ngIf="court.amenities.length > 5" class="text-[9px] text-[#9CA3AF] font-bold">+{{ court.amenities.length - 5 }}</span>
-            </div>
-
-            <!-- Stats + CTA row -->
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <!-- Rental gear -->
-                <div class="flex items-center gap-1.5 leading-none">
-                  <div
-                    class="w-3.5 h-3.5 rounded-full flex items-center justify-center bg-slate-100"
-                    [style.backgroundColor]="court.hasRentalGear ? '#F0FDF4' : '#FEF2F2'"
-                  >
-                    <div class="w-2 h-2 rounded-full" [style.backgroundColor]="court.hasRentalGear ? '#22C55E' : '#EF4444'"></div>
-                  </div>
-                  <span class="text-[10px] font-black" [style.color]="court.hasRentalGear ? '#16A34A' : '#9CA3AF'">
-                    {{ court.hasRentalGear ? 'Gear Available' : 'No Rental' }}
-                  </span>
-                </div>
-
-                <!-- Games played -->
-                <div class="flex items-center gap-1 bg-[#F3F4F6] px-2.5 py-1 rounded-full leading-none">
-                  <span class="text-[10px] font-black text-[#6B7280]">{{ court.gamesPlayed }}</span>
-                  <span class="text-[9px] text-[#9CA3AF] font-bold">games</span>
-                </div>
-              </div>
-
-              <!-- Book Now -->
-              <button
-                (click)="bookNow(court)"
-                class="px-4 h-10 rounded-2xl text-[13px] font-black text-white border-none flex items-center justify-center shadow-md active:scale-95 transition-all outline-none"
-                style="background: linear-gradient(135deg, #FF7A00 0%, #FF9A40 100%); box-shadow: 0 3px 12px rgba(255,122,0,0.38);"
-              >
-                Book Now
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- City Picker modal -->
-      <div *ngIf="showCityPicker()" class="fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px] transition-all" (click)="showCityPicker.set(false)"></div>
-      <div
-        *ngIf="showCityPicker()"
-        class="fixed bottom-0 left-0 right-0 z-50 max-w-md mx-auto bg-white rounded-t-[28px] px-5 pt-5 pb-10 shadow-2xl transition-transform duration-300"
-      >
-        <div class="w-10 h-1.5 rounded-full bg-[#E5E7EB] mx-auto mb-4"></div>
-        <p class="text-[17px] font-black text-[#111827] mb-4">Select City</p>
-        <div class="grid grid-cols-2 gap-2.5">
+      <section class="venues-results">
+        <div class="results-row">
+          <p>
+            {{ filteredCourts().length }}
+            {{ filteredCourts().length === 1 ? 'court' : 'courts' }}
+            in {{ city() }}
+          </p>
           <button
-            *ngFor="let c of cities"
-            (click)="selectCity(c)"
-            class="py-3.5 rounded-2xl text-[14px] font-black border-none flex items-center justify-center gap-1.5 transition-all outline-none"
-            [style.backgroundColor]="city() === c ? 'rgba(140,240,0,0.12)' : '#F3F4F6'"
-            [style.color]="city() === c ? '#111827' : '#6B7280'"
-            [style.border]="city() === c ? '2px solid #8CF000' : '2px solid transparent'"
+            *ngIf="activeFilters().length || activeSport() !== 'all' || searchQuery()"
+            type="button"
+            class="clear-btn"
+            (click)="resetAll()"
           >
-            <ion-icon name="location-outline" [style.color]="city() === c ? '#8CF000' : '#9CA3AF'"></ion-icon>
-            <span>{{ c }}</span>
-            <ion-icon *ngIf="city() === c" name="checkmark-outline" class="text-xs font-black text-[#8CF000] ml-1"></ion-icon>
+            Reset
           </button>
         </div>
+
+        <p class="fallback-note" *ngIf="usedFallbackCity() && !loading()">
+          Showing nearby courts outside {{ city() }} as well.
+        </p>
+
+        <div class="state-card" *ngIf="loading()">
+          <ion-spinner name="crescent"></ion-spinner>
+          <p>Finding courts near you…</p>
+        </div>
+
+        <div class="state-card error" *ngIf="!loading() && errorMessage()">
+          <ion-icon name="alert-circle-outline"></ion-icon>
+          <p>{{ errorMessage() }}</p>
+          <button type="button" class="primary-btn" (click)="loadCourts()">Try again</button>
+        </div>
+
+        <div class="state-card" *ngIf="!loading() && !errorMessage() && filteredCourts().length === 0">
+          <div class="empty-icon">🏟️</div>
+          <h3>No courts found</h3>
+          <p *ngIf="activeSport() !== 'all'">
+            No {{ activeSport() }} courts right now. Switch to All Sports or reset filters.
+          </p>
+          <p *ngIf="activeSport() === 'all'">
+            Try another sport, clear filters, or switch city to see available venues.
+          </p>
+          <button type="button" class="primary-btn" (click)="resetAll()">Show all courts</button>
+        </div>
+
+        <article class="court-card" *ngFor="let court of filteredCourts()">
+          <div class="court-hero">
+            <img [src]="court.image" [alt]="court.courtName" />
+            <div class="court-hero-fade"></div>
+
+            <div class="hero-badges">
+              <span class="badge dark">{{ court.isIndoor ? 'Indoor' : 'Outdoor' }}</span>
+              <span class="badge live" *ngIf="court.isOpenNow">Open Now</span>
+            </div>
+
+            <div class="price-badge">
+              <strong>₹{{ court.pricePerHour.toLocaleString('en-IN') }}</strong>
+              <span>per hour</span>
+            </div>
+
+            <div class="hero-copy">
+              <h3>{{ court.courtName }}</h3>
+              <p>{{ court.venueName }}</p>
+            </div>
+          </div>
+
+          <div class="court-body">
+            <div class="meta-row">
+              <span>
+                <ion-icon name="star"></ion-icon>
+                {{ court.rating }}
+                <em>({{ court.ratingCount }})</em>
+              </span>
+              <span *ngIf="court.distance">
+                <ion-icon name="navigate-outline"></ion-icon>
+                {{ court.distance }} km
+              </span>
+              <span>
+                <ion-icon name="time-outline"></ion-icon>
+                {{ court.openTime }} – {{ court.closeTime }}
+              </span>
+            </div>
+
+            <div class="amenity-row" *ngIf="court.amenities.length">
+              <ng-container *ngFor="let am of court.amenities.slice(0, 4)">
+                <span class="amenity" *ngIf="amenityMap[am]">
+                  <ion-icon [name]="amenityMap[am].icon"></ion-icon>
+                  {{ amenityMap[am].label }}
+                </span>
+              </ng-container>
+            </div>
+
+            <div class="cta-row">
+              <div class="cta-meta">
+                <span [class.ok]="court.hasRentalGear" [class.no]="!court.hasRentalGear">
+                  {{ court.hasRentalGear ? 'Gear available' : 'No rental gear' }}
+                </span>
+                <span class="games">{{ court.gamesPlayed }} games</span>
+              </div>
+              <button type="button" class="book-btn" (click)="bookNow(court)">Book Now</button>
+            </div>
+          </div>
+        </article>
+      </section>
+    </div>
+
+    <div class="city-backdrop" *ngIf="showCityPicker()" (click)="showCityPicker.set(false)"></div>
+    <div class="city-sheet" *ngIf="showCityPicker()">
+      <div class="sheet-handle"></div>
+      <h3>Select city</h3>
+      <div class="city-grid">
+        <button
+          type="button"
+          *ngFor="let c of cities"
+          class="city-option"
+          [class.active]="city() === c"
+          (click)="selectCity(c)"
+        >
+          <ion-icon name="location-outline"></ion-icon>
+          {{ c }}
+        </button>
       </div>
     </div>
   </app-brand-header-shell>

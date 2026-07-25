@@ -1,7 +1,29 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  NgZone,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  inject,
+  signal,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
+import { firstValueFrom } from 'rxjs';
+import { BookingRecord } from '../../core/models/api.model';
+import { AuthService } from '../../core/services/auth.service';
+import { BookingService } from '../../core/services/booking.service';
+import { GoogleMapsService } from '../../core/services/google-maps.service';
+import {
+  formatBookingDate,
+  formatBookingTime,
+  formatDurationLabel,
+  sportEmoji,
+} from '../../core/utils/booking.utils';
+
 
 interface Game {
   id: string;
@@ -26,57 +48,30 @@ interface Game {
   isIndoor: boolean;
 }
 
-const GAMES: Game[] = [
-  {
-    id: '1', sport: 'Cricket', emoji: '🏏',
-    venue: 'Ekana Cricket Stadium', address: 'Gomti Nagar Extension, Lucknow', distance: '4.5 km',
-    date: 'Today', time: '7:00 PM', duration: '3 hours',
-    image: 'https://images.unsplash.com/photo-1593341646782-e0b495cff86d?w=700&h=400&fit=crop&auto=format',
-    hostName: 'Vikram Singh', hostPhoto: 'https://images.unsplash.com/photo-1557862921-37829c790f19?w=120&h=120&fit=crop&auto=format',
-    isCaptain: true, playersJoined: 8, maxPlayers: 10, costPerPlayer: 450,
-    gameType: 'Competitive', difficulty: 'Advanced', weather: 'Clear ☀️', isIndoor: false,
-  },
-  {
-    id: '2', sport: 'Football', emoji: '⚽',
-    venue: 'K.D. Singh Babu Stadium', address: 'Nehru Nagar, Lucknow', distance: '2.3 km',
-    date: 'Today', time: '6:00 PM', duration: '90 min',
-    image: 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=700&h=400&fit=crop&auto=format',
-    hostName: 'Aryan Mehta', hostPhoto: 'https://images.unsplash.com/photo-1552058544-f2b08422138a?w=120&h=120&fit=crop&auto=format',
-    isCaptain: false, playersJoined: 14, maxPlayers: 22, costPerPlayer: 200,
-    gameType: 'Casual', difficulty: 'Beginner', weather: 'Cloudy ⛅', isIndoor: false,
-  },
-  {
-    id: '3', sport: 'Basketball', emoji: '🏀',
-    venue: 'Sports Authority Complex', address: 'Gomti Nagar, Lucknow', distance: '3.8 km',
-    date: 'Tomorrow', time: '8:00 PM', duration: '2 hours',
-    image: 'https://images.unsplash.com/photo-1608245449230-4ac19066d2d0?w=700&h=400&fit=crop&auto=format',
-    hostName: 'Priya Verma', hostPhoto: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&h=120&fit=crop&auto=format',
-    isCaptain: false, playersJoined: 6, maxPlayers: 10, costPerPlayer: 350,
-    gameType: 'Recreational', difficulty: 'Intermediate', weather: 'Clear ☀️', isIndoor: true,
-  },
-  {
-    id: '4', sport: 'Badminton', emoji: '🏸',
-    venue: 'Phoenix Sports Hub', address: 'Aliganj, Lucknow', distance: '5.2 km',
-    date: 'Today', time: '5:30 PM', duration: '90 min',
-    image: 'https://images.unsplash.com/photo-1722087642932-9b070e9a066e?w=700&h=400&fit=crop&auto=format',
-    hostName: 'Meena Krishnan', hostPhoto: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=120&h=120&fit=crop&auto=format',
-    isCaptain: true, playersJoined: 3, maxPlayers: 4, costPerPlayer: 250,
-    gameType: 'Practice', difficulty: 'Intermediate', weather: 'Indoor 🏢', isIndoor: true,
-  },
-];
-
-const FILTERS = ['Today', 'Tomorrow', 'Nearby', 'Competitive', 'Recreational', 'Beginner', 'Intermediate', 'Advanced'];
+const FILTERS = ['All', 'Today', 'Tomorrow', 'Nearby'];
 
 const TYPE_COLORS: Record<string, { bg: string; color: string }> = {
-  'Competitive':  { bg: '#FFF7ED', color: '#C2410C' },
-  'Recreational': { bg: '#F0FDF4', color: '#16A34A' },
-  'Practice':     { bg: '#EFF6FF', color: '#1D4ED8' },
-  'Casual':       { bg: '#F5F3FF', color: '#7C3AED' },
+  Competitive: { bg: '#FFF7ED', color: '#C2410C' },
+  Recreational: { bg: '#F0FDF4', color: '#16A34A' },
+  Practice: { bg: '#EFF6FF', color: '#1D4ED8' },
+  Casual: { bg: '#F5F3FF', color: '#7C3AED' },
 };
 
 const DIFF_COLORS: Record<string, string> = {
-  'Beginner': '#22C55E', 'Intermediate': '#F59E0B', 'Advanced': '#EF4444',
+  Beginner: '#22C55E',
+  Intermediate: '#F59E0B',
+  Advanced: '#EF4444',
 };
+
+const SPORT_IMAGES: Record<string, string> = {
+  cricket: 'https://images.unsplash.com/photo-1593341646782-e0b495cff86d?w=700&h=400&fit=crop&auto=format',
+  football: 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=700&h=400&fit=crop&auto=format',
+  basketball: 'https://images.unsplash.com/photo-1608245449230-4ac19066d2d0?w=700&h=400&fit=crop&auto=format',
+  badminton: 'https://images.unsplash.com/photo-1722087642932-9b070e9a066e?w=700&h=400&fit=crop&auto=format',
+  tennis: 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=700&h=400&fit=crop&auto=format',
+};
+
+const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=120&h=120&fit=crop&auto=format';
 
 @Component({
   selector: 'app-ongoing-games',
@@ -119,38 +114,39 @@ const DIFF_COLORS: Record<string, string> = {
 
         <!-- Live Map Banner -->
         <div class="live-map-banner">
-          <div class="map-grid">
-            <div class="map-dot" style="top:38%;left:40%;background:#22C55E;">🏏</div>
-            <div class="map-dot" style="top:58%;left:22%;background:#3B82F6;">⚽</div>
-            <div class="map-dot" style="top:48%;left:63%;background:#F97316;">🏀</div>
-            <div class="map-dot" style="top:72%;left:52%;background:#8B5CF6;">🏸</div>
-            <div class="map-dot" style="top:28%;left:76%;background:#EAB308;">🎾</div>
-          </div>
+          <div #miniMapContainer class="mini-google-map" aria-label="Nearby games map"></div>
           <div class="map-overlay">
             <div class="map-info">
               <div class="live-badge">
                 <span class="live-dot"></span>
                 <span>LIVE</span>
               </div>
-              <div class="map-count">4 active games nearby</div>
-              <div class="map-sub">Tap pins to join instantly</div>
+              <div class="map-count">{{ games.length }} active games nearby</div>
+              <div class="map-sub">Tap a pin for game details</div>
+              <button type="button" class="open-map-cta" (click)="openFullMap()">Open full map</button>
             </div>
           </div>
         </div>
 
         <!-- Games count -->
         <div class="games-count-row">
-          <span class="games-count">{{ games.length }} games found</span>
+          <span class="games-count">{{ filteredGames.length }} games found</span>
           <button class="sort-btn">
             <ion-icon name="swap-vertical-outline"></ion-icon>
             Sort
           </button>
         </div>
 
+        <div class="games-state" *ngIf="loading">Loading games…</div>
+        <div class="games-state" *ngIf="!loading && errorMessage">{{ errorMessage }}</div>
+        <div class="games-state" *ngIf="!loading && !errorMessage && filteredGames.length === 0">
+          No open games right now. Create a game to invite others.
+        </div>
+
         <!-- Game Cards -->
         <div class="games-list">
           <div
-            *ngFor="let game of games"
+            *ngFor="let game of filteredGames"
             class="game-card"
             (click)="viewGame(game.id)"
           >
@@ -201,7 +197,7 @@ const DIFF_COLORS: Record<string, string> = {
                   </div>
                 </div>
                 <div class="price-box">
-                  <div class="price-amt">₹{{ game.costPerPlayer }}</div>
+                  <div class="price-amt">{{ game.costPerPlayer > 0 ? ('₹' + game.costPerPlayer) : 'Free' }}</div>
                   <div class="price-label">per player</div>
                 </div>
               </div>
@@ -222,7 +218,7 @@ const DIFF_COLORS: Record<string, string> = {
                     <strong>{{ game.playersJoined }}/{{ game.maxPlayers }}</strong>
                     <span>players joined</span>
                   </div>
-                  <span *ngIf="getSpotsLeft(game) <= 3" class="spots-badge">{{ getSpotsLeft(game) }} spots left!</span>
+                  <span *ngIf="getSpotsLeft(game) <= 3 && getSpotsLeft(game) > 0" class="spots-badge">{{ getSpotsLeft(game) }} spots left!</span>
                 </div>
                 <div class="progress-bar">
                   <div class="progress-fill" [style.width]="getPercent(game) + '%'" [style.background]="getProgressColor(game)"></div>
@@ -231,7 +227,7 @@ const DIFF_COLORS: Record<string, string> = {
 
               <!-- Join button -->
               <button class="join-btn" (click)="viewGame(game.id)">
-                Join Game · ₹{{ game.costPerPlayer }}
+                {{ game.costPerPlayer > 0 ? ('Join Game · ₹' + game.costPerPlayer) : 'Join Game · Free' }}
               </button>
             </div>
           </div>
@@ -342,23 +338,14 @@ const DIFF_COLORS: Record<string, string> = {
       overflow: hidden;
       position: relative;
       height: 180px;
-      background: linear-gradient(135deg, #E8F5E9 0%, #E3F2FD 50%, #F3E5F5 100%);
+      background: #E8EEF5;
     }
 
-    .map-grid {
+    .mini-google-map {
       position: absolute;
       inset: 0;
-    }
-
-    .map-dot {
-      position: absolute;
-      width: 36px; height: 36px;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 16px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-      transform: translate(-50%, -50%);
-      border: 2px solid white;
+      width: 100%;
+      height: 100%;
     }
 
     .map-overlay {
@@ -366,9 +353,24 @@ const DIFF_COLORS: Record<string, string> = {
       bottom: 0; left: 0; right: 0;
       padding: 16px;
       background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
+      pointer-events: none;
+      z-index: 2;
     }
 
     .map-info { color: white; }
+
+    .open-map-cta {
+      pointer-events: auto;
+      margin-top: 8px;
+      border: 0;
+      border-radius: 999px;
+      padding: 6px 12px;
+      background: #8CF000;
+      color: #111827;
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+    }
 
     .live-badge {
       display: inline-flex;
@@ -652,16 +654,62 @@ const DIFF_COLORS: Record<string, string> = {
       cursor: pointer;
       box-shadow: 0 3px 12px rgba(140,240,0,0.3);
     }
+
+    .games-state {
+      margin: 0 20px 12px;
+      padding: 16px;
+      border-radius: 16px;
+      background: #fff;
+      border: 1px solid #f3f4f6;
+      color: #6b7280;
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
+    }
   `]
 })
-export class OngoingGamesPage {
+export class OngoingGamesPage implements OnInit, AfterViewInit, OnDestroy {
   private readonly router = inject(Router);
+  private readonly bookingService = inject(BookingService);
+  private readonly auth = inject(AuthService);
+  private readonly googleMaps = inject(GoogleMapsService);
+  private readonly zone = inject(NgZone);
+
+  @ViewChild('miniMapContainer') miniMapContainer?: ElementRef<HTMLDivElement>;
 
   readonly filterOptions = FILTERS;
-  readonly activeFilter = signal('Today');
-  readonly games = GAMES;
+  readonly activeFilter = signal('All');
+  games: Game[] = [];
+  loading = true;
+  errorMessage = '';
 
-  setFilter(f: string) { this.activeFilter.set(f); }
+  private bookings: BookingRecord[] = [];
+  private miniMap?: google.maps.Map;
+  private readonly miniMarkers: google.maps.Marker[] = [];
+  private readonly miniListeners: google.maps.MapsEventListener[] = [];
+  private readonly lucknowCenter: google.maps.LatLngLiteral = { lat: 26.8467, lng: 80.9462 };
+
+  ngOnInit() {
+    void this.loadGames();
+  }
+
+  ngAfterViewInit() {
+    // Map is initialized after bookings load.
+  }
+
+  ngOnDestroy() {
+    this.clearMiniMarkers();
+  }
+
+  get filteredGames() {
+    const filter = this.activeFilter();
+    if (filter === 'All' || filter === 'Nearby') return this.games;
+    return this.games.filter((game) => game.date.toLowerCase().includes(filter.toLowerCase()));
+  }
+
+  setFilter(f: string) {
+    this.activeFilter.set(f);
+  }
 
   getTypeStyle(type: string) {
     return TYPE_COLORS[type] || { bg: '#F3F4F6', color: '#6B7280' };
@@ -676,6 +724,7 @@ export class OngoingGamesPage {
   }
 
   getPercent(game: Game) {
+    if (!game.maxPlayers) return 0;
     return Math.round((game.playersJoined / game.maxPlayers) * 100);
   }
 
@@ -687,10 +736,177 @@ export class OngoingGamesPage {
   }
 
   back() {
-    this.router.navigateByUrl('/app/home');
+    void this.router.navigateByUrl('/app/home');
+  }
+
+  openFullMap() {
+    void this.router.navigateByUrl('/app/map');
   }
 
   viewGame(id: string) {
-    this.router.navigateByUrl(`/app/ongoing/${id}`);
+    void this.router.navigateByUrl(`/app/game/${id}`);
+  }
+
+  private async loadGames() {
+    this.loading = true;
+    this.errorMessage = '';
+    try {
+      const userLocation = (this.auth.user()?.location || '').trim();
+      let response = await firstValueFrom(
+        this.bookingService.getNearbyGames(50, {
+          matchLocation: !!userLocation,
+          location: userLocation || undefined,
+        }),
+      );
+      if (
+        userLocation &&
+        response.success &&
+        Array.isArray(response.data) &&
+        response.data.length === 0
+      ) {
+        response = await firstValueFrom(this.bookingService.getNearbyGames(50));
+      }
+      if (response.success && Array.isArray(response.data)) {
+        this.bookings = response.data;
+        this.games = response.data.map((booking) => this.mapGame(booking));
+      } else {
+        this.bookings = [];
+        this.games = [];
+        this.errorMessage = response.message || 'Unable to load games.';
+      }
+    } catch (error: any) {
+      this.bookings = [];
+      this.games = [];
+      this.errorMessage = error?.error?.message || 'Unable to load games.';
+    } finally {
+      this.loading = false;
+      void this.renderMiniMap();
+    }
+  }
+
+  private async renderMiniMap() {
+    const container = this.miniMapContainer?.nativeElement;
+    if (!container) return;
+
+    try {
+      await this.googleMaps.load();
+      const userLocation = (this.auth.user()?.location || '').trim();
+      let center = this.lucknowCenter;
+      if (userLocation) {
+        const geocoded = await this.googleMaps.geocode(userLocation, this.lucknowCenter);
+        if (geocoded) center = geocoded;
+      }
+
+      this.clearMiniMarkers();
+      this.miniMap = new google.maps.Map(container, {
+        center,
+        zoom: 12,
+        disableDefaultUI: true,
+        gestureHandling: 'greedy',
+        keyboardShortcuts: false,
+        clickableIcons: false,
+        draggable: false,
+        scrollwheel: false,
+        zoomControl: false,
+        mapTypeControl: false,
+        streetViewControl: false,
+        fullscreenControl: false,
+      });
+
+      const positions: google.maps.LatLngLiteral[] = [];
+      for (const booking of this.bookings) {
+        const query = [booking.venue?.name, booking.venue?.location || booking.venue?.address]
+          .filter(Boolean)
+          .join(', ')
+          .trim();
+        if (!query) continue;
+        const position = await this.googleMaps.geocode(query, center);
+        if (!position) continue;
+        positions.push(position);
+
+        const marker = new google.maps.Marker({
+          map: this.miniMap,
+          position,
+          title: booking.venue?.name || booking.sport,
+          label: {
+            text: sportEmoji(booking.sport),
+            color: '#ffffff',
+            fontSize: '14px',
+            fontWeight: '700',
+          },
+          icon: {
+            path: google.maps.SymbolPath.CIRCLE,
+            fillColor: this.sportColor(booking.sport),
+            fillOpacity: 1,
+            strokeColor: '#ffffff',
+            strokeWeight: 2,
+            scale: 18,
+          },
+        });
+
+        const listener = marker.addListener('click', () => {
+          this.zone.run(() => this.viewGame(booking.id));
+        });
+        this.miniMarkers.push(marker);
+        this.miniListeners.push(listener);
+      }
+
+      if (positions.length === 1) {
+        this.miniMap.setCenter(positions[0]);
+        this.miniMap.setZoom(13);
+      } else if (positions.length > 1) {
+        const bounds = new google.maps.LatLngBounds();
+        positions.forEach((pos) => bounds.extend(pos));
+        this.miniMap.fitBounds(bounds, 28);
+      }
+    } catch (error) {
+      console.error('Failed to render ongoing games map', error);
+    }
+  }
+
+  private clearMiniMarkers() {
+    this.miniListeners.splice(0).forEach((listener) => listener.remove());
+    this.miniMarkers.splice(0).forEach((marker) => marker.setMap(null));
+  }
+
+  private sportColor(sport?: string | null): string {
+    const key = (sport || '').toLowerCase();
+    if (key === 'football') return '#2563EB';
+    if (key === 'cricket') return '#22C55E';
+    if (key === 'basketball') return '#F97316';
+    if (key === 'tennis') return '#EAB308';
+    if (key === 'badminton') return '#8B5CF6';
+    return '#111827';
+  }
+
+  private mapGame(booking: BookingRecord): Game {
+    const sportKey = (booking.sport || '').toLowerCase();
+    const sport = (booking.sport || 'Game').replace(/\b\w/g, (c) => c.toUpperCase());
+    const skill = booking.skillLevel
+      ? booking.skillLevel.replace(/\b\w/g, (c) => c.toUpperCase())
+      : 'Intermediate';
+
+    return {
+      id: booking.id,
+      sport,
+      emoji: sportEmoji(booking.sport),
+      venue: booking.venue?.name || 'Venue TBD',
+      address: booking.venue?.location || booking.venue?.address || '',
+      distance: booking.venue?.location || 'Nearby',
+      date: formatBookingDate(booking.bookingDate),
+      time: formatBookingTime(booking.startTime),
+      duration: formatDurationLabel(booking.durationMinutes),
+      image: SPORT_IMAGES[sportKey] || SPORT_IMAGES['cricket'],
+      hostName: booking.host?.name || 'Host',
+      hostPhoto: booking.host?.profileImage || DEFAULT_PHOTO,
+      isCaptain: true,
+      playersJoined: booking.currentPlayers,
+      maxPlayers: booking.totalPlayers,
+      costPerPlayer: Number(booking.price || 0),
+      gameType: 'Casual',
+      difficulty: skill,
+      weather: 'Clear ☀️',
+      isIndoor: false,
+    };
   }
 }

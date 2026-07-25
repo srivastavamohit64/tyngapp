@@ -1,10 +1,12 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { MenuController, Platform } from '@ionic/angular';
+import { firstValueFrom } from 'rxjs';
 import { AuthUser } from './core/models/api.model';
 import { PlatformService } from './core/services/platform.service';
 import { ThemeService } from './core/services/theme.service';
 import { AuthService } from './core/services/auth.service';
+import { VenueService } from './core/services/venue.service';
 
 interface CoachMenuItem {
   label: string;
@@ -35,8 +37,21 @@ export class AppComponent implements OnInit {
   readonly auth = inject(AuthService);
   private readonly menu = inject(MenuController);
   private readonly router = inject(Router);
+  private readonly venueService = inject(VenueService);
 
   showLogoutConfirm = false;
+
+  private readonly venueMenuStats = signal({
+    profileName: '',
+    profilePercent: 0,
+    amenitiesCount: 0,
+    courtsCount: 0,
+    monthEarnings: 0,
+    todayBookings: 0,
+    upcomingBookings: 0,
+    pendingBookings: 0,
+    unreadChat: 0,
+  });
 
   readonly coachMenuItems: CoachMenuItem[] = [
     { label: 'Complete Profile', sub: 'Finish your coach profile', path: '/app/coach/complete-profile', icon: 'clipboard-outline' },
@@ -50,16 +65,40 @@ export class AppComponent implements OnInit {
     { label: 'Settings', sub: 'Preferences & privacy', path: '/app/coach/settings', icon: 'settings-outline' },
   ];
 
-  readonly venueMenuItems: VenueMenuItem[] = [
-    { label: 'Venue Profile', sub: 'Phoenix Arena · 40%', path: '/app/venue/profile', icon: 'business-outline' },
-    { label: 'Amenities', sub: 'Courts, parking & more', path: '/app/venue/facilities', icon: 'cube-outline' },
-    { label: 'Earnings', sub: '₹32,000 this month', path: '/app/venue/earnings', icon: 'wallet-outline' },
-    { label: 'Bookings', sub: '8 today', path: '/app/venue/bookings', icon: 'calendar-outline', badge: '3' },
-    { label: 'Chat', sub: 'Messages & enquiries', path: '/app/chat', icon: 'chatbubbles-outline', badge: '2' },
-    { label: 'Coaches', sub: '3 active partners', path: '/app/venue/facilities', icon: 'people-outline' },
-    { label: 'Analytics', sub: 'Occupancy & insights', path: '/app/venue/analytics', icon: 'bar-chart-outline' },
-    { label: 'Settings', sub: 'Preferences & billing', path: '/app/venue/profile', icon: 'settings-outline' },
-  ];
+  readonly venueMenuItems = computed<VenueMenuItem[]>(() => {
+    const m = this.venueMenuStats();
+    const earnings = `₹${Number(m.monthEarnings || 0).toLocaleString('en-IN')} this month`;
+    const bookingsSub = m.todayBookings > 0
+      ? `${m.todayBookings} today`
+      : `${m.upcomingBookings} upcoming`;
+    const amenitiesSub = m.courtsCount > 0 || m.amenitiesCount > 0
+      ? `${m.courtsCount} courts · ${m.amenitiesCount} amenities`
+      : 'Courts, parking & more';
+    const profileSub = `${m.profileName || this.user()?.name?.trim() || 'Venue'} · ${m.profilePercent || this.user()?.profileCompletion || 0}%`;
+
+    return [
+      { label: 'Venue Profile', sub: profileSub, path: '/app/venue/profile', icon: 'business-outline' },
+      { label: 'Amenities', sub: amenitiesSub, path: '/app/venue/facilities', icon: 'cube-outline' },
+      { label: 'Earnings', sub: earnings, path: '/app/venue/earnings', icon: 'wallet-outline' },
+      {
+        label: 'Bookings',
+        sub: bookingsSub,
+        path: '/app/venue/bookings',
+        icon: 'calendar-outline',
+        badge: m.pendingBookings > 0 ? String(m.pendingBookings) : undefined,
+      },
+      {
+        label: 'Chat',
+        sub: 'Messages & enquiries',
+        path: '/app/chat',
+        icon: 'chatbubbles-outline',
+        badge: m.unreadChat > 0 ? String(m.unreadChat) : undefined,
+      },
+      { label: 'Coaches', sub: 'Partner coaches', path: '/app/venue/facilities', icon: 'people-outline' },
+      { label: 'Analytics', sub: 'Occupancy & insights', path: '/app/venue/analytics', icon: 'bar-chart-outline' },
+      { label: 'Settings', sub: 'Preferences & billing', path: '/app/venue/profile', icon: 'settings-outline' },
+    ];
+  });
 
   readonly venueChecklistPreview = [
     { label: 'Venue Type', done: true },
@@ -96,15 +135,15 @@ export class AppComponent implements OnInit {
   }
 
   venueDisplayName(): string {
-    return this.user()?.name?.trim() || 'Phoenix Arena';
+    return this.venueMenuStats().profileName || this.user()?.name?.trim() || 'Venue';
   }
 
   venueLocation(): string {
-    return this.user()?.location?.trim() || 'Aliganj, Lucknow';
+    return this.user()?.location?.trim() || 'Add location';
   }
 
   profileCompletion(): number {
-    return this.user()?.profileCompletion ?? 0;
+    return this.venueMenuStats().profilePercent || this.user()?.profileCompletion || 0;
   }
 
   tpPoints(): string {
@@ -154,6 +193,30 @@ export class AppComponent implements OnInit {
   refreshProfile() {
     if (this.auth.getToken()) {
       this.auth.fetchMe().subscribe();
+      if (this.auth.user()?.role === 'venue') {
+        void this.refreshVenueMenu();
+      }
+    }
+  }
+
+  private async refreshVenueMenu() {
+    try {
+      const response = await firstValueFrom(this.venueService.getDashboard());
+      const menu = response.data?.menu;
+      if (!response.success || !menu) return;
+      this.venueMenuStats.set({
+        profileName: String(menu.profileName || ''),
+        profilePercent: Number(menu.profilePercent || 0),
+        amenitiesCount: Number(menu.amenitiesCount || 0),
+        courtsCount: Number(menu.courtsCount || 0),
+        monthEarnings: Number(menu.monthEarnings || 0),
+        todayBookings: Number(menu.todayBookings || 0),
+        upcomingBookings: Number(menu.upcomingBookings || 0),
+        pendingBookings: Number(menu.pendingBookings || 0),
+        unreadChat: Number(menu.unreadChat || 0),
+      });
+    } catch {
+      // Keep previous menu stats if dashboard fails.
     }
   }
 

@@ -181,11 +181,18 @@ export class AuthService {
     }
 
     if (user.role === 'venue') {
-      void this.router.navigateByUrl('/app/venue/dashboard');
+      void this.router.navigateByUrl(this.venueHomePath(user));
       return;
     }
 
     void this.router.navigateByUrl('/app/home');
+  }
+
+  venueHomePath(user: AuthUser | null = this.user()): string {
+    if (user?.role === 'venue' && user.venueProfileReady === false) {
+      return '/app/venue/complete-profile';
+    }
+    return '/app/venue/dashboard';
   }
 
   private persistAuth(data: AuthTokenResponse): AuthUser {

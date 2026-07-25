@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, ElementRef, inject, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { IonicModule } from '@ionic/angular';
+import { ActionSheetController, IonicModule } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { PrimaryButtonComponent } from '../../shared/components/primary-button/primary-button.component';
@@ -26,10 +26,10 @@ import { TextInputComponent } from '../../shared/components/text-input/text-inpu
           <div class="avatar" [style.backgroundImage]="previewUrl ? 'url(' + previewUrl + ')' : 'none'">
             <span *ngIf="!previewUrl">{{ initials }}</span>
           </div>
-          <label class="upload-btn">
-            Change Photo
-            <input type="file" accept="image/jpeg,image/png,image/webp" hidden (change)="onFile($event)" />
-          </label>
+          <button type="button" class="upload-btn" (click)="pickPhoto()">Change Photo</button>
+          <p class="hint">Camera, photo library, or files</p>
+          <input #cameraInput type="file" accept="image/*" capture="environment" hidden (change)="onFile($event)" />
+          <input #libraryInput type="file" accept="image/jpeg,image/png,image/webp,image/*" hidden (change)="onFile($event)" />
         </div>
 
         <div class="fields">
@@ -37,7 +37,7 @@ import { TextInputComponent } from '../../shared/components/text-input/text-inpu
           <app-text-input label="Mobile Number" placeholder="Mobile" type="tel" icon="call-outline"
             [maxlength]="10" [ngModel]="phone" (ngModelChange)="onPhone($event)"></app-text-input>
           <app-text-input label="Email Address" placeholder="Email" type="email" icon="mail-outline" [(ngModel)]="email"></app-text-input>
-          <app-location-field label="Location" placeholder="City e.g. Lucknow" [(ngModel)]="location"></app-location-field>
+          <app-location-field label="Location" placeholder="e.g. Lucknow, Gomti Nagar" [(ngModel)]="location"></app-location-field>
         </div>
 
         <p *ngIf="error" class="error">{{ error }}</p>
@@ -55,17 +55,22 @@ import { TextInputComponent } from '../../shared/components/text-input/text-inpu
     .hdr h1 { flex: 1; text-align: center; font-size: 17px; font-weight: 900; margin: 0; color: #111827; }
     .spacer { width: 40px; }
     .icon-btn { width: 40px; height: 40px; border: none; border-radius: 12px; background: #f3f4f6; display: grid; place-items: center; }
-    .avatar-block { display: flex; flex-direction: column; align-items: center; gap: 12px; margin-bottom: 24px; }
+    .avatar-block { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 24px; }
     .avatar { width: 96px; height: 96px; border-radius: 999px; background: linear-gradient(135deg, #8cf000, #ff7a00); display: grid; place-items: center; font-size: 32px; font-weight: 900; color: #111827; background-size: cover; background-position: center; }
-    .upload-btn { font-size: 13px; font-weight: 700; color: #2563eb; cursor: pointer; }
+    .upload-btn { font-size: 13px; font-weight: 700; color: #2563eb; cursor: pointer; background: none; border: none; padding: 0; }
+    .hint { margin: 0; font-size: 11px; color: #9ca3af; font-weight: 600; }
     .fields { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
     .error { color: #dc2626; font-size: 13px; margin: 0 0 12px; }
     .success { color: #16a34a; font-size: 13px; margin: 0 0 12px; }
   `],
 })
 export class EditProfilePage implements OnInit {
+  @ViewChild('cameraInput') cameraInput?: ElementRef<HTMLInputElement>;
+  @ViewChild('libraryInput') libraryInput?: ElementRef<HTMLInputElement>;
+
   readonly auth = inject(AuthService);
   readonly router = inject(Router);
+  private readonly actionSheetCtrl = inject(ActionSheetController);
 
   name = '';
   phone = '';
@@ -98,9 +103,23 @@ export class EditProfilePage implements OnInit {
     this.phone = (value || '').replace(/\D/g, '').slice(0, 10);
   }
 
+  async pickPhoto() {
+    const sheet = await this.actionSheetCtrl.create({
+      header: 'Update profile photo',
+      buttons: [
+        { text: 'Take photo', icon: 'camera-outline', handler: () => this.cameraInput?.nativeElement.click() },
+        { text: 'Photo library', icon: 'images-outline', handler: () => this.libraryInput?.nativeElement.click() },
+        { text: 'Browse files', icon: 'folder-outline', handler: () => this.libraryInput?.nativeElement.click() },
+        { text: 'Cancel', role: 'cancel' },
+      ],
+    });
+    await sheet.present();
+  }
+
   onFile(event: Event) {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
+    input.value = '';
     if (!file) return;
     this.selectedFile = file;
     this.previewUrl = URL.createObjectURL(file);

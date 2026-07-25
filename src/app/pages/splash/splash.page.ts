@@ -442,7 +442,7 @@ export class SplashPage implements OnInit, OnDestroy {
         const path = user.role === 'coach'
           ? '/app/coach/dashboard'
           : user.role === 'venue'
-            ? '/app/venue/dashboard'
+            ? this.auth.venueHomePath(user)
             : '/app/home';
         void this.router.navigateByUrl(path, { replaceUrl: true });
       } else {

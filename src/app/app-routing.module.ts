@@ -73,6 +73,11 @@ const routes: Routes = [
     loadComponent: () => import('./pages/player/game-detail.page').then((m) => m.GameDetailPage),
   },
   {
+    path: 'app/player/:id',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/player/player-view.page').then((m) => m.PlayerViewPage),
+  },
+  {
     path: 'app/events/details/:id',
     canActivate: [authGuard],
     loadComponent: () => import('./pages/player/game-detail.page').then((m) => m.GameDetailPage),
@@ -161,6 +166,26 @@ const routes: Routes = [
       {
         path: 'venue/facilities',
         loadComponent: () => import('./pages/venue/facilities/facilities.page').then((m) => m.VenueFacilitiesPage),
+      },
+      {
+        path: 'venue/dashboard',
+        loadComponent: () => import('./pages/venue/venue-dashboard.page').then((m) => m.VenueDashboardPage),
+      },
+      {
+        path: 'venue/notifications',
+        loadComponent: () => import('./pages/venue/venue-notifications.page').then((m) => m.VenueNotificationsPage),
+      },
+      {
+        path: 'venue/complete-profile',
+        loadComponent: () => import('./pages/venue/venue-complete-profile.page').then((m) => m.VenueCompleteProfilePage),
+      },
+      {
+        path: 'venue/earnings',
+        loadComponent: () => import('./pages/venue/earnings/earnings.page').then((m) => m.VenueEarningsPage),
+      },
+      {
+        path: 'venue/profile',
+        loadComponent: () => import('./pages/venue/venue-profile.page').then((m) => m.VenueProfilePage),
       },
       // Player new routes
       {
@@ -287,26 +312,6 @@ const routes: Routes = [
       {
         path: 'coach/notifications',
         loadComponent: () => import('./pages/coach/coach-notifications.page').then((m) => m.CoachNotificationsPage),
-      },
-      {
-        path: 'venue/dashboard',
-        loadComponent: () => import('./pages/venue/venue-dashboard.page').then((m) => m.VenueDashboardPage),
-      },
-      {
-        path: 'venue/notifications',
-        loadComponent: () => import('./pages/venue/venue-notifications.page').then((m) => m.VenueNotificationsPage),
-      },
-      {
-        path: 'venue/complete-profile',
-        loadComponent: () => import('./pages/venue/venue-complete-profile.page').then((m) => m.VenueCompleteProfilePage),
-      },
-      {
-        path: 'venue/earnings',
-        loadComponent: () => import('./pages/venue/earnings/earnings.page').then((m) => m.VenueEarningsPage),
-      },
-      {
-        path: 'venue/profile',
-        loadComponent: () => import('./pages/venue/venue-profile.page').then((m) => m.VenueProfilePage),
       },
       // Admin routes
       {

@@ -43,7 +43,7 @@ export class TabsPage {
   );
 
   readonly showTabs = computed(() => {
-    const path = this.url();
+    const path = (this.url() || '').split('?')[0];
     const user = this.auth.user();
     if (!path) return true;
 
@@ -55,6 +55,8 @@ export class TabsPage {
     if (path.includes('/create-session')) return false;
     if (path.includes('/venue-booking')) return false;
     if (path.includes('/book-venue')) return false;
+    // Player venue book / payment summary (e.g. /app/venue/14/book)
+    if (/^\/app\/venue\/[^/]+\/(book|summary)$/.test(path)) return false;
 
     if (user?.role === 'coach') {
       const coachPrimary = [

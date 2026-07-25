@@ -154,11 +154,25 @@ interface DateOption {
                 class="picker"
                 *ngFor="let size of teamSizes"
                 [class.selected]="selectedTeamSize === size"
-                (click)="selectedTeamSize = size"
+                (click)="selectTeamSize(size)"
               >
                 <ion-icon name="people-outline" class="size-icon"></ion-icon>
                 <strong>{{ size }}</strong>
               </button>
+            </div>
+            <div class="custom-size" *ngIf="selectedTeamSize === 'Custom'">
+              <label class="custom-size-label" for="custom-players-per-side">Players per side</label>
+              <input
+                id="custom-players-per-side"
+                type="number"
+                class="custom-size-input"
+                [(ngModel)]="customPlayersPerSide"
+                min="1"
+                max="99"
+                placeholder="e.g. 6"
+                inputmode="numeric"
+              />
+              <p class="custom-size-hint" *ngIf="effectiveTeamSize">{{ effectiveTeamSize }} match</p>
             </div>
           </ng-container>
 
@@ -170,7 +184,7 @@ interface DateOption {
               <div class="sum-row"><span>Sport</span><strong>{{ sportName }}</strong></div>
               <div class="sum-row"><span>Venue</span><strong>{{ venueName }}</strong></div>
               <div class="sum-row"><span>When</span><strong>{{ selectedDateDisplay }} · {{ selectedTime }}</strong></div>
-              <div class="sum-row"><span>Format</span><strong>{{ selectedTeamSize }}</strong></div>
+              <div class="sum-row"><span>Format</span><strong>{{ effectiveTeamSize || '—' }}</strong></div>
             </div>
             <app-primary-button icon="checkmark-circle" [disabled]="submitting" (pressed)="confirm()">
               {{ submitting ? 'Creating...' : 'Create Game' }}
@@ -320,6 +334,42 @@ interface DateOption {
         font-size: 28px;
         color: #8cf000;
         margin-bottom: 8px;
+      }
+
+      .custom-size {
+        margin-top: 20px;
+      }
+
+      .custom-size-label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #111827;
+      }
+
+      .custom-size-input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 14px 16px;
+        border-radius: 16px;
+        border: 1.5px solid #e5e7eb;
+        background: #fff;
+        font-size: 16px;
+        font-weight: 600;
+        color: #111827;
+      }
+
+      .custom-size-input:focus {
+        outline: none;
+        border-color: #8cf000;
+        box-shadow: 0 0 0 3px rgba(140, 240, 0, 0.15);
+      }
+
+      .custom-size-hint {
+        margin: 8px 0 0;
+        font-size: 13px;
+        color: #6b7280;
       }
 
       .list {
@@ -506,8 +556,20 @@ export class CreateGamePage implements OnInit {
   selectedVenue: number | string = '';
   selectedTime = '';
   selectedTeamSize = '';
+  customPlayersPerSide: number | null = null;
 
   teamSizes = ['5v5', '7v7', '11v11', 'Custom'];
+
+  get effectiveTeamSize(): string {
+    if (this.selectedTeamSize === 'Custom') {
+      const n = this.customPlayersPerSide;
+      if (n != null && n >= 1 && n <= 99) {
+        return `${n}v${n}`;
+      }
+      return '';
+    }
+    return this.selectedTeamSize;
+  }
 
   get activeStepName() {
     return this.steps[this.currentStep - 1]?.name;
@@ -697,8 +759,21 @@ export class CreateGamePage implements OnInit {
     if (this.currentStep === 1) return !!this.selectedSport;
     if (this.currentStep === 2) return !!this.selectedVenue;
     if (this.currentStep === 3) return !!this.selectedDateKey && !!this.selectedTime;
-    if (this.currentStep === 4) return !!this.selectedTeamSize;
+    if (this.currentStep === 4) {
+      if (!this.selectedTeamSize) return false;
+      if (this.selectedTeamSize === 'Custom') {
+        return !!this.effectiveTeamSize;
+      }
+      return true;
+    }
     return true;
+  }
+
+  selectTeamSize(size: string) {
+    this.selectedTeamSize = size;
+    if (size !== 'Custom') {
+      this.customPlayersPerSide = null;
+    }
   }
 
   selectSport(id: string) {
@@ -716,7 +791,7 @@ export class CreateGamePage implements OnInit {
           venue_id: this.selectedVenue,
           date: this.selectedDateKey,
           time: this.selectedTime,
-          team_size: this.selectedTeamSize,
+          team_size: this.effectiveTeamSize,
         })
       );
       if (response.success) {

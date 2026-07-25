@@ -1,12 +1,14 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
+import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
+import { VenueDashboardData, VenueService } from '../../core/services/venue.service';
 import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 
 interface VenueBooking {
-  id: number;
+  id: string | number;
   name: string;
   photo: string;
   sport: string;
@@ -30,6 +32,8 @@ interface VenueQuickAction {
   path: string;
 }
 
+const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=80&h=80&fit=crop&auto=format';
+
 @Component({
   selector: 'app-venue-dashboard',
   standalone: true,
@@ -40,24 +44,22 @@ interface VenueQuickAction {
 export class VenueDashboardPage implements OnInit {
   private readonly router = inject(Router);
   readonly auth = inject(AuthService);
+  private readonly venueService = inject(VenueService);
 
   profileDismissed = signal(false);
+  loading = signal(true);
+  errorMessage = signal('');
 
-  readonly pulseMetrics = [
-    { emoji: '🏟️', label: "Today's Bookings", value: '8', accent: '#8CF000' },
-    { emoji: '💰', label: "Today's Revenue", value: '₹12,500', accent: '#FF7A00' },
-    { emoji: '📈', label: 'Occupancy Rate', value: '74%', accent: '#38BDF8' },
-    { emoji: '📩', label: 'Pending Requests', value: '3', accent: '#F59E0B' },
+  pulseMetrics = [
+    { emoji: '🏟️', label: "Today's Bookings", value: '0', accent: '#8CF000' },
+    { emoji: '💰', label: "Today's Revenue", value: '₹0', accent: '#FF7A00' },
+    { emoji: '📈', label: 'Occupancy Rate', value: '0%', accent: '#38BDF8' },
+    { emoji: '📩', label: 'Pending Requests', value: '0', accent: '#F59E0B' },
   ];
 
-  readonly checklist = [
-    { label: 'Venue Information', done: true },
-    { label: 'Sports Offered', done: true },
-    { label: 'Amenities', done: false },
-    { label: 'Photos', done: false },
-    { label: 'Pricing', done: false },
-    { label: 'Verification', done: false },
-  ];
+  checklist: { label: string; done: boolean }[] = [];
+  completionPercent = 0;
+  revenueGoalPct = 0;
 
   readonly quickActions: VenueQuickAction[] = [
     { emoji: '⏰', label: 'Block Time Slot', sub: 'Maintenance or closure', color: '#38BDF8', path: '/app/venue/calendar' },
@@ -66,49 +68,74 @@ export class VenueDashboardPage implements OnInit {
     { emoji: '🏷️', label: 'Create Offer', sub: 'Discounts & promotions', color: '#7C3AED', path: '/app/venue/analytics' },
   ];
 
-  readonly bookings: VenueBooking[] = [
-    { id: 1, name: 'Rahul Sharma', photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&auto=format', sport: 'Cricket', court: 'Court 1', time: '6:00 – 8:00 AM', amount: '₹2,400', status: 'Confirmed', type: 'player' },
-    { id: 2, name: 'Coach Aryan Mehta', photo: 'https://images.unsplash.com/photo-1552058544-f2b08422138a?w=80&h=80&fit=crop&auto=format', sport: 'Football', court: 'Court 2', time: '4:00 – 6:00 PM', amount: '₹3,000', status: 'Confirmed', type: 'coach' },
-    { id: 3, name: 'Priya Verma', photo: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=80&h=80&fit=crop&auto=format', sport: 'Badminton', court: 'Court 3', time: '7:00 – 8:00 PM', amount: '₹800', status: 'Pending', type: 'player' },
-  ];
+  bookings: VenueBooking[] = [];
+  courts: VenueCourt[] = [];
+  coachSessions: { id: string | number; name: string; photo: string; sport: string; time: string; students: number; court: string }[] = [];
+  activities: { emoji: string; bg: string; text: string; time: string }[] = [];
+  aiTips: { emoji: string; text: string }[] = [];
+  pendingActions: { label: string; sub: string; urgency: string }[] = [];
 
-  readonly courts: VenueCourt[] = [
-    { name: 'Court 1', slots: [true, true, true, false, false, false, false, true, true, true, true, false, false, true, true, false] },
-    { name: 'Court 2', slots: [true, true, false, false, false, false, true, true, true, false, false, false, true, true, false, false] },
-    { name: 'Court 3', slots: [false, false, false, true, true, false, false, false, false, true, true, true, false, false, true, true] },
-  ];
-
-  readonly coachSessions = [
-    { id: 1, name: 'Coach Aryan Mehta', photo: 'https://images.unsplash.com/photo-1552058544-f2b08422138a?w=80&h=80&fit=crop&auto=format', sport: 'Football', time: '4:00 PM', students: 8, court: 'Court 2' },
-    { id: 2, name: 'Coach Priya Verma', photo: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=80&h=80&fit=crop&auto=format', sport: 'Badminton', time: '6:00 PM', students: 4, court: 'Court 3' },
-  ];
-
-  readonly activities = [
-    { emoji: '✅', bg: '#F0FDF4', text: 'Booking confirmed — Rahul Sharma, Cricket, Court 1', time: '10 min ago' },
-    { emoji: '💰', bg: '#F0FDF4', text: 'Payment received — ₹2,400 for cricket session', time: '12 min ago' },
-    { emoji: '🤝', bg: '#EFF6FF', text: 'Coach partnership approved — Aryan Mehta', time: '1 hr ago' },
-    { emoji: '❌', bg: '#FEF2F2', text: 'Booking cancelled — Kabir Malhotra, Tennis', time: '2 hrs ago' },
-    { emoji: '🎉', bg: '#F5F3FF', text: 'Weekend Football Tournament created', time: 'Yesterday' },
-  ];
-
-  readonly aiTips = [
-    { emoji: '📉', text: 'Court 3 occupancy is 34% below average this week. Consider creating a discount offer.' },
-    { emoji: '⚽', text: 'Evening football slots are fully booked. Consider opening additional sessions.' },
-    { emoji: '📷', text: 'Add more venue photos to improve your search visibility by up to 40%.' },
-    { emoji: '📈', text: 'Weekend demand is increasing. Review and update your weekend pricing.' },
-  ];
-
-  readonly pendingActions = [
-    { label: 'Approve Booking', sub: 'Vikram Singh — Basketball, 8 PM', urgency: 'high' },
-    { label: 'Respond to Coach', sub: 'Coach Deepika — partnership request', urgency: 'medium' },
-    { label: 'Confirm Partnership', sub: 'Elite Cricket Academy', urgency: 'medium' },
-    { label: 'Update Weekend Pricing', sub: 'Rates outdated since last month', urgency: 'low' },
-  ];
-
-  ngOnInit() {
+  async ngOnInit() {
     if (this.auth.user()?.role !== 'venue') {
       void this.router.navigateByUrl('/app/home', { replaceUrl: true });
+      return;
     }
+
+    if (this.auth.user()?.venueProfileReady === false) {
+      void this.router.navigateByUrl('/app/venue/complete-profile', { replaceUrl: true });
+      return;
+    }
+
+    await this.loadDashboard();
+  }
+
+  async loadDashboard() {
+    this.loading.set(true);
+    this.errorMessage.set('');
+    try {
+      const response = await firstValueFrom(this.venueService.getDashboard());
+      if (!response.success || !response.data) {
+        this.errorMessage.set(response.message || 'Unable to load dashboard.');
+        return;
+      }
+      this.applyDashboard(response.data);
+
+      if (!response.data.completion?.ready) {
+        // Soft gate: keep dashboard visible but force completion card open.
+        this.profileDismissed.set(false);
+      }
+    } catch (error: any) {
+      this.errorMessage.set(error?.error?.message || 'Unable to load dashboard.');
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
+  private applyDashboard(data: VenueDashboardData) {
+    this.pulseMetrics = [
+      { emoji: '🏟️', label: "Today's Bookings", value: String(data.pulse.todayBookings || 0), accent: '#8CF000' },
+      { emoji: '💰', label: "Today's Revenue", value: `₹${Number(data.pulse.todayRevenue || 0).toLocaleString('en-IN')}`, accent: '#FF7A00' },
+      { emoji: '📈', label: 'Occupancy Rate', value: `${data.pulse.occupancyRate || 0}%`, accent: '#38BDF8' },
+      { emoji: '📩', label: 'Pending Requests', value: String(data.pulse.pendingRequests || 0), accent: '#F59E0B' },
+    ];
+    this.revenueGoalPct = data.pulse.revenueGoalPct || 0;
+    this.completionPercent = data.completion?.percent || 0;
+    this.checklist = (data.completion?.checklist || []).map((item) => ({
+      label: item.label,
+      done: !!item.done,
+    }));
+    this.bookings = (data.todayBookings || []).map((b) => ({
+      ...b,
+      photo: b.photo || DEFAULT_PHOTO,
+    }));
+    this.courts = data.courts || [];
+    this.coachSessions = (data.coachSessions || []).map((s) => ({
+      ...s,
+      photo: s.photo || DEFAULT_PHOTO,
+    }));
+    this.activities = data.activities || [];
+    this.aiTips = data.aiTips || [];
+    this.pendingActions = data.pendingActions || [];
   }
 
   bookedCount(court: VenueCourt): number {

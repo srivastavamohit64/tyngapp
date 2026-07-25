@@ -34,6 +34,9 @@ export interface AuthUser {
   formats?: string[];
   personality?: string | null;
   venueType?: string | null;
+  venueProfileReady?: boolean;
+  createdAt?: string | null;
+  updatedAt?: string | null;
 }
 
 export interface AuthTokenResponse {
@@ -142,6 +145,7 @@ export interface BookingRecord {
   hostUserId: string;
   sport: string;
   skillLevel?: string | null;
+  teamSize?: string | null;
   bookingDate?: string | null;
   startTime: string;
   endTime: string;
@@ -152,6 +156,15 @@ export interface BookingRecord {
   availableSlots: number;
   bookingStatus: BookingStatus;
   paymentStatus: PaymentStatus | string;
+  paymentMethod?: string | null;
+  couponCode?: string | null;
+  couponDiscount?: number;
+  rentalDetails?: Array<{
+    id?: string;
+    name?: string;
+    qty?: number;
+    price?: number;
+  }> | null;
   canJoin: boolean;
   canLeave: boolean;
   canCancel: boolean;

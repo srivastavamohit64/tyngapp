@@ -1,8 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
+import { firstValueFrom } from 'rxjs';
+import { VenueCourtCard, VenueService } from '../../core/services/venue.service';
+import { AuthService } from '../../core/services/auth.service';
 import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 
 export interface Court {
@@ -22,23 +25,12 @@ export interface Court {
   gamesPlayed: number;
   isIndoor: boolean;
   isOpenNow: boolean;
-  venueDetailId: number;
+  venueDetailId: number | string;
+  city?: string;
 }
 
-const COURTS: Court[] = [
-  { id:'kd-bball-1',   courtName:'Basketball Court 1',          venueName:'KD Singh Babu Stadium',         sport:'basketball', image:'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=700&h=420&fit=crop&auto=format',        distance:2.3, rating:4.6, ratingCount:48,  pricePerHour:800,  openTime:'6:00 AM', closeTime:'10:00 PM', amenities:['parking','lights','washrooms','water'],              hasRentalGear:true,  gamesPlayed:234, isIndoor:true,  isOpenNow:true,  venueDetailId:2 },
-  { id:'kd-bball-2',   courtName:'Basketball Court 2',          venueName:'KD Singh Babu Stadium',         sport:'basketball', image:'https://images.unsplash.com/photo-1608245449230-4ac19066d2d0?w=700&h=420&fit=crop&auto=format',       distance:2.3, rating:4.4, ratingCount:31,  pricePerHour:700,  openTime:'7:00 AM', closeTime:'9:00 PM',  amenities:['lights','washrooms'],                                hasRentalGear:false, gamesPlayed:189, isIndoor:true,  isOpenNow:true,  venueDetailId:2 },
-  { id:'kd-tennis-1',  courtName:'Tennis Court 1',              venueName:'KD Singh Babu Stadium',         sport:'tennis',     image:'https://images.unsplash.com/photo-1761156896762-2ef13f932004?w=700&h=420&fit=crop&auto=format',         distance:2.3, rating:4.7, ratingCount:62,  pricePerHour:1000, openTime:'6:00 AM', closeTime:'9:00 PM',  amenities:['parking','washrooms','water'],                       hasRentalGear:true,  gamesPlayed:312, isIndoor:false, isOpenNow:true,  venueDetailId:2 },
-  { id:'kd-football',  courtName:'Football Ground',             venueName:'KD Singh Babu Stadium',         sport:'football',   image:'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=700&h=420&fit=crop&auto=format',           distance:2.3, rating:4.5, ratingCount:73,  pricePerHour:1200, openTime:'6:00 AM', closeTime:'8:00 PM',  amenities:['parking','lights','washrooms'],                      hasRentalGear:false, gamesPlayed:298, isIndoor:false, isOpenNow:false, venueDetailId:2 },
-  { id:'sac-badm-1',   courtName:'Badminton Court 1',           venueName:'Sports Authority Complex',      sport:'badminton',  image:'https://images.unsplash.com/photo-1722087642932-9b070e9a066e?w=700&h=420&fit=crop&auto=format',          distance:3.8, rating:4.8, ratingCount:89,  pricePerHour:500,  openTime:'5:30 AM', closeTime:'10:30 PM',amenities:['parking','lights','washrooms','water','cafeteria'], hasRentalGear:true,  gamesPlayed:567, isIndoor:true,  isOpenNow:true,  venueDetailId:3 },
-  { id:'sac-badm-2',   courtName:'Badminton Court 2',           venueName:'Sports Authority Complex',      sport:'badminton',  image:'https://images.unsplash.com/photo-1722087642932-9b070e9a066e?w=700&h=420&fit=crop&auto=format',          distance:3.8, rating:4.7, ratingCount:74,  pricePerHour:500,  openTime:'5:30 AM', closeTime:'10:30 PM',amenities:['lights','washrooms'],                                hasRentalGear:false, gamesPlayed:445, isIndoor:true,  isOpenNow:true,  venueDetailId:3 },
-  { id:'sac-bball',    courtName:'Basketball Court',            venueName:'Sports Authority Complex',      sport:'basketball', image:'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=700&h=420&fit=crop&auto=format',        distance:3.8, rating:4.5, ratingCount:55,  pricePerHour:900,  openTime:'6:00 AM', closeTime:'9:00 PM',  amenities:['parking','lights','washrooms'],                      hasRentalGear:true,  gamesPlayed:198, isIndoor:true,  isOpenNow:true,  venueDetailId:3 },
-  { id:'sac-volleyball',courtName:'Volleyball Court',           venueName:'Sports Authority Complex',      sport:'volleyball', image:'https://images.unsplash.com/photo-1601512986351-9b0e01780eef?w=700&h=420&fit=crop&auto=format',         distance:3.8, rating:4.3, ratingCount:28,  pricePerHour:600,  openTime:'7:00 AM', closeTime:'8:00 PM',  amenities:['lights','washrooms'],                                hasRentalGear:false, gamesPlayed:156, isIndoor:false, isOpenNow:false, venueDetailId:3 },
-  { id:'phoenix-ten-1',courtName:'Tennis Court 1 — Clay',      venueName:'Phoenix Sports Hub',            sport:'tennis',     image:'https://images.unsplash.com/photo-1761156896762-2ef13f932004?w=700&h=420&fit=crop&auto=format',         distance:5.2, rating:4.9, ratingCount:112, pricePerHour:1200, openTime:'6:00 AM', closeTime:'10:00 PM',amenities:['parking','lights','washrooms','water','cafeteria'], hasRentalGear:true,  gamesPlayed:423, isIndoor:false, isOpenNow:true,  venueDetailId:2 },
-  { id:'phoenix-ten-2',courtName:'Tennis Court 2 — Hard',      venueName:'Phoenix Sports Hub',            sport:'tennis',     image:'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=700&h=420&fit=crop&auto=format',           distance:5.2, rating:4.8, ratingCount:88,  pricePerHour:1100, openTime:'7:00 AM', closeTime:'9:00 PM',  amenities:['lights','washrooms'],                                hasRentalGear:false, gamesPlayed:356, isIndoor:false, isOpenNow:true,  venueDetailId:2 },
-  { id:'ekana-1',      courtName:'Cricket Ground 1 — Main',    venueName:'BRSABV Ekana Cricket Stadium',  sport:'cricket',    image:'https://images.unsplash.com/photo-1593341646782-e0b495cff86d?w=700&h=420&fit=crop&auto=format',          distance:4.5, rating:4.8, ratingCount:128, pricePerHour:2500, openTime:'6:00 AM', closeTime:'10:00 PM',amenities:['parking','lights','washrooms','water','cafeteria','changing'], hasRentalGear:true, gamesPlayed:689, isIndoor:false, isOpenNow:true, venueDetailId:1 },
-  { id:'ekana-2',      courtName:'Cricket Ground 2 — Practice',venueName:'BRSABV Ekana Cricket Stadium',  sport:'cricket',    image:'https://images.unsplash.com/photo-1595210382266-2d0077c1f541?w=700&h=420&fit=crop&auto=format',          distance:4.5, rating:4.5, ratingCount:67,  pricePerHour:1800, openTime:'5:00 AM', closeTime:'10:00 PM',amenities:['lights','washrooms','water'],                        hasRentalGear:true,  gamesPlayed:445, isIndoor:false, isOpenNow:true, venueDetailId:1 },
-];
+const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=700&h=420&fit=crop&auto=format';
+const KNOWN_CITIES = ['Lucknow', 'Delhi', 'Mumbai', 'Bangalore', 'Hyderabad', 'Chennai', 'Pune', 'Kolkata'];
 
 @Component({
   selector: 'app-venues-page',
@@ -47,19 +39,25 @@ const COURTS: Court[] = [
   styleUrls: ['./venues.page.scss'],
   templateUrl: './venues.page.html',
 })
-export class VenuesPage {
+export class VenuesPage implements OnInit {
   private readonly router = inject(Router);
+  private readonly venueService = inject(VenueService);
+  private readonly auth = inject(AuthService);
 
   city = signal('Lucknow');
   showCityPicker = signal(false);
   searchQuery = signal('');
   activeSport = signal('all');
   activeFilters = signal<string[]>([]);
+  loading = signal(true);
+  errorMessage = signal('');
+  courts = signal<Court[]>([]);
+  usedFallbackCity = signal(false);
 
-  readonly cities = ['Lucknow', 'Delhi', 'Mumbai', 'Bangalore', 'Hyderabad', 'Chennai', 'Pune', 'Kolkata'];
+  readonly cities = KNOWN_CITIES;
 
   readonly sports = [
-    { id: 'all',         label: 'All Sports',   image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=120&h=120&fit=crop&auto=format' },
+    { id: 'all',         label: 'All',          image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=120&h=120&fit=crop&auto=format' },
     { id: 'basketball',  label: 'Basketball',   image: 'https://images.unsplash.com/photo-1608245449230-4ac19066d2d0?w=120&h=120&fit=crop&auto=format' },
     { id: 'football',    label: 'Football',     image: 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=120&h=120&fit=crop&auto=format' },
     { id: 'cricket',     label: 'Cricket',      image: 'https://images.unsplash.com/photo-1593341646782-e0b495cff86d?w=120&h=120&fit=crop&auto=format' },
@@ -72,77 +70,122 @@ export class VenuesPage {
   ];
 
   readonly filterChips = [
-    { id: 'indoor',    label: '🏢 Indoor'      },
-    { id: 'outdoor',   label: '🌿 Outdoor'     },
-    { id: 'morning',   label: '🌅 Morning'     },
-    { id: 'evening',   label: '🌇 Evening'     },
-    { id: 'rental',    label: '🎽 Rental Gear' },
-    { id: 'open',      label: '🟢 Open Now'   },
-    { id: 'price',     label: '💰 Price'       },
-    { id: 'rating',    label: '⭐ Rating'      },
+    { id: 'indoor',  label: 'Indoor',  icon: 'business-outline' },
+    { id: 'outdoor', label: 'Outdoor', icon: 'leaf-outline' },
+    { id: 'morning', label: 'Morning', icon: 'sunny-outline' },
+    { id: 'evening', label: 'Evening', icon: 'moon-outline' },
+    { id: 'rental',  label: 'Rental',  icon: 'shirt-outline' },
+    { id: 'open',    label: 'Open Now', icon: 'radio-button-on-outline' },
+    { id: 'price',   label: 'Price',   icon: 'pricetag-outline' },
+    { id: 'rating',  label: 'Rating',  icon: 'star-outline' },
   ];
 
   readonly amenityMap: Record<string, { icon: string; label: string }> = {
-    parking:  { icon: 'car-outline',       label: 'Parking'  },
-    lights:   { icon: 'flash-outline',     label: 'Lights'   },
-    washrooms:{ icon: 'water-outline',     label: 'WC'       },
-    water:    { icon: 'water-outline',     label: 'Water'    },
-    cafeteria:{ icon: 'cafe-outline',      label: 'Café'     },
-    changing: { icon: 'shirt-outline',     label: 'Changing' },
+    parking:   { icon: 'car-outline',   label: 'Parking' },
+    lights:    { icon: 'flash-outline', label: 'Lights' },
+    washrooms: { icon: 'water-outline', label: 'WC' },
+    water:     { icon: 'water-outline', label: 'Water' },
+    cafeteria: { icon: 'cafe-outline',  label: 'Café' },
+    changing:  { icon: 'shirt-outline', label: 'Changing' },
   };
 
   filteredCourts = computed(() => {
-    let result = [...COURTS];
+    let result = [...this.courts()];
     const sport = this.activeSport();
     const query = this.searchQuery().trim().toLowerCase();
     const activeFlts = this.activeFilters();
+    const city = this.city().toLowerCase();
 
     if (sport !== 'all') {
-      result = result.filter(c => c.sport === sport);
+      result = result.filter((c) => c.sport === sport);
     }
     if (query) {
-      result = result.filter(c =>
+      result = result.filter((c) =>
         c.courtName.toLowerCase().includes(query) ||
-        c.venueName.toLowerCase().includes(query)
+        c.venueName.toLowerCase().includes(query) ||
+        (c.city || '').toLowerCase().includes(query),
       );
     }
-    if (activeFlts.includes('indoor')) {
-      result = result.filter(c => c.isIndoor);
-    }
-    if (activeFlts.includes('outdoor')) {
-      result = result.filter(c => !c.isIndoor);
-    }
-    if (activeFlts.includes('open')) {
-      result = result.filter(c => c.isOpenNow);
-    }
-    if (activeFlts.includes('rental')) {
-      result = result.filter(c => c.hasRentalGear);
-    }
+    if (activeFlts.includes('indoor')) result = result.filter((c) => c.isIndoor);
+    if (activeFlts.includes('outdoor')) result = result.filter((c) => !c.isIndoor);
+    if (activeFlts.includes('open')) result = result.filter((c) => c.isOpenNow);
+    if (activeFlts.includes('rental')) result = result.filter((c) => c.hasRentalGear);
     if (activeFlts.includes('morning')) {
-      result = result.filter(c => parseInt(c.openTime) < 12);
+      result = result.filter((c) => {
+        const hour = this.parseHour(c.openTime);
+        return hour !== null && hour < 12;
+      });
     }
     if (activeFlts.includes('evening')) {
-      result = result.filter(c => parseInt(c.openTime) >= 16 || c.closeTime.includes('PM'));
+      result = result.filter((c) => {
+        const close = this.parseHour(c.closeTime);
+        return close !== null && close >= 16;
+      });
     }
     if (activeFlts.includes('price')) {
       result.sort((a, b) => a.pricePerHour - b.pricePerHour);
-    }
-    if (activeFlts.includes('rating')) {
+    } else if (activeFlts.includes('rating')) {
       result.sort((a, b) => b.rating - a.rating);
+    } else {
+      result.sort((a, b) => {
+        const aMatch = (a.city || '').toLowerCase().includes(city) ? 0 : 1;
+        const bMatch = (b.city || '').toLowerCase().includes(city) ? 0 : 1;
+        return aMatch - bMatch;
+      });
     }
 
     return result;
   });
 
+  ngOnInit() {
+    this.city.set(this.resolveCity(this.auth.user()?.location));
+    void this.loadCourts();
+  }
+
+  async loadCourts() {
+    this.loading.set(true);
+    this.errorMessage.set('');
+    this.usedFallbackCity.set(false);
+
+    try {
+      // Load all open courts, then prefer the selected city client-side.
+      // Strict city API filtering was hiding venues when locality/city text did not match exactly.
+      const response = await firstValueFrom(this.venueService.getCourts());
+
+      if (response.success && Array.isArray(response.data)) {
+        const mapped = response.data.map((court) => this.mapCourt(court));
+        const city = this.city().toLowerCase();
+        const preferredCount = mapped.filter((court) =>
+          (court.city || '').toLowerCase().includes(city),
+        ).length;
+        this.courts.set(mapped);
+        this.usedFallbackCity.set(preferredCount === 0 && mapped.length > 0);
+      } else {
+        this.courts.set([]);
+        this.errorMessage.set(response.message || 'Unable to load courts.');
+      }
+    } catch (error: any) {
+      this.courts.set([]);
+      this.errorMessage.set(error?.error?.message || 'Unable to load courts.');
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
+  setSport(id: string) {
+    this.activeSport.set(id);
+  }
+
   toggleFilter(id: string) {
-    this.activeFilters.update(f =>
-      f.includes(id) ? f.filter(x => x !== id) : [...f, id]
+    this.activeFilters.update((f) =>
+      f.includes(id) ? f.filter((x) => x !== id) : [...f, id],
     );
   }
 
   selectCity(c: string) {
     this.city.set(c);
     this.showCityPicker.set(false);
+    void this.loadCourts();
   }
 
   bookNow(court: Court) {
@@ -153,5 +196,53 @@ export class VenuesPage {
     this.activeSport.set('all');
     this.activeFilters.set([]);
     this.searchQuery.set('');
+    this.city.set('Lucknow');
+    void this.loadCourts();
+  }
+
+  private resolveCity(location?: string | null): string {
+    const raw = (location || '').trim();
+    if (!raw) return 'Lucknow';
+
+    const known = KNOWN_CITIES.find((city) =>
+      raw.toLowerCase().includes(city.toLowerCase()),
+    );
+    if (known) return known;
+
+    // Locality-only addresses (e.g. Kapoorthla) map to Lucknow for now.
+    return 'Lucknow';
+  }
+
+  private mapCourt(court: VenueCourtCard): Court {
+    return {
+      id: court.id,
+      courtName: court.courtName,
+      venueName: court.venueName,
+      sport: (court.sport || '').toLowerCase(),
+      image: court.image || DEFAULT_IMAGE,
+      distance: court.distance ?? 0,
+      rating: court.rating || 4.5,
+      ratingCount: court.ratingCount || 0,
+      pricePerHour: Number(court.pricePerHour || 0),
+      openTime: court.openTime || '6:00 AM',
+      closeTime: court.closeTime || '10:00 PM',
+      amenities: court.amenities || [],
+      hasRentalGear: !!court.hasRentalGear,
+      gamesPlayed: court.gamesPlayed || 0,
+      isIndoor: !!court.isIndoor,
+      isOpenNow: !!court.isOpenNow,
+      venueDetailId: court.venueId,
+      city: court.city || undefined,
+    };
+  }
+
+  private parseHour(value: string): number | null {
+    try {
+      const date = new Date(`1970-01-01 ${value}`);
+      if (Number.isNaN(date.getTime())) return null;
+      return date.getHours();
+    } catch {
+      return null;
+    }
   }
 }

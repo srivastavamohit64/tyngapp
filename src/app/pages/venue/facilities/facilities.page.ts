@@ -1,8 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, signal, computed, inject } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
+import { firstValueFrom } from 'rxjs';
+import { VenueService } from '../../../core/services/venue.service';
 
 interface MaintFacility {
   id: string;
@@ -21,15 +23,6 @@ interface StatusOption {
   bg: string;
 }
 
-const MOCK_FACILITIES: MaintFacility[] = [
-  { id: 'f1', name: 'Football Turf A', sport: 'Football', emoji: '⚽', status: 'open', photo: 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=300&h=200&fit=crop&auto=format' },
-  { id: 'f2', name: 'Football Turf B', sport: 'Football', emoji: '⚽', status: 'maintenance', photo: 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=300&h=200&fit=crop&auto=format' },
-  { id: 'f3', name: 'Basketball Court', sport: 'Basketball', emoji: '🏀', status: 'open', photo: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=300&h=200&fit=crop&auto=format' },
-  { id: 'f4', name: 'Badminton Court 1', sport: 'Badminton', emoji: '🏸', status: 'open', photo: 'https://images.unsplash.com/photo-1722087642932-9b070e9a066e?w=300&h=200&fit=crop&auto=format' },
-  { id: 'f5', name: 'Badminton Court 2', sport: 'Badminton', emoji: '🏸', status: 'reserved', photo: 'https://images.unsplash.com/photo-1722087642932-9b070e9a066e?w=300&h=200&fit=crop&auto=format' },
-  { id: 'f6', name: 'Cricket Nets', sport: 'Cricket', emoji: '🏏', status: 'open', photo: 'https://images.unsplash.com/photo-1593341646782-e0b495cff86d?w=300&h=200&fit=crop&auto=format' },
-];
-
 const SURFACES = ['Artificial Turf', 'Natural Grass', 'Wooden Court', 'Synthetic Court', 'Clay', 'Concrete'];
 
 const STATUS_OPTIONS: StatusOption[] = [
@@ -43,14 +36,6 @@ const AMENITIES = [
   'Changing Rooms', 'Washrooms', 'Showers', 'Lockers',
   'Drinking Water', 'Floodlights', 'Air Conditioning', 'Parking',
   'Wi-Fi', 'Cafeteria', 'Pro Shop'
-];
-
-const EQUIPMENT = [
-  { id: 'footballs', label: 'Footballs', emoji: '⚽' },
-  { id: 'basketballs', label: 'Basketballs', emoji: '🏀' },
-  { id: 'cricket', label: 'Cricket Kits', emoji: '🏏' },
-  { id: 'nets', label: 'Practice Nets', emoji: '🥅' },
-  { id: 'racquets', label: 'Racquets', emoji: '🎾' },
 ];
 
 @Component({
@@ -99,8 +84,21 @@ const EQUIPMENT = [
         </div>
 
         <div class="px-5 pt-4 space-y-4">
+          <p *ngIf="loading()" class="text-[13px] font-bold text-[#9CA3AF] text-center m-0 py-6">Loading facilities…</p>
+          <div *ngIf="saveError()" class="rounded-2xl bg-[#FEF2F2] border border-[#FECACA] px-4 py-3 text-[13px] font-bold text-[#DC2626]">
+            {{ saveError() }}
+          </div>
+
+          <div *ngIf="!loading() && facilityList().length === 0" class="section-card p-5 bg-white text-center">
+            <p class="text-[15px] font-black text-[#111827] m-0">No facilities yet</p>
+            <p class="text-[12px] text-[#9CA3AF] mt-2 mb-4 m-0 font-bold">Add your first court so players can book it.</p>
+            <button type="button" (click)="addFacility()" class="h-11 px-5 rounded-2xl text-[13px] font-black border-none btn-green-gradient">
+              Add facility
+            </button>
+          </div>
+
           <!-- Form Section 1: Info -->
-          <div class="section-card p-5 bg-white text-left">
+          <div class="section-card p-5 bg-white text-left" *ngIf="!loading() && (facilityList().length || selectedId())">
             <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-4 m-0">Facility Information</p>
             <div class="space-y-4">
               <div>
@@ -194,7 +192,7 @@ const EQUIPMENT = [
           <div class="section-card p-5 bg-white text-left">
             <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-4 m-0">Equipment Available</p>
             <div class="space-y-3">
-              <div *ngFor="let eq of equipmentOptions" class="flex items-center gap-3">
+              <div *ngFor="let eq of equipmentOptions()" class="flex items-center gap-3">
                 <div class="w-9 h-9 rounded-xl bg-[#F3F4F6] flex items-center justify-center flex-shrink-0 text-xl">{{ eq.emoji }}</div>
                 <div class="flex-grow min-w-0">
                   <p class="text-[13px] font-bold text-[#111827] m-0">{{ eq.label }}</p>
@@ -285,14 +283,14 @@ const EQUIPMENT = [
         <!-- Discard/Save floating footer track -->
         <div *ngIf="hasChanges() || saved()" class="fixed bottom-0 left-0 right-0 z-30 bg-white max-w-md mx-auto px-5 pt-4 pb-8 shadow-2xl border-t border-[#F3F4F6]">
           <div class="flex gap-3">
-            <button (click)="discardChanges()" class="flex-1 h-12 rounded-2xl text-[14px] font-bold text-[#6B7280] bg-[#F3F4F6] border-none flex items-center justify-center gap-1">
+            <button (click)="discardChanges()" [disabled]="saving()" class="flex-1 h-12 rounded-2xl text-[14px] font-bold text-[#6B7280] bg-[#F3F4F6] border-none flex items-center justify-center gap-1">
               <ion-icon name="close-outline" class="text-base"></ion-icon>Discard
             </button>
-            <button (click)="saveChanges()" class="flex-[2] h-12 rounded-2xl text-[16px] font-black border-none text-white flex items-center justify-center gap-1.5 transition-all"
+            <button (click)="saveChanges()" [disabled]="saving()" class="flex-[2] h-12 rounded-2xl text-[16px] font-black border-none text-white flex items-center justify-center gap-1.5 transition-all"
               [style.background]="saved() ? 'linear-gradient(135deg,#22C55E,#16A34A)' : 'linear-gradient(135deg,#FF7A00,#FF9A40)'"
               [style.boxShadow]="saved() ? 'none' : '0 4px 16px rgba(255,122,0,0.40)'">
               <ion-icon [name]="saved() ? 'checkmark-circle-outline' : 'save-outline'" class="text-lg"></ion-icon>
-              <span>{{ saved() ? 'Saved!' : 'Save Facility' }}</span>
+              <span>{{ saving() ? 'Saving…' : (saved() ? 'Saved!' : 'Save Facility') }}</span>
             </button>
           </div>
         </div>
@@ -387,65 +385,152 @@ const EQUIPMENT = [
     }
   `]
 })
-export class VenueFacilitiesPage {
+export class VenueFacilitiesPage implements OnInit {
   private readonly router = inject(Router);
+  private readonly venueService = inject(VenueService);
 
-  facilityList = signal<MaintFacility[]>(MOCK_FACILITIES);
-  selectedId = signal('f1');
+  facilityList = signal<MaintFacility[]>([]);
+  selectedId = signal('');
+  loading = signal(false);
+  saving = signal(false);
+  saveError = signal('');
 
   hasChanges = signal(false);
   saved = signal(false);
 
-  // Form parameters state
-  facilityName = 'Football Turf A';
+  facilityName = '';
   sport = 'Football';
   courtNumber = '1';
   isIndoor = signal(false);
   surface = signal('Artificial Turf');
-  dimensions = '105m × 68m';
+  dimensions = '';
   capacity = 22;
   status = signal('open');
+  pricePerHour = 0;
 
-  amenities = signal<string[]>(['Changing Rooms', 'Washrooms', 'Floodlights', 'Parking', 'Drinking Water']);
-  equipQty = signal<Record<string, number>>({ footballs: 5 });
-  rentalPrices: Record<string, string> = { footballs: '200' };
+  amenities = signal<string[]>([]);
+  equipQty = signal<Record<string, number>>({});
+  rentalPrices: Record<string, string> = {};
 
-  lastCleaned = '2026-06-29';
-  nextCleaning = '2026-06-30';
+  lastCleaned = '';
+  nextCleaning = '';
   maintNotes = '';
 
-  supName = 'Ravi Kumar';
-  supShift = '6:00 AM – 2:00 PM';
+  supName = '';
+  supShift = '';
   supPhone = '';
 
   readonly surfaces = SURFACES;
   readonly statusOptions = STATUS_OPTIONS;
   readonly amenitiesList = AMENITIES;
-  readonly equipmentOptions = EQUIPMENT;
+  equipmentOptions = signal<Array<{ id: string; label: string; emoji: string; defaultPrice: number }>>([]);
   readonly Math = Math;
 
+  private courtsRaw: any[] = [];
+
+  ngOnInit() {
+    void this.bootstrap();
+  }
+
+  private async bootstrap() {
+    this.loading.set(true);
+    this.saveError.set('');
+    try {
+      const [equipRes, profileRes] = await Promise.all([
+        firstValueFrom(this.venueService.getEquipmentCatalog()),
+        firstValueFrom(this.venueService.getMyProfile()),
+      ]);
+
+      const equipItems = Array.isArray(equipRes.data) ? equipRes.data : [];
+      this.equipmentOptions.set(
+        equipItems.map((item) => ({
+          id: item.id,
+          label: item.label || item.name,
+          emoji: item.emoji || '🎾',
+          defaultPrice: Number(item.defaultPricePerHour || 0),
+        })),
+      );
+
+      if (!profileRes.success || !profileRes.data) {
+        this.saveError.set(profileRes.message || 'Unable to load facilities.');
+        return;
+      }
+
+      const data = profileRes.data as Record<string, any>;
+      this.amenities.set(Array.isArray(data['amenities']) ? data['amenities'].map((a: unknown) => String(a)) : []);
+
+      const rental = Array.isArray(data['rentalEquipment']) ? data['rentalEquipment'] : [];
+      const qty: Record<string, number> = {};
+      const prices: Record<string, string> = {};
+      rental.forEach((item: any) => {
+        const id = String(item?.id || '');
+        if (!id) return;
+        qty[id] = Number(item?.qty || 0);
+        prices[id] = String(item?.price ?? 0);
+      });
+      this.equipQty.set(qty);
+      this.rentalPrices = prices;
+
+      const courts = Array.isArray(data['courts']) ? data['courts'] : [];
+      this.courtsRaw = courts;
+      const mapped: MaintFacility[] = courts.map((court: any, index: number) => {
+        const sport = this.titleCase(String(court.sport || 'Sport'));
+        return {
+          id: String(court.id ?? `new-${index}`),
+          name: String(court.courtName || court.name || `Court ${index + 1}`),
+          sport,
+          emoji: this.sportEmoji(sport),
+          status: String(court.status || 'open').toLowerCase(),
+          photo: String(court.image || court.imageUrl || DEFAULT_PHOTOS[sport.toLowerCase()] || DEFAULT_PHOTOS['football']),
+        };
+      });
+
+      this.facilityList.set(mapped);
+      if (mapped.length) {
+        this.selectFacility(mapped[0].id);
+      } else {
+        this.resetFormForNew();
+      }
+    } catch (error: any) {
+      this.saveError.set(error?.error?.message || 'Unable to load facilities.');
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
   selectFacility(id: string) {
-    const f = this.facilityList().find(x => x.id === id);
+    const f = this.facilityList().find((x) => x.id === id);
     if (!f) return;
     this.selectedId.set(id);
+    const court = this.courtsRaw.find((c) => String(c.id) === id) || {};
+    const meta = (court.meta && typeof court.meta === 'object') ? court.meta : {};
 
-    // Load mock facility data
     this.facilityName = f.name;
     this.sport = f.sport;
     this.status.set(f.status);
-    this.courtNumber = id === 'f3' ? '3' : id === 'f4' ? '4' : '1';
-    this.isIndoor.set(id === 'f3' || id === 'f4' || id === 'f5');
-    this.surface.set(id === 'f3' ? 'Wooden Court' : id === 'f4' ? 'Synthetic Court' : 'Artificial Turf');
-    this.capacity = id === 'f3' ? 20 : id === 'f6' ? 10 : 22;
+    this.courtNumber = String(meta['courtNumber'] || '');
+    this.isIndoor.set(!!court.isIndoor);
+    this.surface.set(String(court.surface || meta['surface'] || 'Artificial Turf'));
+    this.dimensions = String(meta['dimensions'] || '');
+    this.capacity = Number(court.maxPlayers || meta['capacity'] || 22);
+    this.pricePerHour = Number(court.pricePerHour || 0);
+    this.lastCleaned = String(meta['lastCleaned'] || '');
+    this.nextCleaning = String(meta['nextCleaning'] || '');
+    this.maintNotes = String(meta['maintNotes'] || '');
+    this.supName = String(meta['supervisorName'] || '');
+    this.supPhone = String(meta['supervisorPhone'] || '');
+    this.supShift = String(meta['supervisorShift'] || '');
 
     this.hasChanges.set(false);
+    this.saved.set(false);
+    this.saveError.set('');
   }
 
   getStatusStyle(status: string) {
     if (status === 'open') return { bg: '#F0FDF4', color: '#16A34A' };
     if (status === 'maintenance') return { bg: '#FFFBEB', color: '#D97706' };
     if (status === 'closed') return { bg: '#FEF2F2', color: '#DC2626' };
-    return { bg: '#FFF7ED', color: '#C2410C' }; // Reserved
+    return { bg: '#FFF7ED', color: '#C2410C' };
   }
 
   getEquipQty(id: string): number {
@@ -453,16 +538,18 @@ export class VenueFacilitiesPage {
   }
 
   incQty(id: string) {
-    this.equipQty.update(eq => ({ ...eq, [id]: (eq[id] ?? 0) + 1 }));
+    this.equipQty.update((eq) => ({ ...eq, [id]: (eq[id] ?? 0) + 1 }));
+    if (!this.rentalPrices[id]) {
+      const item = this.equipmentOptions().find((e) => e.id === id);
+      this.rentalPrices[id] = String(item?.defaultPrice ?? 0);
+    }
     this.onChange();
   }
 
   decQty(id: string) {
-    this.equipQty.update(eq => {
+    this.equipQty.update((eq) => {
       const copy = { ...eq };
-      if ((copy[id] ?? 0) > 0) {
-        copy[id]--;
-      }
+      if ((copy[id] ?? 0) > 0) copy[id]--;
       return copy;
     });
     this.onChange();
@@ -473,7 +560,7 @@ export class VenueFacilitiesPage {
   }
 
   toggleAmenity(a: string) {
-    this.amenities.update(list => list.includes(a) ? list.filter(x => x !== a) : [...list, a]);
+    this.amenities.update((list) => (list.includes(a) ? list.filter((x) => x !== a) : [...list, a]));
     this.onChange();
   }
 
@@ -482,36 +569,129 @@ export class VenueFacilitiesPage {
     this.saved.set(false);
   }
 
-  saveChanges() {
-    this.hasChanges.set(false);
-    this.saved.set(true);
+  async saveChanges() {
+    if (this.saving()) return;
+    this.saving.set(true);
+    this.saveError.set('');
+    try {
+      const selectedId = this.selectedId();
+      const numericId = Number(selectedId);
+      const meta = {
+        courtNumber: this.courtNumber,
+        dimensions: this.dimensions,
+        capacity: this.capacity,
+        lastCleaned: this.lastCleaned,
+        nextCleaning: this.nextCleaning,
+        maintNotes: this.maintNotes,
+        supervisorName: this.supName,
+        supervisorPhone: this.supPhone,
+        supervisorShift: this.supShift,
+      };
 
-    // Sync status back to selector list
-    this.facilityList.update(list => list.map(f => f.id === this.selectedId() ? { ...f, name: this.facilityName, sport: this.sport, status: this.status() } : f));
+      const courtPayload = {
+        name: this.facilityName.trim() || 'Court',
+        sport: this.sport.toLowerCase(),
+        isIndoor: this.isIndoor(),
+        pricePerHour: Number(this.pricePerHour || 0),
+        hasRentalGear: Object.values(this.equipQty()).some((q) => q > 0),
+        status: this.status(),
+        surface: this.surface(),
+        maxPlayers: Number(this.capacity || 0) || null,
+        meta,
+      };
 
-    setTimeout(() => this.saved.set(false), 2000);
+      if (Number.isFinite(numericId) && numericId > 0) {
+        await firstValueFrom(this.venueService.updateCourt(numericId, courtPayload));
+      } else {
+        const created = await firstValueFrom(this.venueService.createCourt(courtPayload as any));
+        if (created.data?.id) {
+          this.selectedId.set(String(created.data.id));
+        }
+      }
+
+      await firstValueFrom(
+        this.venueService.updateMyProfile({
+          amenities: this.amenities(),
+          rentalEquipment: this.equipmentOptions()
+            .filter((item) => (this.equipQty()[item.id] || 0) > 0)
+            .map((item) => ({
+              id: item.id,
+              label: item.label,
+              emoji: item.emoji,
+              qty: this.equipQty()[item.id] || 0,
+              price: Number(this.rentalPrices[item.id] || item.defaultPrice || 0),
+            })),
+        }),
+      );
+
+      await this.bootstrap();
+      this.hasChanges.set(false);
+      this.saved.set(true);
+      setTimeout(() => this.saved.set(false), 2000);
+    } catch (error: any) {
+      this.saveError.set(error?.error?.message || 'Unable to save facility.');
+    } finally {
+      this.saving.set(false);
+    }
   }
 
   discardChanges() {
-    this.selectFacility(this.selectedId());
+    if (this.selectedId()) this.selectFacility(this.selectedId());
     this.hasChanges.set(false);
   }
 
   addFacility() {
-    const nextId = 'f' + (this.facilityList().length + 1);
+    const nextId = `new-${Date.now()}`;
     const newFac: MaintFacility = {
       id: nextId,
-      name: 'New Court ' + nextId.toUpperCase(),
+      name: 'New Court',
       sport: 'Basketball',
       emoji: '🏀',
       status: 'open',
-      photo: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=300&h=200&fit=crop&auto=format'
+      photo: DEFAULT_PHOTOS['basketball'],
     };
-    this.facilityList.update(list => [...list, newFac]);
+    this.facilityList.update((list) => [...list, newFac]);
+    this.courtsRaw = [...this.courtsRaw, { id: nextId, meta: {} }];
     this.selectFacility(nextId);
+    this.onChange();
   }
 
   goBack() {
-    this.router.navigateByUrl('/app/venue/dashboard');
+    void this.router.navigateByUrl('/app/venue/dashboard');
+  }
+
+  private resetFormForNew() {
+    this.selectedId.set('');
+    this.facilityName = '';
+    this.sport = 'Football';
+    this.status.set('open');
+    this.courtNumber = '1';
+    this.isIndoor.set(false);
+    this.surface.set('Artificial Turf');
+    this.dimensions = '';
+    this.capacity = 22;
+    this.pricePerHour = 0;
+  }
+
+  private titleCase(value: string): string {
+    return value.replace(/\b\w/g, (c) => c.toUpperCase());
+  }
+
+  private sportEmoji(sport: string): string {
+    const key = sport.toLowerCase();
+    if (key.includes('foot')) return '⚽';
+    if (key.includes('basket')) return '🏀';
+    if (key.includes('badminton')) return '🏸';
+    if (key.includes('cricket')) return '🏏';
+    if (key.includes('tennis')) return '🎾';
+    return '🏟️';
   }
 }
+
+const DEFAULT_PHOTOS: Record<string, string> = {
+  football: 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=300&h=200&fit=crop&auto=format',
+  basketball: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=300&h=200&fit=crop&auto=format',
+  badminton: 'https://images.unsplash.com/photo-1722087642932-9b070e9a066e?w=300&h=200&fit=crop&auto=format',
+  cricket: 'https://images.unsplash.com/photo-1593341646782-e0b495cff86d?w=300&h=200&fit=crop&auto=format',
+};
+

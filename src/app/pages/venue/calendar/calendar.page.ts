@@ -1,17 +1,36 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, computed, signal, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { AlertController, IonicModule } from '@ionic/angular';
+import { IonicModule } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
-import { BookingCalendarEvent, BookingSlot } from '../../../core/models/api.model';
+import { BookingCalendarEvent } from '../../../core/models/api.model';
 import { BookingService } from '../../../core/services/booking.service';
+import { VenueService } from '../../../core/services/venue.service';
 import { BrandHeaderShellComponent } from '../../../shared/components/brand-header-shell/brand-header-shell.component';
 
-interface CalendarCellBooking {
-  time: string;
-  duration: number;
+interface CalendarCourt {
+  name: string;
+  sport: string;
+}
+
+interface DayCell {
+  date: Date | null;
+  iso: string | null;
+  dayNum: number | null;
+  inMonth: boolean;
+  isToday: boolean;
+  isSelected: boolean;
+  dotCount: number;
+}
+
+interface CalendarBookingItem {
+  id: string;
+  dateIso: string;
+  dayLabel: string;
+  timeRange: string;
   customer: string;
   sport: string;
+  court: string;
   status: string;
 }
 
@@ -22,290 +41,659 @@ interface CalendarCellBooking {
   template: `
     <ion-content [fullscreen]="true" class="has-tabs">
       <app-brand-header-shell>
-      <div class="calendar-page pb-32 text-left">
-        
-        <!-- Header -->
-        <div class="sticky-header bg-white border-b border-[#F3F4F6]">
-          <div class="flex items-center justify-between px-5 h-14">
-            <button (click)="goHome()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
-              <ion-icon name="chevron-back-outline" class="text-xl text-[#111827]"></ion-icon>
+      <div class="cal-page">
+        <header class="cal-header">
+          <button type="button" class="icon-btn" (click)="goHome()" aria-label="Back">
+            <ion-icon name="chevron-back-outline"></ion-icon>
+          </button>
+          <h1>Calendar</h1>
+          <button type="button" class="icon-btn" (click)="loadMonth()" aria-label="Refresh">
+            <ion-icon name="refresh-outline"></ion-icon>
+          </button>
+        </header>
+
+        <section class="month-card">
+          <div class="month-nav">
+            <button type="button" class="nav-arrow" (click)="prevMonth()" aria-label="Previous month">
+              <ion-icon name="chevron-back-outline"></ion-icon>
             </button>
-            <p class="text-[17px] font-black text-[#111827] m-0">Calendar</p>
-            <div class="w-10"></div>
+            <p class="month-label">{{ monthLabel() }}</p>
+            <button type="button" class="nav-arrow" (click)="nextMonth()" aria-label="Next month">
+              <ion-icon name="chevron-forward-outline"></ion-icon>
+            </button>
           </div>
 
-          <!-- Day Switcher switcher track -->
-          <div class="flex items-center justify-between px-5 py-3 border-t border-[#F9FAFB]">
-            <button (click)="prevDay()" class="w-8 h-8 rounded-full bg-[#F3F4F6] flex items-center justify-center border-none">
-              <ion-icon name="chevron-back-outline" class="text-xs text-[#111827]"></ion-icon>
+          <div class="weekday-row">
+            <span *ngFor="let d of weekDays">{{ d }}</span>
+          </div>
+
+          <div class="day-grid">
+            <button
+              type="button"
+              class="day-cell"
+              *ngFor="let cell of monthCells(); trackBy: trackCell"
+              [class.empty]="!cell.inMonth"
+              [class.today]="cell.isToday"
+              [class.selected]="cell.isSelected"
+              [disabled]="!cell.inMonth"
+              (click)="selectDay(cell)"
+            >
+              <span class="day-num" *ngIf="cell.dayNum !== null">{{ cell.dayNum }}</span>
+              <span class="day-dots" *ngIf="cell.dotCount > 0">
+                <i *ngFor="let _ of dotArray(cell.dotCount)"></i>
+              </span>
             </button>
-            <div class="flex items-center gap-2 font-bold text-sm text-[#111827]">
-              <ion-icon name="calendar-outline" class="text-[#8CF000] text-lg font-bold"></ion-icon>
-              <span>{{ currentDay() }}</span>
+          </div>
+        </section>
+
+        <section class="stats-row" *ngIf="!loading()">
+          <div class="stat">
+            <p class="stat__num">{{ selectedDayCount() }}</p>
+            <p class="stat__label">Day Bookings</p>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat">
+            <p class="stat__num">{{ monthBookingCount() }}</p>
+            <p class="stat__label">This Month</p>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat">
+            <p class="stat__num">{{ courts().length }}</p>
+            <p class="stat__label">Courts</p>
+          </div>
+        </section>
+
+        <div class="court-filter" *ngIf="courts().length">
+          <button
+            type="button"
+            class="filter-chip"
+            [class.active]="selectedCourt() === 'all'"
+            (click)="selectedCourt.set('all')"
+          >All courts</button>
+          <button
+            type="button"
+            class="filter-chip"
+            *ngFor="let court of courts()"
+            [class.active]="selectedCourt() === court.name"
+            (click)="selectedCourt.set(court.name)"
+          >{{ court.name }}</button>
+        </div>
+
+        <p *ngIf="loading()" class="status">Loading calendar…</p>
+        <p *ngIf="!loading() && errorMessage()" class="status error">{{ errorMessage() }}</p>
+
+        <section class="events">
+          <div class="events-head">
+            <p>Upcoming events</p>
+            <span></span>
+          </div>
+
+          <div *ngIf="!loading() && selectedDayEvents().length === 0" class="empty">
+            No bookings on {{ selectedDayLabel() }}
+          </div>
+
+          <article class="event-card" *ngFor="let event of selectedDayEvents()">
+            <div class="event-top">
+              <span class="event-tag">{{ event.sport }}</span>
+              <span class="event-status" [attr.data-status]="event.status.toLowerCase()">{{ event.status }}</span>
             </div>
-            <button (click)="nextDay()" class="w-8 h-8 rounded-full bg-[#F3F4F6] flex items-center justify-center border-none">
-              <ion-icon name="chevron-forward-outline" class="text-xs text-[#111827]"></ion-icon>
-            </button>
-          </div>
-        </div>
-
-        <div class="px-5 pt-2" *ngIf="loading">
-          <div class="text-xs text-[#9CA3AF] fw-bold">Loading live calendar...</div>
-        </div>
-        <div class="px-5 pt-2" *ngIf="!loading && errorMessage">
-          <div class="text-xs text-danger fw-bold">{{ errorMessage }}</div>
-        </div>
-
-        <!-- Scrollable Grid view -->
-        <div class="overflow-x-auto no-scrollbar">
-          <div class="min-w-[800px] p-5">
-            <div class="grid grid-cols-[100px_1fr] gap-2">
-              
-              <!-- Blank top corner -->
-              <div></div>
-              
-              <!-- Courts Header Column rows -->
-              <div class="grid grid-cols-3 gap-2">
-                <div *ngFor="let court of courts" class="text-center p-2.5 bg-white rounded-xl border border-[#F3F4F6] shadow-sm">
-                  <span class="text-xs font-black text-[#111827]">{{ court }}</span>
-                </div>
+            <div class="event-body">
+              <div class="event-when">
+                <p class="event-date">{{ event.dayLabel }}</p>
+                <p class="event-time">{{ event.timeRange }}</p>
               </div>
-
-              <!-- Time row blocks -->
-              <ng-container *ngFor="let time of timeSlots">
-                <div class="flex items-center justify-end pr-3 text-xs text-[#9CA3AF] font-black uppercase tracking-wider">
-                  {{ time }}
-                </div>
-                <div class="grid grid-cols-3 gap-2">
-                  <div *ngFor="let court of courts" class="h-16 rounded-2xl border-2 transition-all relative"
-                    [style.backgroundColor]="getBooking(court, time) ? 'rgba(140,240,0,0.12)' : 'white'"
-                    [style.border]="getBooking(court, time) ? '2px solid #8CF000' : '2px solid #F3F4F6'"
-                    [style.boxShadow]="getBooking(court, time) ? '0 2px 10px rgba(140,240,0,0.18)' : 'none'"
-                    (click)="cellClicked(court, time)">
-                    
-                    <div *ngIf="getBooking(court, time) as booking" class="p-3.5 h-full flex flex-col justify-center text-left">
-                      <p class="text-xs font-black text-[#111827] m-0 truncate">{{ booking.customer }}</p>
-                      <p class="text-[10px] text-[#9CA3AF] font-bold mt-1 m-0">{{ booking.duration }}h Slot</p>
-                    </div>
-
-                    <div *ngIf="!getBooking(court, time)" class="h-full flex items-center justify-center opacity-50">
-                      <ion-icon name="ellipse-outline" class="text-slate-200 text-sm"></ion-icon>
-                    </div>
-                  </div>
-                </div>
-              </ng-container>
-
+              <div class="event-info">
+                <p class="event-title">{{ event.customer }}</p>
+                <p class="event-place">{{ event.court }}</p>
+              </div>
             </div>
-          </div>
-        </div>
-
+          </article>
+        </section>
       </div>
       </app-brand-header-shell>
     </ion-content>
   `,
   styles: [`
-    .calendar-page {
-      background: #FAFBFC;
+    .cal-page {
       min-height: 100%;
+      background: #FAFBFC;
+      padding-bottom: 120px;
     }
 
-    .sticky-header {
-      position: sticky;
-      top: 0;
-      z-index: 30;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    .cal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 16px 4px;
+      background: #fff;
     }
 
-    .no-scrollbar {
+    .cal-header h1 {
+      margin: 0;
+      font-size: 17px;
+      font-weight: 900;
+      color: #111827;
+    }
+
+    .icon-btn {
+      width: 40px;
+      height: 40px;
+      border: none;
+      border-radius: 12px;
+      background: #F3F4F6;
+      display: grid;
+      place-items: center;
+      color: #111827;
+      font-size: 18px;
+    }
+
+    .month-card {
+      background: #fff;
+      padding: 8px 16px 18px;
+      border-bottom: 1px solid #F3F4F6;
+    }
+
+    .month-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .month-label {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 800;
+      color: #111827;
+    }
+
+    .nav-arrow {
+      width: 34px;
+      height: 34px;
+      border: none;
+      border-radius: 999px;
+      background: #F3F4F6;
+      display: grid;
+      place-items: center;
+      color: #111827;
+    }
+
+    .weekday-row {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      margin-bottom: 6px;
+    }
+
+    .weekday-row span {
+      text-align: center;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      color: #9CA3AF;
+      text-transform: uppercase;
+      padding: 4px 0;
+    }
+
+    .day-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px 0;
+    }
+
+    .day-cell {
+      appearance: none;
+      border: none;
+      background: transparent;
+      min-height: 46px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 4px 0 6px;
+      gap: 4px;
+    }
+
+    .day-cell.empty {
+      visibility: hidden;
+    }
+
+    .day-num {
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: #374151;
+    }
+
+    .day-cell.today .day-num {
+      color: #111827;
+      font-weight: 900;
+    }
+
+    .day-cell.selected .day-num {
+      background: #8CF000;
+      color: #111827;
+      font-weight: 900;
+    }
+
+    .day-dots {
+      display: flex;
+      gap: 3px;
+      min-height: 6px;
+    }
+
+    .day-dots i {
+      width: 5px;
+      height: 5px;
+      border-radius: 999px;
+      background: #FF7A00;
+      display: block;
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto 1fr;
+      align-items: center;
+      background: #fff;
+      padding: 16px 8px;
+      border-bottom: 1px solid #F3F4F6;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat__num {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 900;
+      color: #111827;
+      line-height: 1.1;
+    }
+
+    .stat__label {
+      margin: 4px 0 0;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #9CA3AF;
+    }
+
+    .stat-divider {
+      width: 1px;
+      height: 34px;
+      background: #E5E7EB;
+    }
+
+    .court-filter {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 12px 16px 4px;
       scrollbar-width: none;
-      &::-webkit-scrollbar {
-        display: none;
-      }
+      -webkit-overflow-scrolling: touch;
     }
-  `]
+
+    .court-filter::-webkit-scrollbar { display: none; }
+
+    .filter-chip {
+      flex: 0 0 auto;
+      border: 1.5px solid #E5E7EB;
+      background: #fff;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 800;
+      color: #6B7280;
+      white-space: nowrap;
+    }
+
+    .filter-chip.active {
+      background: rgba(140, 240, 0, 0.18);
+      border-color: #8CF000;
+      color: #111827;
+    }
+
+    .status {
+      margin: 12px 16px 0;
+      font-size: 12px;
+      font-weight: 700;
+      color: #9CA3AF;
+    }
+
+    .status.error { color: #DC2626; }
+
+    .events {
+      padding: 8px 16px 24px;
+    }
+
+    .events-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 10px 0 14px;
+    }
+
+    .events-head p {
+      margin: 0;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #9CA3AF;
+      white-space: nowrap;
+    }
+
+    .events-head span {
+      flex: 1;
+      height: 1px;
+      background: #E5E7EB;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 28px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #9CA3AF;
+    }
+
+    .event-card {
+      background: #fff;
+      border: 1px solid #F3F4F6;
+      border-radius: 18px;
+      padding: 14px;
+      margin-bottom: 10px;
+    }
+
+    .event-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .event-tag {
+      display: inline-flex;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(140, 240, 0, 0.2);
+      color: #166534;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .event-status {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: #16A34A;
+    }
+
+    .event-status[data-status='pending'] { color: #C2410C; }
+    .event-status[data-status='cancelled'] { color: #DC2626; }
+
+    .event-body {
+      display: grid;
+      grid-template-columns: 92px 1fr;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .event-date {
+      margin: 0;
+      font-size: 12px;
+      font-weight: 800;
+      color: #6B7280;
+    }
+
+    .event-time {
+      margin: 4px 0 0;
+      font-size: 11px;
+      font-weight: 700;
+      color: #9CA3AF;
+    }
+
+    .event-title {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 900;
+      color: #111827;
+      line-height: 1.3;
+    }
+
+    .event-place {
+      margin: 4px 0 0;
+      font-size: 12px;
+      font-weight: 700;
+      color: #9CA3AF;
+    }
+  `],
 })
 export class VenueCalendarPage implements OnInit {
   private readonly router = inject(Router);
   private readonly bookingService = inject(BookingService);
-  private readonly alertCtrl = inject(AlertController);
+  private readonly venueService = inject(VenueService);
 
-  currentDay = signal('Today');
-  dayIndex = 0;
-  loading = false;
-  errorMessage = '';
+  readonly weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-  courts: string[] = ['Main Ground'];
+  viewMonth = signal(this.startOfMonth(new Date()));
+  selectedDate = signal(this.toIso(new Date()));
+  selectedCourt = signal<string>('all');
+  loading = signal(false);
+  errorMessage = signal('');
+  courts = signal<CalendarCourt[]>([]);
+  monthEvents = signal<CalendarBookingItem[]>([]);
 
-  readonly timeSlots = [
-    '6:00 AM',
-    '8:00 AM',
-    '10:00 AM',
-    '12:00 PM',
-    '2:00 PM',
-    '4:00 PM',
-    '6:00 PM',
-    '8:00 PM',
-  ];
+  monthLabel = computed(() =>
+    new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(this.viewMonth()),
+  );
 
-  bookings: Record<string, CalendarCellBooking[]> = {};
+  monthCells = computed(() => this.buildMonthCells(this.viewMonth(), this.selectedDate(), this.monthEvents()));
+
+  monthBookingCount = computed(() => this.monthEvents().length);
+
+  selectedDayCount = computed(() =>
+    this.monthEvents().filter((e) => e.dateIso === this.selectedDate()).length,
+  );
+
+  selectedDayEvents = computed(() => {
+    const day = this.selectedDate();
+    const court = this.selectedCourt();
+    return this.monthEvents()
+      .filter((e) => e.dateIso === day)
+      .filter((e) => court === 'all' || e.court === court)
+      .sort((a, b) => a.timeRange.localeCompare(b.timeRange));
+  });
 
   ngOnInit(): void {
-    this.updateDayString();
-    void this.loadCalendarData();
+    void this.loadMonth();
   }
 
-  getBooking(court: string, time: string): CalendarCellBooking | null {
-    return this.bookings[court]?.find((b) => b.time === time) ?? null;
+  trackCell(_: number, cell: DayCell) {
+    return cell.iso || `empty-${_}`;
   }
 
-  prevDay() {
-    this.dayIndex--;
-    this.updateDayString();
-    void this.loadCalendarData();
+  dotArray(count: number): number[] {
+    return Array.from({ length: Math.min(count, 3) }, (_, i) => i);
   }
 
-  nextDay() {
-    this.dayIndex++;
-    this.updateDayString();
-    void this.loadCalendarData();
+  selectedDayLabel(): string {
+    const d = new Date(`${this.selectedDate()}T00:00:00`);
+    return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(d);
   }
 
-  private updateDayString() {
-    const date = this.selectedDate();
-    const base = new Date();
-    const today = new Date(base.getFullYear(), base.getMonth(), base.getDate());
-    const target = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    const diffDays = Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-
-    const label = diffDays === 0
-      ? 'Today'
-      : diffDays === 1
-        ? 'Tomorrow'
-        : diffDays === -1
-          ? 'Yesterday'
-          : new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(target);
-
-    const display = new Intl.DateTimeFormat('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
-    }).format(target);
-
-    this.currentDay.set(`${label} - ${display}`);
+  prevMonth() {
+    const d = new Date(this.viewMonth());
+    d.setMonth(d.getMonth() - 1);
+    this.viewMonth.set(this.startOfMonth(d));
+    void this.loadMonth();
   }
 
-  async cellClicked(court: string, time: string) {
-    const existing = this.getBooking(court, time);
-    if (!existing) {
-      return;
+  nextMonth() {
+    const d = new Date(this.viewMonth());
+    d.setMonth(d.getMonth() + 1);
+    this.viewMonth.set(this.startOfMonth(d));
+    void this.loadMonth();
+  }
+
+  selectDay(cell: DayCell) {
+    if (!cell.iso || !cell.inMonth) return;
+    this.selectedDate.set(cell.iso);
+  }
+
+  goHome() {
+    void this.router.navigateByUrl('/app/venue/dashboard');
+  }
+
+  async loadMonth() {
+    this.loading.set(true);
+    this.errorMessage.set('');
+
+    try {
+      const month = this.viewMonth();
+      const start = this.toIso(month);
+      const endDate = new Date(month.getFullYear(), month.getMonth() + 1, 0);
+      const end = this.toIso(endDate);
+
+      const [profileResp, calendarResp] = await Promise.all([
+        firstValueFrom(this.venueService.getMyProfile()),
+        firstValueFrom(this.bookingService.getCalendar(`start_date=${start}&end_date=${end}`)),
+      ]);
+
+      const profileCourts = Array.isArray((profileResp.data as any)?.['courts'])
+        ? ((profileResp.data as any)['courts'] as any[])
+        : [];
+
+      const courts: CalendarCourt[] = profileCourts.length
+        ? profileCourts.map((c) => ({
+            name: String(c.courtName || c.name || 'Court'),
+            sport: this.titleCase(String(c.sport || 'Sport')),
+          }))
+        : [{ name: 'Main Ground', sport: 'Multi' }];
+      this.courts.set(courts);
+
+      const events = (calendarResp.data || []) as BookingCalendarEvent[];
+      const mapped = events.map((event) => {
+        const meta = (event.meta || {}) as Record<string, unknown>;
+        const sport = typeof meta['sport'] === 'string' ? this.titleCase(String(meta['sport'])) : 'Game';
+        const courtName = typeof meta['courtName'] === 'string' ? String(meta['courtName']) : null;
+        const court = this.resolveCourtName(courts, courtName, sport);
+        const dateIso = String(event.date || start);
+        const day = new Date(`${dateIso}T00:00:00`);
+
+        return {
+          id: String(event.bookingId || event.id),
+          dateIso,
+          dayLabel: new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long' }).format(day),
+          timeRange: `${this.timeLabel(event.startTime)} - ${this.timeLabel(event.endTime)}`,
+          customer: typeof meta['hostName'] === 'string' ? String(meta['hostName']) : (event.title || 'Booking'),
+          sport,
+          court,
+          status: this.titleCase(event.status || 'confirmed'),
+        } satisfies CalendarBookingItem;
+      });
+
+      this.monthEvents.set(mapped);
+
+      // Keep selected day inside current month when navigating months
+      const selected = new Date(`${this.selectedDate()}T00:00:00`);
+      if (selected.getMonth() !== month.getMonth() || selected.getFullYear() !== month.getFullYear()) {
+        const today = new Date();
+        if (today.getMonth() === month.getMonth() && today.getFullYear() === month.getFullYear()) {
+          this.selectedDate.set(this.toIso(today));
+        } else {
+          this.selectedDate.set(start);
+        }
+      }
+    } catch (error: any) {
+      this.errorMessage.set(error?.error?.message || 'Unable to load calendar.');
+      this.monthEvents.set([]);
+    } finally {
+      this.loading.set(false);
     }
-
-    const alert = await this.alertCtrl.create({
-      header: 'Booking Details',
-      message: `${existing.customer}\n${existing.sport} · ${existing.time} · ${existing.duration}h\nStatus: ${existing.status}`,
-      buttons: ['OK'],
-    });
-
-    await alert.present();
   }
 
-  private selectedDate(): Date {
-    const date = new Date();
-    date.setDate(date.getDate() + this.dayIndex);
-    date.setHours(0, 0, 0, 0);
-    return date;
+  private buildMonthCells(
+    month: Date,
+    selectedIso: string,
+    events: CalendarBookingItem[],
+  ): DayCell[] {
+    const year = month.getFullYear();
+    const mon = month.getMonth();
+    const first = new Date(year, mon, 1);
+    const daysInMonth = new Date(year, mon + 1, 0).getDate();
+    // Monday-first: JS getDay() Sun=0..Sat=6 → Mon=0
+    const startOffset = (first.getDay() + 6) % 7;
+    const todayIso = this.toIso(new Date());
+
+    const counts = new Map<string, number>();
+    events.forEach((e) => counts.set(e.dateIso, (counts.get(e.dateIso) || 0) + 1));
+
+    const cells: DayCell[] = [];
+    for (let i = 0; i < startOffset; i++) {
+      cells.push({ date: null, iso: null, dayNum: null, inMonth: false, isToday: false, isSelected: false, dotCount: 0 });
+    }
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(year, mon, day);
+      const iso = this.toIso(date);
+      cells.push({
+        date,
+        iso,
+        dayNum: day,
+        inMonth: true,
+        isToday: iso === todayIso,
+        isSelected: iso === selectedIso,
+        dotCount: counts.get(iso) || 0,
+      });
+    }
+    while (cells.length % 7 !== 0) {
+      cells.push({ date: null, iso: null, dayNum: null, inMonth: false, isToday: false, isSelected: false, dotCount: 0 });
+    }
+    return cells;
   }
 
-  private selectedDateIso(): string {
-    const date = this.selectedDate();
+  private resolveCourtName(courts: CalendarCourt[], preferred?: string | null, sport?: string | null): string {
+    if (preferred) {
+      const exact = courts.find((c) => c.name.toLowerCase() === preferred.toLowerCase());
+      if (exact) return exact.name;
+    }
+    if (sport) {
+      const bySport = courts.find((c) => c.sport.toLowerCase() === sport.toLowerCase());
+      if (bySport) return bySport.name;
+    }
+    return courts[0]?.name || 'Main Ground';
+  }
+
+  private startOfMonth(date: Date): Date {
+    return new Date(date.getFullYear(), date.getMonth(), 1);
+  }
+
+  private toIso(date: Date): string {
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, '0');
     const d = String(date.getDate()).padStart(2, '0');
     return `${y}-${m}-${d}`;
   }
 
-  private async loadCalendarData(): Promise<void> {
-    this.loading = true;
-    this.errorMessage = '';
-
-    try {
-      const date = this.selectedDateIso();
-      const [calendarResp, slotsResp] = await Promise.all([
-        firstValueFrom(this.bookingService.getCalendar(`start_date=${date}&end_date=${date}`)),
-        firstValueFrom(this.bookingService.getVenueSlots(`date=${date}`)),
-      ]);
-
-      const events = (calendarResp.data || []) as BookingCalendarEvent[];
-      const slots = (slotsResp.data || []) as BookingSlot[];
-
-      const bookingInfoById = new Map<string, { customer: string; sport: string; status: string }>();
-      events.forEach((event) => {
-        const meta = (event.meta || {}) as Record<string, unknown>;
-        const hostName = typeof meta['hostName'] === 'string'
-          ? String(meta['hostName'])
-          : (event.title || 'Booked');
-        const sport = typeof meta['sport'] === 'string'
-          ? this.titleCase(String(meta['sport']))
-          : 'Game';
-
-        bookingInfoById.set(String(event.bookingId), {
-          customer: hostName,
-          sport,
-          status: this.titleCase(event.status || 'confirmed'),
-        });
-      });
-
-      const nextBookings: Record<string, CalendarCellBooking[]> = {};
-      const courtNames = new Set<string>();
-
-      slots.forEach((slot) => {
-        const court = slot.courtName || 'Main Ground';
-        courtNames.add(court);
-
-        const info = bookingInfoById.get(String(slot.bookingId));
-        const startLabel = this.timeLabel(slot.startTime);
-        const duration = this.slotDurationHours(slot.startTime, slot.endTime);
-
-        if (!nextBookings[court]) {
-          nextBookings[court] = [];
-        }
-
-        nextBookings[court].push({
-          time: startLabel,
-          duration,
-          customer: info?.customer || 'Booked Slot',
-          sport: info?.sport || 'Game',
-          status: info?.status || this.titleCase(slot.status || 'reserved'),
-        });
-      });
-
-      this.bookings = nextBookings;
-      this.courts = courtNames.size ? Array.from(courtNames) : ['Main Ground'];
-    } catch (error: any) {
-      this.errorMessage = error?.error?.message || 'Failed to load calendar data.';
-      this.bookings = {};
-      this.courts = ['Main Ground'];
-    } finally {
-      this.loading = false;
-    }
-  }
-
   private timeLabel(time24?: string | null): string {
     if (!time24) return '—';
-    const [h = '0', m = '0'] = time24.split(':');
+    if (/am|pm/i.test(time24)) return time24.replace(/\s+/g, '').toLowerCase();
+    const [h = '0', m = '00'] = time24.split(':');
     const date = new Date();
     date.setHours(Number(h), Number(m), 0, 0);
-    return new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).format(date);
-  }
-
-  private slotDurationHours(start?: string | null, end?: string | null): number {
-    if (!start || !end) return 1;
-    const [sh = '0', sm = '0'] = start.split(':');
-    const [eh = '0', em = '0'] = end.split(':');
-    const startMin = Number(sh) * 60 + Number(sm);
-    const endMin = Number(eh) * 60 + Number(em);
-    const diff = Math.max(endMin - startMin, 60);
-    return Math.max(1, Math.round(diff / 60));
+    return new Intl.DateTimeFormat('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    }).format(date).replace(/\s+/g, '').toLowerCase();
   }
 
   private titleCase(value: string): string {
@@ -314,9 +702,5 @@ export class VenueCalendarPage implements OnInit {
       .filter(Boolean)
       .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
       .join(' ');
-  }
-
-  goHome() {
-    this.router.navigateByUrl('/app/venue/dashboard');
   }
 }

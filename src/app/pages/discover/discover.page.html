@@ -4,36 +4,28 @@
   </ion-refresher>
 
   <app-brand-header-shell>
-    <main class="page-with-tab-bar min-h-full bg-[#FAFBFC] text-slate-800 flex flex-col justify-between select-none">
-      <div class="px-5 pt-4 pb-2 flex items-center justify-between">
-        <div>
-          <h2 class="text-[20px] font-bold tracking-tight text-slate-900 m-0">Discover Players</h2>
-          <div class="text-xs text-slate-500 font-medium mt-1">
-            {{ filteredPlayers.length - currentIndex > 0 ? filteredPlayers.length - currentIndex : 0 }} nearby
-          </div>
-          <div class="text-[11px] text-red-500 mt-1" *ngIf="errorMessage">{{ errorMessage }}</div>
+    <main class="discover-page">
+      <app-page-header title="Discover Players" [showActions]="true" [hasSubContent]="true">
+        <div actions class="header-actions">
+          <button type="button" class="icon-btn" (click)="toggleFilters(true)" aria-label="Open filters">
+            <ion-icon name="options-outline"></ion-icon>
+          </button>
         </div>
-        <button
-          type="button"
-          (click)="toggleFilters(true)"
-          class="w-10 h-10 rounded-xl bg-[#8CF000]/25 flex items-center justify-center text-[#111827] active:scale-95 transition-all min-h-0"
-        >
-          <ion-icon name="options-outline" class="text-xl"></ion-icon>
-        </button>
-      </div>
+        <p class="nearby-caption">{{ nearbyLabel }}</p>
+        <p class="error-line" *ngIf="errorMessage">{{ errorMessage }}</p>
+      </app-page-header>
 
-      <section class="flex-1 flex items-center justify-center p-6 relative overflow-hidden">
-        <div *ngIf="!loading && currentIndex < filteredPlayers.length; else noPlayers" class="card-deck w-full max-w-sm h-[520px] relative">
+      <section class="discover-body">
+        <div *ngIf="!loading && currentIndex < filteredPlayers.length; else noPlayers" class="card-deck">
           <div
             *ngFor="let offset of [2, 1]"
-            class="absolute inset-0 bg-white border border-slate-100 rounded-3xl opacity-40 transform origin-bottom pointer-events-none"
+            class="deck-card"
             [style.transform]="'translateY(' + (offset * 8) + 'px) scale(' + (1 - offset * 0.04) + ')'"
             [style.zIndex]="10 - offset"
           ></div>
 
           <div
-            class="active-card absolute inset-0 bg-white border border-[#8CF000]/30 rounded-3xl overflow-hidden shadow-xl flex flex-col cursor-grab active:cursor-grabbing"
-            [style.zIndex]="10"
+            class="active-card"
             [style.transform]="getTransformStyle()"
             [style.opacity]="getOpacityStyle()"
             [style.transition]="isDragging ? 'none' : 'transform 0.3s ease-out, opacity 0.3s ease-out'"
@@ -124,150 +116,123 @@
         </div>
 
         <ng-template #noPlayers>
-          <div class="text-center py-12">
-            <ng-container *ngIf="loading">
-              <ion-spinner name="crescent" class="mb-4"></ion-spinner>
-              <p class="text-slate-500 text-sm">Loading players...</p>
-            </ng-container>
+          <div *ngIf="loading" class="loading-state">
+            <ion-spinner name="crescent"></ion-spinner>
+            <p>Loading players...</p>
+          </div>
 
-            <ng-container *ngIf="!loading">
-              <span class="text-6xl mb-4 block">🎯</span>
-              <h3 class="text-xl font-bold mb-2 text-slate-950">No more players nearby</h3>
-              <p class="text-slate-500 mb-6 text-sm">Adjust your filters to see more players</p>
-              <button
-                (click)="resetDiscovery()"
-                class="px-6 py-3 bg-gradient-to-r from-[#8CF000] to-[#A3E635] text-[#111827] rounded-full font-bold shadow-lg active:scale-95 transition-all"
-              >
-                Reset Discovery
-              </button>
-            </ng-container>
+          <div *ngIf="!loading" class="state-card">
+            <div class="state-icon">🎯</div>
+            <h3>No more players nearby</h3>
+            <p>Try widening your distance or clearing filters to discover more players.</p>
+            <div class="state-actions">
+              <app-primary-button [block]="true" (pressed)="resetDiscovery()">Refresh players</app-primary-button>
+              <button type="button" class="state-link" (click)="toggleFilters(true)">Adjust filters</button>
+            </div>
           </div>
         </ng-template>
       </section>
 
-      <footer *ngIf="!loading && currentIndex < filteredPlayers.length" class="px-6 pb-6 flex justify-center gap-6 z-20 mb-20">
-        <button
-          (click)="swipe('left')"
-          class="w-16 h-16 rounded-full bg-white border border-red-100 flex items-center justify-center shadow-md active:scale-90 hover:bg-red-50 transition-all text-red-500"
-        >
-          <ion-icon name="close-outline" class="text-3xl"></ion-icon>
+      <footer *ngIf="!loading && currentIndex < filteredPlayers.length" class="swipe-footer">
+        <button type="button" (click)="swipe('left')" class="swipe-btn swipe-btn--pass" aria-label="Pass">
+          <ion-icon name="close-outline"></ion-icon>
         </button>
-        <button
-          (click)="swipe('right')"
-          class="w-16 h-16 rounded-full bg-white border border-green-100 flex items-center justify-center shadow-md active:scale-90 hover:bg-green-50 transition-all text-green-600"
-        >
-          <ion-icon name="checkmark-outline" class="text-3xl"></ion-icon>
+        <button type="button" (click)="swipe('right')" class="swipe-btn swipe-btn--like" aria-label="Connect">
+          <ion-icon name="checkmark-outline"></ion-icon>
         </button>
       </footer>
 
-      <div *ngIf="showFilters" class="fixed inset-0 bg-[#FAFBFC] z-[999] overflow-y-auto transition-all duration-300">
-        <div class="min-h-screen px-6 py-6 pb-32 max-w-lg mx-auto">
-          <div class="flex items-center justify-between mb-8">
-            <h2 class="text-2xl font-black text-slate-900">Advanced Filters</h2>
-            <button
-              (click)="toggleFilters(false)"
-              class="w-10 h-10 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-800 active:scale-95 transition-all shadow-sm"
-            >
-              <ion-icon name="close-outline" class="text-2xl"></ion-icon>
+      <div *ngIf="showFilters" class="filters-panel">
+        <div class="filters-inner">
+          <div class="filters-head">
+            <h2>Filters</h2>
+            <button type="button" class="filters-close" (click)="toggleFilters(false)" aria-label="Close filters">
+              <ion-icon name="close-outline"></ion-icon>
             </button>
           </div>
 
-          <div class="space-y-6">
-            <div>
-              <label class="text-xs font-black uppercase text-slate-400 tracking-wider mb-3 block">Sport</label>
-              <div class="filter-options flex flex-wrap gap-2">
-                <button
-                  *ngFor="let s of ['All', 'Cricket', 'Football', 'Basketball', 'Tennis', 'Badminton']"
-                  (click)="filters.sport = s"
-                  [ngClass]="filters.sport === s ? 'bg-[#8CF000] text-[#111827] border-transparent' : 'bg-white border-slate-100 text-slate-600 shadow-sm'"
-                  class="filter-chip px-4 py-2 border rounded-xl text-xs font-bold transition-all active:scale-95 bg-transparent"
-                >
-                  {{ s }}
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label class="text-xs font-black uppercase text-slate-400 tracking-wider mb-3 block">Skill Level</label>
-              <div class="filter-options flex flex-wrap gap-2">
-                <button
-                  *ngFor="let lvl of ['All', 'Beginner', 'Intermediate', 'Advanced', 'Expert']"
-                  (click)="filters.skill = lvl"
-                  [ngClass]="filters.skill === lvl ? 'bg-[#8CF000] text-[#111827] border-transparent' : 'bg-white border-slate-100 text-slate-600 shadow-sm'"
-                  class="filter-chip px-4 py-2 border rounded-xl text-xs font-bold transition-all active:scale-95 bg-transparent"
-                >
-                  {{ lvl }}
-                </button>
-              </div>
-            </div>
-
-            <div class="space-y-2">
-              <div class="flex justify-between text-xs font-black uppercase text-slate-400 tracking-wider">
-                <span>Maximum Distance</span>
-                <span class="text-primary font-black">{{ filters.distance }} km</span>
-              </div>
-              <input
-                type="range"
-                min="1"
-                max="50"
-                [(ngModel)]="filters.distance"
-                class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary"
-              />
-            </div>
-
-            <div class="space-y-2">
-              <div class="flex justify-between text-xs font-black uppercase text-slate-400 tracking-wider">
-                <span>Age Range</span>
-                <span class="text-secondary font-black">{{ filters.ageMin }} - {{ filters.ageMax }} yrs</span>
-              </div>
-              <div class="flex gap-4">
-                <input type="range" min="18" max="50" [(ngModel)]="filters.ageMin" class="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-secondary" />
-                <input type="range" min="18" max="50" [(ngModel)]="filters.ageMax" class="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-secondary" />
-              </div>
-            </div>
-
-            <div>
-              <label class="text-xs font-black uppercase text-slate-400 tracking-wider mb-3 block">Competitive Level</label>
-              <div class="filter-options flex gap-2">
-                <button
-                  *ngFor="let comp of ['All', 'Recreational', 'Competitive', 'Professional']"
-                  (click)="filters.competitiveLevel = comp"
-                  [ngClass]="filters.competitiveLevel === comp ? 'bg-[#8CF000] text-[#111827] border-transparent' : 'bg-white border-slate-100 text-slate-600 shadow-sm'"
-                  class="filter-chip flex-1 py-2 border rounded-xl text-[10px] font-bold transition-all active:scale-95 bg-transparent"
-                >
-                  {{ comp }}
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label class="text-xs font-black uppercase text-slate-400 tracking-wider mb-3 block">Availability</label>
-              <div class="grid grid-cols-2 gap-2">
-                <button
-                  *ngFor="let avail of ['All', 'Available Now', 'Available Today', 'This Week']"
-                  (click)="filters.availability = avail"
-                  [ngClass]="filters.availability === avail ? 'bg-[#8CF000] text-[#111827] border-transparent' : 'bg-white border-slate-100 text-slate-600 shadow-sm'"
-                  class="py-2.5 border rounded-xl text-xs font-bold transition-all active:scale-95 bg-transparent"
-                >
-                  {{ avail }}
-                </button>
-              </div>
+          <div class="filter-section">
+            <label class="filter-label">Sport</label>
+            <div class="filter-options">
+              <button
+                type="button"
+                *ngFor="let s of ['All', 'Cricket', 'Football', 'Basketball', 'Tennis', 'Badminton']"
+                (click)="filters.sport = s"
+                class="filter-chip"
+                [class.active]="filters.sport === s"
+              >
+                {{ s }}
+              </button>
             </div>
           </div>
 
-          <div class="mt-12 flex gap-3">
-            <button
-              (click)="resetFilters()"
-              class="flex-1 h-12 rounded-full border border-slate-200 text-slate-600 font-bold text-sm bg-white active:scale-[0.98] transition-all"
-            >
-              Clear All
-            </button>
-            <button
-              (click)="applyFilters()"
-              class="flex-1 h-12 rounded-full bg-gradient-to-r from-[#8CF000] to-[#A3E635] text-[#111827] font-bold text-sm active:scale-[0.98] transition-all"
-            >
-              Apply Filters
-            </button>
+          <div class="filter-section">
+            <label class="filter-label">Skill level</label>
+            <div class="filter-options">
+              <button
+                type="button"
+                *ngFor="let lvl of ['All', 'Beginner', 'Intermediate', 'Advanced', 'Expert']"
+                (click)="filters.skill = lvl"
+                class="filter-chip"
+                [class.active]="filters.skill === lvl"
+              >
+                {{ lvl }}
+              </button>
+            </div>
+          </div>
+
+          <div class="filter-section">
+            <div class="filter-range-label">
+              <span>Maximum distance</span>
+              <strong>{{ filters.distance }} km</strong>
+            </div>
+            <input type="range" min="1" max="50" [(ngModel)]="filters.distance" class="range-input" />
+          </div>
+
+          <div class="filter-section">
+            <div class="filter-range-label">
+              <span>Age range</span>
+              <strong>{{ filters.ageMin }} – {{ filters.ageMax }} yrs</strong>
+            </div>
+            <div class="range-row">
+              <input type="range" min="18" max="50" [(ngModel)]="filters.ageMin" class="range-input" />
+              <input type="range" min="18" max="50" [(ngModel)]="filters.ageMax" class="range-input" />
+            </div>
+          </div>
+
+          <div class="filter-section">
+            <label class="filter-label">Competitive level</label>
+            <div class="filter-options">
+              <button
+                type="button"
+                *ngFor="let comp of ['All', 'Recreational', 'Competitive', 'Professional']"
+                (click)="filters.competitiveLevel = comp"
+                class="filter-chip filter-chip--wide"
+                [class.active]="filters.competitiveLevel === comp"
+              >
+                {{ comp }}
+              </button>
+            </div>
+          </div>
+
+          <div class="filter-section">
+            <label class="filter-label">Availability</label>
+            <div class="filter-options">
+              <button
+                type="button"
+                *ngFor="let avail of ['All', 'Available Now', 'Available Today', 'This Week']"
+                (click)="filters.availability = avail"
+                class="filter-chip filter-chip--wide"
+                [class.active]="filters.availability === avail"
+              >
+                {{ avail }}
+              </button>
+            </div>
+          </div>
+
+          <div class="filters-footer">
+            <app-primary-button variant="outline" [block]="true" (pressed)="resetFilters()">Clear all</app-primary-button>
+            <app-primary-button [block]="true" (pressed)="applyFilters()">Apply filters</app-primary-button>
           </div>
         </div>
       </div>

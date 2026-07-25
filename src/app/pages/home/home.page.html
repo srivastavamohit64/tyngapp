@@ -359,35 +359,73 @@
     <!-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
     <ng-container *ngIf="auth.user()?.role !== 'coach' && auth.user()?.role !== 'venue'">
       <section class="player-home">
-        <div class="loc-row">
+        <div class="loc-row" role="button" (click)="editLocation()">
           <ion-icon name="location" class="loc-icon"></ion-icon>
-          <span class="loc-city">Lucknow</span>
-          <ion-icon name="chevron-forward" class="loc-chevron"></ion-icon>
-          <span class="loc-area">Gomti Nagar</span>
+          <span class="loc-city">{{ locationCity }}</span>
+          <ion-icon name="chevron-forward" class="loc-chevron" *ngIf="locationArea"></ion-icon>
+          <span class="loc-area" *ngIf="locationArea">{{ locationArea }}</span>
+          <span class="loc-edit">Edit</span>
         </div>
 
-        <app-search-bar
-          class="search-block"
-          placeholder="Find players, games, venuesâ€¦"
-          [(ngModel)]="searchQuery"
-        ></app-search-bar>
+        <div class="search-wrap">
+          <app-search-bar
+            class="search-block"
+            placeholder="Find players, games, venues…"
+            [(ngModel)]="searchQuery"
+            (ngModelChange)="onSearchChange($event)"
+          ></app-search-bar>
 
-        <!-- Quick Suggestion -->
-        <div class="suggest-card">
+          <div class="search-suggestions" *ngIf="showSuggestions">
+            <div class="suggest-loading" *ngIf="searchLoading">Searching…</div>
+            <ng-container *ngIf="!searchLoading">
+              <button
+                type="button"
+                class="suggest-item"
+                *ngFor="let item of searchSuggestions"
+                (mousedown)="openSuggestion(item)"
+              >
+                <span class="suggest-emoji">{{ item.emoji }}</span>
+                <span class="suggest-text">
+                  <strong>{{ item.title }}</strong>
+                  <small>{{ item.subtitle }}</small>
+                </span>
+                <span class="suggest-type">{{ item.type }}</span>
+              </button>
+              <div class="suggest-empty" *ngIf="searchSuggestions.length === 0">
+                No matches for “{{ searchQuery }}”
+              </div>
+            </ng-container>
+          </div>
+        </div>
+
+        <!-- Quick Suggestion: only when a game matches player location -->
+        <div class="suggest-card" *ngIf="quickSuggestion">
           <div class="suggest-top">
             <div>
               <p class="suggest-label">Quick Suggestion</p>
-              <p class="suggest-title">4 players available near you</p>
+              <p class="suggest-title">{{ quickSuggestion.title }}</p>
             </div>
             <div class="suggest-icon">
-              <ion-icon name="people-outline"></ion-icon>
+              <ion-icon name="football-outline"></ion-icon>
             </div>
           </div>
           <div class="suggest-meta">
             <ion-icon name="time-outline"></ion-icon>
-            <span>Available at 7 PM today</span>
+            <span>{{ quickSuggestion.meta }}</span>
           </div>
-          <button type="button" (click)="go('/app/discover')" class="suggest-cta">View Players</button>
+          <button type="button" (click)="go('/app/game/' + quickSuggestion.id)" class="suggest-cta">
+            View Game
+          </button>
+        </div>
+
+        <div class="suggest-card suggest-card--muted" *ngIf="!quickSuggestion && !nearbyLoading && !playerLocation">
+          <div class="suggest-top">
+            <div>
+              <p class="suggest-label">Quick Suggestion</p>
+              <p class="suggest-title">Set your location to see nearby games</p>
+            </div>
+          </div>
+          <button type="button" (click)="editLocation()" class="suggest-cta">Set Location</button>
         </div>
 
         <!-- Live Sports Map -->
@@ -448,8 +486,13 @@
             (action)="go('/app/ongoing')"
           ></app-section-header>
           <div class="nearby-list">
+            <div class="nearby-state" *ngIf="nearbyLoading">Loading games…</div>
+            <div class="nearby-state" *ngIf="!nearbyLoading && nearbyError">{{ nearbyError }}</div>
+            <div class="nearby-state" *ngIf="!nearbyLoading && !nearbyError && nearbyGames.length === 0">
+              No open games yet. Create one to get started.
+            </div>
             <app-event-card
-              *ngFor="let game of data.games"
+              *ngFor="let game of nearbyGames"
               [event]="game"
               (open)="go('/app/game/' + game.id)"
             ></app-event-card>

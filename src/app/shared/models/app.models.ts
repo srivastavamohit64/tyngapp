@@ -22,7 +22,7 @@ export interface Player {
 }
 
 export interface EventGame {
-  id: number;
+  id: string | number;
   sport: string;
   time: string;
   location: string;

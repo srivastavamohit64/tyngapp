@@ -28,7 +28,7 @@ export const guestGuard: CanActivateFn = () => {
         user.role === 'coach'
           ? '/app/coach/dashboard'
           : user.role === 'venue'
-            ? '/app/venue/dashboard'
+            ? auth.venueHomePath(user)
             : '/app/home',
       ]);
     }),

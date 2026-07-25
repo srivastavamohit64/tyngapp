@@ -1,449 +1,460 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
+import { firstValueFrom } from 'rxjs';
+import { BookingService } from '../../core/services/booking.service';
 import { VENUE_DATA, type VenueDetail } from './venue-detail.page';
 
-interface Coupon {
-  discount: number;
+interface AppliedCoupon {
+  code: string;
   type: 'percent' | 'flat';
+  value: number;
   desc: string;
+  discount: number;
 }
-
-const COUPONS: Record<string, Coupon> = {
-  'TYNG20':   { discount: 20,  type: 'percent', desc: '20% off court booking' },
-  'FIRST100': { discount: 100, type: 'flat',    desc: '₹100 off first booking' },
-  'SPORT50':  { discount: 50,  type: 'flat',    desc: '₹50 off for sports lovers' },
-};
 
 @Component({
   selector: 'app-venue-booking-summary',
   standalone: true,
   imports: [CommonModule, IonicModule, FormsModule],
   template: `
-    <ion-content fullscreen>
-      <div class="min-h-screen bg-[#FAFBFC] pb-32 text-[#111827] text-left" *ngIf="venue">
-        
-        <!-- Header -->
-        <div class="sticky top-0 z-30 bg-white border-b border-[#F3F4F6]">
-          <div class="flex items-center justify-between px-5 h-14">
-            <button
-              (click)="back()"
-              class="w-10 h-10 flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none outline-none"
-            >
-              <ion-icon name="chevron-back" class="text-xl text-[#111827]"></ion-icon>
-            </button>
-            <div class="text-center">
-              <p class="text-[15px] font-black text-[#111827] m-0">Booking Summary</p>
-              <p class="text-[11px] text-[#9CA3AF] m-0 mt-0.5 font-bold">Review before payment</p>
-            </div>
-            <div class="w-10"></div>
+    <ion-content fullscreen class="summary-content">
+      <div class="summary-page" *ngIf="venue">
+        <header class="summary-header">
+          <button type="button" class="icon-btn" (click)="back()" aria-label="Back">
+            <ion-icon name="chevron-back"></ion-icon>
+          </button>
+          <div class="summary-header-copy">
+            <h1>Booking Summary</h1>
+            <p>Review before confirming</p>
           </div>
-        </div>
+          <div class="icon-btn icon-btn--ghost"></div>
+        </header>
 
-        <div class="px-5 pt-5 space-y-4">
-          
-          <!-- Venue summary card -->
-          <div class="bg-white rounded-[24px] border border-[#F3F4F6] shadow-sm">
-            <div class="p-4 flex items-center gap-4">
-              <div class="w-[80px] h-[80px] rounded-2xl overflow-hidden bg-gray-200 flex-shrink-0">
-                <img [src]="venue.images[0]" [alt]="venue.courtName" class="w-full h-full object-cover" />
+        <div class="summary-body">
+          <section class="card venue-card">
+            <div class="venue-row">
+              <div class="venue-thumb">
+                <img [src]="venue.images[0]" [alt]="venue.courtName" />
               </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-[16px] font-black text-[#111827] leading-tight m-0">{{ venue.courtName }}</p>
-                <p class="text-[12px] text-[#9CA3AF] mt-1 m-0 font-bold">{{ venue.venueName }}</p>
-                
-                <div class="flex items-center gap-3 mt-2 flex-wrap">
-                  <div class="flex items-center gap-1 leading-none">
-                    <ion-icon name="calendar-outline" class="text-[#8CF000] text-xs font-bold"></ion-icon>
-                    <span class="text-[11px] font-bold text-[#6B7280]">{{ selectedDate }}</span>
-                  </div>
-                  <div class="flex items-center gap-1 leading-none">
-                    <ion-icon name="time-outline" class="text-[#8CF000] text-xs font-bold"></ion-icon>
-                    <span class="text-[11px] font-bold text-[#6B7280]">{{ startTime }} – {{ endHour }}</span>
-                  </div>
+              <div class="venue-meta">
+                <h2>{{ venue.courtName }}</h2>
+                <p>{{ venue.venueName }}</p>
+                <div class="meta-chips">
+                  <span><ion-icon name="calendar-outline"></ion-icon>{{ selectedDate }}</span>
+                  <span><ion-icon name="time-outline"></ion-icon>{{ startTime }} – {{ endHour }}</span>
                 </div>
               </div>
             </div>
-
-            <!-- Booking meta strip -->
-            <div class="mx-4 mb-4 bg-[#F9FAFB] rounded-2xl px-4 py-3 grid grid-cols-3 gap-2 border border-[#F3F4F6]">
-              <div class="text-center">
-                <p class="text-[18px] font-black text-[#111827] m-0">{{ hours }}</p>
-                <p class="text-[10px] text-[#9CA3AF] m-0 mt-0.5 font-bold">{{ hours === 1 ? 'Hour' : 'Hours' }}</p>
+            <div class="stat-strip">
+              <div>
+                <strong>{{ hours }}</strong>
+                <span>{{ hours === 1 ? 'Hour' : 'Hours' }}</span>
               </div>
-              <div class="text-center border-x border-[#E5E7EB]">
-                <p class="text-[18px] font-black text-[#111827] m-0">₹{{ venue.pricePerHour.toLocaleString() }}</p>
-                <p class="text-[10px] text-[#9CA3AF] m-0 mt-0.5 font-bold">per hour</p>
+              <div>
+                <strong>₹{{ venue.pricePerHour.toLocaleString() }}</strong>
+                <span>per hour</span>
               </div>
-              <div class="text-center">
-                <p class="text-[18px] font-black text-[#111827] m-0">₹{{ courtCost.toLocaleString() }}</p>
-                <p class="text-[10px] text-[#9CA3AF] m-0 mt-0.5 font-bold">court total</p>
+              <div>
+                <strong>₹{{ courtCost.toLocaleString() }}</strong>
+                <span>court total</span>
               </div>
             </div>
-          </div>
+          </section>
 
-          <!-- Rental Equipment (editable) -->
-          <div class="bg-white rounded-[24px] border border-[#F3F4F6] shadow-sm">
-            <button
-              (click)="showRental = !showRental"
-              class="w-full flex items-center justify-between px-5 pt-5 pb-4 border-none bg-transparent outline-none"
-            >
-              <div class="flex items-center gap-2">
-                <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest m-0 leading-none">
-                  Rental Equipment
-                </p>
-                <span *ngIf="rentalCost > 0" class="text-[11px] font-black text-[#8CF000] bg-[rgba(140,240,0,0.12)] px-2 py-0.5 rounded-full">
-                  +₹{{ rentalCost }}
-                </span>
+          <section class="card">
+            <button type="button" class="section-toggle" (click)="showRental = !showRental">
+              <div>
+                <h3>Rental equipment</h3>
+                <span class="badge" *ngIf="rentalCost > 0">+₹{{ rentalCost }}</span>
               </div>
-              <ion-icon [name]="showRental ? 'chevron-up-outline' : 'chevron-down-outline'" class="text-[#9CA3AF] text-sm"></ion-icon>
+              <ion-icon [name]="showRental ? 'chevron-up-outline' : 'chevron-down-outline'"></ion-icon>
             </button>
-
-            <div *ngIf="showRental" class="px-5 pb-5 space-y-3">
-              <div *ngFor="let item of venue.rentalEquipment" class="flex items-center gap-3 py-1.5 border-b border-[#F9FAFB] last:border-0">
-                <div class="w-10 h-10 rounded-xl bg-[#F3F4F6] flex items-center justify-center flex-shrink-0 text-xl font-bold">
-                  {{ item.emoji }}
+            <div class="rental-list" *ngIf="showRental">
+              <div class="rental-row" *ngFor="let item of venue.rentalEquipment">
+                <div class="rental-emoji">{{ item.emoji }}</div>
+                <div class="rental-meta">
+                  <strong>{{ item.name }}</strong>
+                  <span>₹{{ item.price }}/session
+                    <em *ngIf="(rentalQty[item.id] || 0) > 0">= ₹{{ item.price * rentalQty[item.id] }}</em>
+                  </span>
                 </div>
-                <div class="flex-1 min-w-0">
-                  <p class="text-[14px] font-black text-[#111827] m-0">{{ item.name }}</p>
-                  <p class="text-[11px] text-[#9CA3AF] m-0 mt-0.5 font-bold">
-                    ₹{{ item.price }}/session
-                    <span *ngIf="(rentalQty[item.id] || 0) > 0" class="ml-1.5 text-[#8CF000] font-black">
-                      = ₹{{ item.price * rentalQty[item.id] }}
-                    </span>
-                  </p>
-                </div>
-                <div class="flex items-center gap-2.5 flex-shrink-0">
-                  <button
-                    (click)="dec(item.id)"
-                    class="w-8 h-8 rounded-full flex items-center justify-center border transition-all outline-none"
-                    [style.borderColor]="(rentalQty[item.id] || 0) > 0 ? '#E5E7EB' : '#F3F4F6'"
-                    style="background-color: white;"
-                  >
-                    <ion-icon *ngIf="rentalQty[item.id] === 1" name="trash-outline" class="text-[#EF4444] text-[11px] font-black"></ion-icon>
-                    <ion-icon *ngIf="rentalQty[item.id] !== 1" name="remove-outline" class="text-[#6B7280] text-[11px] font-black"></ion-icon>
+                <div class="qty-controls">
+                  <button type="button" (click)="dec(item.id)">
+                    <ion-icon [name]="(rentalQty[item.id] || 0) === 1 ? 'trash-outline' : 'remove-outline'"></ion-icon>
                   </button>
-                  <span class="w-5 text-center text-[15px] font-black text-[#111827]">{{ rentalQty[item.id] || 0 }}</span>
-                  <button
-                    (click)="inc(item.id)"
-                    class="w-8 h-8 rounded-full flex items-center justify-center border-none outline-none"
-                    style="background: linear-gradient(135deg,#8CF000,#A3E635); box-shadow: 0 2px 8px rgba(140,240,0,0.35);"
-                  >
-                    <ion-icon name="add-outline" class="text-[#111827] text-[11px] font-black"></ion-icon>
+                  <span>{{ rentalQty[item.id] || 0 }}</span>
+                  <button type="button" class="plus" (click)="inc(item.id)">
+                    <ion-icon name="add-outline"></ion-icon>
                   </button>
                 </div>
               </div>
             </div>
-          </div>
+          </section>
 
-          <!-- Coupon code -->
-          <div class="bg-white rounded-[24px] border border-[#F3F4F6] shadow-sm">
-            <div class="px-5 py-5">
-              <div class="flex items-center gap-2 mb-3">
-                <ion-icon name="gift-outline" class="text-[#FF7A00] text-sm"></ion-icon>
-                <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest m-0 leading-none">Coupon / Promo</p>
+          <section class="card coupon-card">
+            <div class="card-title">
+              <ion-icon name="ticket-outline"></ion-icon>
+              <h3>Coupon code</h3>
+            </div>
+
+            <div class="coupon-applied" *ngIf="appliedCoupon; else couponForm">
+              <div class="coupon-check"><ion-icon name="checkmark"></ion-icon></div>
+              <div>
+                <strong>{{ appliedCoupon.code }}</strong>
+                <p>{{ appliedCoupon.desc }} · You save ₹{{ couponDiscount }}</p>
               </div>
+              <button type="button" class="link-btn" (click)="removeCoupon()">Remove</button>
+            </div>
 
-              <div
-                *ngIf="appliedCoupon; else couponForm"
-                class="flex items-center gap-3 bg-[#F0FDF4] rounded-2xl px-4 py-3 border border-[#BBF7D0] text-left"
-              >
-                <div class="w-8 h-8 rounded-full bg-[#22C55E] flex items-center justify-center flex-shrink-0">
-                  <ion-icon name="checkmark" class="text-white text-sm font-black"></ion-icon>
+            <ng-template #couponForm>
+              <div class="coupon-form">
+                <div class="coupon-input" [class.has-error]="!!couponError">
+                  <ion-icon name="pricetag-outline"></ion-icon>
+                  <input
+                    [(ngModel)]="couponInput"
+                    (ngModelChange)="couponError = ''"
+                    (keydown.enter)="applyCoupon()"
+                    placeholder="Enter coupon code"
+                    autocomplete="off"
+                  />
                 </div>
-                <div class="flex-1">
-                  <p class="text-[13px] font-black text-[#111827] m-0">{{ appliedCoupon.code }}</p>
-                  <p class="text-[11px] text-[#16A34A] m-0 mt-0.5 font-bold">
-                    {{ appliedCoupon.desc }} — You save ₹{{ couponDiscount }}
-                  </p>
-                </div>
-                <button (click)="appliedCoupon = null" class="text-[#9CA3AF] border-none bg-transparent outline-none">
-                  <ion-icon name="trash-outline" class="text-sm"></ion-icon>
+                <button
+                  type="button"
+                  class="apply-btn"
+                  [disabled]="!couponInput.trim() || couponLoading()"
+                  (click)="applyCoupon()"
+                >
+                  {{ couponLoading() ? '…' : 'Apply' }}
                 </button>
               </div>
+              <p class="error" *ngIf="couponError">{{ couponError }}</p>
+              <p class="hint">Try OPTIKO10 · WELCOME150 · SUPER50 · TYNG20</p>
+            </ng-template>
+          </section>
 
-              <ng-template #couponForm>
-                <div>
-                  <div class="flex gap-2">
-                    <div
-                      class="flex-1 flex items-center gap-2.5 bg-[#F3F4F6] rounded-2xl px-4 h-11 border border-transparent"
-                      [style.borderColor]="couponError ? '#EF4444' : 'transparent'"
-                    >
-                      <ion-icon name="pricetag-outline" class="text-[#9CA3AF] text-sm"></ion-icon>
-                      <input
-                        [(ngModel)]="couponInput"
-                        (ngModelChange)="couponError = ''"
-                        (keydown.enter)="applyCoupon()"
-                        placeholder="Enter coupon code"
-                        class="flex-1 bg-transparent text-[14px] font-bold text-[#111827] placeholder:text-[#9CA3AF] placeholder:font-normal border-none outline-none min-h-0 uppercase"
-                        style="box-shadow: none;"
-                      />
-                    </div>
-                    <button
-                      (click)="applyCoupon()"
-                      [disabled]="!couponInput.trim()"
-                      class="h-11 px-5 rounded-2xl text-[13px] font-black transition-all border-none outline-none"
-                      [style.background]="couponInput.trim() ? 'linear-gradient(135deg,#8CF000,#A3E635)' : '#F3F4F6'"
-                      [style.color]="couponInput.trim() ? '#111827' : '#C4C9D4'"
-                    >
-                      Apply
-                    </button>
-                  </div>
-                  <p *ngIf="couponError" class="text-[11px] text-[#EF4444] mt-1.5 ml-1 m-0 font-bold">{{ couponError }}</p>
-                  <p class="text-[11px] text-[#9CA3AF] mt-2 ml-1 m-0 font-bold">Try: TYNG20 · FIRST100 · SPORT50</p>
-                </div>
-              </ng-template>
-            </div>
-          </div>
-
-          <!-- Price breakdown -->
-          <div class="bg-white rounded-[24px] border border-[#F3F4F6] shadow-sm">
-            <div class="px-5 pt-5">
-              <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-1 m-0 leading-none">Price Breakdown</p>
-            </div>
-            
-            <div class="px-5">
-              <!-- Row: Court Booking -->
-              <div class="flex items-start justify-between py-3 border-b border-[#F9FAFB] text-left">
-                <div>
-                  <p class="text-[14px] font-bold text-[#111827] m-0">Court Booking</p>
-                  <p class="text-[11px] text-[#9CA3AF] mt-0.5 m-0 font-bold">
-                    {{ hours }} hr{{ hours > 1 ? 's' : '' }} × ₹{{ venue.pricePerHour.toLocaleString() }}/hr
-                  </p>
-                </div>
-                <p class="text-[14px] font-bold text-[#6B7280] m-0">₹{{ courtCost.toLocaleString() }}</p>
-              </div>
-
-              <!-- Row: Rental Equipment -->
-              <div class="flex items-start justify-between py-3 border-b border-[#F9FAFB] text-left" *ngIf="rentalCost > 0">
-                <div>
-                  <p class="text-[14px] font-bold text-[#111827] m-0">Rental Equipment</p>
-                  <p class="text-[11px] text-[#9CA3AF] mt-0.5 m-0 font-bold">
-                    {{ getSelectedRentalsCount() }} item{{ getSelectedRentalsCount() > 1 ? 's' : '' }} selected
-                  </p>
-                </div>
-                <p class="text-[14px] font-bold text-[#6B7280] m-0">₹{{ rentalCost.toLocaleString() }}</p>
-              </div>
-
-              <!-- Row: GST (18%) -->
-              <div class="flex items-start justify-between py-3 border-b border-[#F9FAFB] text-left">
-                <div>
-                  <p class="text-[14px] font-bold text-[#111827] m-0">GST (18%)</p>
-                  <p class="text-[11px] text-[#9CA3AF] mt-0.5 m-0 font-bold">Applicable on all services</p>
-                </div>
-                <p class="text-[14px] font-bold text-[#6B7280] m-0">₹{{ tax.toLocaleString() }}</p>
-              </div>
-
-              <!-- Row: Platform Fee -->
-              <div class="flex items-start justify-between py-3 border-b border-[#F9FAFB] text-left">
-                <div>
-                  <p class="text-[14px] font-bold text-[#111827] m-0">Platform Fee</p>
-                  <p class="text-[11px] text-[#9CA3AF] mt-0.5 m-0 font-bold">One-time processing charge</p>
-                </div>
-                <p class="text-[14px] font-bold text-[#6B7280] m-0">₹{{ platformFee.toLocaleString() }}</p>
-              </div>
-
-              <!-- Row: Coupon Discount -->
-              <div class="flex items-start justify-between py-3 border-b border-[#F9FAFB] text-left" *ngIf="couponDiscount > 0">
-                <div>
-                  <p class="text-[14px] font-bold text-[#111827] m-0">Coupon: {{ appliedCoupon?.code }}</p>
-                  <p class="text-[11px] text-[#22C55E] mt-0.5 m-0 font-bold">{{ appliedCoupon?.desc }}</p>
-                </div>
-                <p class="text-[14px] font-black text-[#22C55E] m-0">-₹{{ couponDiscount.toLocaleString() }}</p>
-              </div>
-            </div>
-
-            <!-- Grand Total -->
-            <div
-              class="mx-5 mb-5 mt-2 rounded-[20px] overflow-hidden text-left"
-              style="background: linear-gradient(135deg,#111827 0%,#1F2937 100%);"
-            >
-              <div class="px-5 py-4 flex items-center justify-between">
-                <div>
-                  <p class="text-[11px] text-white/50 uppercase tracking-wider font-bold m-0 leading-none">Grand Total</p>
-                  <p class="text-[12px] text-white/40 mt-1 m-0 leading-none font-bold">Taxes & fees included</p>
-                </div>
-                <p class="text-[28px] font-black text-[#8CF000] m-0">₹{{ grandTotal.toLocaleString() }}</p>
-              </div>
-              <div class="px-5 pb-4 flex items-center gap-2" *ngIf="couponDiscount > 0">
-                <div class="w-5 h-5 rounded-full bg-[#22C55E] flex items-center justify-center">
-                  <ion-icon name="checkmark" class="text-white text-[10px] font-black"></ion-icon>
-                </div>
-                <p class="text-[12px] text-[#22C55E] font-bold m-0 leading-none">
-                  You're saving ₹{{ couponDiscount }} on this booking!
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Cancellation policy -->
-          <div class="bg-white rounded-[24px] border border-[#F3F4F6] shadow-sm">
-            <button
-              (click)="showPolicy = !showPolicy"
-              class="w-full flex items-center justify-between px-5 py-4 border-none bg-transparent outline-none"
-            >
-              <div class="flex items-center gap-2">
-                <ion-icon name="information-circle-outline" class="text-[#FF7A00] text-sm"></ion-icon>
-                <p class="text-[14px] font-black text-[#111827] m-0">Cancellation Policy</p>
-              </div>
-              <ion-icon [name]="showPolicy ? 'chevron-up-outline' : 'chevron-down-outline'" class="text-[#9CA3AF] text-sm"></ion-icon>
-            </button>
-
-            <div *ngIf="showPolicy" class="px-5 pb-5 space-y-3">
-              <div
-                *ngFor="let p of [
-                  { icon: '✅', title: 'Full Refund', desc: 'Cancel up to 24 hours before your slot for a 100% refund.', color: '#16A34A' },
-                  { icon: '⚠️', title: '50% Refund', desc: 'Cancel between 6–24 hours before your slot for a 50% refund.', color: '#D97706' },
-                  { icon: '❌', title: 'No Refund', desc: 'Cancellations within 6 hours of the slot are non-refundable.', color: '#DC2626' }
-                ]"
-                class="flex items-start gap-3 bg-[#F9FAFB] rounded-2xl px-4 py-3 text-left"
+          <section class="card">
+            <h3 class="card-heading">Payment method</h3>
+            <div class="pay-options">
+              <button
+                type="button"
+                class="pay-option"
+                [class.is-active]="paymentMethod === 'online'"
+                (click)="paymentMethod = 'online'"
               >
-                <span class="text-lg flex-shrink-0 mt-0.5 leading-none">{{ p.icon }}</span>
+                <div class="pay-icon online"><ion-icon name="phone-portrait-outline"></ion-icon></div>
                 <div>
-                  <p class="text-[13px] font-black m-0 leading-none" [style.color]="p.color">{{ p.title }}</p>
-                  <p class="text-[12px] text-[#6B7280] leading-relaxed mt-1 m-0 font-bold">{{ p.desc }}</p>
+                  <strong>Pay online</strong>
+                  <p>UPI / cards · instant confirmation</p>
                 </div>
-              </div>
-              <p class="text-[11px] text-[#9CA3AF] px-1 leading-relaxed m-0 font-bold">
-                Refunds are processed within 5–7 business days to your original payment method. Platform fees are non-refundable.
-              </p>
-            </div>
-          </div>
-
-          <!-- Secure Payment -->
-          <div class="bg-white rounded-[24px] px-5 py-5 border border-[#F3F4F6] shadow-sm text-left">
-            <div class="flex items-center gap-2 mb-4 leading-none">
-              <ion-icon name="lock-closed-outline" class="text-[#8CF000] text-sm font-bold"></ion-icon>
-              <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest m-0">Secure Payment</p>
-            </div>
-
-            <!-- Security badges -->
-            <div class="flex items-center gap-2 mb-4 flex-wrap leading-none">
-              <span
-                *ngFor="let b of [
-                  { label: '🔒 SSL Encrypted', bg: '#F0FDF4', color: '#16A34A' },
-                  { label: '✅ PCI DSS', bg: '#EFF6FF', color: '#1D4ED8' },
-                  { label: '🛡 RBI Compliant', bg: '#FFF7ED', color: '#C2410C' }
-                ]"
-                class="text-[11px] font-black px-3 py-1.5 rounded-full"
-                [style.backgroundColor]="b.bg"
-                [style.color]="b.color"
+                <ion-icon class="radio" [name]="paymentMethod === 'online' ? 'radio-button-on' : 'radio-button-off'"></ion-icon>
+              </button>
+              <button
+                type="button"
+                class="pay-option"
+                [class.is-active]="paymentMethod === 'at_venue'"
+                (click)="paymentMethod = 'at_venue'"
               >
-                {{ b.label }}
-              </span>
-            </div>
-
-            <!-- Payment methods -->
-            <p class="text-[11px] text-[#9CA3AF] uppercase tracking-wider font-bold mb-3 m-0 leading-none">Accepted Payments</p>
-            <div class="grid grid-cols-2 gap-2.5">
-              <div
-                *ngFor="let m of [
-                  { emoji: '📱', label: 'UPI', sub: 'GPay · PhonePe · Paytm · BHIM' },
-                  { emoji: '💳', label: 'Cards', sub: 'Visa · Mastercard · RuPay · Amex' },
-                  { emoji: '🏦', label: 'Net Banking', sub: 'All major Indian banks' },
-                  { emoji: '💰', label: 'TYNG Wallet', sub: 'Instant · No extra charges' }
-                ]"
-                class="flex items-center gap-2.5 bg-[#F9FAFB] rounded-2xl px-3.5 py-3 border border-[#F3F4F6]"
-              >
-                <span class="text-xl leading-none">{{ m.emoji }}</span>
-                <div class="min-w-0">
-                  <p class="text-[12px] font-black text-[#111827] m-0">{{ m.label }}</p>
-                  <p class="text-[9px] text-[#9CA3AF] truncate mt-0.5 m-0 font-bold">{{ m.sub }}</p>
+                <div class="pay-icon venue"><ion-icon name="storefront-outline"></ion-icon></div>
+                <div>
+                  <strong>Pay at venue</strong>
+                  <p>Cash / UPI when you arrive</p>
                 </div>
+                <ion-icon class="radio" [name]="paymentMethod === 'at_venue' ? 'radio-button-on' : 'radio-button-off'"></ion-icon>
+              </button>
+            </div>
+          </section>
+
+          <section class="card">
+            <h3 class="card-heading">Price breakdown</h3>
+            <div class="price-row">
+              <div>
+                <strong>Court booking</strong>
+                <span>{{ hours }} hr × ₹{{ venue.pricePerHour.toLocaleString() }}</span>
               </div>
+              <em>₹{{ courtCost.toLocaleString() }}</em>
             </div>
-
-            <!-- EMI note -->
-            <div class="mt-3 flex items-center gap-2 bg-[#FFF7ED] rounded-xl px-3.5 py-2.5 border border-[#FFE2C2]">
-              <span class="text-base leading-none">💳</span>
-              <p class="text-[11px] font-bold text-[#C2410C] m-0">
-                EMI available on orders above ₹1,000 · No-cost EMI on select cards
-              </p>
+            <div class="price-row" *ngIf="rentalCost > 0">
+              <div>
+                <strong>Rental equipment</strong>
+                <span>{{ getSelectedRentalsCount() }} item(s)</span>
+              </div>
+              <em>₹{{ rentalCost.toLocaleString() }}</em>
             </div>
+            <div class="price-row">
+              <div>
+                <strong>GST (18%)</strong>
+                <span>On services</span>
+              </div>
+              <em>₹{{ tax.toLocaleString() }}</em>
+            </div>
+            <div class="price-row">
+              <div>
+                <strong>Platform fee</strong>
+                <span>Processing</span>
+              </div>
+              <em>₹{{ platformFee.toLocaleString() }}</em>
+            </div>
+            <div class="price-row save" *ngIf="couponDiscount > 0">
+              <div>
+                <strong>Coupon · {{ appliedCoupon?.code }}</strong>
+                <span>{{ appliedCoupon?.desc }}</span>
+              </div>
+              <em>−₹{{ couponDiscount.toLocaleString() }}</em>
+            </div>
+            <div class="grand">
+              <div>
+                <span>Grand total</span>
+                <p>Taxes & fees included</p>
+              </div>
+              <strong>₹{{ grandTotal.toLocaleString() }}</strong>
+            </div>
+          </section>
 
-            <p class="text-[10px] text-[#C4C9D4] text-center mt-4 m-0 font-bold">
-              Powered by Razorpay · All transactions are 256-bit encrypted
-            </p>
-          </div>
-
+          <p class="save-error" *ngIf="saveError()">{{ saveError() }}</p>
         </div>
-
-        <!-- Sticky checkout pay CTA -->
-        <div
-          class="fixed bottom-0 left-0 right-0 z-30 bg-white max-w-md mx-auto px-5 pt-4 pb-8 border-t border-[#F3F4F6]"
-          style="box-shadow: 0 -4px 28px rgba(0,0,0,0.09);"
-        >
-          <div class="flex items-center justify-between mb-3 leading-none text-left">
-            <div>
-              <p class="text-[11px] text-[#9CA3AF] m-0 font-bold">Total Amount</p>
-              <p class="text-[22px] font-black text-[#111827] m-0 mt-1">₹{{ grandTotal.toLocaleString() }}</p>
-            </div>
-            <button
-              (click)="proceedToPayment()"
-              class="h-14 px-8 rounded-2xl text-[16px] font-black text-white flex items-center gap-2 border-none outline-none active:scale-98 transition-all"
-              style="background: linear-gradient(135deg,#FF7A00 0%,#FF9A40 100%); box-shadow: 0 4px 20px rgba(255,122,0,0.42);"
-            >
-              <ion-icon name="lock-closed-outline" class="text-sm font-bold"></ion-icon>
-              <span>Proceed to Payment</span>
-            </button>
-          </div>
-          <div class="flex items-center justify-center gap-3 leading-none">
-            <div class="flex items-center gap-1">
-              <ion-icon name="shield-checkmark-outline" class="text-[#8CF000] text-[11px] font-black"></ion-icon>
-              <span class="text-[10px] text-[#9CA3AF] font-bold">Secure checkout</span>
-            </div>
-            <div class="w-1 h-1 rounded-full bg-[#E5E7EB]"></div>
-            <div class="flex items-center gap-1">
-              <ion-icon name="checkmark-outline" class="text-[#8CF000] text-[11px] font-black"></ion-icon>
-              <span class="text-[10px] text-[#9CA3AF] font-bold">Free cancellation 24hrs before</span>
-            </div>
-          </div>
-        </div>
-
       </div>
     </ion-content>
+
+    <ion-footer *ngIf="venue" class="summary-footer ion-no-border">
+      <div class="summary-cta">
+        <div class="cta-top">
+          <div>
+            <span>Total</span>
+            <strong>₹{{ grandTotal.toLocaleString() }}</strong>
+          </div>
+          <button
+            type="button"
+            class="cta-btn"
+            [disabled]="saving()"
+            (click)="confirmBooking()"
+          >
+            <ion-icon [name]="paymentMethod === 'online' ? 'lock-closed-outline' : 'checkmark-circle-outline'"></ion-icon>
+            <span>{{ saving() ? 'Booking…' : (paymentMethod === 'online' ? 'Pay & confirm' : 'Confirm · pay at venue') }}</span>
+          </button>
+        </div>
+        <p class="cta-note">
+          {{ paymentMethod === 'online' ? 'Secure checkout · free cancellation up to 24h before' : 'Venue will see this booking instantly · pay on arrival' }}
+        </p>
+      </div>
+    </ion-footer>
   `,
+  styles: [
+    `
+      :host { display: flex; flex-direction: column; height: 100%; }
+      .summary-content { --background: #f4f6f8; }
+      .summary-page { min-height: 100%; background: #f4f6f8; color: #111827; text-align: left; }
+      .summary-header {
+        position: sticky; top: 0; z-index: 20;
+        display: flex; align-items: center; justify-content: space-between; gap: 12px;
+        padding: 10px 16px; background: rgba(255,255,255,.96); border-bottom: 1px solid #eef0f3;
+      }
+      .summary-header-copy { text-align: center; min-width: 0; }
+      .summary-header-copy h1 { margin: 0; font-size: 15px; font-weight: 900; }
+      .summary-header-copy p { margin: 2px 0 0; font-size: 11px; font-weight: 700; color: #9ca3af; }
+      .icon-btn {
+        width: 40px; height: 40px; border: none; border-radius: 14px; background: #f3f4f6;
+        display: inline-flex; align-items: center; justify-content: center; color: #111827;
+      }
+      .icon-btn ion-icon { font-size: 20px; }
+      .icon-btn--ghost { background: transparent; pointer-events: none; }
+      .summary-body { padding: 16px 16px 28px; display: flex; flex-direction: column; gap: 14px; }
+      .card {
+        background: #fff; border: 1px solid #eef0f3; border-radius: 22px;
+        box-shadow: 0 8px 24px rgba(17,24,39,.04); padding: 16px;
+      }
+      .venue-row { display: flex; gap: 12px; align-items: center; }
+      .venue-thumb { width: 72px; height: 72px; border-radius: 16px; overflow: hidden; background: #e5e7eb; flex-shrink: 0; }
+      .venue-thumb img { width: 100%; height: 100%; object-fit: cover; }
+      .venue-meta { min-width: 0; flex: 1; }
+      .venue-meta h2 { margin: 0; font-size: 15px; font-weight: 900; }
+      .venue-meta > p { margin: 4px 0 0; font-size: 12px; font-weight: 700; color: #9ca3af; }
+      .meta-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+      .meta-chips span {
+        display: inline-flex; align-items: center; gap: 4px;
+        font-size: 11px; font-weight: 700; color: #6b7280;
+      }
+      .meta-chips ion-icon { color: #8cf000; font-size: 12px; }
+      .stat-strip {
+        margin-top: 14px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+        background: #f9fafb; border: 1px solid #f3f4f6; border-radius: 16px; padding: 12px;
+      }
+      .stat-strip div { text-align: center; }
+      .stat-strip strong { display: block; font-size: 16px; font-weight: 900; }
+      .stat-strip span { display: block; margin-top: 2px; font-size: 10px; font-weight: 700; color: #9ca3af; }
+      .section-toggle {
+        width: 100%; border: none; background: transparent; display: flex; align-items: center;
+        justify-content: space-between; padding: 0; color: inherit;
+      }
+      .section-toggle > div { display: flex; align-items: center; gap: 8px; }
+      .section-toggle h3, .card-heading, .card-title h3 {
+        margin: 0; font-size: 12px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase;
+      }
+      .badge {
+        font-size: 11px; font-weight: 900; color: #65a30d; background: rgba(140,240,0,.14);
+        border-radius: 999px; padding: 2px 8px;
+      }
+      .rental-list { margin-top: 12px; display: flex; flex-direction: column; gap: 10px; }
+      .rental-row { display: flex; align-items: center; gap: 10px; }
+      .rental-emoji {
+        width: 40px; height: 40px; border-radius: 12px; background: #f3f4f6;
+        display: flex; align-items: center; justify-content: center; font-size: 18px;
+      }
+      .rental-meta { flex: 1; min-width: 0; }
+      .rental-meta strong { display: block; font-size: 14px; font-weight: 900; }
+      .rental-meta span { display: block; margin-top: 2px; font-size: 11px; font-weight: 700; color: #9ca3af; }
+      .rental-meta em { font-style: normal; color: #8cf000; margin-left: 6px; }
+      .qty-controls { display: flex; align-items: center; gap: 8px; }
+      .qty-controls span { width: 18px; text-align: center; font-weight: 900; font-size: 14px; }
+      .qty-controls button {
+        width: 30px; height: 30px; border-radius: 999px; border: 1px solid #e5e7eb; background: #fff;
+        display: inline-flex; align-items: center; justify-content: center;
+      }
+      .qty-controls .plus {
+        border: none; background: linear-gradient(135deg,#8cf000,#a3e635);
+        box-shadow: 0 2px 8px rgba(140,240,0,.35);
+      }
+      .card-title { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+      .card-title ion-icon { color: #ff7a00; font-size: 16px; }
+      .coupon-form { display: flex; gap: 8px; }
+      .coupon-input {
+        flex: 1; display: flex; align-items: center; gap: 8px; background: #f3f4f6;
+        border: 1.5px solid transparent; border-radius: 16px; padding: 0 12px; height: 48px;
+      }
+      .coupon-input.has-error { border-color: #ef4444; background: #fef2f2; }
+      .coupon-input ion-icon { color: #9ca3af; font-size: 16px; }
+      .coupon-input input {
+        flex: 1; border: none; outline: none; background: transparent; height: 100%;
+        font-size: 14px; font-weight: 800; text-transform: uppercase; color: #111827;
+      }
+      .apply-btn {
+        height: 48px; padding: 0 18px; border: none; border-radius: 16px;
+        font-size: 13px; font-weight: 900; background: linear-gradient(135deg,#8cf000,#a3e635);
+        color: #111827; box-shadow: 0 4px 14px rgba(140,240,0,.28); white-space: nowrap;
+      }
+      .apply-btn:disabled { background: #eef0f3; color: #c4c9d4; box-shadow: none; }
+      .coupon-applied {
+        display: flex; align-items: center; gap: 10px; padding: 12px;
+        background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 16px;
+      }
+      .coupon-check {
+        width: 32px; height: 32px; border-radius: 999px; background: #22c55e; color: #fff;
+        display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+      }
+      .coupon-applied strong { display: block; font-size: 13px; font-weight: 900; }
+      .coupon-applied p { margin: 2px 0 0; font-size: 11px; font-weight: 700; color: #16a34a; }
+      .link-btn { border: none; background: transparent; color: #9ca3af; font-size: 12px; font-weight: 800; }
+      .error { margin: 8px 0 0; font-size: 11px; font-weight: 700; color: #ef4444; }
+      .hint { margin: 8px 0 0; font-size: 11px; font-weight: 700; color: #9ca3af; }
+      .pay-options { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+      .pay-option {
+        width: 100%; display: flex; align-items: center; gap: 12px; text-align: left;
+        border: 1.5px solid #e8eaee; background: #fff; border-radius: 18px; padding: 12px;
+      }
+      .pay-option.is-active {
+        border-color: #8cf000; background: rgba(140,240,0,.08);
+        box-shadow: 0 4px 14px rgba(140,240,0,.16);
+      }
+      .pay-icon {
+        width: 42px; height: 42px; border-radius: 14px; display: inline-flex;
+        align-items: center; justify-content: center; flex-shrink: 0;
+      }
+      .pay-icon.online { background: #eff6ff; color: #2563eb; }
+      .pay-icon.venue { background: #fff7ed; color: #ea580c; }
+      .pay-icon ion-icon { font-size: 18px; }
+      .pay-option strong { display: block; font-size: 14px; font-weight: 900; }
+      .pay-option p { margin: 2px 0 0; font-size: 11px; font-weight: 700; color: #9ca3af; }
+      .pay-option .radio { margin-left: auto; font-size: 20px; color: #9ca3af; }
+      .pay-option.is-active .radio { color: #65a30d; }
+      .price-row {
+        display: flex; justify-content: space-between; gap: 12px;
+        padding: 12px 0; border-bottom: 1px solid #f9fafb;
+      }
+      .price-row strong { display: block; font-size: 14px; font-weight: 800; }
+      .price-row span { display: block; margin-top: 2px; font-size: 11px; font-weight: 700; color: #9ca3af; }
+      .price-row em { font-style: normal; font-size: 14px; font-weight: 800; color: #6b7280; }
+      .price-row.save em { color: #16a34a; }
+      .grand {
+        margin-top: 12px; border-radius: 18px; padding: 14px 16px;
+        background: linear-gradient(145deg,#111827,#1f2937); color: #fff;
+        display: flex; align-items: center; justify-content: space-between;
+      }
+      .grand span { font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: rgba(255,255,255,.5); }
+      .grand p { margin: 4px 0 0; font-size: 11px; font-weight: 700; color: rgba(255,255,255,.4); }
+      .grand > strong { font-size: 24px; font-weight: 900; color: #8cf000; }
+      .save-error {
+        margin: 0; padding: 12px 14px; border-radius: 14px; background: #fef2f2;
+        border: 1px solid #fecaca; color: #dc2626; font-size: 13px; font-weight: 700;
+      }
+      .summary-footer { background: #fff; box-shadow: 0 -8px 28px rgba(17,24,39,.08); }
+      .summary-cta {
+        max-width: 28rem; margin: 0 auto;
+        padding: 12px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+      }
+      .cta-top { display: flex; align-items: center; gap: 12px; }
+      .cta-top > div span { display: block; font-size: 11px; font-weight: 700; color: #9ca3af; }
+      .cta-top > div strong { display: block; margin-top: 2px; font-size: 20px; font-weight: 900; }
+      .cta-btn {
+        flex: 1; min-width: 0; height: 52px; border: none; border-radius: 16px;
+        display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+        font-size: 14px; font-weight: 900; color: #fff;
+        background: linear-gradient(135deg,#ff7a00,#ff9a40);
+        box-shadow: 0 8px 22px rgba(255,122,0,.35); padding: 0 14px;
+      }
+      .cta-btn:disabled { opacity: .65; }
+      .cta-btn span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .cta-note { margin: 8px 0 0; text-align: center; font-size: 10px; font-weight: 700; color: #9ca3af; }
+    `,
+  ],
 })
 export class VenueBookingSummaryPage implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly bookingService = inject(BookingService);
 
   venueId: number | null = null;
   venue: VenueDetail | null = null;
 
-  selectedDate = 'Today, Jun 29';
-  selectedSlots: string[] = ['6:00 PM', '7:00 PM'];
+  selectedDate = 'Today';
+  bookingDate = '';
+  selectedSlots: string[] = [];
   rentalQty: Record<string, number> = {};
 
   showRental = true;
-  showPolicy = false;
+  paymentMethod: 'online' | 'at_venue' = 'online';
 
   couponInput = '';
-  appliedCoupon: (Coupon & { code: string }) | null = null;
+  appliedCoupon: AppliedCoupon | null = null;
   couponError = '';
+  couponLoading = signal(false);
+  saving = signal(false);
+  saveError = signal('');
 
   readonly platformFee = 49;
   readonly taxRate = 0.18;
 
   ngOnInit() {
-    this.route.paramMap.subscribe(params => {
+    this.route.paramMap.subscribe((params) => {
       const idStr = params.get('id');
-      if (idStr) {
-        this.venueId = +idStr;
+      if (!idStr) return;
+      this.venueId = +idStr;
 
-        const nav = this.router.getCurrentNavigation();
-        if (nav?.extras.state) {
-          this.venue = nav.extras.state['venue'] as VenueDetail;
-          this.selectedDate = nav.extras.state['selectedDate'] as string;
-          this.selectedSlots = nav.extras.state['selectedSlots'] as string[];
-          this.rentalQty = (nav.extras.state['rentalItems'] || {}) as Record<string, number>;
-        }
+      const nav = this.router.getCurrentNavigation();
+      const state = (nav?.extras.state || history.state || {}) as Record<string, unknown>;
 
-        if (!this.venue) {
-          this.venue = VENUE_DATA.find(v => v.id === this.venueId) || VENUE_DATA[0];
-        }
+      if (state['venue']) this.venue = state['venue'] as VenueDetail;
+      if (state['selectedDate']) this.selectedDate = String(state['selectedDate']);
+      if (state['bookingDate']) this.bookingDate = String(state['bookingDate']);
+      if (Array.isArray(state['selectedSlots'])) this.selectedSlots = state['selectedSlots'] as string[];
+      if (state['rentalItems']) this.rentalQty = state['rentalItems'] as Record<string, number>;
+
+      if (!this.venue) {
+        this.venue = VENUE_DATA.find((v) => v.id === this.venueId) || VENUE_DATA[0];
+      }
+      if (!this.bookingDate) {
+        this.bookingDate = this.fallbackBookingDate();
       }
     });
   }
@@ -477,7 +488,7 @@ export class VenueBookingSummaryPage implements OnInit {
   }
 
   getSelectedRentalsCount(): number {
-    return Object.values(this.rentalQty).filter(q => q > 0).length;
+    return Object.values(this.rentalQty).filter((q) => q > 0).length;
   }
 
   get courtCost(): number {
@@ -488,7 +499,8 @@ export class VenueBookingSummaryPage implements OnInit {
   get rentalCost(): number {
     if (!this.venue) return 0;
     return this.venue.rentalEquipment.reduce(
-      (sum, item) => sum + (this.rentalQty[item.id] || 0) * item.price, 0
+      (sum, item) => sum + (this.rentalQty[item.id] || 0) * item.price,
+      0,
     );
   }
 
@@ -501,40 +513,114 @@ export class VenueBookingSummaryPage implements OnInit {
   }
 
   get couponDiscount(): number {
-    if (!this.appliedCoupon) return 0;
-    if (this.appliedCoupon.type === 'percent') {
-      return Math.round((this.courtCost * this.appliedCoupon.discount) / 100);
-    } else {
-      return this.appliedCoupon.discount;
-    }
+    return this.appliedCoupon?.discount || 0;
   }
 
   get grandTotal(): number {
-    return this.subTotal + this.tax + this.platformFee - this.couponDiscount;
+    return Math.max(0, this.subTotal + this.tax + this.platformFee - this.couponDiscount);
   }
 
-  applyCoupon() {
+  async applyCoupon() {
     const code = this.couponInput.trim().toUpperCase();
-    if (COUPONS[code]) {
-      this.appliedCoupon = { ...COUPONS[code], code };
-      this.couponError = '';
+    if (!code) return;
+    this.couponLoading.set(true);
+    this.couponError = '';
+    try {
+      const response = await firstValueFrom(
+        this.bookingService.validateCoupon(code, this.courtCost),
+      );
+      if (!response.success || !response.data) {
+        this.couponError = response.message || 'Invalid coupon code.';
+        return;
+      }
+      const data = response.data;
+      this.appliedCoupon = {
+        code: data.code,
+        type: data.type,
+        value: data.value,
+        desc: data.description || data.title || 'Coupon applied',
+        discount: data.discount || 0,
+      };
       this.couponInput = '';
-    } else {
-      this.couponError = 'Invalid coupon code. Try TYNG20 or FIRST100';
+    } catch (error: any) {
+      this.couponError = error?.error?.message || 'Invalid coupon code.';
+    } finally {
+      this.couponLoading.set(false);
     }
+  }
+
+  removeCoupon() {
+    this.appliedCoupon = null;
   }
 
   back() {
     this.router.navigate([`/app/venue/${this.venueId}/book`], {
       state: {
         venue: this.venue,
-        rentalItems: this.rentalQty
-      }
+        rentalItems: this.rentalQty,
+      },
     });
   }
 
-  proceedToPayment() {
-    alert('Payment Successful! Court booking confirmed.');
-    this.router.navigateByUrl('/app/home');
+  async confirmBooking() {
+    if (!this.venue || !this.venueId || this.hours === 0 || this.saving()) return;
+    this.saving.set(true);
+    this.saveError.set('');
+    try {
+      const rentalDetails = this.venue.rentalEquipment
+        .filter((item) => (this.rentalQty[item.id] || 0) > 0)
+        .map((item) => ({
+          id: item.id,
+          name: item.name,
+          qty: this.rentalQty[item.id],
+          price: item.price,
+        }));
+
+      const response = await firstValueFrom(
+        this.bookingService.bookGame({
+          sport: this.venue.sport || 'basketball',
+          venue_id: this.venueId,
+          date: this.bookingDate || this.fallbackBookingDate(),
+          time: this.normalizeSlotTime(this.startTime),
+          team_size: '1',
+          duration_hours: this.hours,
+          price: this.grandTotal,
+          payment_method: this.paymentMethod,
+          coupon_code: this.appliedCoupon?.code || null,
+          coupon_discount: this.couponDiscount,
+          rental_details: rentalDetails,
+          court_name: this.venue.courtName,
+        }),
+      );
+
+      if (!response.success) {
+        this.saveError.set(response.message || 'Unable to create booking.');
+        return;
+      }
+
+      void this.router.navigateByUrl('/app/my-bookings');
+    } catch (error: any) {
+      this.saveError.set(error?.error?.message || 'Unable to create booking.');
+    } finally {
+      this.saving.set(false);
+    }
+  }
+
+  private normalizeSlotTime(slot: string): string {
+    // Ensure "6:00 AM" format for backend date_format:g:i A
+    if (/^\d{1,2}:\d{2}\s?(AM|PM)$/i.test(slot)) {
+      const [hm, ampm] = slot.trim().split(/\s+/);
+      const [h, m] = hm.split(':');
+      return `${Number(h)}:${m} ${ampm.toUpperCase()}`;
+    }
+    return slot;
+  }
+
+  private fallbackBookingDate(): string {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
   }
 }

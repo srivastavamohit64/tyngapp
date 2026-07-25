@@ -6,6 +6,7 @@ import {
   BookingParticipant,
   BookingRecord,
   BookingSlot,
+  DiscoverPlayer,
   MyBookingsResponse,
 } from '../models/api.model';
 import { ApiService } from './api.service';
@@ -18,6 +19,22 @@ export class BookingService {
     return this.api.get<MyBookingsResponse>('/my-bookings');
   }
 
+  getNearbyGames(limit = 20, options?: { matchLocation?: boolean; location?: string; q?: string }): Observable<ApiResponse<BookingRecord[]>> {
+    const params = new URLSearchParams({ limit: String(limit) });
+    if (options?.matchLocation) params.set('match_location', '1');
+    if (options?.location) params.set('location', options.location);
+    if (options?.q) params.set('q', options.q);
+    return this.api.get<BookingRecord[]>(`/nearby-games?${params.toString()}`);
+  }
+
+  search(query: string, limit = 8): Observable<ApiResponse<{ games: BookingRecord[]; players: DiscoverPlayer[] }>> {
+    const params = new URLSearchParams({
+      q: query,
+      limit: String(limit),
+    });
+    return this.api.get<{ games: BookingRecord[]; players: DiscoverPlayer[] }>(`/search?${params.toString()}`);
+  }
+
   getBooking(id: string): Observable<ApiResponse<BookingRecord>> {
     return this.api.get<BookingRecord>(`/booking/${id}`);
   }
@@ -28,8 +45,26 @@ export class BookingService {
     date: string;
     time: string;
     team_size: string;
+    duration_hours?: number;
+    price?: number;
+    payment_method?: 'online' | 'at_venue';
+    coupon_code?: string | null;
+    coupon_discount?: number;
+    rental_details?: unknown;
+    court_name?: string | null;
   }): Observable<ApiResponse<BookingRecord>> {
     return this.api.post<BookingRecord>('/book-game', payload);
+  }
+
+  validateCoupon(code: string, amount: number): Observable<ApiResponse<{
+    code: string;
+    title?: string;
+    description?: string;
+    type: 'percent' | 'flat';
+    value: number;
+    discount: number;
+  }>> {
+    return this.api.post('/coupons/validate', { code, amount });
   }
 
   joinBooking(bookingId: string): Observable<ApiResponse<BookingRecord>> {

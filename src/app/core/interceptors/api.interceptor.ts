@@ -3,11 +3,16 @@ import { environment } from '../../../environments/environment';
 
 const TOKEN_KEY = 'tyng_auth_token';
 
+const normalizeUrl = (url: string): string =>
+  url.replace('tyngpeaople.com', 'tyngpeople.com');
+
 export const apiInterceptor: HttpInterceptorFn = (req, next) => {
-  const isApiRequest = req.url.startsWith(environment.apiUrl);
+  const rewrittenUrl = normalizeUrl(req.url);
+  const apiBase = normalizeUrl(environment.apiUrl);
+  const isApiRequest = rewrittenUrl.startsWith(apiBase);
 
   if (!isApiRequest) {
-    return next(req);
+    return next(req.url === rewrittenUrl ? req : req.clone({ url: rewrittenUrl }));
   }
 
   const token = localStorage.getItem(TOKEN_KEY);
@@ -17,5 +22,5 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
     headers = headers.set('Authorization', `Bearer ${token}`);
   }
 
-  return next(req.clone({ headers }));
+  return next(req.clone({ url: rewrittenUrl, headers }));
 };

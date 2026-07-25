@@ -1,19 +1,32 @@
 import { CommonModule } from '@angular/common';
-import { Component, signal, computed, inject } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
+import { firstValueFrom } from 'rxjs';
+import { BookingRecord } from '../../../core/models/api.model';
+import { AuthService } from '../../../core/services/auth.service';
+import { BookingService } from '../../../core/services/booking.service';
 import { BrandHeaderShellComponent } from '../../../shared/components/brand-header-shell/brand-header-shell.component';
+import { formatBookingDate, formatBookingTimeRange } from '../../../core/utils/booking.utils';
 
 interface BookingItem {
-  id: number;
+  id: string;
   date: string;
   time: string;
   customer: string;
+  customerPhone: string;
+  customerEmail: string;
   court: string;
+  sport: string;
   status: 'confirmed' | 'pending' | 'completed' | 'cancelled';
   amount: string;
-  deposit: string;
+  durationLabel: string;
+  paymentMethodLabel: string;
+  paymentStatusLabel: string;
+  couponLabel: string | null;
+  rentals: Array<{ name: string; qty: number; lineTotal: string }>;
+  raw: BookingRecord;
 }
 
 @Component({
@@ -23,212 +36,708 @@ interface BookingItem {
   template: `
     <ion-content [fullscreen]="true" class="has-tabs">
       <app-brand-header-shell>
-      <div class="bookings-page pb-36 text-left">
-        
-        <!-- Header -->
-        <div class="sticky-header bg-white border-b border-[#F3F4F6]">
-          <div class="flex items-center justify-between px-5 h-14">
-            <div class="flex items-center gap-3">
-              <button (click)="goHome()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
-                <ion-icon name="chevron-back-outline" class="text-xl text-[#111827]"></ion-icon>
-              </button>
-              <p class="text-[17px] font-black text-[#111827] m-0">Bookings</p>
-            </div>
-            <button class="w-10 h-10 flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
-              <ion-icon name="funnel-outline" class="text-lg text-[#111827]"></ion-icon>
+      <div class="bookings-page">
+        <header class="page-header">
+          <div class="page-header__row">
+            <button type="button" class="icon-btn" (click)="goHome()" aria-label="Back">
+              <ion-icon name="chevron-back-outline"></ion-icon>
+            </button>
+            <h1>Bookings</h1>
+            <button type="button" class="icon-btn" (click)="loadBookings()" aria-label="Refresh">
+              <ion-icon name="refresh-outline"></ion-icon>
             </button>
           </div>
 
-          <!-- Search input box -->
-          <div class="px-5 pb-3 pt-2 relative">
-            <ion-icon name="search-outline" class="absolute left-9 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></ion-icon>
-            <input type="text" [(ngModel)]="searchQuery" placeholder="Search bookings..." class="search-input" />
+          <div class="search-wrap">
+            <ion-icon name="search-outline"></ion-icon>
+            <input type="text" [(ngModel)]="searchQuery" placeholder="Search bookings..." />
           </div>
 
-          <!-- Filters Segment chips row -->
-          <div class="flex gap-2 px-5 pb-3 overflow-x-auto no-scrollbar">
-            <button *ngFor="let filter of filters" (click)="selectedFilter.set(filter)" class="px-4 py-2 rounded-xl text-xs font-black border-none whitespace-nowrap uppercase tracking-wider transition-all"
-              [style.backgroundColor]="selectedFilter() === filter ? '#8CF000' : '#F3F4F6'"
-              [style.color]="selectedFilter() === filter ? '#111827' : '#9CA3AF'">
+          <div class="filter-row">
+            <button
+              type="button"
+              class="filter-chip"
+              *ngFor="let filter of filters"
+              [class.active]="selectedFilter() === filter"
+              (click)="selectedFilter.set(filter)"
+            >
               {{ filter }}
             </button>
           </div>
-        </div>
+        </header>
 
-        <!-- Bookings list -->
-        <div class="px-5 pt-4 space-y-4">
-          <div *ngFor="let booking of filteredBookings()" class="bg-white p-5 rounded-[24px] border border-[#F3F4F6] shadow-sm text-left">
-            <div class="flex items-start justify-between mb-3.5">
-              <div class="flex-grow">
-                <div class="flex items-center gap-2 mb-2">
-                  <ion-icon name="calendar-outline" class="text-slate-400 text-xs"></ion-icon>
-                  <span class="text-[11px] text-[#9CA3AF] font-bold">{{ booking.date }}</span>
-                  <ion-icon name="time-outline" class="text-slate-400 text-xs ml-1.5"></ion-icon>
-                  <span class="text-[11px] text-[#9CA3AF] font-bold">{{ booking.time }}</span>
-                </div>
-                <p class="text-[15px] font-black text-[#111827] m-0">{{ booking.customer }}</p>
-                <p class="text-xs text-[#9CA3AF] m-0 mt-0.5 font-bold">{{ booking.court }}</p>
+        <main class="page-body">
+          <p *ngIf="loading()" class="status">Loading bookings…</p>
+          <div *ngIf="!loading() && errorMessage()" class="error-box">{{ errorMessage() }}</div>
+
+          <article class="booking-card" *ngFor="let booking of filteredBookings()">
+            <div class="booking-card__top">
+              <div class="booking-card__meta">
+                <span><ion-icon name="calendar-outline"></ion-icon>{{ booking.date }}</span>
+                <span><ion-icon name="time-outline"></ion-icon>{{ booking.time }}</span>
               </div>
-              <div class="text-right flex-shrink-0">
-                <p class="text-[15px] font-black text-[#111827] m-0 mb-2">{{ booking.amount }}</p>
-                
-                <span class="rounded-full px-2.5 py-1 text-[10px] font-black inline-flex items-center gap-1 uppercase tracking-wider"
-                  [style.backgroundColor]="getStatusStyle(booking.status).bg"
-                  [style.color]="getStatusStyle(booking.status).color">
-                  <ion-icon [name]="booking.status === 'confirmed' ? 'checkmark-circle-outline' : 'time-outline'" class="text-[11px]"></ion-icon>
-                  {{ booking.status }}
-                </span>
+              <p class="booking-card__amount">{{ booking.amount }}</p>
+            </div>
+
+            <div class="booking-card__main">
+              <div class="booking-card__who">
+                <p class="booking-card__name">{{ booking.customer }}</p>
+                <p class="booking-card__court">{{ booking.court }} · {{ booking.sport }}</p>
+                <p class="booking-card__contact" *ngIf="booking.customerPhone || booking.customerEmail">
+                  <span *ngIf="booking.customerPhone"><ion-icon name="call-outline"></ion-icon>{{ booking.customerPhone }}</span>
+                  <span *ngIf="booking.customerEmail"><ion-icon name="mail-outline"></ion-icon>{{ booking.customerEmail }}</span>
+                </p>
+              </div>
+              <span class="status-badge" [attr.data-status]="booking.status">
+                <ion-icon [name]="booking.status === 'confirmed' || booking.status === 'completed' ? 'checkmark-circle-outline' : 'time-outline'"></ion-icon>
+                {{ booking.status }}
+              </span>
+            </div>
+
+            <div class="detail-grid">
+              <div class="detail-box">
+                <p class="detail-box__label">Duration</p>
+                <p class="detail-box__value">{{ booking.durationLabel }}</p>
+              </div>
+              <div class="detail-box">
+                <p class="detail-box__label">Payment</p>
+                <p class="detail-box__value">{{ booking.paymentMethodLabel }}</p>
+                <p class="detail-box__sub">{{ booking.paymentStatusLabel }}</p>
               </div>
             </div>
 
-            <!-- Deposit card info -->
-            <div class="bg-[#F9FAFB] p-3 rounded-xl mb-4 border border-[#F3F4F6]">
-              <p class="text-[10px] font-bold text-[#9CA3AF] uppercase tracking-wider m-0 mb-0.5">Deposit Received</p>
-              <p class="text-[13px] font-black text-[#111827] m-0">{{ booking.deposit }}</p>
+            <div class="detail-box detail-box--full" *ngIf="booking.couponLabel">
+              <p class="detail-box__label">Coupon</p>
+              <p class="detail-box__value detail-box__value--green">{{ booking.couponLabel }}</p>
             </div>
 
-            <!-- Accept/Decline button rows for pending bookings -->
-            <div *ngIf="booking.status === 'pending'" class="flex gap-2">
-              <button (click)="acceptBooking(booking.id)" class="flex-1 h-10 rounded-xl font-black text-xs btn-green-gradient border-none">
-                Accept
-              </button>
-              <button (click)="declineBooking(booking.id)" class="px-4 h-10 rounded-xl font-bold text-xs bg-[#F3F4F6] text-[#6B7280] border-none">
-                Decline
-              </button>
+            <div class="kit-box" *ngIf="booking.rentals.length">
+              <p class="detail-box__label">Rental kit / equipment</p>
+              <div class="kit-row" *ngFor="let item of booking.rentals">
+                <span class="kit-name">{{ item.name }} × {{ item.qty }}</span>
+                <strong>{{ item.lineTotal }}</strong>
+              </div>
             </div>
-          </div>
 
-          <!-- Empty state list placeholder -->
-          <div *ngIf="filteredBookings().length === 0" class="text-center py-16 text-slate-400">
-            <ion-icon name="calendar-clear-outline" class="text-5xl mb-3 text-slate-300"></ion-icon>
-            <p class="text-sm font-semibold m-0">No bookings found matching filter</p>
-          </div>
-        </div>
+            <div class="kit-box kit-box--empty" *ngIf="!booking.rentals.length">
+              <p class="detail-box__label">Rental kit / equipment</p>
+              <p class="detail-box__sub">No rental items selected</p>
+            </div>
 
+            <div class="booking-card__actions" *ngIf="booking.status === 'pending'">
+              <button type="button" class="btn-accept" (click)="acceptBooking(booking.id)">Accept</button>
+              <button type="button" class="btn-decline" (click)="declineBooking(booking.id)">Decline</button>
+            </div>
+          </article>
+
+          <div *ngIf="!loading() && filteredBookings().length === 0" class="empty-state">
+            <div class="empty-state__icon">
+              <ion-icon name="calendar-clear-outline"></ion-icon>
+            </div>
+            <p class="empty-state__title">No venue bookings found</p>
+            <p class="empty-state__text">Bookings made for your courts will appear here.</p>
+          </div>
+        </main>
       </div>
       </app-brand-header-shell>
     </ion-content>
   `,
   styles: [`
-    .bookings-page {
-      background: #FAFBFC;
-      min-height: 100%;
+    :host {
+      display: block;
     }
 
-    .sticky-header {
+    .bookings-page {
+      min-height: 100%;
+      background: #FAFBFC;
+      padding-bottom: 120px;
+    }
+
+    .page-header {
       position: sticky;
       top: 0;
-      z-index: 30;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+      z-index: 20;
+      background: #fff;
+      border-bottom: 1px solid #F3F4F6;
+      padding: 8px 16px 12px;
     }
 
-    .no-scrollbar {
-      scrollbar-width: none;
-      &::-webkit-scrollbar {
-        display: none;
-      }
+    .page-header__row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 48px;
+      margin-bottom: 10px;
     }
 
-    .search-input {
+    .page-header h1 {
+      margin: 0;
+      font-size: 17px;
+      font-weight: 900;
+      color: #111827;
+    }
+
+    .icon-btn {
+      width: 40px;
+      height: 40px;
+      border: none;
+      border-radius: 12px;
+      background: #F3F4F6;
+      color: #111827;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      flex-shrink: 0;
+    }
+
+    .icon-btn ion-icon {
+      font-size: 18px;
+    }
+
+    .search-wrap {
+      position: relative;
+      margin-bottom: 12px;
+    }
+
+    .search-wrap ion-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 18px;
+      color: #9CA3AF;
+      pointer-events: none;
+    }
+
+    .search-wrap input {
       width: 100%;
       height: 44px;
-      padding: 0 16px 0 38px;
+      border: 1.5px solid #E5E7EB;
       border-radius: 14px;
-      border: 2px solid #F3F4F6;
       background: #F9FAFB;
+      padding: 0 14px 0 42px;
       font-size: 14px;
       font-weight: 600;
       color: #111827;
       outline: none;
       box-sizing: border-box;
-
-      &:focus {
-        border-color: #8CF000;
-        background: white;
-      }
     }
 
-    .btn-green-gradient {
-      background: linear-gradient(135deg, #8CF000, #A3E635);
-      box-shadow: 0 4px 12px rgba(140,240,0,0.30);
+    .search-wrap input:focus {
+      border-color: #8CF000;
+      background: #fff;
+    }
+
+    .filter-row {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .filter-row::-webkit-scrollbar {
+      display: none;
+    }
+
+    .filter-chip {
+      flex: 0 0 auto;
+      height: 36px;
+      min-width: auto;
+      padding: 0 14px;
+      border: 1.5px solid #E5E7EB;
+      border-radius: 999px;
+      background: #F3F4F6;
+      color: #6B7280;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: capitalize;
+      letter-spacing: 0;
+      white-space: nowrap;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .filter-chip.active {
+      background: #8CF000;
+      border-color: #8CF000;
       color: #111827;
     }
-  `]
+
+    .page-body {
+      padding: 16px;
+    }
+
+    .status {
+      margin: 0;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: #9CA3AF;
+      padding: 24px 0;
+    }
+
+    .error-box {
+      margin-bottom: 12px;
+      border-radius: 16px;
+      background: #FEF2F2;
+      border: 1px solid #FECACA;
+      padding: 12px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #DC2626;
+    }
+
+    .booking-card {
+      background: #fff;
+      border: 1px solid #F3F4F6;
+      border-radius: 20px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    }
+
+    .booking-card__top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .booking-card__meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #9CA3AF;
+    }
+
+    .booking-card__meta span {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .booking-card__meta ion-icon {
+      font-size: 12px;
+    }
+
+    .booking-card__amount {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 900;
+      color: #111827;
+      flex-shrink: 0;
+    }
+
+    .booking-card__main {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .booking-card__name {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 900;
+      color: #111827;
+    }
+
+    .booking-card__court {
+      margin: 4px 0 0;
+      font-size: 12px;
+      font-weight: 700;
+      color: #9CA3AF;
+    }
+
+    .status-badge {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      background: #F0FDF4;
+      color: #16A34A;
+    }
+
+    .status-badge ion-icon {
+      font-size: 12px;
+    }
+
+    .status-badge[data-status='pending'] {
+      background: #FFF7ED;
+      color: #C2410C;
+    }
+
+    .status-badge[data-status='cancelled'] {
+      background: #FEF2F2;
+      color: #DC2626;
+    }
+
+    .status-badge[data-status='completed'] {
+      background: #EFF6FF;
+      color: #2563EB;
+    }
+
+    .payment-box {
+      background: #F9FAFB;
+      border: 1px solid #F3F4F6;
+      border-radius: 12px;
+      padding: 10px 12px;
+    }
+
+    .payment-box__label {
+      margin: 0 0 2px;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #9CA3AF;
+    }
+
+    .payment-box__value {
+      margin: 0;
+      font-size: 13px;
+      font-weight: 900;
+      color: #111827;
+    }
+
+    .booking-card__contact {
+      margin: 6px 0 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #6B7280;
+    }
+
+    .booking-card__contact span {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .booking-card__contact ion-icon {
+      font-size: 12px;
+      color: #9CA3AF;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .detail-box {
+      background: #F9FAFB;
+      border: 1px solid #F3F4F6;
+      border-radius: 12px;
+      padding: 10px 12px;
+    }
+
+    .detail-box--full {
+      margin-bottom: 8px;
+    }
+
+    .detail-box__label {
+      margin: 0 0 4px;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #9CA3AF;
+    }
+
+    .detail-box__value {
+      margin: 0;
+      font-size: 13px;
+      font-weight: 900;
+      color: #111827;
+    }
+
+    .detail-box__value--green {
+      color: #16A34A;
+    }
+
+    .detail-box__sub {
+      margin: 3px 0 0;
+      font-size: 11px;
+      font-weight: 700;
+      color: #9CA3AF;
+    }
+
+    .kit-box {
+      background: #F9FAFB;
+      border: 1px solid #F3F4F6;
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin-bottom: 4px;
+    }
+
+    .kit-box--empty .detail-box__sub {
+      margin-top: 2px;
+    }
+
+    .kit-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding-top: 6px;
+    }
+
+    .kit-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #374151;
+    }
+
+    .kit-row strong {
+      font-size: 13px;
+      font-weight: 900;
+      color: #111827;
+    }
+
+    .booking-card__actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .btn-accept,
+    .btn-decline {
+      height: 40px;
+      border: none;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 900;
+      padding: 0 16px;
+    }
+
+    .btn-accept {
+      flex: 1;
+      background: linear-gradient(135deg, #8CF000, #A3E635);
+      color: #111827;
+      box-shadow: 0 4px 12px rgba(140, 240, 0, 0.28);
+    }
+
+    .btn-decline {
+      background: #F3F4F6;
+      color: #6B7280;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 16px;
+    }
+
+    .empty-state__icon {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 14px;
+      border-radius: 20px;
+      background: #F3F4F6;
+      display: grid;
+      place-items: center;
+      color: #9CA3AF;
+      font-size: 34px;
+    }
+
+    .empty-state__title {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 900;
+      color: #111827;
+    }
+
+    .empty-state__text {
+      margin: 6px 0 0;
+      font-size: 12px;
+      font-weight: 600;
+      color: #9CA3AF;
+    }
+  `],
 })
-export class VenueBookingsPage {
+export class VenueBookingsPage implements OnInit {
   private readonly router = inject(Router);
+  private readonly auth = inject(AuthService);
+  private readonly bookingService = inject(BookingService);
 
   searchQuery = '';
   selectedFilter = signal('all');
+  loading = signal(false);
+  errorMessage = signal('');
+  bookings = signal<BookingItem[]>([]);
 
   readonly filters = ['all', 'confirmed', 'pending', 'completed', 'cancelled'];
 
-  bookings = signal<BookingItem[]>([
-    {
-      id: 1,
-      date: 'Today',
-      time: '4:00 PM - 6:00 PM',
-      customer: 'Rahul Sharma',
-      court: 'Court 2',
-      status: 'confirmed',
-      amount: '₹2,000',
-      deposit: '₹500',
-    },
-    {
-      id: 2,
-      date: 'Today',
-      time: '7:00 PM - 9:00 PM',
-      customer: 'Junior Cricket Team',
-      court: 'Main Ground',
-      status: 'pending',
-      amount: '₹3,500',
-      deposit: '₹1,000',
-    },
-    {
-      id: 3,
-      date: 'Tomorrow',
-      time: '6:00 AM - 8:00 AM',
-      customer: 'Elite Football Squad',
-      court: 'Main Ground',
-      status: 'confirmed',
-      amount: '₹3,000',
-      deposit: '₹1,000',
-    },
-    {
-      id: 4,
-      date: 'Tomorrow',
-      time: '6:00 PM - 7:00 PM',
-      customer: 'Priya Singh',
-      court: 'Court 1',
-      status: 'pending',
-      amount: '₹1,500',
-      deposit: '₹400',
-    },
-  ]);
-
   filteredBookings = computed(() => {
-    return this.bookings().filter(b => {
-      const matchesSearch = b.customer.toLowerCase().includes(this.searchQuery.toLowerCase()) || b.court.toLowerCase().includes(this.searchQuery.toLowerCase());
+    const q = this.searchQuery.trim().toLowerCase();
+    return this.bookings().filter((b) => {
+      const matchesSearch = !q
+        || b.customer.toLowerCase().includes(q)
+        || b.court.toLowerCase().includes(q)
+        || b.sport.toLowerCase().includes(q);
       const matchesFilter = this.selectedFilter() === 'all' || b.status === this.selectedFilter();
       return matchesSearch && matchesFilter;
     });
   });
 
-  acceptBooking(id: number) {
-    this.bookings.update(list => list.map(b => b.id === id ? { ...b, status: 'confirmed' } : b));
+  ngOnInit() {
+    void this.loadBookings();
   }
 
-  declineBooking(id: number) {
-    this.bookings.update(list => list.map(b => b.id === id ? { ...b, status: 'cancelled' } : b));
+  async loadBookings() {
+    this.loading.set(true);
+    this.errorMessage.set('');
+    try {
+      const response = await firstValueFrom(this.bookingService.getMyBookings());
+      if (!response.success || !response.data) {
+        this.errorMessage.set(response.message || 'Unable to load bookings.');
+        this.bookings.set([]);
+        return;
+      }
+
+      const all = [
+        ...(response.data.upcoming || []),
+        ...(response.data.past || []),
+        ...(response.data.cancelled || []),
+        ...(response.data.completed || []),
+      ];
+
+      const venueBookings = all
+        .map((b) => this.mapBooking(b))
+        .sort((a, b) => String(b.raw.bookingDate || '').localeCompare(String(a.raw.bookingDate || ''))
+          || String(b.raw.startTime || '').localeCompare(String(a.raw.startTime || '')));
+
+      this.bookings.set(venueBookings);
+    } catch (error: any) {
+      this.errorMessage.set(error?.error?.message || String(error) || 'Unable to load bookings.');
+      this.bookings.set([]);
+    } finally {
+      this.loading.set(false);
+    }
   }
 
-  getStatusStyle(status: string) {
-    if (status === 'confirmed' || status === 'completed') return { bg: '#F0FDF4', color: '#16A34A' };
-    if (status === 'pending') return { bg: '#FFF7ED', color: '#C2410C' };
-    return { bg: '#FEF2F2', color: '#DC2626' }; // Cancelled
+  async acceptBooking(id: string) {
+    const item = this.bookings().find((b) => b.id === id);
+    if (!item) return;
+    try {
+      await firstValueFrom(this.bookingService.updateBooking({
+        booking_id: id,
+        sport: item.raw.sport,
+        venue_id: item.raw.venueId,
+        date: item.raw.bookingDate,
+        time: this.toAmPm(item.raw.startTime),
+        team_size: item.raw.teamSize || String(item.raw.totalPlayers || 2),
+      }));
+      await this.loadBookings();
+    } catch (error: any) {
+      this.errorMessage.set(error?.error?.message || 'Unable to accept booking.');
+    }
+  }
+
+  async declineBooking(id: string) {
+    try {
+      await firstValueFrom(this.bookingService.cancelBooking(id));
+      await this.loadBookings();
+    } catch (error: any) {
+      this.errorMessage.set(error?.error?.message || 'Unable to decline booking.');
+    }
   }
 
   goHome() {
-    this.router.navigateByUrl('/app/venue/dashboard');
+    void this.router.navigateByUrl('/app/venue/dashboard');
+  }
+
+  private mapBooking(booking: BookingRecord): BookingItem {
+    const status = this.normalizeStatus(booking.bookingStatus);
+    const court = booking.slot?.courtName
+      || (booking.calendarEvent?.meta?.['courtName'] as string)
+      || 'Court';
+    const hours = Math.max(1, Math.round((Number(booking.durationMinutes) || 60) / 60));
+    const rentals = (Array.isArray(booking.rentalDetails) ? booking.rentalDetails : [])
+      .filter((item) => Number(item?.qty || 0) > 0)
+      .map((item) => {
+        const qty = Number(item.qty || 0);
+        const price = Number(item.price || 0);
+        return {
+          name: String(item.name || 'Equipment'),
+          qty,
+          lineTotal: `₹${(qty * price).toLocaleString('en-IN')}`,
+        };
+      });
+
+    const method = String(booking.paymentMethod || '').toLowerCase();
+    const payment = String(booking.paymentStatus || 'pending').toLowerCase();
+
+    return {
+      id: booking.id,
+      date: formatBookingDate(booking.bookingDate),
+      time: formatBookingTimeRange(booking.startTime, booking.endTime).replace(' · ', ' - '),
+      customer: booking.host?.name || 'Player',
+      customerPhone: String(booking.host?.phone || ''),
+      customerEmail: String(booking.host?.email || ''),
+      court,
+      sport: this.titleCase(booking.sport || 'Sport'),
+      status,
+      amount: `₹${Number(booking.price || 0).toLocaleString('en-IN')}`,
+      durationLabel: hours === 1 ? '1 hour' : `${hours} hours`,
+      paymentMethodLabel: method === 'at_venue'
+        ? 'Pay at venue'
+        : method === 'online'
+          ? 'Paid online'
+          : 'Not specified',
+      paymentStatusLabel: this.formatPaymentStatus(payment),
+      couponLabel: booking.couponCode
+        ? `${booking.couponCode}${booking.couponDiscount ? ` (−₹${Number(booking.couponDiscount).toLocaleString('en-IN')})` : ''}`
+        : null,
+      rentals,
+      raw: booking,
+    };
+  }
+
+  private formatPaymentStatus(status: string): string {
+    if (status === 'paid' || status === 'completed') return 'Payment received';
+    if (status === 'pay_at_venue') return 'Collect on arrival';
+    if (status === 'pending') return 'Payment pending';
+    return this.titleCase(status.replace(/_/g, ' '));
+  }
+
+  private normalizeStatus(status?: string | null): BookingItem['status'] {
+    const value = String(status || '').toLowerCase();
+    if (value === 'pending') return 'pending';
+    if (value === 'cancelled' || value === 'expired') return 'cancelled';
+    if (value === 'completed') return 'completed';
+    return 'confirmed';
+  }
+
+  private toAmPm(time24?: string | null): string {
+    if (!time24) return '6:00 AM';
+    if (/am|pm/i.test(time24)) return time24;
+    const [h = '0', m = '00'] = time24.split(':');
+    const hour = Number(h);
+    const suffix = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${m} ${suffix}`;
+  }
+
+  private titleCase(value: string): string {
+    return value.replace(/\b\w/g, (c) => c.toUpperCase());
   }
 }
