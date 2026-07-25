@@ -43,7 +43,6 @@ interface VenueNotification {
     .venue-notifications {
       min-height: 100%;
       background: #fafbfc;
-      padding-top: env(safe-area-inset-top, 0px);
       padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
     }
     .venue-notifications-header {
@@ -51,6 +50,7 @@ interface VenueNotification {
       align-items: center;
       gap: 12px;
       padding: 12px 20px;
+      padding-top: calc(12px + env(safe-area-inset-top, 0px));
       background: #fff;
       border-bottom: 1px solid #f3f4f6;
       position: sticky;

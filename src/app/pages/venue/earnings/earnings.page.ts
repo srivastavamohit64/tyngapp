@@ -33,7 +33,7 @@ interface TransactionItem {
   standalone: true,
   imports: [CommonModule, IonicModule, FormsModule],
   template: `
-    <ion-content [fullscreen]="true">
+    <ion-content [fullscreen]="true" class="has-tabs">
       <div class="earnings-page pb-36 text-left">
         <!-- Header -->
         <div class="sticky-header bg-white border-b border-[#F3F4F6]">
@@ -332,7 +332,7 @@ interface TransactionItem {
       </div>
 
       <!-- Sticky bottom bar -->
-      <div class="fixed bottom-0 left-0 right-0 z-30 bg-white px-5 pt-3 pb-8"
+      <div class="venue-safe-footer fixed bottom-0 left-0 right-0 z-30 bg-white px-5 pt-3"
         style="box-shadow: 0 -4px 24px rgba(0,0,0,0.09); border-top: 1px solid #F3F4F6;">
         <div class="flex gap-3 max-w-md mx-auto">
           <button class="flex-1 h-12 rounded-2xl text-[13px] font-black text-[#6B7280] bg-[#F3F4F6] border-none flex items-center justify-center gap-1.5">
@@ -350,12 +350,14 @@ interface TransactionItem {
     .earnings-page {
       background: #FAFBFC;
       min-height: 100%;
+      padding-bottom: calc(160px + env(safe-area-inset-bottom, 0px));
     }
 
     .sticky-header {
       position: sticky;
       top: 0;
       z-index: 30;
+      padding-top: env(safe-area-inset-top, 0px);
       box-shadow: 0 2px 10px rgba(0,0,0,0.02);
     }
 

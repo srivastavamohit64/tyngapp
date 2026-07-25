@@ -32,18 +32,12 @@ const STATUS_OPTIONS: StatusOption[] = [
   { id: 'reserved', label: 'Reserved', emoji: '🟠', color: '#C2410C', bg: '#FFF7ED' },
 ];
 
-const AMENITIES = [
-  'Changing Rooms', 'Washrooms', 'Showers', 'Lockers',
-  'Drinking Water', 'Floodlights', 'Air Conditioning', 'Parking',
-  'Wi-Fi', 'Cafeteria', 'Pro Shop'
-];
-
 @Component({
   selector: 'app-venue-facilities-page',
   standalone: true,
   imports: [CommonModule, IonicModule, FormsModule],
   template: `
-    <ion-content [fullscreen]="true">
+    <ion-content [fullscreen]="true" class="has-tabs">
       <div class="facilities-page pb-36 text-left">
         
         <!-- Header -->
@@ -52,7 +46,7 @@ const AMENITIES = [
             <button (click)="goBack()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
               <ion-icon name="chevron-back-outline" class="text-xl text-[#111827]"></ion-icon>
             </button>
-            <p class="text-[17px] font-black text-[#111827] m-0">Facilities & Amenities</p>
+            <p class="text-[17px] font-black text-[#111827] m-0">Facilities</p>
             <button (click)="addFacility()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-[#8CF000]/12 border-none">
               <ion-icon name="add-outline" class="text-xl text-[#111827] font-bold"></ion-icon>
             </button>
@@ -174,20 +168,6 @@ const AMENITIES = [
             </div>
           </div>
 
-          <!-- Form Section 3: Amenities toggles -->
-          <div class="section-card p-5 bg-white text-left">
-            <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-1.5 m-0">Amenities</p>
-            <p class="text-[12px] text-[#9CA3AF] mb-4 m-0 font-bold">Select all that apply to this facility</p>
-            <div class="flex flex-wrap gap-2">
-              <button *ngFor="let a of amenitiesList" (click)="toggleAmenity(a)" class="px-3 py-2 rounded-full text-[11px] font-bold border-none transition-all"
-                [style.backgroundColor]="hasAmenity(a) ? 'rgba(140,240,0,0.14)' : '#F3F4F6'"
-                [style.color]="hasAmenity(a) ? '#111827' : '#6B7280'"
-                [style.border]="hasAmenity(a) ? '1.5px solid #8CF000' : 'none'">
-                <span *ngIf="hasAmenity(a)" class="mr-1">✓</span>{{ a }}
-              </button>
-            </div>
-          </div>
-
           <!-- Form Section 4: Equipment rentals count plus/minus -->
           <div class="section-card p-5 bg-white text-left">
             <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-4 m-0">Equipment Available</p>
@@ -281,7 +261,7 @@ const AMENITIES = [
         </div>
 
         <!-- Discard/Save floating footer track -->
-        <div *ngIf="hasChanges() || saved()" class="fixed bottom-0 left-0 right-0 z-30 bg-white max-w-md mx-auto px-5 pt-4 pb-8 shadow-2xl border-t border-[#F3F4F6]">
+        <div *ngIf="hasChanges() || saved()" class="venue-safe-footer fixed bottom-0 left-0 right-0 z-30 bg-white max-w-md mx-auto px-5 pt-4 shadow-2xl border-t border-[#F3F4F6]">
           <div class="flex gap-3">
             <button (click)="discardChanges()" [disabled]="saving()" class="flex-1 h-12 rounded-2xl text-[14px] font-bold text-[#6B7280] bg-[#F3F4F6] border-none flex items-center justify-center gap-1">
               <ion-icon name="close-outline" class="text-base"></ion-icon>Discard
@@ -302,12 +282,14 @@ const AMENITIES = [
     .facilities-page {
       background: #FAFBFC;
       min-height: 100%;
+      padding-bottom: calc(144px + env(safe-area-inset-bottom, 0px));
     }
 
     .sticky-header {
       position: sticky;
       top: 0;
       z-index: 30;
+      padding-top: env(safe-area-inset-top, 0px);
       box-shadow: 0 2px 10px rgba(0,0,0,0.02);
     }
 
@@ -408,7 +390,6 @@ export class VenueFacilitiesPage implements OnInit {
   status = signal('open');
   pricePerHour = 0;
 
-  amenities = signal<string[]>([]);
   equipQty = signal<Record<string, number>>({});
   rentalPrices: Record<string, string> = {};
 
@@ -422,7 +403,6 @@ export class VenueFacilitiesPage implements OnInit {
 
   readonly surfaces = SURFACES;
   readonly statusOptions = STATUS_OPTIONS;
-  readonly amenitiesList = AMENITIES;
   equipmentOptions = signal<Array<{ id: string; label: string; emoji: string; defaultPrice: number }>>([]);
   readonly Math = Math;
 
@@ -457,7 +437,6 @@ export class VenueFacilitiesPage implements OnInit {
       }
 
       const data = profileRes.data as Record<string, any>;
-      this.amenities.set(Array.isArray(data['amenities']) ? data['amenities'].map((a: unknown) => String(a)) : []);
 
       const rental = Array.isArray(data['rentalEquipment']) ? data['rentalEquipment'] : [];
       const qty: Record<string, number> = {};
@@ -555,15 +534,6 @@ export class VenueFacilitiesPage implements OnInit {
     this.onChange();
   }
 
-  hasAmenity(a: string): boolean {
-    return this.amenities().includes(a);
-  }
-
-  toggleAmenity(a: string) {
-    this.amenities.update((list) => (list.includes(a) ? list.filter((x) => x !== a) : [...list, a]));
-    this.onChange();
-  }
-
   onChange() {
     this.hasChanges.set(true);
     this.saved.set(false);
@@ -611,7 +581,6 @@ export class VenueFacilitiesPage implements OnInit {
 
       await firstValueFrom(
         this.venueService.updateMyProfile({
-          amenities: this.amenities(),
           rentalEquipment: this.equipmentOptions()
             .filter((item) => (this.equipQty()[item.id] || 0) > 0)
             .map((item) => ({

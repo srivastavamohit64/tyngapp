@@ -188,10 +188,9 @@ export class AuthService {
     void this.router.navigateByUrl('/app/home');
   }
 
-  venueHomePath(user: AuthUser | null = this.user()): string {
-    if (user?.role === 'venue' && user.venueProfileReady === false) {
-      return '/app/venue/complete-profile';
-    }
+  venueHomePath(_user: AuthUser | null = this.user()): string {
+    // Prefer dashboard; completion card handles incomplete profiles.
+    // Older APIs still mark ready=false for optional Amenities/Verification.
     return '/app/venue/dashboard';
   }
 

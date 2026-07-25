@@ -41,16 +41,26 @@ export class AppComponent implements OnInit {
 
   showLogoutConfirm = false;
 
-  private readonly venueMenuStats = signal({
+  private readonly venueMenuStats = signal<{
+    profileName: string;
+    profilePercent: number;
+    courtsCount: number;
+    monthEarnings: number;
+    todayBookings: number;
+    upcomingBookings: number;
+    pendingBookings: number;
+    unreadChat: number;
+    checklist: { label: string; done: boolean }[];
+  }>({
     profileName: '',
     profilePercent: 0,
-    amenitiesCount: 0,
     courtsCount: 0,
     monthEarnings: 0,
     todayBookings: 0,
     upcomingBookings: 0,
     pendingBookings: 0,
     unreadChat: 0,
+    checklist: [],
   });
 
   readonly coachMenuItems: CoachMenuItem[] = [
@@ -71,14 +81,14 @@ export class AppComponent implements OnInit {
     const bookingsSub = m.todayBookings > 0
       ? `${m.todayBookings} today`
       : `${m.upcomingBookings} upcoming`;
-    const amenitiesSub = m.courtsCount > 0 || m.amenitiesCount > 0
-      ? `${m.courtsCount} courts · ${m.amenitiesCount} amenities`
-      : 'Courts, parking & more';
+    const facilitiesSub = m.courtsCount > 0
+      ? `${m.courtsCount} court${m.courtsCount === 1 ? '' : 's'}`
+      : 'Courts & equipment';
     const profileSub = `${m.profileName || this.user()?.name?.trim() || 'Venue'} · ${m.profilePercent || this.user()?.profileCompletion || 0}%`;
 
     return [
       { label: 'Venue Profile', sub: profileSub, path: '/app/venue/profile', icon: 'business-outline' },
-      { label: 'Amenities', sub: amenitiesSub, path: '/app/venue/facilities', icon: 'cube-outline' },
+      { label: 'Facilities', sub: facilitiesSub, path: '/app/venue/facilities', icon: 'cube-outline' },
       { label: 'Earnings', sub: earnings, path: '/app/venue/earnings', icon: 'wallet-outline' },
       {
         label: 'Bookings',
@@ -100,12 +110,18 @@ export class AppComponent implements OnInit {
     ];
   });
 
-  readonly venueChecklistPreview = [
-    { label: 'Venue Type', done: true },
-    { label: 'Venue Details', done: true },
-    { label: 'Sports Offered', done: true },
-    { label: 'Amenities', done: false },
-  ];
+  readonly venueChecklistPreview = computed(() => {
+    const live = this.venueMenuStats().checklist
+      .filter((item) => item.label.toLowerCase() !== 'amenities' && item.label.toLowerCase() !== 'verification')
+      .slice(0, 4);
+    if (live.length) return live;
+    return [
+      { label: 'Venue Information', done: false },
+      { label: 'Sports Offered', done: false },
+      { label: 'Photos', done: false },
+      { label: 'Pricing', done: false },
+    ];
+  });
 
   ngOnInit(): void {
     void this.platform.init();
@@ -207,13 +223,18 @@ export class AppComponent implements OnInit {
       this.venueMenuStats.set({
         profileName: String(menu.profileName || ''),
         profilePercent: Number(menu.profilePercent || 0),
-        amenitiesCount: Number(menu.amenitiesCount || 0),
         courtsCount: Number(menu.courtsCount || 0),
         monthEarnings: Number(menu.monthEarnings || 0),
         todayBookings: Number(menu.todayBookings || 0),
         upcomingBookings: Number(menu.upcomingBookings || 0),
         pendingBookings: Number(menu.pendingBookings || 0),
         unreadChat: Number(menu.unreadChat || 0),
+        checklist: (response.data?.completion?.checklist || [])
+          .filter((item) => String(item.id || item.label || '').toLowerCase() !== 'amenities')
+          .map((item) => ({
+            label: String(item.label || ''),
+            done: !!item.done,
+          })),
       });
     } catch {
       // Keep previous menu stats if dashboard fails.

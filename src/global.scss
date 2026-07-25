@@ -194,7 +194,8 @@ ion-content {
 }
 
 /* ============================================================
-   SAFE AREA HELPERS
+   SAFE AREA HELPERS — Android notch / punch-hole / gesture &
+   3-button nav + iOS home indicator (env(safe-area-inset-*)).
    ============================================================ */
 .safe-area-top {
   padding-top: var(--safe-area-top);
@@ -228,6 +229,46 @@ ion-content.has-tabs {
   --padding-bottom: calc(72px + 20px + 24px + env(safe-area-inset-bottom, 0px));
 }
 
+/* Sticky headers clear status bar / notch / punch-hole camera.
+   Note: .page-header / .cal-header under brand shell already sit below
+   .app-header (which has its own safe-area) — do not pad those again. */
+ion-content .sticky-header,
+ion-content .venue-sticky-header,
+ion-content .venue-notifications-header,
+.app-header {
+  padding-top: max(0px, env(safe-area-inset-top, 0px));
+}
+
+/* Ensure sticky headers keep a solid backdrop under the cutout */
+ion-content .sticky-header,
+ion-content .venue-sticky-header,
+ion-content .venue-notifications-header {
+  background-clip: padding-box;
+}
+
+/* Fixed / sticky bottom action bars clear Android nav / gesture bar */
+ion-content .venue-safe-footer,
+ion-content .fixed.bottom-0,
+ion-content .fixed-bottom-bar,
+.fixed-bottom-bar {
+  padding-bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px)) !important;
+  padding-left: max(1.25rem, env(safe-area-inset-left, 0px));
+  padding-right: max(1.25rem, env(safe-area-inset-right, 0px));
+}
+
+/* When floating tab bar is visible, lift CTAs above it + nav inset */
+ion-content.has-tabs .venue-safe-footer,
+ion-content.has-tabs .fixed.bottom-0,
+ion-content.has-tabs .fixed-bottom-bar {
+  bottom: calc(var(--app-tab-bar-height, 72px) + 20px + env(safe-area-inset-bottom, 0px)) !important;
+  padding-bottom: 1rem !important;
+}
+
+/* ion-footer used on book/summary flows */
+ion-footer {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
 /* Standalone pages (no tabs): still respect gesture nav */
 .page-safe-bottom {
   padding-bottom: calc(24px + var(--safe-area-bottom));
@@ -242,6 +283,13 @@ ion-content.has-tabs {
   padding: 0.75rem 1.5rem calc(0.75rem + var(--safe-area-bottom));
   padding-right: calc(1.5rem + var(--safe-area-right));
   padding-left: calc(1.5rem + var(--safe-area-left));
+}
+
+/* Prevent horizontal cut-off on landscape / curved edges */
+ion-app,
+ion-content {
+  padding-left: 0;
+  padding-right: 0;
 }
 
 /* ============================================================

@@ -162,7 +162,6 @@ export class HomePage implements ViewWillEnter {
   readonly venueChecklist = [
     { label: 'Venue Information', done: true },
     { label: 'Sports Offered', done: true },
-    { label: 'Amenities', done: false },
     { label: 'Photos', done: false },
     { label: 'Pricing', done: false },
     { label: 'Verification', done: false },

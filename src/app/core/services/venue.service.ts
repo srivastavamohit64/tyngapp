@@ -44,7 +44,6 @@ export interface VenueDashboardData {
   menu?: {
     profileName?: string;
     profilePercent?: number;
-    amenitiesCount?: number;
     courtsCount?: number;
     monthEarnings?: number;
     todayBookings?: number;

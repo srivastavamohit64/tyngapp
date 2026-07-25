@@ -285,9 +285,9 @@ export const VENUE_DATA: VenueDetail[] = [
               </div>
             </div>
 
-            <!-- Amenities -->
-            <div>
-              <p class="text-[11px] font-bold text-[#9CA3AF] uppercase tracking-wider mb-3 m-0">Amenities</p>
+            <!-- Facility tags (optional legacy profile tags) -->
+            <div *ngIf="venue.amenities.length">
+              <p class="text-[11px] font-bold text-[#9CA3AF] uppercase tracking-wider mb-3 m-0">Facilities</p>
               <div class="flex flex-wrap gap-2">
                 <div *ngFor="let a of venue.amenities" class="flex items-center gap-1.5 px-3.5 py-2 bg-[#F3F4F6] rounded-full leading-none">
                   <ion-icon [name]="a.icon" class="text-[#6B7280] text-xs"></ion-icon>

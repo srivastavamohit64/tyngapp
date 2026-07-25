@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import {
   AfterViewInit,
+  ChangeDetectorRef,
   Component,
   ElementRef,
   EventEmitter,
@@ -283,6 +284,7 @@ const DEFAULT_CENTER = { lat: 26.8467, lng: 80.9462 };
 })
 export class LocationFieldComponent implements ControlValueAccessor, AfterViewInit, OnDestroy {
   private readonly googleMaps = inject(GoogleMapsService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   @ViewChild('inputEl') inputEl?: ElementRef<HTMLInputElement>;
   @ViewChild('mapContainer') mapContainer?: ElementRef<HTMLDivElement>;
@@ -295,8 +297,9 @@ export class LocationFieldComponent implements ControlValueAccessor, AfterViewIn
 
   value = '';
   focused = false;
-  mapsAvailable = false;
-  mapsChecked = false;
+  /** Resolved before first CD so *ngIf does not flip mid-cycle (NG0100). */
+  mapsAvailable = this.googleMaps.isConfigured();
+  mapsChecked = true;
   mapOpen = false;
   mapLoading = false;
   mapError = '';
@@ -314,9 +317,6 @@ export class LocationFieldComponent implements ControlValueAccessor, AfterViewIn
   private onTouched: () => void = () => undefined;
 
   async ngAfterViewInit() {
-    this.mapsAvailable = this.googleMaps.isConfigured();
-    this.mapsChecked = true;
-
     if (!this.mapsAvailable) {
       return;
     }
@@ -325,7 +325,11 @@ export class LocationFieldComponent implements ControlValueAccessor, AfterViewIn
       await this.googleMaps.load();
       this.initAutocomplete();
     } catch {
-      this.mapsAvailable = false;
+      // Defer so we don't trip ExpressionChangedAfterItHasBeenCheckedError.
+      queueMicrotask(() => {
+        this.mapsAvailable = false;
+        this.cdr.markForCheck();
+      });
     }
   }
 

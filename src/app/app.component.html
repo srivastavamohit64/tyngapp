@@ -104,7 +104,7 @@
               <div class="venue-drawer-completion-fill" [style.width.%]="profileCompletion()"></div>
             </div>
             <div class="venue-drawer-checklist">
-              <div *ngFor="let item of venueChecklistPreview" class="venue-drawer-check">
+              <div *ngFor="let item of venueChecklistPreview()" class="venue-drawer-check">
                 <div class="venue-drawer-check-dot" [class.venue-drawer-check-dot--done]="item.done">
                   <ion-icon *ngIf="item.done" name="checkmark"></ion-icon>
                 </div>

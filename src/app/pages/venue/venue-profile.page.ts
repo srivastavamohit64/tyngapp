@@ -27,7 +27,7 @@ interface ReviewItem {
   standalone: true,
   imports: [CommonModule, IonicModule, FormsModule],
   template: `
-    <ion-content [fullscreen]="true">
+    <ion-content [fullscreen]="true" class="has-tabs">
       <div class="venue-profile-page pb-32 text-left">
         
         <!-- Header -->
@@ -113,12 +113,14 @@ interface ReviewItem {
     .venue-profile-page {
       background: #FAFBFC;
       min-height: 100%;
+      padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px));
     }
 
     .sticky-header {
       position: sticky;
       top: 0;
       z-index: 30;
+      padding-top: env(safe-area-inset-top, 0px);
       box-shadow: 0 2px 10px rgba(0,0,0,0.02);
     }
   `]

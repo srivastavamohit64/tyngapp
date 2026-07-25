@@ -69,7 +69,17 @@ export class TabsPage {
       return coachPrimary.some((p) => path === p || path.startsWith(p + '/'));
     }
     if (user?.role === 'venue') {
-      const venuePrimary = ['/app/venue/dashboard', '/app/home', '/app/venue/bookings', '/app/venue/calendar', '/app/chat'];
+      const venuePrimary = [
+        '/app/venue/dashboard',
+        '/app/home',
+        '/app/venue/bookings',
+        '/app/venue/calendar',
+        '/app/venue/facilities',
+        '/app/venue/earnings',
+        '/app/venue/analytics',
+        '/app/venue/profile',
+        '/app/chat',
+      ];
       return venuePrimary.some((p) => path === p || path.startsWith(p + '/'));
     }
     if (user?.role === 'admin') {

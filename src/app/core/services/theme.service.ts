@@ -52,9 +52,10 @@ export class ThemeService {
 
     if (Capacitor.isNativePlatform()) {
       try {
-        void StatusBar.setOverlaysWebView({ overlay: false });
+        // Keep edge-to-edge so CSS safe-area insets work on notch / punch-hole / nav bar.
+        void StatusBar.setOverlaysWebView({ overlay: true });
         void StatusBar.setStyle({ style: isDark ? Style.Dark : Style.Light });
-        void StatusBar.setBackgroundColor({ color: isDark ? '#0a0f1c' : '#ffffff' });
+        void StatusBar.setBackgroundColor({ color: '#00000000' });
       } catch (e) {
         console.warn('Capacitor StatusBar styling error', e);
       }

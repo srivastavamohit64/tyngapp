@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, signal, inject, ElementRef, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { ActionSheetController, IonicModule } from '@ionic/angular';
+import { ActionSheetController, IonicModule, ViewWillEnter } from '@ionic/angular';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
@@ -542,7 +542,7 @@ const STEP_TITLES = [
       </div>
 
       <!-- STICKY ACTION BUTTON BAR -->
-      <div *ngIf="!isSuccess()" class="fixed bottom-0 left-0 right-0 z-30 bg-white px-5 pt-3 pb-8"
+      <div *ngIf="!isSuccess()" class="venue-safe-footer fixed bottom-0 left-0 right-0 z-30 bg-white px-5 pt-3"
         style="box-shadow: 0 -4px 24px rgba(0,0,0,0.09); border-top: 1px solid #F3F4F6;">
         <div class="flex gap-3 max-w-md mx-auto">
           <button (click)="handleNext()" [disabled]="!canProceed() || saving()"
@@ -564,13 +564,19 @@ const STEP_TITLES = [
     }
 
     .complete-profile-page {
-      padding-bottom: 120px;
+      padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .success-screen {
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: calc(48px + env(safe-area-inset-bottom, 0px));
     }
 
     .sticky-header {
       position: sticky;
       top: 0;
       z-index: 30;
+      padding-top: env(safe-area-inset-top, 0px);
       box-shadow: 0 2px 10px rgba(0,0,0,0.02);
     }
 
@@ -839,7 +845,7 @@ const STEP_TITLES = [
     }
   `]
 })
-export class VenueCompleteProfilePage {
+export class VenueCompleteProfilePage implements ViewWillEnter {
   @ViewChild('galleryCameraInput') galleryCameraInput?: ElementRef<HTMLInputElement>;
   @ViewChild('galleryLibraryInput') galleryLibraryInput?: ElementRef<HTMLInputElement>;
 
@@ -906,7 +912,7 @@ export class VenueCompleteProfilePage {
   academyDisc = '';
   corpDisc = '';
 
-  selectedAmenities = signal<string[]>([]);
+  autoConfirm = signal(true);
 
   equipQty = signal<Record<string, number>>({});
   equipPrices = signal<Record<string, string>>({});
@@ -915,8 +921,6 @@ export class VenueCompleteProfilePage {
 
   uploadedDocs = signal<Record<string, { name: string; url?: string }>>({});
   docUploading = signal<string | null>(null);
-
-  autoConfirm = signal(true);
 
   get externalMapsUrl(): string {
     const query = [this.address, this.city].filter(Boolean).join(', ');
@@ -946,6 +950,18 @@ export class VenueCompleteProfilePage {
     this.refreshMapPreview();
     void this.loadExistingProfile();
     void this.loadEquipmentCatalog();
+  }
+
+  ionViewWillEnter() {
+    // Ionic may keep this page cached after "Go to Dashboard" bounce.
+    if (this.auth.user()?.venueProfileReady === true) {
+      this.isSuccess.set(false);
+      void this.router.navigateByUrl('/app/venue/dashboard', { replaceUrl: true });
+      return;
+    }
+    if (this.isSuccess() && this.auth.user()?.venueProfileReady === false) {
+      this.isSuccess.set(false);
+    }
   }
 
   onLocationFieldsChanged() {
@@ -1215,6 +1231,7 @@ export class VenueCompleteProfilePage {
   }
 
   handleNext() {
+    this.saveError.set('');
     if (this.step() < this.totalSteps) {
       this.step.update((s) => Math.min(s + 1, this.totalSteps));
       return;
@@ -1223,6 +1240,7 @@ export class VenueCompleteProfilePage {
   }
 
   handleBack() {
+    this.saveError.set('');
     if (this.step() === 1) {
       void this.router.navigateByUrl('/app/venue/dashboard');
     } else {
@@ -1231,15 +1249,24 @@ export class VenueCompleteProfilePage {
   }
 
   finish() {
-    void this.persistProfile(true).then((ok) => {
-      if (ok) {
+    void this.persistProfile(true).then((result) => {
+      if (!result.ok) return;
+      if (result.ready) {
         this.isSuccess.set(true);
+        return;
       }
+      const missing = result.missing.length
+        ? `Still missing: ${result.missing.join(', ')}`
+        : 'Profile saved but not ready for listing yet.';
+      this.saveError.set(missing);
+      this.isSuccess.set(false);
     });
   }
 
-  goDashboard() {
-    void this.router.navigateByUrl('/app/venue/dashboard');
+  async goDashboard() {
+    this.saveError.set('');
+    this.isSuccess.set(false);
+    void this.router.navigateByUrl('/app/venue/dashboard', { replaceUrl: true });
   }
 
   private async loadExistingProfile() {
@@ -1248,6 +1275,15 @@ export class VenueCompleteProfilePage {
       if (!response.success || !response.data) return;
 
       const data = response.data as Record<string, any>;
+      const completion = data['completion'] as { ready?: boolean; missing?: string[] } | undefined;
+      const alreadyReady = data['profileCompleted'] === true || completion?.ready === true
+        || this.auth.user()?.venueProfileReady === true;
+
+      // Already live — don't trap user on this wizard/success screen.
+      if (alreadyReady) {
+        void this.router.navigateByUrl('/app/venue/dashboard', { replaceUrl: true });
+        return;
+      }
 
       if (data['venueName'] || data['displayName'] || data['name']) {
         this.venueName = String(data['venueName'] || data['displayName'] || data['name']);
@@ -1277,9 +1313,6 @@ export class VenueCompleteProfilePage {
       if (data['yearEstablished']) this.yearEst = String(data['yearEstablished']);
       if (typeof data['autoConfirm'] === 'boolean') this.autoConfirm.set(!!data['autoConfirm']);
 
-      if (Array.isArray(data['amenities']) && data['amenities'].length) {
-        this.selectedAmenities.set(data['amenities'].map((a: unknown) => String(a)));
-      }
       if (Array.isArray(data['gallery']) && data['gallery'].length) {
         this.uploadedPhotos.set(data['gallery'].map((g: unknown) => String(g)));
       }
@@ -1362,7 +1395,7 @@ export class VenueCompleteProfilePage {
     return `${String(hour).padStart(2, '0')}:${minutes}`;
   }
 
-  private async persistProfile(markLive: boolean): Promise<boolean> {
+  private async persistProfile(markLive: boolean): Promise<{ ok: boolean; ready: boolean; missing: string[] }> {
     this.saving.set(true);
     this.saveError.set('');
     try {
@@ -1402,6 +1435,10 @@ export class VenueCompleteProfilePage {
         });
       }
 
+      const galleryUrls = this.uploadedPhotos()
+        .map((p) => String(p).trim())
+        .filter((p) => /^https?:\/\//i.test(p) || p.startsWith('/') || p.includes('storage/'));
+
       const response = await firstValueFrom(this.venueService.updateMyProfile({
         name: this.venueName || this.ownerName || this.auth.user()?.name,
         displayName: this.venueName || this.bizName,
@@ -1422,8 +1459,8 @@ export class VenueCompleteProfilePage {
         openTime: this.toDisplayTime(this.openTime),
         closeTime: this.toDisplayTime(this.closeTime),
         operatingDays: this.opDays(),
-        amenities: this.selectedAmenities(),
-        gallery: this.uploadedPhotos().filter((p) => p.startsWith('http')),
+        // Only send gallery when we have URLs — empty array was wiping uploaded photos.
+        ...(galleryUrls.length ? { gallery: galleryUrls } : {}),
         rentalEquipment: this.equipmentList()
           .filter((item) => (this.equipQty()[item.id] || 0) > 0)
           .map((item) => ({
@@ -1457,7 +1494,32 @@ export class VenueCompleteProfilePage {
 
       if (!response.success) {
         this.saveError.set(response.message || 'Unable to save venue profile.');
-        return false;
+        return { ok: false, ready: false, missing: [] };
+      }
+
+      const completion = (response.data as any)?.completion as {
+        ready?: boolean;
+        missing?: string[];
+        checklist?: Array<{ id?: string; label?: string; done?: boolean }>;
+      } | undefined;
+
+      // Verification is optional (wizard no longer requires it).
+      // Filter so older APIs don't block "Go Live" on removed Amenities.
+      const optionalLabels = new Set(['amenities', 'verification']);
+      const missing = (Array.isArray(completion?.missing) ? completion!.missing : [])
+        .map((m) => String(m))
+        .filter((label) => !optionalLabels.has(label.trim().toLowerCase()));
+
+      let ready = !!completion?.ready;
+      if (!ready && missing.length === 0) {
+        ready = true;
+      }
+      // If API still returns old missing list only for optional items, treat as ready.
+      if (!ready && Array.isArray(completion?.checklist)) {
+        const requiredIds = new Set(['info', 'sports', 'photos', 'pricing']);
+        ready = completion!.checklist
+          .filter((item) => requiredIds.has(String(item.id || '')))
+          .every((item) => !!item.done);
       }
 
       await firstValueFrom(this.auth.fetchMe());
@@ -1468,10 +1530,22 @@ export class VenueCompleteProfilePage {
           venueType: 'multi',
         }));
       }
-      return true;
+
+      // Re-check after /me + onboarding so auth flag matches backend.
+      const me = this.auth.user();
+      if (me?.venueProfileReady === true) {
+        ready = true;
+      } else if (ready) {
+        // Optimistic: local readiness passed even if remote /me still lagging.
+        ready = true;
+      } else if (me?.venueProfileReady === false) {
+        ready = false;
+      }
+
+      return { ok: true, ready, missing };
     } catch (error: any) {
       this.saveError.set(error?.error?.message || 'Unable to save venue profile.');
-      return false;
+      return { ok: false, ready: false, missing: [] };
     } finally {
       this.saving.set(false);
     }

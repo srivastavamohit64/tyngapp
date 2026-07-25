@@ -13,6 +13,27 @@ $venue-card-shadow: 0 2px 16px rgba(0, 0, 0, 0.07);
   color: $venue-text;
 }
 
+/* Sticky page headers clear the status bar / notch (same approach as player screens) */
+.sticky-header,
+.venue-sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  padding-top: env(safe-area-inset-top, 0px);
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+}
+
+/* Fixed bottom action bars clear home indicator / gesture bar */
+.venue-safe-footer {
+  padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px)) !important;
+}
+
+/* Content clearance when floating tab bar is visible */
+.venue-page-with-tabs {
+  padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px));
+}
+
 .venue-page-inner {
   padding: 20px 16px 16px;
   display: flex;

@@ -81,11 +81,14 @@ export class VenueDashboardPage implements OnInit {
       return;
     }
 
-    if (this.auth.user()?.venueProfileReady === false) {
-      void this.router.navigateByUrl('/app/venue/complete-profile', { replaceUrl: true });
-      return;
+    try {
+      await firstValueFrom(this.auth.fetchMe());
+    } catch {
+      // Keep cached user if /me fails.
     }
 
+    // Do not hard-redirect on venueProfileReady=false — older APIs still
+    // flag optional Amenities/Verification. Dashboard shows a completion card instead.
     await this.loadDashboard();
   }
 
@@ -120,10 +123,13 @@ export class VenueDashboardPage implements OnInit {
     ];
     this.revenueGoalPct = data.pulse.revenueGoalPct || 0;
     this.completionPercent = data.completion?.percent || 0;
-    this.checklist = (data.completion?.checklist || []).map((item) => ({
-      label: item.label,
-      done: !!item.done,
-    }));
+    this.checklist = (data.completion?.checklist || [])
+      .filter((item) => String(item.id || item.label || '').toLowerCase() !== 'amenities'
+        && String(item.label || '').toLowerCase() !== 'amenities')
+      .map((item) => ({
+        label: item.label,
+        done: !!item.done,
+      }));
     this.bookings = (data.todayBookings || []).map((b) => ({
       ...b,
       photo: b.photo || DEFAULT_PHOTO,

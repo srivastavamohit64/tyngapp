@@ -261,7 +261,7 @@ const HERO_IMAGE =
         z-index: 10;
         background: #fafbfc;
         border-radius: 36px 36px 0 0;
-        padding: 32px 0 48px;
+        padding: 32px 0 calc(48px + env(safe-area-inset-bottom, 0px));
       }
 
       .form-header {
@@ -529,7 +529,7 @@ export class AuthPage implements OnInit {
   readonly router = inject(Router);
 
   heroImage = HERO_IMAGE;
-  mode: 'signup' | 'login' = 'signup';
+  mode: 'signup' | 'login' = 'login';
   name = '';
   phone = '';
   email = '';
@@ -579,7 +579,9 @@ export class AuthPage implements OnInit {
 
   setMode(mode: 'signup' | 'login') {
     this.mode = mode;
-    void this.router.navigateByUrl(mode === 'signup' ? '/auth' : '/login', { replaceUrl: true });
+    // /auth defaults to login; signup uses ?mode=signup
+    const url = mode === 'signup' ? '/auth?mode=signup' : '/auth';
+    void this.router.navigateByUrl(url, { replaceUrl: true });
   }
 
   async handleSubmit() {
@@ -617,7 +619,9 @@ export class AuthPage implements OnInit {
   }
 
   private syncModeFromRoute() {
-    const path = this.router.url.split('?')[0];
-    this.mode = path.includes('/auth') ? 'signup' : 'login';
+    const tree = this.router.parseUrl(this.router.url);
+    const modeParam = tree.queryParams['mode'];
+    // /auth and /login → login by default; only explicit mode=signup shows register
+    this.mode = modeParam === 'signup' ? 'signup' : 'login';
   }
 }
