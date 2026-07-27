@@ -338,7 +338,7 @@ import { AuthService } from '../../core/services/auth.service';
       }
 
       .chat-time--active {
-        color: #8cf000;
+        color: var(--app-primary);
         font-weight: 700;
       }
 
@@ -388,7 +388,7 @@ import { AuthService } from '../../core/services/auth.service';
         height: 20px;
         padding: 0 6px;
         border-radius: 999px;
-        background: #8cf000;
+        background: var(--app-primary);
         color: #111827;
         font-size: 10px;
         font-weight: 900;
@@ -410,7 +410,7 @@ import { AuthService } from '../../core/services/auth.service';
         width: 6px;
         height: 6px;
         border-radius: 999px;
-        background: #8cf000;
+        background: var(--app-primary);
       }
 
       .row-divider {

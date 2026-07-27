@@ -63,7 +63,7 @@ import { IonicModule } from '@ionic/angular';
 
       .search.focused input {
         background: #ffffff !important;
-        box-shadow: 0 0 0 2px rgba(140, 240, 0, 0.4) !important;
+        box-shadow: 0 0 0 2px rgba(var(--app-primary-rgb), 0.4) !important;
       }
     `,
   ],

@@ -56,6 +56,10 @@ yarn-error.log
 # Environment secrets
 .env
 
+# Firebase secrets (keep google-services.json for Android builds)
+/firebase/*service*.json
+/firebase/tyng-*-*.json
+
 # Miscellaneous
 /.angular
 /.angular/cache

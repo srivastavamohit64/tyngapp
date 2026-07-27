@@ -155,9 +155,9 @@ function buildWeek() {
           <div class="flex gap-2 px-5 pb-4 pt-2 bg-white border-b border-[#F3F4F6] overflow-x-auto no-scrollbar">
             <button *ngFor="let day of weekDays" (click)="selectedDay.set(day.idx)"
               class="flex-shrink-0 flex flex-col items-center px-3 py-2.5 rounded-2xl min-w-[48px] border-none transition-all"
-              [style.backgroundColor]="selectedDay() === day.idx ? '#8CF000' : day.isToday ? 'rgba(140,240,0,0.10)' : 'white'"
-              [style.border]="day.isToday && selectedDay() !== day.idx ? '1.5px solid rgba(140,240,0,0.30)' : '1.5px solid transparent'"
-              [style.boxShadow]="selectedDay() === day.idx ? '0 2px 10px rgba(140,240,0,0.35)' : '0 1px 4px rgba(0,0,0,0.06)'">
+              [style.backgroundColor]="selectedDay() === day.idx ? 'var(--app-primary)' : day.isToday ? 'rgba(var(--app-primary-rgb),0.10)' : 'white'"
+              [style.border]="day.isToday && selectedDay() !== day.idx ? '1.5px solid rgba(var(--app-primary-rgb),0.30)' : '1.5px solid transparent'"
+              [style.boxShadow]="selectedDay() === day.idx ? '0 2px 10px rgba(var(--app-primary-rgb),0.35)' : '0 1px 4px rgba(0,0,0,0.06)'">
               <span class="text-[10px] font-bold" [style.color]="selectedDay() === day.idx ? '#111827' : '#9CA3AF'">
                 {{ day.isToday ? 'Today' : day.dayShort }}
               </span>
@@ -174,12 +174,12 @@ function buildWeek() {
           <div class="bg-white rounded-[24px] p-5 shadow-sm border border-slate-100 text-left">
             <div class="flex items-center justify-between mb-4">
               <p class="text-[14px] font-black text-[#111827] m-0">Today's Schedule</p>
-              <button (click)="go('/app/coach/plan')" class="w-9 h-9 rounded-xl bg-[#8CF000] border-none flex items-center justify-center shadow-md">
+              <button (click)="go('/app/coach/plan')" class="w-9 h-9 rounded-xl bg-[var(--app-primary)] border-none flex items-center justify-center shadow-md">
                 <ion-icon name="add-outline" class="text-xl text-[#111827] font-bold"></ion-icon>
               </button>
             </div>
             <div class="grid grid-cols-2 gap-3">
-              <div *ngFor="let m of [{ emoji:'📅', label:'Sessions', value: confirmedCount + ' of ' + todaySessions.length, accent:'#8CF000' }, { emoji:'💰', label:'Expected Earnings', value:'₹' + totalEarnings.toLocaleString(), accent:'#FF7A00' }, { emoji:'🔄', label:'Reschedule Requests', value:'1 Pending', accent:'#F59E0B' }, { emoji:'💬', label:'New Messages', value:'3 Unread', accent:'#38BDF8' }]"
+              <div *ngFor="let m of [{ emoji:'📅', label:'Sessions', value: confirmedCount + ' of ' + todaySessions.length, accent:'var(--app-primary)' }, { emoji:'💰', label:'Expected Earnings', value:'₹' + totalEarnings.toLocaleString(), accent:'#FF7A00' }, { emoji:'🔄', label:'Reschedule Requests', value:'1 Pending', accent:'#F59E0B' }, { emoji:'💬', label:'New Messages', value:'3 Unread', accent:'#38BDF8' }]"
                 class="flex items-center gap-3 py-2.5 px-3 rounded-[18px]" [style.backgroundColor]="m.accent + '10'">
                 <span class="text-xl">{{ m.emoji }}</span>
                 <div>
@@ -192,10 +192,10 @@ function buildWeek() {
             <div class="mt-4 pt-3.5 border-t border-[#F3F4F6]">
               <div class="flex justify-between text-[11px] mb-1.5">
                 <span class="text-[#9CA3AF] font-bold">Today's Completion</span>
-                <span class="text-[#8CF000] font-black">50%</span>
+                <span class="text-[var(--app-primary)] font-black">50%</span>
               </div>
               <div class="h-1.5 bg-[#F3F4F6] rounded-full overflow-hidden">
-                <div class="h-full rounded-full bg-gradient-to-r from-[#8CF000] to-[#A3E635]" style="width: 50%;"></div>
+                <div class="h-full rounded-full bg-gradient-to-r from-[var(--app-primary)] to-[var(--app-primary-to)]" style="width: 50%;"></div>
               </div>
             </div>
           </div>
@@ -225,8 +225,8 @@ function buildWeek() {
               <div *ngFor="let sess of filteredSessions()" class="relative text-left">
                 <!-- Timeline bullet dot -->
                 <div class="absolute -left-[29px] top-[22px] z-10 w-4 h-4 rounded-full border-2 border-white"
-                  [style.backgroundColor]="sess.status === 'Completed' ? '#E5E7EB' : sess.status === 'Cancelled' ? '#FCA5A5' : '#8CF000'"
-                  [style.boxShadow]="sess.status === 'Confirmed' ? '0 0 0 3px rgba(140,240,0,0.20)' : 'none'"></div>
+                  [style.backgroundColor]="sess.status === 'Completed' ? '#E5E7EB' : sess.status === 'Cancelled' ? '#FCA5A5' : 'var(--app-primary)'"
+                  [style.boxShadow]="sess.status === 'Confirmed' ? '0 0 0 3px rgba(var(--app-primary-rgb),0.20)' : 'none'"></div>
 
                 <p class="text-[10px] font-bold text-[#9CA3AF] mb-2 -ml-6">{{ sess.time }}</p>
 
@@ -304,7 +304,7 @@ function buildWeek() {
                           <span class="text-[#111827] font-black">{{ sess.studentsConfirmed }}/{{ sess.studentsTotal }}</span> Confirmed
                         </p>
                       </div>
-                      <button (click)="go('/app/coach/student/' + sess.students[0].id)" class="text-[11px] font-bold text-[#8CF000] bg-transparent border-none flex items-center gap-0.5">
+                      <button (click)="go('/app/coach/student/' + sess.students[0].id)" class="text-[11px] font-bold text-[var(--app-primary)] bg-transparent border-none flex items-center gap-0.5">
                         Manage<ion-icon name="chevron-forward-outline"></ion-icon>
                       </button>
                     </div>
@@ -347,8 +347,8 @@ function buildWeek() {
     }
 
     .btn-green-gradient {
-      background: linear-gradient(135deg, #8CF000, #A3E635);
-      box-shadow: 0 2px 8px rgba(140,240,0,0.30);
+      background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to));
+      box-shadow: 0 2px 8px rgba(var(--app-primary-rgb),0.30);
     }
 
     .no-scrollbar {

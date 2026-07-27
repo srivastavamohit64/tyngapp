@@ -2,9 +2,11 @@ import { CommonModule, TitleCasePipe } from '@angular/common';
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { AlertController, IonicModule, RefresherCustomEvent, ToastController } from '@ionic/angular';
-import { firstValueFrom } from 'rxjs';
+import { Subscription, firstValueFrom } from 'rxjs';
 import { BookingRecord, MyBookingsResponse } from '../../core/models/api.model';
+import { AuthService } from '../../core/services/auth.service';
 import { BookingService } from '../../core/services/booking.service';
+import { RealtimeService } from '../../core/services/realtime.service';
 import {
   bookingStatusTone,
   formatBookingDate,
@@ -96,9 +98,13 @@ import { SegmentControlComponent, SegmentOption } from '../../shared/components/
                       [style.color]="statusTone(booking).text"
                       [style.border-color]="statusTone(booking).border"
                     >
-                      {{ booking.bookingStatus | titlecase }}
+                      {{ statusLabel(booking) }}
                     </span>
                   </div>
+
+                  <p *ngIf="booking.bookingStatus === 'pending'" class="pending-note">
+                    {{ approvalCountdown(booking) }}
+                  </p>
 
                   <div class="flex items-center gap-3 flex-wrap">
                     <div class="meta-chip">
@@ -209,6 +215,18 @@ import { SegmentControlComponent, SegmentOption } from '../../shared/components/
         flex-shrink: 0;
       }
 
+      .pending-note {
+        margin: 0 16px 10px;
+        padding: 8px 10px;
+        border-radius: 12px;
+        background: #FFF7ED;
+        border: 1px solid #FFEDD5;
+        color: #C2410C;
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 1.35;
+      }
+
       .tag {
         padding: 2px 8px;
         border-radius: 999px;
@@ -217,7 +235,7 @@ import { SegmentControlComponent, SegmentOption } from '../../shared/components/
       }
 
       .tag-host {
-        background: rgba(140, 240, 0, 0.15);
+        background: rgba(var(--app-primary-rgb), 0.15);
         color: #166534;
       }
 
@@ -294,9 +312,9 @@ import { SegmentControlComponent, SegmentOption } from '../../shared/components/
       }
 
       .btn-primary {
-        background: linear-gradient(135deg, #8cf000, #a3e635);
+        background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to));
         color: #111827;
-        box-shadow: 0 2px 8px rgba(140, 240, 0, 0.28);
+        box-shadow: 0 2px 8px rgba(var(--app-primary-rgb), 0.28);
       }
 
       .btn-secondary {
@@ -371,6 +389,8 @@ import { SegmentControlComponent, SegmentOption } from '../../shared/components/
 export class MyBookingsPage implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly bookingService = inject(BookingService);
+  private readonly auth = inject(AuthService);
+  private readonly realtime = inject(RealtimeService);
   private readonly toastCtrl = inject(ToastController);
   private readonly alertCtrl = inject(AlertController);
 
@@ -380,6 +400,8 @@ export class MyBookingsPage implements OnInit, OnDestroy {
   busyIds = new Set<string>();
   nowTick = Date.now();
   private timerId: number | null = null;
+  private realtimeSub: Subscription | null = null;
+  private silentReloadQueued = false;
 
   bookings: MyBookingsResponse = {
     upcoming: [],
@@ -399,14 +421,16 @@ export class MyBookingsPage implements OnInit, OnDestroy {
   ngOnInit(): void {
     void this.loadBookings();
     this.startTimer();
+    void this.bindRealtime();
   }
 
   ngOnDestroy(): void {
     this.stopTimer();
+    this.realtimeSub?.unsubscribe();
   }
 
   ionViewWillEnter(): void {
-    void this.loadBookings();
+    void this.loadBookings(undefined, true);
   }
 
   setSegment(value: string): void {
@@ -425,6 +449,8 @@ export class MyBookingsPage implements OnInit, OnDestroy {
   }
 
   get currentBookings(): BookingRecord[] {
+    // Touch nowTick so pending countdowns / starts-in refresh every second.
+    void this.nowTick;
     if (this.activeSegment === 'upcoming') {
       return [...(this.bookings.invited || []), ...(this.bookings.upcoming || [])];
     }
@@ -445,8 +471,8 @@ export class MyBookingsPage implements OnInit, OnDestroy {
     }
   }
 
-  async loadBookings(event?: RefresherCustomEvent): Promise<void> {
-    if (!event) {
+  async loadBookings(event?: RefresherCustomEvent, silent = false): Promise<void> {
+    if (!event && !silent) {
       this.loading = true;
     }
     this.errorMessage = '';
@@ -480,6 +506,119 @@ export class MyBookingsPage implements OnInit, OnDestroy {
 
   isBusy(id: string): boolean {
     return this.busyIds.has(id);
+  }
+
+  approvalCountdown(booking: BookingRecord): string {
+    void this.nowTick;
+    const deadline = booking.approvalDeadlineAt;
+    if (!deadline) {
+      return 'Venue must approve within 10:00 or this booking will cancel automatically.';
+    }
+    const end = new Date(deadline).getTime();
+    if (Number.isNaN(end)) {
+      return 'Venue must approve within 10 minutes or this booking will cancel automatically.';
+    }
+    const remainingMs = end - this.nowTick;
+    if (remainingMs <= 0) {
+      return 'Approval window expired — refreshing…';
+    }
+    const totalSec = Math.ceil(remainingMs / 1000);
+    const mins = Math.floor(totalSec / 60);
+    const secs = totalSec % 60;
+    const clock = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    return `Venue must approve within ${clock} or this booking will cancel automatically.`;
+  }
+
+  private async bindRealtime(): Promise<void> {
+    try {
+      await this.realtime.connect();
+      this.realtimeSub = this.realtime.nearbyGames$.subscribe((event) => {
+        this.handleRealtimeBooking(event.game, event.type === 'updated' ? event.action : 'created');
+      });
+    } catch {
+      // Reverb optional — page still works via pull-to-refresh.
+    }
+  }
+
+  private handleRealtimeBooking(game: BookingRecord, action: string): void {
+    if (!game?.id) return;
+    const userId = String(this.auth.user()?.id || '');
+    if (!userId) return;
+
+    const tracked = this.findLocalBooking(game.id);
+    const isHost = String(game.hostUserId || '') === userId;
+    if (!tracked && !isHost) return;
+
+    // Instant optimistic status update (badge flips immediately).
+    if (tracked) {
+      this.patchLocalBooking(game.id, {
+        bookingStatus: game.bookingStatus,
+        paymentStatus: game.paymentStatus,
+        approvalDeadlineAt: game.approvalDeadlineAt,
+        currentPlayers: game.currentPlayers,
+        availableSlots: game.availableSlots,
+        canCancel: game.canCancel ?? tracked.canCancel,
+        canJoin: game.canJoin ?? tracked.canJoin,
+      });
+    }
+
+    if (action === 'approved') {
+      void this.presentToast('Venue approved your booking', 'success');
+    } else if (action === 'rejected') {
+      void this.presentToast('Venue declined your booking', 'danger');
+    } else if (action === 'cancelled') {
+      void this.presentToast('Booking was cancelled', 'danger');
+    }
+
+    // Soft reload so lists/counts/permissions stay correct.
+    this.queueSilentReload();
+  }
+
+  private findLocalBooking(id: string): BookingRecord | null {
+    const buckets: (keyof Omit<MyBookingsResponse, 'counts'>)[] = [
+      'upcoming',
+      'invited',
+      'past',
+      'cancelled',
+      'completed',
+    ];
+    for (const key of buckets) {
+      const hit = (this.bookings[key] || []).find((b) => String(b.id) === String(id));
+      if (hit) return hit;
+    }
+    return null;
+  }
+
+  private patchLocalBooking(id: string, patch: Partial<BookingRecord>): void {
+    const buckets: (keyof Omit<MyBookingsResponse, 'counts'>)[] = [
+      'upcoming',
+      'invited',
+      'past',
+      'cancelled',
+      'completed',
+    ];
+    let changed = false;
+    const next: MyBookingsResponse = { ...this.bookings, counts: { ...this.bookings.counts } };
+    for (const key of buckets) {
+      const list = [...(this.bookings[key] || [])];
+      const idx = list.findIndex((b) => String(b.id) === String(id));
+      if (idx < 0) continue;
+      list[idx] = { ...list[idx], ...patch };
+      next[key] = list;
+      changed = true;
+    }
+    if (changed) {
+      this.bookings = next;
+    }
+  }
+
+  private queueSilentReload(): void {
+    if (this.silentReloadQueued) return;
+    this.silentReloadQueued = true;
+    window.setTimeout(() => {
+      this.silentReloadQueued = false;
+      void this.loadBookings(undefined, true);
+    }, 250);
   }
 
   async joinBooking(booking: BookingRecord): Promise<void> {
@@ -560,7 +699,7 @@ export class MyBookingsPage implements OnInit, OnDestroy {
     if (this.timerId !== null) return;
     this.timerId = window.setInterval(() => {
       this.nowTick = Date.now();
-    }, 60000);
+    }, 1000);
   }
 
   private stopTimer(): void {
@@ -572,6 +711,16 @@ export class MyBookingsPage implements OnInit, OnDestroy {
 
   statusTone(booking: BookingRecord) {
     return bookingStatusTone(booking.bookingStatus);
+  }
+
+  statusLabel(booking: BookingRecord): string {
+    const status = String(booking.bookingStatus || '').toLowerCase();
+    if (status === 'pending') return 'Awaiting venue';
+    if (status === 'confirmed' || status === 'full') return 'Confirmed';
+    if (status === 'cancelled') return 'Cancelled';
+    if (status === 'completed') return 'Completed';
+    if (status === 'expired') return 'Expired';
+    return status ? status.charAt(0).toUpperCase() + status.slice(1) : 'Unknown';
   }
 
   private async runBookingAction(id: string, action: () => Promise<string>): Promise<void> {

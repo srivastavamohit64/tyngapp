@@ -10,9 +10,14 @@ import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { apiInterceptor } from './core/interceptors/api.interceptor';
 import { AuthService } from './core/services/auth.service';
+import { ThemeService } from './core/services/theme.service';
 
 export function initAuthSession(auth: AuthService) {
   return () => firstValueFrom(auth.ensureSession()).catch(() => false);
+}
+
+export function initAppTheme(theme: ThemeService) {
+  return () => theme.init().catch(() => undefined);
 }
 
 @NgModule({
@@ -25,6 +30,12 @@ export function initAuthSession(auth: AuthService) {
       provide: APP_INITIALIZER,
       useFactory: initAuthSession,
       deps: [AuthService],
+      multi: true,
+    },
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initAppTheme,
+      deps: [ThemeService],
       multi: true,
     },
   ],

@@ -22,7 +22,7 @@ const SPARKLINES: Record<string, number[]> = {
 };
 
 const PERF_CARDS = [
-  { id:'views',      label:'Profile Views',         value:'1,247', change:'+18%', positive:true,  color:'#8CF000' },
+  { id:'views',      label:'Profile Views',         value:'1,247', change:'+18%', positive:true,  color:'var(--app-primary)' },
   { id:'bookings',   label:'Booking Requests',      value:'34',    change:'+12%', positive:true,  color:'#FF7A00' },
   { id:'acceptance', label:'Acceptance Rate',       value:'91%',   change:'+5%',  positive:true,  color:'#38BDF8' },
   { id:'completion', label:'Session Completion',    value:'96%',   change:'+3%',  positive:true,  color:'#22C55E' },
@@ -69,7 +69,7 @@ const FUNNEL = [
         <!-- Filter tabs -->
         <div class="flex gap-2 px-5 py-3 bg-white border-b border-[#F3F4F6] overflow-x-auto no-scrollbar">
           <button *ngFor="let t of timeTabs" (click)="selectedTab.set(t)" class="flex-shrink-0 px-3.5 py-2 rounded-full text-[11px] font-bold border-none"
-            [style.backgroundColor]="selectedTab() === t ? '#8CF000' : '#F3F4F6'"
+            [style.backgroundColor]="selectedTab() === t ? 'var(--app-primary)' : '#F3F4F6'"
             [style.color]="selectedTab() === t ? '#111827' : '#6B7280'">
             {{ t }}
           </button>
@@ -78,7 +78,7 @@ const FUNNEL = [
         <div class="px-5 pt-4 pb-32 space-y-4">
           <!-- Coach Growth Index (Hero) -->
           <div class="hero-growth-card p-6 relative overflow-hidden bg-gradient-to-br from-[#111827] to-[#1F2937] text-white">
-            <div class="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-[#8CF000]/10"></div>
+            <div class="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-[var(--app-primary)]/10"></div>
             <div class="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-[#FF7A00]/10"></div>
 
             <div class="relative flex items-center gap-6">
@@ -86,7 +86,7 @@ const FUNNEL = [
               <div class="flex-shrink-0 relative w-[100px] h-[100px] flex items-center justify-center">
                 <svg width="100" height="100" viewBox="0 0 100 100" class="absolute">
                   <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="8" />
-                  <circle cx="50" cy="50" r="42" fill="none" stroke="#8CF000" strokeWidth="8"
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="var(--app-primary)" strokeWidth="8"
                     strokeDasharray="263.8" strokeDashoffset="15.8" strokeLinecap="round" transform="rotate(-90 50 50)" />
                 </svg>
                 <div class="text-center relative">
@@ -96,7 +96,7 @@ const FUNNEL = [
               </div>
 
               <div class="flex-1">
-                <p class="text-[11px] font-black text-[#8CF000] uppercase tracking-widest mb-1 m-0">Coach Growth Index</p>
+                <p class="text-[11px] font-black text-[var(--app-primary)] uppercase tracking-widest mb-1 m-0">Coach Growth Index</p>
                 <div class="flex gap-0.5 mb-1.5">
                   <ion-icon *ngFor="let s of [1,2,3,4,5]" name="star" class="text-[#F59E0B] text-sm"></ion-icon>
                 </div>
@@ -171,7 +171,7 @@ const FUNNEL = [
           <div class="section-card p-5">
             <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-4">Student Growth Dashboard</p>
             <div class="grid grid-cols-3 gap-3 mb-4">
-              <div *ngFor="let m of [{ emoji:'🏆', label:'Tournament Winners', value:'3', color:'#F59E0B' }, { emoji:'📈', label:'Students Improved', value:'18/24', color:'#22C55E' }, { emoji:'🎯', label:'Avg Improvement', value:'+28%', color:'#8CF000' }]"
+              <div *ngFor="let m of [{ emoji:'🏆', label:'Tournament Winners', value:'3', color:'#F59E0B' }, { emoji:'📈', label:'Students Improved', value:'18/24', color:'#22C55E' }, { emoji:'🎯', label:'Avg Improvement', value:'+28%', color:'var(--app-primary)' }]"
                 class="rounded-[18px] p-3 text-center"
                 [style.backgroundColor]="m.color + '12'" [style.border]="'1.5px solid ' + m.color + '22'">
                 <span class="text-2xl">{{ m.emoji }}</span>
@@ -182,10 +182,10 @@ const FUNNEL = [
             <div class="bg-[#F9FAFB] rounded-2xl p-4 mb-3 border border-slate-100">
               <div class="flex justify-between text-[12px] mb-2">
                 <span class="font-bold text-[#111827]">Students Improved This Period</span>
-                <span class="font-black text-[#8CF000]">18 / 24</span>
+                <span class="font-black text-[var(--app-primary)]">18 / 24</span>
               </div>
               <div class="h-2.5 bg-[#E5E7EB] rounded-full overflow-hidden">
-                <div class="h-full rounded-full bg-[#8CF000]" style="width: 75%;"></div>
+                <div class="h-full rounded-full bg-[var(--app-primary)]" style="width: 75%;"></div>
               </div>
             </div>
             <div class="space-y-2.5">
@@ -206,7 +206,7 @@ const FUNNEL = [
           <div class="section-card p-5">
             <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-4">Student Retention</p>
             <div class="grid grid-cols-4 gap-2 mb-4">
-              <div *ngFor="let r of [{ pct:82, color:'#8CF000', label:'Repeat Rate' }, { pct:78, color:'#FF7A00', label:'Renewals' }, { pct:91, color:'#38BDF8', label:'Satisfaction' }, { pct:65, color:'#7C3AED', label:'Referrals' }]"
+              <div *ngFor="let r of [{ pct:82, color:'var(--app-primary)', label:'Repeat Rate' }, { pct:78, color:'#FF7A00', label:'Renewals' }, { pct:91, color:'#38BDF8', label:'Satisfaction' }, { pct:65, color:'#7C3AED', label:'Referrals' }]"
                 class="flex flex-col items-center gap-1.5">
                 <div class="relative w-[60px] h-[60px] flex items-center justify-center">
                   <svg width="60" height="60" viewBox="0 0 60 60" class="absolute">
@@ -220,7 +220,7 @@ const FUNNEL = [
               </div>
             </div>
             <div class="grid grid-cols-2 gap-3">
-              <div *ngFor="let retention of [{ label:'Avg Coaching Duration', value:'4.2 months', color:'#8CF000' }, { label:'Returning Students', value:'31 this month', color:'#FF7A00' }]"
+              <div *ngFor="let retention of [{ label:'Avg Coaching Duration', value:'4.2 months', color:'var(--app-primary)' }, { label:'Returning Students', value:'31 this month', color:'#FF7A00' }]"
                 class="bg-[#F9FAFB] rounded-2xl p-3.5 border border-slate-100">
                 <p class="text-[16px] font-black leading-none m-0" [style.color]="retention.color">{{ retention.value }}</p>
                 <p class="text-[10px] text-[#9CA3AF] mt-1 m-0 font-bold">{{ retention.label }}</p>
@@ -237,7 +237,7 @@ const FUNNEL = [
                 <span class="text-[10px] text-[#9CA3AF] font-bold">({{ tag.count }})</span>
               </div>
             </div>
-            <div class="bg-[rgba(140,240,0,0.06)] rounded-2xl p-4 border border-[#8CF000]/22">
+            <div class="bg-[rgba(var(--app-primary-rgb),0.06)] rounded-2xl p-4 border border-[var(--app-primary)]/22">
               <p class="text-[13px] text-[#111827] font-bold mb-1">💡 What Students Say</p>
               <p class="text-[11px] text-[#6B7280] leading-relaxed m-0">
                 Students highly value your <strong class="text-[#111827]">structured batting sessions</strong> and <strong class="text-[#111827]">motivational coaching approach</strong>.
@@ -256,9 +256,9 @@ const FUNNEL = [
                 </div>
                 <div class="flex items-center gap-3">
                   <div class="flex-1 h-3.5 bg-[#F3F4F6] rounded-full overflow-hidden">
-                    <div class="h-full rounded-full bg-gradient-to-r from-[#8CF000] to-[#A3E635]" [style.width]="step.pct + '%'"></div>
+                    <div class="h-full rounded-full bg-gradient-to-r from-[var(--app-primary)] to-[var(--app-primary-to)]" [style.width]="step.pct + '%'"></div>
                   </div>
-                  <span class="text-[11px] font-black text-[#8CF000] w-12 text-right">{{ step.pct }}%</span>
+                  <span class="text-[11px] font-black text-[var(--app-primary)] w-12 text-right">{{ step.pct }}%</span>
                 </div>
                 <div *ngIf="step.conversionTo" class="flex justify-end text-[10px] text-[#9CA3AF] mt-1 font-bold">
                   {{ step.conversionTo }} conversion to next step
@@ -326,7 +326,7 @@ const FUNNEL = [
     }
 
     .toggle-on {
-      background: #8CF000;
+      background: var(--app-primary);
     }
 
     .toggle-thumb {
@@ -359,7 +359,7 @@ export class CoachInsightsPage {
   readonly funnelSteps = FUNNEL;
 
   readonly businessMetrics = [
-    { emoji: '💰', label: 'Monthly Earnings', value: '₹32,000', sub: '+22% this month', pct: 78, color: '#8CF000' },
+    { emoji: '💰', label: 'Monthly Earnings', value: '₹32,000', sub: '+22% this month', pct: 78, color: 'var(--app-primary)' },
     { emoji: '💵', label: 'Avg Session Price', value: '₹850', sub: 'Per session avg', pct: 68, color: '#FF7A00' },
     { emoji: '📚', label: 'Sessions Conducted', value: '38', sub: 'This period', pct: 85, color: '#38BDF8' },
     { emoji: '👥', label: 'Avg Students / Session', value: '4.2', sub: 'Group sessions', pct: 55, color: '#7C3AED' },

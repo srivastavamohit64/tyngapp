@@ -50,7 +50,7 @@ const MOCK_STUDENTS: StudentRecord[] = [
 
         <div class="w-full max-w-sm bg-white rounded-[24px] p-5 mb-5 shadow-sm border border-slate-100 text-left space-y-2.5">
           <div *ngFor="let item of getSuccessItems()" class="flex items-center gap-3 py-2 border-b border-[#F9FAFB] last:border-none">
-            <div class="w-6 h-6 rounded-full bg-[#8CF000] flex items-center justify-center flex-shrink-0">
+            <div class="w-6 h-6 rounded-full bg-[var(--app-primary)] flex items-center justify-center flex-shrink-0">
               <ion-icon name="checkmark-outline" style="font-size:12px;color:#111827;font-weight:bold;"></ion-icon>
             </div>
             <span class="text-[13px] font-semibold text-[#111827]">{{ item }}</span>
@@ -59,19 +59,19 @@ const MOCK_STUDENTS: StudentRecord[] = [
 
         <div class="w-full max-w-sm grid grid-cols-2 gap-2.5">
           <button (click)="go('/app/coach/students')" class="success-action-btn shadow-sm">
-            <ion-icon name="people-outline" class="text-[#8CF000] text-2xl mb-1"></ion-icon>
+            <ion-icon name="people-outline" class="text-[var(--app-primary)] text-2xl mb-1"></ion-icon>
             View Profile
           </button>
           <button (click)="go('/app/coach/plan')" class="success-action-btn shadow-sm">
-            <ion-icon name="calendar-outline" class="text-[#8CF000] text-2xl mb-1"></ion-icon>
+            <ion-icon name="calendar-outline" class="text-[var(--app-primary)] text-2xl mb-1"></ion-icon>
             Schedule Session
           </button>
           <button (click)="go('/app/home')" class="success-action-btn shadow-sm">
-            <ion-icon name="home-outline" class="text-[#8CF000] text-2xl mb-1"></ion-icon>
+            <ion-icon name="home-outline" class="text-[var(--app-primary)] text-2xl mb-1"></ion-icon>
             Go Home
           </button>
           <button (click)="resetEnrollment()" class="success-action-btn shadow-sm">
-            <ion-icon name="person-add-outline" class="text-[#8CF000] text-2xl mb-1"></ion-icon>
+            <ion-icon name="person-add-outline" class="text-[var(--app-primary)] text-2xl mb-1"></ion-icon>
             Enroll Another
           </button>
         </div>
@@ -97,7 +97,7 @@ const MOCK_STUDENTS: StudentRecord[] = [
             <div class="flex items-center gap-1.5">
               <div *ngFor="let s of [1,2,3,4,5,6]" class="h-1.5 rounded-full transition-all"
                 [style.width]="managedStep === s ? '18px' : '6px'"
-                [style.backgroundColor]="managedStep > s ? '#FF7A00' : (managedStep === s ? '#8CF000' : '#E5E7EB')"></div>
+                [style.backgroundColor]="managedStep > s ? '#FF7A00' : (managedStep === s ? 'var(--app-primary)' : '#E5E7EB')"></div>
             </div>
           </div>
         </div>
@@ -110,12 +110,12 @@ const MOCK_STUDENTS: StudentRecord[] = [
             <div class="space-y-3">
               <button (click)="enrollType = 'existing'" class="type-card border-none shadow-sm text-left w-full">
                 <div class="flex items-start gap-4">
-                  <div class="w-12 h-12 rounded-2xl bg-[#8CF000]/12 flex items-center justify-center flex-shrink-0 text-2xl">📱</div>
+                  <div class="w-12 h-12 rounded-2xl bg-[var(--app-primary)]/12 flex items-center justify-center flex-shrink-0 text-2xl">📱</div>
                   <div class="flex-1">
                     <p class="text-[16px] font-black text-[#111827] m-0">Existing TYNG User</p>
                     <p class="text-[12px] text-[#9CA3AF] mt-0.5 mb-3">Student already has the TYNG app</p>
                     <div *ngFor="let bullet of ['Search by mobile, TYNG ID or name','Connect to your coaching profile','Full student history synced']" class="flex items-center gap-2 py-0.5">
-                      <div class="w-4 h-4 rounded-full bg-[#8CF000] flex items-center justify-center flex-shrink-0">
+                      <div class="w-4 h-4 rounded-full bg-[var(--app-primary)] flex items-center justify-center flex-shrink-0">
                         <ion-icon name="checkmark-outline" style="font-size:9px;color:#111827;font-weight:bold;"></ion-icon>
                       </div>
                       <span class="text-[12px] text-[#6B7280]">{{ bullet }}</span>
@@ -127,12 +127,12 @@ const MOCK_STUDENTS: StudentRecord[] = [
 
               <button (click)="enrollType = 'invite'" class="type-card border-none shadow-sm text-left w-full">
                 <div class="flex items-start gap-4">
-                  <div class="w-12 h-12 rounded-2xl bg-[#8CF000]/12 flex items-center justify-center flex-shrink-0 text-2xl">✉️</div>
+                  <div class="w-12 h-12 rounded-2xl bg-[var(--app-primary)]/12 flex items-center justify-center flex-shrink-0 text-2xl">✉️</div>
                   <div class="flex-1">
                     <p class="text-[16px] font-black text-[#111827] m-0">Invite to TYNG</p>
                     <p class="text-[12px] text-[#9CA3AF] mt-0.5 mb-3">Student doesn't have TYNG yet</p>
                     <div *ngFor="let bullet of ['Send SMS + WhatsApp invitation','Automatic coach invitation code','Profile syncs when they join']" class="flex items-center gap-2 py-0.5">
-                      <div class="w-4 h-4 rounded-full bg-[#8CF000] flex items-center justify-center flex-shrink-0">
+                      <div class="w-4 h-4 rounded-full bg-[var(--app-primary)] flex items-center justify-center flex-shrink-0">
                         <ion-icon name="checkmark-outline" style="font-size:9px;color:#111827;font-weight:bold;"></ion-icon>
                       </div>
                       <span class="text-[12px] text-[#6B7280]">{{ bullet }}</span>
@@ -144,12 +144,12 @@ const MOCK_STUDENTS: StudentRecord[] = [
 
               <button (click)="enrollType = 'managed'" class="type-card border-none shadow-sm text-left w-full">
                 <div class="flex items-start gap-4">
-                  <div class="w-12 h-12 rounded-2xl bg-[#8CF000]/12 flex items-center justify-center flex-shrink-0 text-2xl">👨‍💼</div>
+                  <div class="w-12 h-12 rounded-2xl bg-[var(--app-primary)]/12 flex items-center justify-center flex-shrink-0 text-2xl">👨‍💼</div>
                   <div class="flex-1">
                     <p class="text-[16px] font-black text-[#111827] m-0">Coach Managed Profile</p>
                     <p class="text-[12px] text-[#9CA3AF] mt-0.5 mb-3">For children or academy students</p>
                     <div *ngFor="let bullet of ['Coach creates the profile','Works without a smartphone','Parents can be added anytime']" class="flex items-center gap-2 py-0.5">
-                      <div class="w-4 h-4 rounded-full bg-[#8CF000] flex items-center justify-center flex-shrink-0">
+                      <div class="w-4 h-4 rounded-full bg-[var(--app-primary)] flex items-center justify-center flex-shrink-0">
                         <ion-icon name="checkmark-outline" style="font-size:9px;color:#111827;font-weight:bold;"></ion-icon>
                       </div>
                       <span class="text-[12px] text-[#6B7280]">{{ bullet }}</span>
@@ -170,25 +170,25 @@ const MOCK_STUDENTS: StudentRecord[] = [
               <input [(ngModel)]="searchQ" placeholder="Search TYNG users…" class="flex-1 bg-transparent text-[14px] text-[#111827] focus:outline-none min-h-0 border-none" />
             </div>
 
-            <div *ngIf="selExisting" class="flex items-center gap-3 bg-[#8CF000]/10 rounded-2xl px-4 py-3.5 mb-4 border border-[#8CF000]/30 shadow-sm">
+            <div *ngIf="selExisting" class="flex items-center gap-3 bg-[var(--app-primary)]/10 rounded-2xl px-4 py-3.5 mb-4 border border-[var(--app-primary)]/30 shadow-sm">
               <img [src]="selExisting.photo" class="w-10 h-10 rounded-full object-cover" />
               <div class="flex-1 text-left">
                 <p class="text-[14px] font-black text-[#111827] m-0">{{ selExisting.name }}</p>
-                <p class="text-[11px] text-[#8CF000] font-semibold m-0">✓ Selected</p>
+                <p class="text-[11px] text-[var(--app-primary)] font-semibold m-0">✓ Selected</p>
               </div>
               <button (click)="selExisting = null" class="bg-transparent border-none p-0 flex"><ion-icon name="close-outline" class="text-slate-400"></ion-icon></button>
             </div>
 
             <div class="space-y-2">
               <button *ngFor="let s of filterStudents()" (click)="selExisting = s" class="student-row border-none shadow-sm bg-white"
-                [style.borderColor]="selExisting?.id === s.id ? '#8CF000' : '#F3F4F6'"
-                [style.backgroundColor]="selExisting?.id === s.id ? 'rgba(140,240,0,0.06)' : 'white'">
+                [style.borderColor]="selExisting?.id === s.id ? 'var(--app-primary)' : '#F3F4F6'"
+                [style.backgroundColor]="selExisting?.id === s.id ? 'rgba(var(--app-primary-rgb),0.06)' : 'white'">
                 <img [src]="s.photo" class="w-10 h-10 rounded-full object-cover flex-shrink-0" />
                 <div class="flex-1 text-left">
                   <p class="text-[13px] font-bold text-[#111827] m-0">{{ s.name }}</p>
                   <p class="text-[11px] text-[#9CA3AF] m-0">{{ s.skill }} · {{ s.attendance }}% attendance</p>
                 </div>
-                <div *ngIf="selExisting?.id === s.id" class="w-6 h-6 rounded-full bg-[#8CF000] flex items-center justify-center">
+                <div *ngIf="selExisting?.id === s.id" class="w-6 h-6 rounded-full bg-[var(--app-primary)] flex items-center justify-center">
                   <ion-icon name="checkmark-outline" style="font-size:12px;color:#111827;font-weight:bold;"></ion-icon>
                 </div>
               </button>
@@ -207,7 +207,7 @@ const MOCK_STUDENTS: StudentRecord[] = [
               </p>
               <div class="mt-5 bg-white rounded-[20px] p-4 text-left shadow-sm border border-slate-100">
                 <div *ngFor="let i of ['SMS Download Link','WhatsApp Invitation','App Store / Play Store Link','Coach Invitation Code']" class="flex items-center gap-2.5 py-2">
-                  <div class="w-5 h-5 rounded-full bg-[#8CF000] flex items-center justify-center">
+                  <div class="w-5 h-5 rounded-full bg-[var(--app-primary)] flex items-center justify-center">
                     <ion-icon name="checkmark-outline" style="font-size:11px;color:#111827;font-weight:bold;"></ion-icon>
                   </div>
                   <span class="text-[13px] text-[#111827] font-semibold">{{ i }}</span>
@@ -248,7 +248,7 @@ const MOCK_STUDENTS: StudentRecord[] = [
                 <span class="text-[9px] text-[#C4C9D4] font-semibold">Photo</span>
               </div>
               <div class="flex gap-2">
-                <button class="px-3 py-2 rounded-xl bg-[#8CF000]/12 text-[12px] font-bold text-[#111827] border-none">Upload Photo</button>
+                <button class="px-3 py-2 rounded-xl bg-[var(--app-primary)]/12 text-[12px] font-bold text-[#111827] border-none">Upload Photo</button>
                 <button class="px-3 py-2 rounded-xl bg-[#F3F4F6] text-[12px] font-bold text-[#6B7280] border-none">Take Photo</button>
               </div>
             </div>
@@ -347,7 +347,7 @@ const MOCK_STUDENTS: StudentRecord[] = [
                   </div>
                   <div class="flex gap-2 mt-2">
                     <input [(ngModel)]="newAlg" placeholder="Add custom…" class="flex-1 px-3 py-2 bg-[#F9FAFB] rounded-xl text-[13px] focus:outline-none border border-[#F3F4F6] min-h-0" />
-                    <button (click)="addCustomAllergy()" class="w-9 h-9 rounded-xl bg-[#8CF000] flex items-center justify-center border-none">
+                    <button (click)="addCustomAllergy()" class="w-9 h-9 rounded-xl bg-[var(--app-primary)] flex items-center justify-center border-none">
                       <ion-icon name="add-outline" class="text-[#111827] text-lg font-bold"></ion-icon>
                     </button>
                   </div>
@@ -375,14 +375,14 @@ const MOCK_STUDENTS: StudentRecord[] = [
               <p class="text-[13px] text-[#9CA3AF] mb-4">Does the student or parent have access to a smartphone?</p>
               <div class="grid grid-cols-2 gap-3 mb-4">
                 <button (click)="hasPhone = true" class="flex flex-col items-center py-4 rounded-[20px] border-none shadow-sm"
-                  [style.backgroundColor]="hasPhone === true ? 'rgba(140,240,0,0.10)' : '#F9FAFB'"
-                  [style.border]="hasPhone === true ? '2px solid #8CF000' : '2px solid transparent'">
+                  [style.backgroundColor]="hasPhone === true ? 'rgba(var(--app-primary-rgb),0.10)' : '#F9FAFB'"
+                  [style.border]="hasPhone === true ? '2px solid var(--app-primary)' : '2px solid transparent'">
                   <span class="text-2xl mb-1.5">📱</span>
                   <p class="text-[13px] font-black text-[#111827] m-0">Yes</p>
                 </button>
                 <button (click)="hasPhone = false; parentPhone = ''" class="flex flex-col items-center py-4 rounded-[20px] border-none shadow-sm"
-                  [style.backgroundColor]="hasPhone === false ? 'rgba(140,240,0,0.10)' : '#F9FAFB'"
-                  [style.border]="hasPhone === false ? '2px solid #8CF000' : '2px solid transparent'">
+                  [style.backgroundColor]="hasPhone === false ? 'rgba(var(--app-primary-rgb),0.10)' : '#F9FAFB'"
+                  [style.border]="hasPhone === false ? '2px solid var(--app-primary)' : '2px solid transparent'">
                   <span class="text-2xl mb-1.5">🚫</span>
                   <p class="text-[13px] font-black text-[#111827] m-0">No</p>
                 </button>
@@ -390,7 +390,7 @@ const MOCK_STUDENTS: StudentRecord[] = [
               <div *ngIf="hasPhone === true">
                 <label class="field-label">Parent / Student Mobile Number</label>
                 <input [(ngModel)]="parentPhone" type="tel" placeholder="Enter mobile number" class="text-input" />
-                <div class="mt-3 bg-[#8CF000]/10 rounded-xl p-3 border border-[#8CF000]/20">
+                <div class="mt-3 bg-[var(--app-primary)]/10 rounded-xl p-3 border border-[var(--app-primary)]/20">
                   <p class="text-[11px] text-[#6B7280] m-0">TYNG will send: Download Link · Invitation · Student Profile Access</p>
                 </div>
               </div>
@@ -410,13 +410,13 @@ const MOCK_STUDENTS: StudentRecord[] = [
               <p class="text-[12px] text-[#9CA3AF] mb-3">Select an existing batch or leave blank</p>
               <div class="space-y-2.5">
                 <button *ngFor="let b of batchOptions" (click)="selBatch = (selBatch === b.id ? '' : b.id)" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-[#F9FAFB] border-none shadow-sm"
-                  [style.border]="selBatch === b.id ? '1.5px solid #8CF000' : '1.5px solid transparent'">
+                  [style.border]="selBatch === b.id ? '1.5px solid var(--app-primary)' : '1.5px solid transparent'">
                   <ion-icon name="people-outline" class="text-[#6B7280]"></ion-icon>
                   <div class="flex-1 text-left">
                     <p class="text-[13px] font-bold text-[#111827] m-0">{{ b.label }}</p>
                     <p class="text-[11px] text-[#9CA3AF] m-0">{{ b.members }} students</p>
                   </div>
-                  <div *ngIf="selBatch === b.id" class="w-6 h-6 rounded-full bg-[#8CF000] flex items-center justify-center">
+                  <div *ngIf="selBatch === b.id" class="w-6 h-6 rounded-full bg-[var(--app-primary)] flex items-center justify-center">
                     <ion-icon name="checkmark-outline" style="font-size:12px;color:#111827;font-weight:bold;"></ion-icon>
                   </div>
                 </button>
@@ -434,9 +434,9 @@ const MOCK_STUDENTS: StudentRecord[] = [
               <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-3">Training Frequency</p>
               <div class="grid grid-cols-2 gap-2">
                 <button *ngFor="let f of freqOptions" (click)="frequency = f" class="py-3 rounded-2xl text-[12px] font-bold transition-all border-none bg-[#F9FAFB]"
-                  [style.backgroundColor]="frequency === f ? 'rgba(140,240,0,0.12)' : '#F9FAFB'"
+                  [style.backgroundColor]="frequency === f ? 'rgba(var(--app-primary-rgb),0.12)' : '#F9FAFB'"
                   [style.color]="frequency === f ? '#111827' : '#6B7280'"
-                  [style.border]="frequency === f ? '1.5px solid #8CF000' : '1.5px solid transparent'">
+                  [style.border]="frequency === f ? '1.5px solid var(--app-primary)' : '1.5px solid transparent'">
                   {{ f }}
                 </button>
               </div>
@@ -446,9 +446,9 @@ const MOCK_STUDENTS: StudentRecord[] = [
               <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-3">Membership Type</p>
               <div class="space-y-2">
                 <button *ngFor="let m of membershipOptions" (click)="membership = m" class="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl bg-[#F9FAFB] border-none shadow-sm"
-                  [style.border]="membership === m ? '1.5px solid #8CF000' : '1.5px solid transparent'">
+                  [style.border]="membership === m ? '1.5px solid var(--app-primary)' : '1.5px solid transparent'">
                   <p class="text-[14px] font-bold text-[#111827] m-0">{{ m }}</p>
-                  <div *ngIf="membership === m" class="w-6 h-6 rounded-full bg-[#8CF000] flex items-center justify-center">
+                  <div *ngIf="membership === m" class="w-6 h-6 rounded-full bg-[var(--app-primary)] flex items-center justify-center">
                     <ion-icon name="checkmark-outline" style="font-size:12px;color:#111827;font-weight:bold;"></ion-icon>
                   </div>
                 </button>
@@ -460,10 +460,10 @@ const MOCK_STUDENTS: StudentRecord[] = [
           <div *ngIf="enrollType === 'managed' && managedStep === 6" class="space-y-4">
             <h2 class="text-[20px] font-black text-[#111827] m-0">Ready to Enroll</h2>
 
-            <div class="bg-white rounded-[24px] overflow-hidden border border-[#8CF000]/22 shadow-md">
+            <div class="bg-white rounded-[24px] overflow-hidden border border-[var(--app-primary)]/22 shadow-md">
               <div class="px-5 pt-5 pb-4 flex items-center gap-3">
-                <div class="w-10 h-10 rounded-2xl bg-[#8CF000]/15 flex items-center justify-center flex-shrink-0">
-                  <ion-icon name="flash-outline" class="text-[#8CF000] text-xl"></ion-icon>
+                <div class="w-10 h-10 rounded-2xl bg-[var(--app-primary)]/15 flex items-center justify-center flex-shrink-0">
+                  <ion-icon name="flash-outline" class="text-[var(--app-primary)] text-xl"></ion-icon>
                 </div>
                 <div class="flex-1">
                   <p class="text-[14px] font-black text-[#111827] m-0">TYNG Smart Features</p>
@@ -476,7 +476,7 @@ const MOCK_STUDENTS: StudentRecord[] = [
               <div class="border-t border-[#F3F4F6] px-5 pb-5 pt-4 space-y-2.5">
                 <div *ngFor="let task of ['Add the student to My Students','Generate a unique TYNG Student ID','Create a personal attendance QR Code','Link to upcoming coaching sessions','Create a progress tracking profile','Store evaluations and coach notes','Track attendance automatically']"
                   class="flex items-center gap-2.5">
-                  <div class="w-5 h-5 rounded-full bg-[#8CF000] flex items-center justify-center flex-shrink-0">
+                  <div class="w-5 h-5 rounded-full bg-[var(--app-primary)] flex items-center justify-center flex-shrink-0">
                     <ion-icon name="checkmark-outline" style="font-size:11px;color:#111827;font-weight:bold;"></ion-icon>
                   </div>
                   <span class="text-[13px] text-[#111827] font-semibold">{{ task }}</span>
@@ -543,9 +543,9 @@ const MOCK_STUDENTS: StudentRecord[] = [
     .success-circle {
       width: 96px; height: 96px;
       border-radius: 50%;
-      background: #8CF000;
+      background: var(--app-primary);
       display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 8px 36px rgba(140,240,0,0.45);
+      box-shadow: 0 8px 36px rgba(var(--app-primary-rgb),0.45);
     }
 
     .success-action-btn {
@@ -619,7 +619,7 @@ const MOCK_STUDENTS: StudentRecord[] = [
       box-sizing: border-box;
 
       &:focus {
-        border-color: rgba(140,240,0,0.3);
+        border-color: rgba(var(--app-primary-rgb),0.3);
       }
     }
 
@@ -642,9 +642,9 @@ const MOCK_STUDENTS: StudentRecord[] = [
     }
 
     .chip-active {
-      background: rgba(140,240,0,0.14);
+      background: rgba(var(--app-primary-rgb),0.14);
       color: #111827;
-      border-color: #8CF000;
+      border-color: var(--app-primary);
     }
 
     /* Selected student chips */
@@ -652,7 +652,7 @@ const MOCK_STUDENTS: StudentRecord[] = [
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      background: rgba(140,240,0,0.08);
+      background: rgba(var(--app-primary-rgb),0.08);
       border-radius: 16px;
       padding: 12px;
     }
@@ -682,7 +682,7 @@ const MOCK_STUDENTS: StudentRecord[] = [
     }
 
     .toggle-on {
-      background: #8CF000;
+      background: var(--app-primary);
     }
 
     .toggle-thumb {

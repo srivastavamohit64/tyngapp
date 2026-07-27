@@ -21,7 +21,7 @@ ion-menu ion-content {
 /* Profile Header */
 .drawer-profile-header {
   padding: 56px 24px 20px;
-  background: linear-gradient(160deg, rgba(140,240,0,0.12) 0%, #FFFFFF 65%);
+  background: linear-gradient(160deg, rgba(var(--app-primary-rgb),0.12) 0%, #FFFFFF 65%);
   position: relative;
 }
 
@@ -64,7 +64,7 @@ ion-menu ion-content {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #8CF000, #A3E635);
+  background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to));
   border: 2px solid white;
   display: flex;
   align-items: center;
@@ -72,7 +72,7 @@ ion-menu ion-content {
   font-size: 11px;
   font-weight: 900;
   color: #111827;
-  box-shadow: 0 2px 8px rgba(140,240,0,0.4);
+  box-shadow: 0 2px 8px rgba(var(--app-primary-rgb),0.4);
 }
 
 .drawer-name-block { cursor: pointer; }
@@ -107,7 +107,7 @@ ion-menu ion-content {
   top: -24px; right: -24px;
   width: 96px; height: 96px;
   border-radius: 50%;
-  background: rgba(140,240,0,0.1);
+  background: rgba(var(--app-primary-rgb),0.1);
 }
 
 .xp-orb2 {
@@ -129,7 +129,7 @@ ion-menu ion-content {
 .xp-top5 {
   font-size: 11px;
   font-weight: 800;
-  color: #8CF000;
+  color: var(--app-primary);
   letter-spacing: 0.06em;
   margin-bottom: 2px;
 }
@@ -157,7 +157,7 @@ ion-menu ion-content {
 .xp-lvl {
   font-size: 36px;
   font-weight: 900;
-  color: #8CF000;
+  color: var(--app-primary);
   line-height: 1;
 }
 
@@ -169,7 +169,7 @@ ion-menu ion-content {
 }
 
 .xp-prog-lbl { font-size: 10px; color: rgba(255,255,255,0.4); }
-.xp-prog-pct { font-size: 10px; font-weight: 800; color: #8CF000; }
+.xp-prog-pct { font-size: 10px; font-weight: 800; color: var(--app-primary); }
 
 .xp-bar {
   height: 6px;
@@ -182,7 +182,7 @@ ion-menu ion-content {
 
 .xp-fill {
   height: 100%;
-  background: linear-gradient(90deg, #8CF000, #FF7A00);
+  background: linear-gradient(90deg, var(--app-primary), #FF7A00);
   border-radius: 999px;
 }
 
@@ -323,7 +323,7 @@ ion-menu ion-content {
 
 /* ── Coach drawer (Figma CoachLeftDrawer) ── */
 .coach-drawer-header {
-  background: linear-gradient(160deg, rgba(140,240,0,0.10) 0%, #FFFFFF 60%);
+  background: linear-gradient(160deg, rgba(var(--app-primary-rgb),0.10) 0%, #FFFFFF 60%);
 }
 
 .drawer-verified-badge {
@@ -400,8 +400,8 @@ ion-menu ion-content {
   position: relative;
   overflow: hidden;
   cursor: pointer;
-  box-shadow: 0 4px 20px rgba(140,240,0,0.15);
-  border: 1px solid rgba(140,240,0,0.20);
+  box-shadow: 0 4px 20px rgba(var(--app-primary-rgb),0.15);
+  border: 1px solid rgba(var(--app-primary-rgb),0.20);
 }
 
 .coach-completion-inner {
@@ -418,7 +418,7 @@ ion-menu ion-content {
 .coach-completion-label {
   font-size: 12px;
   font-weight: 900;
-  color: #8CF000;
+  color: var(--app-primary);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   margin: 0;
@@ -427,7 +427,7 @@ ion-menu ion-content {
 .coach-completion-pct {
   font-size: 13px;
   font-weight: 900;
-  color: #8CF000;
+  color: var(--app-primary);
 }
 
 .coach-completion-bar {
@@ -441,7 +441,7 @@ ion-menu ion-content {
 .coach-completion-fill {
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, #8CF000, #FF7A00);
+  background: linear-gradient(90deg, var(--app-primary), #FF7A00);
 }
 
 .coach-completion-desc {
@@ -519,7 +519,7 @@ ion-menu ion-content {
 
 .venue-drawer-header {
   padding: 56px 24px 20px;
-  background: linear-gradient(160deg, rgba(140, 240, 0, 0.1) 0%, #fff 60%);
+  background: linear-gradient(160deg, rgba(var(--app-primary-rgb), 0.1) 0%, #fff 60%);
 }
 
 .venue-drawer-identity {
@@ -532,7 +532,7 @@ ion-menu ion-content {
   width: 56px;
   height: 56px;
   border-radius: 16px;
-  background: rgba(140, 240, 0, 0.15);
+  background: rgba(var(--app-primary-rgb), 0.15);
   display: grid;
   place-items: center;
   font-size: 28px;
@@ -570,8 +570,8 @@ ion-menu ion-content {
   padding: 16px;
   border-radius: 20px;
   background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
-  box-shadow: 0 4px 20px rgba(140, 240, 0, 0.15);
-  border: 1px solid rgba(140, 240, 0, 0.2);
+  box-shadow: 0 4px 20px rgba(var(--app-primary-rgb), 0.15);
+  border: 1px solid rgba(var(--app-primary-rgb), 0.2);
   position: relative;
   overflow: hidden;
   cursor: pointer;
@@ -593,7 +593,7 @@ ion-menu ion-content {
   margin: 0;
   font-size: 12px;
   font-weight: 900;
-  color: #8cf000;
+  color: var(--app-primary);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -601,7 +601,7 @@ ion-menu ion-content {
 .venue-drawer-completion-pct {
   font-size: 13px;
   font-weight: 900;
-  color: #8cf000;
+  color: var(--app-primary);
 }
 
 .venue-drawer-completion-bar {
@@ -615,7 +615,7 @@ ion-menu ion-content {
 .venue-drawer-completion-fill {
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, #8cf000, #ff7a00);
+  background: linear-gradient(90deg, var(--app-primary), #ff7a00);
 }
 
 .venue-drawer-checklist {
@@ -654,7 +654,7 @@ ion-menu ion-content {
 }
 
 .venue-drawer-check-dot--done {
-  background: #8cf000;
+  background: var(--app-primary);
 }
 
 .venue-drawer-completion-cta {
@@ -663,7 +663,7 @@ ion-menu ion-content {
   justify-content: center;
   padding: 10px;
   border-radius: 16px;
-  background: linear-gradient(135deg, #8cf000, #a3e635);
+  background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to));
   font-size: 12px;
   font-weight: 900;
   color: #111827;

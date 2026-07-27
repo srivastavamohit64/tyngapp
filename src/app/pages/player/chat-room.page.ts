@@ -140,7 +140,7 @@ interface Message {
                 <div class="relative">
                   <div 
                     class="p-3.5 rounded-3xl text-sm leading-relaxed" 
-                    [class.bg-[#8CF000]]="msg.isSelf" 
+                    [class.bg-[var(--app-primary)]]="msg.isSelf" 
                     [class.text-[#111827]]="msg.isSelf"
                     [class.bg-[#F0F2F5]]="!msg.isSelf"
                     [class.text-slate-800]="!msg.isSelf"
@@ -175,7 +175,7 @@ interface Message {
 
           <div class="flex gap-2.5 items-center px-4 pb-4">
             <input 
-              class="h-12 flex-1 rounded-xl border border-slate-100 bg-[#FAFBFC] px-4 outline-none text-sm font-medium focus:border-[#8CF000] focus:bg-white" 
+              class="h-12 flex-1 rounded-xl border border-slate-100 bg-[#FAFBFC] px-4 outline-none text-sm font-medium focus:border-[var(--app-primary)] focus:bg-white" 
               placeholder="Type a message..." 
               [(ngModel)]="newMessageText" 
               (keyup.enter)="sendMessage()" 
@@ -183,7 +183,7 @@ interface Message {
             <button 
               (click)="sendMessage()" 
               [disabled]="!newMessageText.trim()"
-              class="grid h-12 w-12 place-items-center rounded-full bg-gradient-to-r from-[#8CF000] to-[#A3E635] text-[#111827] shadow-sm disabled:opacity-50 transition-all border-none outline-none cursor-pointer"
+              class="grid h-12 w-12 place-items-center rounded-full bg-gradient-to-r from-[var(--app-primary)] to-[var(--app-primary-to)] text-[#111827] shadow-sm disabled:opacity-50 transition-all border-none outline-none cursor-pointer"
             >
               <ion-icon name="send" class="text-lg"></ion-icon>
             </button>

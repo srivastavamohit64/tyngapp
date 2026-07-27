@@ -45,7 +45,7 @@ interface SportIcon {
               <svg viewBox="0 0 100 128" class="rope-y-svg">
                 <!-- Left branch: Green strand -->
                 <path d="M 12 8 C 22 22, 28 28, 35 40 C 40 48, 47 58, 50 66" 
-                      stroke="#8CF000" stroke-width="9" fill="none" stroke-linecap="round"
+                      stroke="var(--app-primary)" stroke-width="9" fill="none" stroke-linecap="round"
                       class="rope-strand path-left-green" />
                 <!-- Left branch: Orange strand -->
                 <path d="M 16 12 C 24 24, 30 30, 37 42 C 42 50, 48 58, 50 66" 
@@ -54,7 +54,7 @@ interface SportIcon {
 
                 <!-- Right branch: Green strand -->
                 <path d="M 88 8 C 78 22, 72 28, 65 40 C 60 48, 53 58, 50 66" 
-                      stroke="#8CF000" stroke-width="9" fill="none" stroke-linecap="round"
+                      stroke="var(--app-primary)" stroke-width="9" fill="none" stroke-linecap="round"
                       class="rope-strand path-right-green" />
                 <!-- Right branch: Orange strand -->
                 <path d="M 84 12 C 76 24, 70 30, 63 42 C 58 50, 52 58, 50 66" 
@@ -63,7 +63,7 @@ interface SportIcon {
 
                 <!-- Stem: Green strand (Twisted) -->
                 <path d="M 50 66 C 46 76, 54 86, 50 96 C 46 106, 54 116, 50 124" 
-                      stroke="#8CF000" stroke-width="9" fill="none" stroke-linecap="round"
+                      stroke="var(--app-primary)" stroke-width="9" fill="none" stroke-linecap="round"
                       class="rope-strand path-stem-green" />
                 <!-- Stem: Orange strand (Twisted) -->
                 <path d="M 50 66 C 54 76, 46 86, 54 96 C 46 106, 54 116, 50 124" 
@@ -90,7 +90,7 @@ interface SportIcon {
         <!-- Bottom curve background vector -->
         <div class="bottom-curve">
           <svg viewBox="0 0 1440 200" fill="none" preserveAspectRatio="none">
-            <path d="M0 80 C 360 160, 720 40, 1080 120 C 1260 160, 1380 140, 1440 120 L 1440 200 L 0 200 Z" fill="#8CF000" />
+            <path d="M0 80 C 360 160, 720 40, 1080 120 C 1260 160, 1380 140, 1440 120 L 1440 200 L 0 200 Z" fill="var(--app-primary)" />
           </svg>
         </div>
 
@@ -322,7 +322,7 @@ interface SportIcon {
     }
 
     .tag-play {
-      color: #8CF000;
+      color: var(--app-primary);
     }
 
     .tag-stay {
@@ -351,7 +351,7 @@ interface SportIcon {
       }
       50% {
         transform: scale(1.03);
-        filter: drop-shadow(0 0 10px rgba(140, 240, 0, 0.15));
+        filter: drop-shadow(0 0 10px rgba(var(--app-primary-rgb), 0.15));
       }
     }
   `]
@@ -365,10 +365,10 @@ export class SplashPage implements OnInit, OnDestroy {
     { emoji: "🏀", angle: 30, distance: 300, color: "#FF7A00" },
     { emoji: "🏏", angle: 60, distance: 300, color: "#111827" },
     { emoji: "🏸", angle: 90, distance: 300, color: "#38BDF8" },
-    { emoji: "🎾", angle: 120, distance: 300, color: "#8CF000" },
+    { emoji: "🎾", angle: 120, distance: 300, color: "var(--app-primary)" },
     { emoji: "🏐", angle: 150, distance: 300, color: "#FF7A00" },
     { emoji: "🏓", angle: 180, distance: 300, color: "#38BDF8" },
-    { emoji: "⛳", angle: 210, distance: 300, color: "#8CF000" },
+    { emoji: "⛳", angle: 210, distance: 300, color: "var(--app-primary)" },
     { emoji: "🏑", angle: 240, distance: 300, color: "#111827" },
     { emoji: "🏋️", angle: 270, distance: 300, color: "#111827" },
     { emoji: "🏃", angle: 300, distance: 300, color: "#FF7A00" },

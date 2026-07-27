@@ -35,14 +35,14 @@ import { IonicModule } from '@ionic/angular';
       .header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
       .back { width: 40px; height: 40px; min-height: unset; border-radius: 12px; background: #f3f4f6; display: grid; place-items: center; font-size: 20px; color: #111827; }
       h1 { margin: 0; font-size: 22px; font-weight: 700; color: #111827; }
-      .hero-card { background: linear-gradient(135deg, #8cf000, #a3e635); border-radius: 24px; padding: 24px; margin-bottom: 20px; color: #111827; }
+      .hero-card { background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to)); border-radius: 24px; padding: 24px; margin-bottom: 20px; color: #111827; }
       .hero-card p { margin: 0; font-size: 14px; opacity: 0.8; }
       .hero-card h2 { margin: 8px 0; font-size: 32px; font-weight: 900; }
       .hero-card span { font-size: 13px; font-weight: 700; }
       .row { display: flex; justify-content: space-between; align-items: center; background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 14px 16px; margin-bottom: 10px; }
       .row strong { display: block; color: #111827; font-size: 14px; }
       .row span { font-size: 12px; color: #6b7280; }
-      .amt { color: #8cf000 !important; font-size: 15px !important; }
+      .amt { color: var(--app-primary) !important; font-size: 15px !important; }
     `,
   ],
 })

@@ -47,7 +47,7 @@ export class BookingService {
     team_size: string;
     duration_hours?: number;
     price?: number;
-    payment_method?: 'online' | 'at_venue';
+    payment_method?: 'online' | 'at_venue' | 'wallet';
     coupon_code?: string | null;
     coupon_discount?: number;
     rental_details?: unknown;
@@ -77,6 +77,10 @@ export class BookingService {
 
   cancelBooking(bookingId: string): Observable<ApiResponse<BookingRecord>> {
     return this.api.delete<BookingRecord>('/cancel-booking', { booking_id: bookingId });
+  }
+
+  approveBooking(bookingId: string): Observable<ApiResponse<BookingRecord>> {
+    return this.api.post<BookingRecord>('/approve-booking', { booking_id: bookingId });
   }
 
   updateBooking(payload: Record<string, unknown>): Observable<ApiResponse<BookingRecord>> {

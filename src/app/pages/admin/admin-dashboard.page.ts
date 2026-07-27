@@ -78,7 +78,7 @@ import { IonicModule } from '@ionic/angular';
       }
 
       .hero {
-        background: linear-gradient(180deg, rgba(140, 240, 0, 0.2), transparent);
+        background: linear-gradient(180deg, rgba(var(--app-primary-rgb), 0.2), transparent);
         padding: calc(24px + env(safe-area-inset-top, 0px)) 24px 32px;
       }
 
@@ -160,7 +160,7 @@ import { IonicModule } from '@ionic/angular';
         margin: 6px 0 0;
         font-size: 12px;
         font-weight: 700;
-        color: #8cf000;
+        color: var(--app-primary);
       }
 
       .section {
@@ -199,8 +199,8 @@ import { IonicModule } from '@ionic/angular';
         width: 40px;
         height: 40px;
         border-radius: 12px;
-        background: rgba(140, 240, 0, 0.2);
-        color: #8cf000;
+        background: rgba(var(--app-primary-rgb), 0.2);
+        color: var(--app-primary);
         display: grid;
         place-items: center;
         font-size: 20px;
@@ -274,10 +274,10 @@ export class AdminDashboardPage {
   private readonly router = inject(Router);
 
   readonly stats = [
-    { label: 'Total Users', value: '12,450', change: '+245', icon: 'people-outline', color: '#8CF000' },
+    { label: 'Total Users', value: '12,450', change: '+245', icon: 'people-outline', color: 'var(--app-primary)' },
     { label: 'Active Venues', value: '42', change: '+3', icon: 'business-outline', color: '#FF7A00' },
     { label: 'Monthly Revenue', value: '₹24.5L', change: '+18%', icon: 'cash-outline', color: '#38BDF8' },
-    { label: 'Active Games', value: '185', change: '+12', icon: 'pulse-outline', color: '#8CF000' },
+    { label: 'Active Games', value: '185', change: '+12', icon: 'pulse-outline', color: 'var(--app-primary)' },
   ];
 
   readonly actions = [

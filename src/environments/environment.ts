@@ -4,6 +4,13 @@ export const environment = {
   production: false,
   apiUrl: 'https://tyngpeople.com/api',
   googleMapsApiKey: envSecrets.googleMapsApiKey,
+  reverb: {
+    // Set enabled=true after Reverb is deployed behind wss on the live host.
+    enabled: true,
+    key: '',
+    host: 'tyngpeople.com',
+    port: 443,
+    scheme: 'https',
+    channel: 'nearby-games',
+  },
 };
-// [http://127.0.0.1:8000
-//   apiUrl: 'https://tyngpeople.com/api',

@@ -1,13 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, OnDestroy, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { IonicModule, MenuController, ViewWillEnter } from '@ionic/angular';
-import { firstValueFrom } from 'rxjs';
-import { BookingRecord, DiscoverPlayer } from '../../core/models/api.model';
+import { Subscription, firstValueFrom } from 'rxjs';
+import { BookingRecord, DiscoverPlayer, HomeAd } from '../../core/models/api.model';
+import { AdService } from '../../core/services/ad.service';
 import { AuthService } from '../../core/services/auth.service';
 import { BookingService } from '../../core/services/booking.service';
 import { DesignDataService } from '../../core/services/design-data.service';
+import { RealtimeService } from '../../core/services/realtime.service';
 import {
   formatBookingDate,
   formatBookingTime,
@@ -49,10 +51,12 @@ interface QuickSuggestion {
   styleUrls: ['./home.page.scss'],
   templateUrl: './home.page.html',
 })
-export class HomePage implements ViewWillEnter {
+export class HomePage implements ViewWillEnter, OnDestroy {
   readonly data = inject(DesignDataService);
   readonly auth = inject(AuthService);
   private readonly bookingService = inject(BookingService);
+  private readonly adService = inject(AdService);
+  private readonly realtime = inject(RealtimeService);
   private readonly router = inject(Router);
   private readonly menu = inject(MenuController);
 
@@ -66,6 +70,7 @@ export class HomePage implements ViewWillEnter {
   showSuggestions = false;
   private searchTimer?: ReturnType<typeof setTimeout>;
   private searchRequestId = 0;
+  private nearbyRealtimeSub?: Subscription;
 
   nearbyGames: EventGame[] = [];
   nearbyBookings: BookingRecord[] = [];
@@ -73,13 +78,18 @@ export class HomePage implements ViewWillEnter {
   nearbyError = '';
   quickSuggestion: QuickSuggestion | null = null;
 
+  homeAds: HomeAd[] = [];
+  adsLoading = true;
+  adSlideIndex = 0;
+  private adSliderTimer?: ReturnType<typeof setInterval>;
+
   // General state
   greeting = '';
 
   // Coach Dashboard state
   coachProfileDismissed = signal(false);
   readonly coachPulseMetrics = [
-    { icon: '📅', label: "Today's Sessions", value: '4', accent: '#8CF000' },
+    { icon: '📅', label: "Today's Sessions", value: '4', accent: 'var(--app-primary)' },
     { icon: '💰', label: 'Expected Earnings', value: '₹4,250', accent: '#FF7A00' },
     { icon: '⭐', label: 'New Reviews', value: '3', accent: '#F59E0B' },
     { icon: '👥', label: 'Booking Requests', value: '5', accent: '#38BDF8' },
@@ -90,7 +100,7 @@ export class HomePage implements ViewWillEnter {
     { id: 3, sport: 'Badminton', emoji: '🏸', image: 'https://images.unsplash.com/photo-1722087642932-9b070e9a066e?w=700&h=300&fit=crop&auto=format', title: 'Individual Coaching', team: 'Priya Verma · 1 Student', venue: 'Sports Complex', time: '4:00 PM', type: 'One-on-One', status: 'completed', startsIn: null },
   ];
   readonly coachQuickActions = [
-    { icon: 'add-outline', label: 'New Session', sub: 'Schedule a slot', color: '#8CF000', path: '/app/coach/create-session' },
+    { icon: 'add-outline', label: 'New Session', sub: 'Schedule a slot', color: 'var(--app-primary)', path: '/app/coach/create-session' },
     { icon: 'calendar-outline', label: 'Manage Schedule', sub: 'View your calendar', color: '#FF7A00', path: '/app/coach/schedule' },
     { icon: 'person-add-outline', label: 'Add Student', sub: 'Onboard a new player', color: '#38BDF8', path: '/app/coach/enroll-student' },
     { icon: 'analytics-outline', label: 'Evaluate Player', sub: 'Track progress', color: '#7C3AED', path: '/app/coach/evaluate' },
@@ -120,7 +130,7 @@ export class HomePage implements ViewWillEnter {
   // Venue Dashboard state
   venueProfileDismissed = signal(false);
   readonly venuePulseMetrics = [
-    { icon: '🏟️', label: "Today's Bookings", value: '8', accent: '#8CF000' },
+    { icon: '🏟️', label: "Today's Bookings", value: '8', accent: 'var(--app-primary)' },
     { icon: '💰', label: "Today's Revenue", value: '₹12,500', accent: '#FF7A00' },
     { icon: '📈', label: 'Occupancy Rate', value: '74%', accent: '#38BDF8' },
     { icon: '📩', label: 'Pending Requests', value: '3', accent: '#F59E0B' },
@@ -182,7 +192,65 @@ export class HomePage implements ViewWillEnter {
     const role = this.auth.user()?.role;
     if (role === 'player' || !role) {
       void this.loadNearbyGames();
+      void this.loadHomeAds();
+      this.listenForNearbyGames();
     }
+  }
+
+  ngOnDestroy() {
+    this.nearbyRealtimeSub?.unsubscribe();
+    this.stopAdSlider();
+  }
+
+  private listenForNearbyGames() {
+    if (this.nearbyRealtimeSub) return;
+    void this.realtime.connect();
+    this.nearbyRealtimeSub = this.realtime.nearbyGames$.subscribe((event) => {
+      if (event.type === 'created') {
+        this.upsertNearbyBooking(event.game, true);
+        return;
+      }
+      this.upsertNearbyBooking(event.game, false);
+    });
+  }
+
+  private upsertNearbyBooking(booking: BookingRecord, prepend: boolean) {
+    // Keep Nearby Games to joinable social matches only (not direct solo venue bookings).
+    if (!this.isJoinableNearbyGame(booking)) {
+      this.nearbyBookings = this.nearbyBookings.filter((item) => item.id !== booking.id);
+      this.nearbyGames = this.nearbyBookings.map((item) => this.mapNearbyGame(item));
+      this.quickSuggestion = this.buildQuickSuggestion(this.nearbyBookings);
+      return;
+    }
+
+    const existingIndex = this.nearbyBookings.findIndex((item) => item.id === booking.id);
+    if (existingIndex >= 0) {
+      this.nearbyBookings = [
+        ...this.nearbyBookings.slice(0, existingIndex),
+        booking,
+        ...this.nearbyBookings.slice(existingIndex + 1),
+      ];
+    } else if (prepend) {
+      this.nearbyBookings = [booking, ...this.nearbyBookings];
+    } else {
+      this.nearbyBookings = [...this.nearbyBookings, booking];
+    }
+    this.nearbyGames = this.nearbyBookings.map((item) => this.mapNearbyGame(item));
+    this.quickSuggestion = this.buildQuickSuggestion(this.nearbyBookings);
+    this.nearbyError = '';
+  }
+
+  private isJoinableNearbyGame(booking: BookingRecord): boolean {
+    const total = Number(booking.totalPlayers || 0);
+    const current = Number(booking.currentPlayers || 0);
+    const status = String(booking.bookingStatus || '');
+    return total > 1
+      && current < total
+      && status !== 'full'
+      && status !== 'pending'
+      && status !== 'cancelled'
+      && status !== 'expired'
+      && status !== 'completed';
   }
 
   get playerLocation(): string {
@@ -242,9 +310,9 @@ export class HomePage implements ViewWillEnter {
     try {
       const response = await firstValueFrom(this.bookingService.getNearbyGames(20));
       if (response.success && Array.isArray(response.data)) {
-        this.nearbyBookings = response.data;
-        this.nearbyGames = response.data.map((booking) => this.mapNearbyGame(booking));
-        this.quickSuggestion = this.buildQuickSuggestion(response.data);
+        this.nearbyBookings = response.data.filter((booking) => this.isJoinableNearbyGame(booking));
+        this.nearbyGames = this.nearbyBookings.map((booking) => this.mapNearbyGame(booking));
+        this.quickSuggestion = this.buildQuickSuggestion(this.nearbyBookings);
       } else {
         this.nearbyBookings = [];
         this.nearbyGames = [];
@@ -357,6 +425,47 @@ export class HomePage implements ViewWillEnter {
 
   go(path: string) {
     this.router.navigateByUrl(path);
+  }
+
+  async loadHomeAds() {
+    this.adsLoading = true;
+    try {
+      this.homeAds = await firstValueFrom(this.adService.list('home_banner'));
+      this.adSlideIndex = 0;
+      this.startAdSlider();
+    } catch {
+      this.homeAds = [];
+      this.stopAdSlider();
+    } finally {
+      this.adsLoading = false;
+    }
+  }
+
+  selectAdSlide(index: number) {
+    if (index < 0 || index >= this.homeAds.length) return;
+    this.adSlideIndex = index;
+    this.startAdSlider();
+  }
+
+  openAd(ad: HomeAd) {
+    const url = (ad.linkUrl || '').trim();
+    if (!url) return;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }
+
+  private startAdSlider() {
+    this.stopAdSlider();
+    if (this.homeAds.length < 2) return;
+    this.adSliderTimer = setInterval(() => {
+      this.adSlideIndex = (this.adSlideIndex + 1) % this.homeAds.length;
+    }, 4000);
+  }
+
+  private stopAdSlider() {
+    if (this.adSliderTimer) {
+      clearInterval(this.adSliderTimer);
+      this.adSliderTimer = undefined;
+    }
   }
 
   getStatusStyle(status: string) {

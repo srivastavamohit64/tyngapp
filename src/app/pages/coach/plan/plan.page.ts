@@ -115,7 +115,7 @@ function buildDates() {
         <div class="w-full max-w-sm bg-white rounded-[24px] p-5 mb-5 shadow-sm border border-slate-100 space-y-2.5">
           <div *ngFor="let a of ['Venue Reserved','Session Published','Student Invitations Sent','Session Chat Created','Schedule Updated','Attendance QR Generated']"
             class="flex items-center gap-3 py-2 border-b border-[#F9FAFB] last:border-0">
-            <div class="w-6 h-6 rounded-full bg-[#8CF000] flex items-center justify-center flex-shrink-0">
+            <div class="w-6 h-6 rounded-full bg-[var(--app-primary)] flex items-center justify-center flex-shrink-0">
               <ion-icon name="checkmark-outline" style="font-size:12px;color:#111827;font-weight:bold;"></ion-icon>
             </div>
             <span class="text-[13px] font-semibold text-[#111827]">{{ a }}</span>
@@ -124,19 +124,19 @@ function buildDates() {
 
         <div class="w-full max-w-sm grid grid-cols-2 gap-2.5">
           <button (click)="go('/app/coach/students')" class="success-action-btn shadow-sm">
-            <ion-icon name="people-outline" class="text-[#8CF000] text-2xl mb-1"></ion-icon>
+            <ion-icon name="people-outline" class="text-[var(--app-primary)] text-2xl mb-1"></ion-icon>
             Manage Students
           </button>
           <button (click)="go('/app/chat')" class="success-action-btn shadow-sm">
-            <ion-icon name="chatbubbles-outline" class="text-[#8CF000] text-2xl mb-1"></ion-icon>
+            <ion-icon name="chatbubbles-outline" class="text-[var(--app-primary)] text-2xl mb-1"></ion-icon>
             Session Chat
           </button>
           <button (click)="go('/app/schedule')" class="success-action-btn shadow-sm">
-            <ion-icon name="calendar-outline" class="text-[#8CF000] text-2xl mb-1"></ion-icon>
+            <ion-icon name="calendar-outline" class="text-[var(--app-primary)] text-2xl mb-1"></ion-icon>
             My Schedule
           </button>
           <button (click)="go('/app/home')" class="success-action-btn shadow-sm">
-            <ion-icon name="home-outline" class="text-[#8CF000] text-2xl mb-1"></ion-icon>
+            <ion-icon name="home-outline" class="text-[var(--app-primary)] text-2xl mb-1"></ion-icon>
             Go Home
           </button>
         </div>
@@ -163,7 +163,7 @@ function buildDates() {
             <div class="flex items-center gap-1.5">
               <div *ngFor="let s of [1,2,3,4,5,6,7,8]" class="h-2 rounded-full transition-all"
                 [style.width]="step() === s ? '20px' : '8px'"
-                [style.backgroundColor]="step() > s ? '#FF7A00' : (step() === s ? '#8CF000' : '#E5E7EB')"></div>
+                [style.backgroundColor]="step() > s ? '#FF7A00' : (step() === s ? 'var(--app-primary)' : '#E5E7EB')"></div>
             </div>
           </div>
         </div>
@@ -177,8 +177,8 @@ function buildDates() {
             </div>
             <div class="grid grid-cols-3 gap-3">
               <button *ngFor="let s of sportsOptions" (click)="sport = s.id" class="sport-selection-btn"
-                [style.borderColor]="sport === s.id ? '#8CF000' : 'transparent'"
-                [style.boxShadow]="sport === s.id ? '0 0 0 3px rgba(140,240,0,0.20)' : 'none'">
+                [style.borderColor]="sport === s.id ? 'var(--app-primary)' : 'transparent'"
+                [style.boxShadow]="sport === s.id ? '0 0 0 3px rgba(var(--app-primary-rgb),0.20)' : 'none'">
                 <img [src]="s.image" [alt]="s.name" class="sport-bg-img" />
                 <div class="sport-overlay"></div>
                 <div *ngIf="sport === s.id" class="sport-checked">
@@ -215,7 +215,7 @@ function buildDates() {
                   <ion-icon name="close-outline" class="text-slate-400"></ion-icon>
                 </button>
               </div>
-              <span class="text-[11px] font-black text-[#8CF000] ml-2 self-center">{{ selStudents.length }} Selected</span>
+              <span class="text-[11px] font-black text-[var(--app-primary)] ml-2 self-center">{{ selStudents.length }} Selected</span>
             </div>
 
             <!-- List my students -->
@@ -226,15 +226,15 @@ function buildDates() {
               </div>
               <div class="space-y-2">
                 <button *ngFor="let s of filterStudents()" (click)="toggleStudent(s.id)" class="student-select-row border-none shadow-sm"
-                  [style.backgroundColor]="selStudents.includes(s.id) ? 'rgba(140,240,0,0.08)' : 'white'"
-                  [style.border]="selStudents.includes(s.id) ? '1.5px solid #8CF000' : '1.5px solid #F3F4F6'">
+                  [style.backgroundColor]="selStudents.includes(s.id) ? 'rgba(var(--app-primary-rgb),0.08)' : 'white'"
+                  [style.border]="selStudents.includes(s.id) ? '1.5px solid var(--app-primary)' : '1.5px solid #F3F4F6'">
                   <img [src]="s.photo" class="w-10 h-10 rounded-full object-cover flex-shrink-0" />
                   <div class="flex-1 text-left">
                     <p class="text-[13px] font-bold text-[#111827]">{{ s.name }}</p>
                     <p class="text-[10px] text-[#9CA3AF]">{{ s.skill }} · {{ s.attendance }}% attendance</p>
                   </div>
                   <div class="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
-                    [style.backgroundColor]="selStudents.includes(s.id) ? '#8CF000' : '#F3F4F6'">
+                    [style.backgroundColor]="selStudents.includes(s.id) ? 'var(--app-primary)' : '#F3F4F6'">
                     <ion-icon *ngIf="selStudents.includes(s.id)" name="checkmark-outline" style="font-size:12px;color:#111827;font-weight:bold;"></ion-icon>
                   </div>
                 </button>
@@ -244,8 +244,8 @@ function buildDates() {
             <!-- List batches -->
             <div *ngIf="studTab === 'batch'" class="space-y-3">
               <button *ngFor="let b of batchOptions" (click)="selBatch = (selBatch === b.id ? '' : b.id)" class="batch-select-btn border-none shadow-sm"
-                [style.backgroundColor]="selBatch === b.id ? 'rgba(140,240,0,0.08)' : 'white'"
-                [style.border]="selBatch === b.id ? '1.5px solid #8CF000' : '1.5px solid #F3F4F6'">
+                [style.backgroundColor]="selBatch === b.id ? 'rgba(var(--app-primary-rgb),0.08)' : 'white'"
+                [style.border]="selBatch === b.id ? '1.5px solid var(--app-primary)' : '1.5px solid #F3F4F6'">
                 <div class="w-10 h-10 rounded-xl bg-[#F3F4F6] flex items-center justify-center">
                   <ion-icon name="people-outline" class="text-[#6B7280] text-lg"></ion-icon>
                 </div>
@@ -253,7 +253,7 @@ function buildDates() {
                   <p class="text-[14px] font-bold text-[#111827]">{{ b.label }}</p>
                   <p class="text-[11px] text-[#9CA3AF]">{{ b.members }} students · {{ b.sport }}</p>
                 </div>
-                <div *ngIf="selBatch === b.id" class="w-6 h-6 rounded-full bg-[#8CF000] flex items-center justify-center">
+                <div *ngIf="selBatch === b.id" class="w-6 h-6 rounded-full bg-[var(--app-primary)] flex items-center justify-center">
                   <ion-icon name="checkmark-outline" style="font-size:12px;color:#111827;font-weight:bold;"></ion-icon>
                 </div>
               </button>
@@ -276,12 +276,12 @@ function buildDates() {
             </div>
             <div class="space-y-4">
               <button *ngFor="let v of venueOptions" (click)="selectedVenue = v" class="venue-select-btn border-none shadow-sm text-left bg-white"
-                [style.border]="selectedVenue?.id === v.id ? '2.5px solid #8CF000' : '2.5px solid transparent'">
+                [style.border]="selectedVenue?.id === v.id ? '2.5px solid var(--app-primary)' : '2.5px solid transparent'">
                 <div class="relative h-[120px] overflow-hidden bg-slate-200">
                   <img [src]="v.image" class="w-full h-full object-cover" />
                   <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
                   <span *ngIf="v.isCoachFriendly" class="absolute top-3 left-3 text-[10px] font-bold bg-[#FF7A00] text-white px-2 py-0.5 rounded-full">Coach Friendly 🏋️</span>
-                  <div *ngIf="selectedVenue?.id === v.id" class="absolute top-3 right-3 w-7 h-7 rounded-full bg-[#8CF000] flex items-center justify-center">
+                  <div *ngIf="selectedVenue?.id === v.id" class="absolute top-3 right-3 w-7 h-7 rounded-full bg-[var(--app-primary)] flex items-center justify-center">
                     <ion-icon name="checkmark-outline" style="font-size:14px;color:#111827;font-weight:bold;"></ion-icon>
                   </div>
                   <div class="absolute bottom-2 right-3 bg-white/90 rounded-lg px-2 py-1">
@@ -312,9 +312,9 @@ function buildDates() {
             <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-3">Select Date</p>
             <div class="flex gap-2.5 overflow-x-auto pb-1 mb-5 no-scrollbar">
               <button *ngFor="let d of dateOptions" (click)="dateIdx = d.idx" class="flex-shrink-0 flex flex-col items-center px-3.5 py-2.5 rounded-2xl min-w-[54px] border-none shadow-sm"
-                [style.backgroundColor]="dateIdx === d.idx ? 'rgba(140,240,0,0.12)' : 'white'"
-                [style.border]="dateIdx === d.idx ? '2px solid #8CF000' : '2px solid #F3F4F6'">
-                <span class="text-[9px] font-bold" [style.color]="dateIdx === d.idx ? '#8CF000' : '#9CA3AF'">{{ d.isToday ? 'Today' : d.day }}</span>
+                [style.backgroundColor]="dateIdx === d.idx ? 'rgba(var(--app-primary-rgb),0.12)' : 'white'"
+                [style.border]="dateIdx === d.idx ? '2px solid var(--app-primary)' : '2px solid #F3F4F6'">
+                <span class="text-[9px] font-bold" [style.color]="dateIdx === d.idx ? 'var(--app-primary)' : '#9CA3AF'">{{ d.isToday ? 'Today' : d.day }}</span>
                 <span class="text-[18px] font-black text-[#111827] mt-0.5">{{ d.dateNum }}</span>
                 <span class="text-[9px]" [style.color]="dateIdx === d.idx ? '#9CA3AF' : '#C4C9D4'">{{ d.monthShort }}</span>
               </button>
@@ -323,8 +323,8 @@ function buildDates() {
             <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-3">Select Time</p>
             <div class="grid grid-cols-4 gap-2 mb-5">
               <button *ngFor="let t of (selectedVenue?.slots ?? ['6 AM','7 AM','8 AM','4 PM','5 PM','6 PM','7 PM','8 PM'])" (click)="time = t" class="py-3 rounded-2xl border-none shadow-sm text-center"
-                [style.backgroundColor]="time === t ? '#8CF000' : 'white'"
-                [style.border]="time === t ? '2px solid #8CF000' : '2px solid #F3F4F6'">
+                [style.backgroundColor]="time === t ? 'var(--app-primary)' : 'white'"
+                [style.border]="time === t ? '2px solid var(--app-primary)' : '2px solid #F3F4F6'">
                 <p class="text-[12px] font-black m-0" [style.color]="time === t ? '#111827' : '#6B7280'">{{ t }}</p>
               </button>
             </div>
@@ -332,14 +332,14 @@ function buildDates() {
             <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-3">Duration</p>
             <div class="grid grid-cols-4 gap-2 mb-4">
               <button *ngFor="let d of durationsOptions" (click)="duration = d.id" class="py-3 rounded-2xl border-none text-center"
-                [style.backgroundColor]="duration === d.id ? 'rgba(140,240,0,0.12)' : 'white'"
-                [style.border]="duration === d.id ? '2px solid #8CF000' : '2px solid #F3F4F6'">
+                [style.backgroundColor]="duration === d.id ? 'rgba(var(--app-primary-rgb),0.12)' : 'white'"
+                [style.border]="duration === d.id ? '2px solid var(--app-primary)' : '2px solid #F3F4F6'">
                 <p class="text-[12px] font-bold m-0" [style.color]="duration === d.id ? '#111827' : '#6B7280'">{{ d.label }}</p>
               </button>
             </div>
             <!-- Duration calculations -->
             <div *ngIf="time" class="bg-[#111827] rounded-2xl px-4 py-3 flex items-center justify-between text-white">
-              <div class="flex items-center gap-2"><ion-icon name="time-outline" class="text-[#8CF000]"></ion-icon><span class="text-[13px] font-bold">{{ time }}</span></div>
+              <div class="flex items-center gap-2"><ion-icon name="time-outline" class="text-[var(--app-primary)]"></ion-icon><span class="text-[13px] font-bold">{{ time }}</span></div>
               <span class="text-white/40 text-[13px]">→</span>
               <span class="text-[13px] font-bold">{{ getEndTime() }}</span>
             </div>
@@ -355,8 +355,8 @@ function buildDates() {
               <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-3">Session Type</p>
               <div class="grid grid-cols-3 gap-2">
                 <button *ngFor="let t of sessionTypeOptions" (click)="sessType = t.id" class="flex flex-col items-center py-4 rounded-[20px] border-none shadow-sm bg-white"
-                  [style.backgroundColor]="sessType === t.id ? 'rgba(140,240,0,0.10)' : 'white'"
-                  [style.border]="sessType === t.id ? '2px solid #8CF000' : '2px solid #F3F4F6'">
+                  [style.backgroundColor]="sessType === t.id ? 'rgba(var(--app-primary-rgb),0.10)' : 'white'"
+                  [style.border]="sessType === t.id ? '2px solid var(--app-primary)' : '2px solid #F3F4F6'">
                   <span class="text-2xl mb-1.5">{{ t.emoji }}</span>
                   <p class="text-[11px] font-black text-[#111827] m-0">{{ t.label }}</p>
                 </button>
@@ -423,11 +423,11 @@ function buildDates() {
             <div>
               <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-3">Equipment Source</p>
               <div class="space-y-2.5">
-                <button *ngFor="let s of equipSourceOptions" (click)="equipSrc = s.id" class="w-full flex items-center justify-between px-4 py-4 rounded-[20px] bg-white border border-[#F3F4F6] shadow-sm hover:border-[#8CF000]"
-                  [style.backgroundColor]="equipSrc === s.id ? 'rgba(140,240,0,0.08)' : 'white'"
-                  [style.borderColor]="equipSrc === s.id ? '#8CF000' : '#F3F4F6'">
+                <button *ngFor="let s of equipSourceOptions" (click)="equipSrc = s.id" class="w-full flex items-center justify-between px-4 py-4 rounded-[20px] bg-white border border-[#F3F4F6] shadow-sm hover:border-[var(--app-primary)]"
+                  [style.backgroundColor]="equipSrc === s.id ? 'rgba(var(--app-primary-rgb),0.08)' : 'white'"
+                  [style.borderColor]="equipSrc === s.id ? 'var(--app-primary)' : '#F3F4F6'">
                   <p class="text-[14px] font-bold text-[#111827] m-0">{{ s.label }}</p>
-                  <div *ngIf="equipSrc === s.id" class="w-6 h-6 rounded-full bg-[#8CF000] flex items-center justify-center">
+                  <div *ngIf="equipSrc === s.id" class="w-6 h-6 rounded-full bg-[var(--app-primary)] flex items-center justify-center">
                     <ion-icon name="checkmark-outline" style="font-size:12px;color:#111827;font-weight:bold;"></ion-icon>
                   </div>
                 </button>
@@ -438,12 +438,12 @@ function buildDates() {
           <!-- STEP 7: Smart Pricing -->
           <div *ngIf="step() === 7" class="space-y-4">
             <div class="rounded-[24px] p-5 relative overflow-hidden bg-gradient-to-br from-[#111827] to-[#1F2937] text-white">
-              <div class="absolute -top-8 -right-8 w-24 h-24 rounded-full bg-[#8CF000]/10"></div>
+              <div class="absolute -top-8 -right-8 w-24 h-24 rounded-full bg-[var(--app-primary)]/10"></div>
               <div class="relative">
                 <div class="flex items-center gap-2 mb-2">
-                  <ion-icon name="sparkles" class="text-[#8CF000]"></ion-icon>
-                  <p class="text-[14px] font-black text-[#8CF000] m-0">TYNG Smart Pricing</p>
-                  <span class="text-[9px] bg-[#8CF000]/20 text-[#8CF000] px-2 py-0.5 rounded-full font-black">AI</span>
+                  <ion-icon name="sparkles" class="text-[var(--app-primary)]"></ion-icon>
+                  <p class="text-[14px] font-black text-[var(--app-primary)] m-0">TYNG Smart Pricing</p>
+                  <span class="text-[9px] bg-[var(--app-primary)]/20 text-[var(--app-primary)] px-2 py-0.5 rounded-full font-black">AI</span>
                 </div>
                 <p class="text-[12px] text-white/50 mb-4 leading-normal">Enter only your coaching fee. TYNG calculates everything else automatically.</p>
                 <div class="bg-white/10 rounded-2xl p-4">
@@ -491,7 +491,7 @@ function buildDates() {
                 <input [(ngModel)]="couponInp" placeholder="Enter coupon code"
                   class="flex-1 bg-[#F3F4F6] rounded-xl px-3 h-10 text-[13px] font-semibold uppercase focus:outline-none min-h-0 border-none" />
                 <button (click)="applyCoupon()" [disabled]="!couponInp.trim()" class="h-10 px-4 rounded-xl text-[12px] font-black border-none"
-                  [style.backgroundColor]="couponInp.trim() ? '#8CF000' : '#F3F4F6'"
+                  [style.backgroundColor]="couponInp.trim() ? 'var(--app-primary)' : '#F3F4F6'"
                   [style.color]="couponInp.trim() ? '#111827' : '#C4C9D4'">
                   Apply
                 </button>
@@ -505,7 +505,7 @@ function buildDates() {
             </div>
 
             <!-- Total payments per student -->
-            <div *ngIf="getCoachFeeNumber() > 0" class="rounded-[24px] p-5 text-center bg-gradient-to-br from-[#8CF000] to-[#A3E635] shadow-md">
+            <div *ngIf="getCoachFeeNumber() > 0" class="rounded-[24px] p-5 text-center bg-gradient-to-br from-[var(--app-primary)] to-[var(--app-primary-to)] shadow-md">
               <p class="text-[12px] font-black text-[#111827]/60 uppercase tracking-wider mb-1">Each Student Pays</p>
               <p class="text-[48px] font-black text-[#111827] leading-none m-0">₹{{ getPricePerStudent() }}</p>
               <p class="text-[12px] text-[#111827]/50 mt-1 mb-0">÷ {{ getNumStudents() }} student{{ getNumStudents() !== 1 ? 's' : '' }}</p>
@@ -543,10 +543,10 @@ function buildDates() {
             </div>
 
             <!-- Automation toggle -->
-            <div class="bg-white rounded-[24px] overflow-hidden border border-[#8CF000]/22 shadow-md">
+            <div class="bg-white rounded-[24px] overflow-hidden border border-[var(--app-primary)]/22 shadow-md">
               <div class="px-5 py-4 flex items-center gap-3">
-                <div class="w-10 h-10 rounded-2xl bg-[#8CF000]/15 flex items-center justify-center flex-shrink-0">
-                  <ion-icon name="flash-outline" class="text-[#8CF000] text-xl"></ion-icon>
+                <div class="w-10 h-10 rounded-2xl bg-[var(--app-primary)]/15 flex items-center justify-center flex-shrink-0">
+                  <ion-icon name="flash-outline" class="text-[var(--app-primary)] text-xl"></ion-icon>
                 </div>
                 <div class="flex-1">
                   <p class="text-[14px] font-black text-[#111827] m-0">Automatically Manage Session</p>
@@ -559,7 +559,7 @@ function buildDates() {
               <div *ngIf="automate" class="px-5 py-4 space-y-2.5 border-t border-[#F3F4F6]">
                 <div *ngFor="let task of ['Create Coaching Session','Invite Selected Students','Add Session to Student Calendars','Add Session to Coach Schedule','Create Dedicated Session Chat','Generate Attendance QR Code','Send Automatic Reminders','Collect Session Feedback']"
                   class="flex items-center gap-2.5">
-                  <div class="w-5 h-5 rounded-full bg-[#8CF000] flex items-center justify-center flex-shrink-0">
+                  <div class="w-5 h-5 rounded-full bg-[var(--app-primary)] flex items-center justify-center flex-shrink-0">
                     <ion-icon name="checkmark-outline" style="font-size:11px;color:#111827;font-weight:bold;"></ion-icon>
                   </div>
                   <span class="text-[13px] text-[#111827]">{{ task }}</span>
@@ -575,7 +575,7 @@ function buildDates() {
             <div *ngIf="getCoachFeeNumber() > 0; else stepInfo" class="flex-shrink-0">
               <p class="text-[10px] text-[#9CA3AF] font-bold mb-0">Your Earnings</p>
               <p class="text-[18px] font-black text-[#111827] m-0">₹{{ getCoachFeeNumber() }}</p>
-              <p class="text-[10px] text-[#8CF000] font-bold m-0">₹{{ getPricePerStudent() }} / student</p>
+              <p class="text-[10px] text-[var(--app-primary)] font-bold m-0">₹{{ getPricePerStudent() }} / student</p>
             </div>
             <ng-template #stepInfo>
               <div class="flex-shrink-0">
@@ -613,9 +613,9 @@ function buildDates() {
     .success-circle {
       width: 96px; height: 96px;
       border-radius: 50%;
-      background: #8CF000;
+      background: var(--app-primary);
       display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 8px 36px rgba(140,240,0,0.45);
+      box-shadow: 0 8px 36px rgba(var(--app-primary-rgb),0.45);
     }
 
     .success-action-btn {
@@ -687,7 +687,7 @@ function buildDates() {
       top: 8px; right: 8px;
       width: 24px; height: 24px;
       border-radius: 50%;
-      background: #8CF000;
+      background: var(--app-primary);
       display: flex; align-items: center; justify-content: center;
     }
 
@@ -702,7 +702,7 @@ function buildDates() {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      background: rgba(140,240,0,0.08);
+      background: rgba(var(--app-primary-rgb),0.08);
       border-radius: 16px;
       padding: 12px;
     }
@@ -770,15 +770,15 @@ function buildDates() {
     }
 
     .chip-active {
-      background: rgba(140,240,0,0.14);
+      background: rgba(var(--app-primary-rgb),0.14);
       color: #111827;
-      border-color: #8CF000;
-      border: 1.5px solid #8CF000;
+      border-color: var(--app-primary);
+      border: 1.5px solid var(--app-primary);
     }
 
     .btn-green-gradient {
-      background: linear-gradient(135deg, #8CF000, #A3E635);
-      box-shadow: 0 2px 8px rgba(140,240,0,0.38);
+      background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to));
+      box-shadow: 0 2px 8px rgba(var(--app-primary-rgb),0.38);
     }
 
     .btn-orange-gradient {
@@ -798,7 +798,7 @@ function buildDates() {
     }
 
     .toggle-on {
-      background: #8CF000;
+      background: var(--app-primary);
     }
 
     .toggle-thumb {

@@ -70,7 +70,7 @@ interface PeakHour {
             <div class="bg-white rounded-2xl border border-[#F3F4F6] overflow-hidden shadow-sm">
               <div *ngFor="let customer of topCustomers; let idx = index" class="p-4 flex items-center justify-between border-b border-[#F9FAFB] last:border-none">
                 <div class="flex items-center gap-3">
-                  <div class="w-8 h-8 rounded-full bg-gradient-to-br from-[#8CF000] to-[#A3E635] flex items-center justify-center text-[#111827] text-xs font-black shadow-sm">
+                  <div class="w-8 h-8 rounded-full bg-gradient-to-br from-[var(--app-primary)] to-[var(--app-primary-to)] flex items-center justify-center text-[#111827] text-xs font-black shadow-sm">
                     {{ idx + 1 }}
                   </div>
                   <div>
@@ -78,7 +78,7 @@ interface PeakHour {
                     <p class="text-[11px] text-[#9CA3AF] font-bold m-0 mt-0.5">{{ customer.bookings }} bookings</p>
                   </div>
                 </div>
-                <p class="text-[14px] font-black text-[#8CF000] m-0">{{ customer.revenue }}</p>
+                <p class="text-[14px] font-black text-[var(--app-primary)] m-0">{{ customer.revenue }}</p>
               </div>
             </div>
           </div>
@@ -95,7 +95,7 @@ interface PeakHour {
                 <div class="h-2 bg-[#F3F4F6] rounded-full overflow-hidden">
                   <div class="h-full rounded-full"
                     [style.width.%]="hour.percentage"
-                    style="background: linear-gradient(90deg, #8CF000, #A3E635);"></div>
+                    style="background: linear-gradient(90deg, var(--app-primary), var(--app-primary-to));"></div>
                 </div>
               </div>
             </div>
@@ -126,7 +126,7 @@ export class VenueAnalyticsPage {
   private readonly router = inject(Router);
 
   readonly stats: RevenueStat[] = [
-    { label: 'Today', value: '₹12,500', change: '+12%', icon: 'cash-outline', accent: '#8CF000' },
+    { label: 'Today', value: '₹12,500', change: '+12%', icon: 'cash-outline', accent: 'var(--app-primary)' },
     { label: 'This Week', value: '₹68,000', change: '+8%', icon: 'calendar-outline', accent: '#FF7A00' },
     { label: 'This Month', value: '₹2,45,000', change: '+15%', icon: 'trending-up-outline', accent: '#38BDF8' },
   ];

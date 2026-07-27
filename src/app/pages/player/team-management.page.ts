@@ -52,7 +52,7 @@ import { SocialService } from '../../core/services/social.service';
 
             <div class="flex flex-col gap-2">
               <button class="px-3 py-1.5 rounded-lg text-[10px] font-bold border border-slate-200" (click)="viewProfile(friend)">View</button>
-              <button class="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-[#8CF000] text-[#111827]" (click)="inviteToGame(friend)">Invite</button>
+              <button class="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-[var(--app-primary)] text-[#111827]" (click)="inviteToGame(friend)">Invite</button>
               <button class="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-[#EF4444] text-white" (click)="removeFriend(friend)">Remove</button>
             </div>
           </div>
@@ -61,7 +61,7 @@ import { SocialService } from '../../core/services/social.service';
         <div *ngIf="!loading && !errorMessage && !friends.length" class="text-center py-10">
           <div class="text-4xl">🤝</div>
           <p class="text-sm text-slate-500 mt-2">No friends yet. Swipe right on Discover to add players.</p>
-          <button class="mt-4 px-5 py-2 rounded-full bg-[#8CF000] text-[#111827] text-sm font-bold" (click)="goDiscover()">Go to Discover</button>
+          <button class="mt-4 px-5 py-2 rounded-full bg-[var(--app-primary)] text-[#111827] text-sm font-bold" (click)="goDiscover()">Go to Discover</button>
         </div>
       </main>
     </ion-content>

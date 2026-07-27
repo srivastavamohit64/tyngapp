@@ -6,7 +6,7 @@ $ob-muted-foreground: #6b7280;
 $ob-border: #e5e7eb;
 $ob-surface: #f3f4f6;
 $ob-input-bg: #f9fafb;
-$ob-primary: #8cf000;
+$ob-primary: var(--app-primary);
 $ob-orange: #ff7a00;
 
 @mixin ob-safe-page {
@@ -29,8 +29,8 @@ $ob-orange: #ff7a00;
   width: 100%;
   border: none;
   border-radius: 24px;
-  background: linear-gradient(135deg, #8cf000 0%, #a3e635 100%);
-  box-shadow: 0 4px 20px rgba(140, 240, 0, 0.4);
+  background: linear-gradient(135deg, var(--app-primary) 0%, var(--app-primary-to) 100%);
+  box-shadow: 0 4px 20px rgba(var(--app-primary-rgb), 0.4);
   color: $ob-text;
   font-weight: 900;
   cursor: pointer;
@@ -133,7 +133,7 @@ $ob-orange: #ff7a00;
 
   &--selected {
     border-color: $ob-primary;
-    box-shadow: 0 0 0 3px rgba(140, 240, 0, 0.22), 0 4px 16px rgba(140, 240, 0, 0.18);
+    box-shadow: 0 0 0 3px rgba(var(--app-primary-rgb), 0.22), 0 4px 16px rgba(var(--app-primary-rgb), 0.18);
   }
 }
 
@@ -154,7 +154,7 @@ $ob-orange: #ff7a00;
 .image-card-tint {
   position: absolute;
   inset: 0;
-  background: rgba(140, 240, 0, 0.15);
+  background: rgba(var(--app-primary-rgb), 0.15);
 }
 
 .image-card-check {

@@ -88,7 +88,7 @@ const ALL_SECTIONS = [
               <span class="text-[11px] text-[#9CA3AF] font-bold">{{ getCompletedCount() }}/{{ allSections.length }} sections</span>
             </div>
             <div class="h-2.5 bg-[#F3F4F6] rounded-full overflow-hidden">
-              <div class="h-full rounded-full" [style.width]="getProgress() + '%'" style="background: linear-gradient(90deg,#8CF000 0%,#A3E635 100%)"></div>
+              <div class="h-full rounded-full" [style.width]="getProgress() + '%'" style="background: linear-gradient(90deg,var(--app-primary) 0%,var(--app-primary-to) 100%)"></div>
             </div>
             <p class="text-[11px] text-[#9CA3AF] mt-1.5 leading-relaxed">
               Complete your profile to unlock bookings, earn your Verified Coach badge and improve your visibility.
@@ -102,7 +102,7 @@ const ALL_SECTIONS = [
           <div class="section-box" [class.section-expanded]="expandedSection() === 'languages'" [class.section-done]="isDone('languages')">
             <button (click)="toggleSection('languages')" class="section-title-btn">
               <div class="flex items-center gap-3">
-                <div class="status-dot flex items-center justify-center flex-shrink-0" [style.backgroundColor]="isDone('languages') ? '#8CF000' : '#F3F4F6'">
+                <div class="status-dot flex items-center justify-center flex-shrink-0" [style.backgroundColor]="isDone('languages') ? 'var(--app-primary)' : '#F3F4F6'">
                   <ion-icon *ngIf="isDone('languages')" name="checkmark-outline" class="text-[#111827] text-xs font-bold"></ion-icon>
                   <div *ngIf="!isDone('languages')" class="w-2 h-2 rounded-full bg-[#D1D5DB]"></div>
                 </div>
@@ -132,7 +132,7 @@ const ALL_SECTIONS = [
           <div class="section-box" [class.section-expanded]="expandedSection() === 'locations'" [class.section-done]="isDone('locations')">
             <button (click)="toggleSection('locations')" class="section-title-btn">
               <div class="flex items-center gap-3">
-                <div class="status-dot flex items-center justify-center flex-shrink-0" [style.backgroundColor]="isDone('locations') ? '#8CF000' : '#F3F4F6'">
+                <div class="status-dot flex items-center justify-center flex-shrink-0" [style.backgroundColor]="isDone('locations') ? 'var(--app-primary)' : '#F3F4F6'">
                   <ion-icon *ngIf="isDone('locations')" name="checkmark-outline" class="text-[#111827] text-xs font-bold"></ion-icon>
                   <div *ngIf="!isDone('locations')" class="w-2 h-2 rounded-full bg-[#D1D5DB]"></div>
                 </div>
@@ -154,7 +154,7 @@ const ALL_SECTIONS = [
               <p class="text-[11px] font-black text-[#111827] uppercase tracking-wider mb-2">Travel Radius</p>
               <div class="flex gap-2">
                 <button *ngFor="let r of radiusOptions" class="flex-1 py-2.5 rounded-xl text-[12px] font-bold transition-all border-none"
-                  [style.backgroundColor]="radius === r ? '#8CF000' : '#F3F4F6'"
+                  [style.backgroundColor]="radius === r ? 'var(--app-primary)' : '#F3F4F6'"
                   [style.color]="radius === r ? '#111827' : '#6B7280'"
                   (click)="radius = r">
                   {{ r }}
@@ -170,7 +170,7 @@ const ALL_SECTIONS = [
           <div class="section-box" [class.section-expanded]="expandedSection() === 'sessions'" [class.section-done]="isDone('sessions')">
             <button (click)="toggleSection('sessions')" class="section-title-btn">
               <div class="flex items-center gap-3">
-                <div class="status-dot flex items-center justify-center flex-shrink-0" [style.backgroundColor]="isDone('sessions') ? '#8CF000' : '#F3F4F6'">
+                <div class="status-dot flex items-center justify-center flex-shrink-0" [style.backgroundColor]="isDone('sessions') ? 'var(--app-primary)' : '#F3F4F6'">
                   <ion-icon *ngIf="isDone('sessions')" name="checkmark-outline" class="text-[#111827] text-xs font-bold"></ion-icon>
                   <div *ngIf="!isDone('sessions')" class="w-2 h-2 rounded-full bg-[#D1D5DB]"></div>
                 </div>
@@ -199,7 +199,7 @@ const ALL_SECTIONS = [
           <div class="section-box" [class.section-expanded]="expandedSection() === 'equipment'" [class.section-done]="isDone('equipment')">
             <button (click)="toggleSection('equipment')" class="section-title-btn">
               <div class="flex items-center gap-3">
-                <div class="status-dot flex items-center justify-center flex-shrink-0" [style.backgroundColor]="isDone('equipment') ? '#8CF000' : '#F3F4F6'">
+                <div class="status-dot flex items-center justify-center flex-shrink-0" [style.backgroundColor]="isDone('equipment') ? 'var(--app-primary)' : '#F3F4F6'">
                   <ion-icon *ngIf="isDone('equipment')" name="checkmark-outline" class="text-[#111827] text-xs font-bold"></ion-icon>
                   <div *ngIf="!isDone('equipment')" class="w-2 h-2 rounded-full bg-[#D1D5DB]"></div>
                 </div>
@@ -228,7 +228,7 @@ const ALL_SECTIONS = [
           <div class="section-box" [class.section-expanded]="expandedSection() === 'trial'" [class.section-done]="isDone('trial')">
             <button (click)="toggleSection('trial')" class="section-title-btn">
               <div class="flex items-center gap-3">
-                <div class="status-dot flex items-center justify-center flex-shrink-0" [style.backgroundColor]="isDone('trial') ? '#8CF000' : '#F3F4F6'">
+                <div class="status-dot flex items-center justify-center flex-shrink-0" [style.backgroundColor]="isDone('trial') ? 'var(--app-primary)' : '#F3F4F6'">
                   <ion-icon *ngIf="isDone('trial')" name="checkmark-outline" class="text-[#111827] text-xs font-bold"></ion-icon>
                   <div *ngIf="!isDone('trial')" class="w-2 h-2 rounded-full bg-[#D1D5DB]"></div>
                 </div>
@@ -244,9 +244,9 @@ const ALL_SECTIONS = [
               <p class="text-[12px] text-[#9CA3AF] mb-3 leading-relaxed">Attract new players with a trial offer.</p>
               <div class="flex gap-3 mb-4">
                 <button (click)="trialOn = true" class="flex-1 py-3 rounded-2xl text-[14px] font-black border-none"
-                  [style.backgroundColor]="trialOn === true ? 'rgba(140,240,0,0.12)' : '#F3F4F6'"
+                  [style.backgroundColor]="trialOn === true ? 'rgba(var(--app-primary-rgb),0.12)' : '#F3F4F6'"
                   [style.color]="trialOn === true ? '#111827' : '#6B7280'"
-                  [style.border]="trialOn === true ? '2px solid #8CF000' : '2px solid transparent'">
+                  [style.border]="trialOn === true ? '2px solid var(--app-primary)' : '2px solid transparent'">
                   Yes, I offer trials
                 </button>
                 <button (click)="trialOn = false; trialType = ''" class="flex-1 py-3 rounded-2xl text-[14px] font-black border-none"
@@ -271,7 +271,7 @@ const ALL_SECTIONS = [
           <div class="section-box" [class.section-expanded]="expandedSection() === 'travel'" [class.section-done]="isDone('travel')">
             <button (click)="toggleSection('travel')" class="section-title-btn">
               <div class="flex items-center gap-3">
-                <div class="status-dot flex items-center justify-center flex-shrink-0" [style.backgroundColor]="isDone('travel') ? '#8CF000' : '#F3F4F6'">
+                <div class="status-dot flex items-center justify-center flex-shrink-0" [style.backgroundColor]="isDone('travel') ? 'var(--app-primary)' : '#F3F4F6'">
                   <ion-icon *ngIf="isDone('travel')" name="checkmark-outline" class="text-[#111827] text-xs font-bold"></ion-icon>
                   <div *ngIf="!isDone('travel')" class="w-2 h-2 rounded-full bg-[#D1D5DB]"></div>
                 </div>
@@ -286,13 +286,13 @@ const ALL_SECTIONS = [
             <div *ngIf="expandedSection() === 'travel'" class="section-body">
               <p class="text-[12px] text-[#9CA3AF] mb-3 leading-relaxed">Choose your preferred arrangements.</p>
               <div class="space-y-3">
-                <button *ngFor="let opt of travelOptions" class="w-full flex items-center gap-4 px-5 py-4 rounded-[20px] bg-white border border-[#F3F4F6] text-left shadow-sm hover:border-[#8CF000]"
-                  [style.borderColor]="travel === opt.id ? '#8CF000' : '#F3F4F6'"
-                  [style.backgroundColor]="travel === opt.id ? 'rgba(140,240,0,0.08)' : 'white'"
+                <button *ngFor="let opt of travelOptions" class="w-full flex items-center gap-4 px-5 py-4 rounded-[20px] bg-white border border-[#F3F4F6] text-left shadow-sm hover:border-[var(--app-primary)]"
+                  [style.borderColor]="travel === opt.id ? 'var(--app-primary)' : '#F3F4F6'"
+                  [style.backgroundColor]="travel === opt.id ? 'rgba(var(--app-primary-rgb),0.08)' : 'white'"
                   (click)="travel = opt.id">
                   <span class="text-2xl">{{ opt.emoji }}</span>
                   <p class="flex-1 text-[14px] font-bold text-[#111827]">{{ opt.label }}</p>
-                  <div *ngIf="travel === opt.id" class="w-5 h-5 rounded-full bg-[#8CF000] flex items-center justify-center">
+                  <div *ngIf="travel === opt.id" class="w-5 h-5 rounded-full bg-[var(--app-primary)] flex items-center justify-center">
                     <ion-icon name="checkmark-outline" style="font-size:11px;color:#111827;font-weight:bold;"></ion-icon>
                   </div>
                 </button>
@@ -307,7 +307,7 @@ const ALL_SECTIONS = [
           <div class="section-box" [class.section-expanded]="expandedSection() === 'availability'" [class.section-done]="isDone('availability')">
             <button (click)="toggleSection('availability')" class="section-title-btn">
               <div class="flex items-center gap-3">
-                <div class="status-dot flex items-center justify-center flex-shrink-0" [style.backgroundColor]="isDone('availability') ? '#8CF000' : '#F3F4F6'">
+                <div class="status-dot flex items-center justify-center flex-shrink-0" [style.backgroundColor]="isDone('availability') ? 'var(--app-primary)' : '#F3F4F6'">
                   <ion-icon *ngIf="isDone('availability')" name="checkmark-outline" class="text-[#111827] text-xs font-bold"></ion-icon>
                   <div *ngIf="!isDone('availability')" class="w-2 h-2 rounded-full bg-[#D1D5DB]"></div>
                 </div>
@@ -326,7 +326,7 @@ const ALL_SECTIONS = [
                   <span class="text-[11px] font-black text-[#6B7280] w-8">{{ day }}</span>
                   <div class="flex gap-1.5 flex-1">
                     <button *ngFor="let time of timeOptions" class="flex-1 py-1.5 rounded-xl text-[9px] font-bold border-none"
-                      [style.backgroundColor]="isAvail(day, time) ? '#8CF000' : '#F3F4F6'"
+                      [style.backgroundColor]="isAvail(day, time) ? 'var(--app-primary)' : '#F3F4F6'"
                       [style.color]="isAvail(day, time) ? '#111827' : '#9CA3AF'"
                       (click)="toggleAvail(day, time)">
                       {{ time.slice(0,3) }}
@@ -344,7 +344,7 @@ const ALL_SECTIONS = [
           <div class="section-box" [class.section-expanded]="expandedSection() === 'fees'" [class.section-done]="isDone('fees')">
             <button (click)="toggleSection('fees')" class="section-title-btn">
               <div class="flex items-center gap-3">
-                <div class="status-dot flex items-center justify-center flex-shrink-0" [style.backgroundColor]="isDone('fees') ? '#8CF000' : '#F3F4F6'">
+                <div class="status-dot flex items-center justify-center flex-shrink-0" [style.backgroundColor]="isDone('fees') ? 'var(--app-primary)' : '#F3F4F6'">
                   <ion-icon *ngIf="isDone('fees')" name="checkmark-outline" class="text-[#111827] text-xs font-bold"></ion-icon>
                   <div *ngIf="!isDone('fees')" class="w-2 h-2 rounded-full bg-[#D1D5DB]"></div>
                 </div>
@@ -385,7 +385,7 @@ const ALL_SECTIONS = [
           <div class="section-box" [class.section-expanded]="expandedSection() === 'bio'" [class.section-done]="isDone('bio')">
             <button (click)="toggleSection('bio')" class="section-title-btn">
               <div class="flex items-center gap-3">
-                <div class="status-dot flex items-center justify-center flex-shrink-0" [style.backgroundColor]="isDone('bio') ? '#8CF000' : '#F3F4F6'">
+                <div class="status-dot flex items-center justify-center flex-shrink-0" [style.backgroundColor]="isDone('bio') ? 'var(--app-primary)' : '#F3F4F6'">
                   <ion-icon *ngIf="isDone('bio')" name="checkmark-outline" class="text-[#111827] text-xs font-bold"></ion-icon>
                   <div *ngIf="!isDone('bio')" class="w-2 h-2 rounded-full bg-[#D1D5DB]"></div>
                 </div>
@@ -402,7 +402,7 @@ const ALL_SECTIONS = [
               <div class="relative">
                 <textarea maxLength="250" rows="4" [(ngModel)]="bio"
                   placeholder="Tell players about your coaching philosophy, achievements and what they can expect from your sessions."
-                  class="textarea-box" [style.borderColor]="bio.length >= 30 ? '#8CF000' : '#F3F4F6'"></textarea>
+                  class="textarea-box" [style.borderColor]="bio.length >= 30 ? 'var(--app-primary)' : '#F3F4F6'"></textarea>
                 <p class="text-[11px] text-[#9CA3AF] text-right mt-1">{{ bio.length }}/250</p>
               </div>
               <button (click)="finishSection('achievements')" [disabled]="!isDone('bio')" class="next-step-btn w-full h-11 mt-3">
@@ -415,7 +415,7 @@ const ALL_SECTIONS = [
           <div class="section-box" [class.section-expanded]="expandedSection() === 'achievements'" [class.section-done]="isDone('achievements')">
             <button (click)="toggleSection('achievements')" class="section-title-btn">
               <div class="flex items-center gap-3">
-                <div class="status-dot flex items-center justify-center flex-shrink-0" [style.backgroundColor]="isDone('achievements') ? '#8CF000' : '#F3F4F6'">
+                <div class="status-dot flex items-center justify-center flex-shrink-0" [style.backgroundColor]="isDone('achievements') ? 'var(--app-primary)' : '#F3F4F6'">
                   <ion-icon *ngIf="isDone('achievements')" name="checkmark-outline" class="text-[#111827] text-xs font-bold"></ion-icon>
                   <div *ngIf="!isDone('achievements')" class="w-2 h-2 rounded-full bg-[#D1D5DB]"></div>
                 </div>
@@ -444,7 +444,7 @@ const ALL_SECTIONS = [
           <div class="section-box" [class.section-expanded]="expandedSection() === 'gallery'" [class.section-done]="isDone('gallery')">
             <button (click)="toggleSection('gallery')" class="section-title-btn">
               <div class="flex items-center gap-3">
-                <div class="status-dot flex items-center justify-center flex-shrink-0" [style.backgroundColor]="isDone('gallery') ? '#8CF000' : '#F3F4F6'">
+                <div class="status-dot flex items-center justify-center flex-shrink-0" [style.backgroundColor]="isDone('gallery') ? 'var(--app-primary)' : '#F3F4F6'">
                   <ion-icon *ngIf="isDone('gallery')" name="checkmark-outline" class="text-[#111827] text-xs font-bold"></ion-icon>
                   <div *ngIf="!isDone('gallery')" class="w-2 h-2 rounded-full bg-[#D1D5DB]"></div>
                 </div>
@@ -480,7 +480,7 @@ const ALL_SECTIONS = [
           <div class="section-box" [class.section-expanded]="expandedSection() === 'verification'" [class.section-done]="isDone('verification')">
             <button (click)="toggleSection('verification')" class="section-title-btn">
               <div class="flex items-center gap-3">
-                <div class="status-dot flex items-center justify-center flex-shrink-0" [style.backgroundColor]="isDone('verification') ? '#8CF000' : '#F3F4F6'">
+                <div class="status-dot flex items-center justify-center flex-shrink-0" [style.backgroundColor]="isDone('verification') ? 'var(--app-primary)' : '#F3F4F6'">
                   <ion-icon *ngIf="isDone('verification')" name="checkmark-outline" class="text-[#111827] text-xs font-bold"></ion-icon>
                   <div *ngIf="!isDone('verification')" class="w-2 h-2 rounded-full bg-[#D1D5DB]"></div>
                 </div>
@@ -532,7 +532,7 @@ const ALL_SECTIONS = [
               <p class="text-[20px] font-black text-[#111827]">{{ getProgress() }}<span class="text-[12px] text-[#9CA3AF]">%</span></p>
             </div>
             <button (click)="onPublish()" class="flex-1 h-12 rounded-2xl text-[14px] font-black text-white border-none"
-              [style.background]="getProgress() >= 100 ? 'linear-gradient(135deg,#FF7A00,#FF9A40)' : 'linear-gradient(135deg,#8CF000,#A3E635)'">
+              [style.background]="getProgress() >= 100 ? 'linear-gradient(135deg,#FF7A00,#FF9A40)' : 'linear-gradient(135deg,var(--app-primary),var(--app-primary-to))'">
               {{ getProgress() >= 100 ? 'Publish Profile 🎉' : 'Save & Continue' }}
             </button>
           </div>
@@ -573,12 +573,12 @@ const ALL_SECTIONS = [
     }
 
     .section-expanded {
-      border-color: rgba(140,240,0,0.30);
-      box-shadow: 0 4px 20px rgba(140,240,0,0.12);
+      border-color: rgba(var(--app-primary-rgb),0.30);
+      box-shadow: 0 4px 20px rgba(var(--app-primary-rgb),0.12);
     }
 
     .section-done {
-      border-color: rgba(140,240,0,0.15);
+      border-color: rgba(var(--app-primary-rgb),0.15);
       box-shadow: 0 1px 8px rgba(0,0,0,0.05);
     }
 
@@ -624,19 +624,19 @@ const ALL_SECTIONS = [
     }
 
     .chip-active {
-      background: rgba(140,240,0,0.14);
+      background: rgba(var(--app-primary-rgb),0.14);
       color: #111827;
-      border-color: #8CF000;
+      border-color: var(--app-primary);
     }
 
     .next-step-btn {
       border: none;
-      background: linear-gradient(135deg,#8CF000,#A3E635);
+      background: linear-gradient(135deg,var(--app-primary),var(--app-primary-to));
       color: #111827;
       font-size: 13px;
       font-weight: 800;
       border-radius: 16px;
-      box-shadow: 0 3px 10px rgba(140,240,0,0.30);
+      box-shadow: 0 3px 10px rgba(var(--app-primary-rgb),0.30);
       cursor: pointer;
     }
 
@@ -659,7 +659,7 @@ const ALL_SECTIONS = [
     }
 
     .toggle-on {
-      background: #8CF000;
+      background: var(--app-primary);
     }
 
     .toggle-thumb {
@@ -703,7 +703,7 @@ const ALL_SECTIONS = [
     }
 
     .gallery-upload-box:hover {
-      border-color: #8CF000;
+      border-color: var(--app-primary);
     }
 
     /* Verification Row */
@@ -720,7 +720,7 @@ const ALL_SECTIONS = [
     }
 
     .verify-upload-row:hover {
-      border-color: #8CF000;
+      border-color: var(--app-primary);
     }
 
     /* Bottom sticky bar */

@@ -70,8 +70,8 @@ const STEP_TITLES = [
     <ion-content [fullscreen]="true">
       <!-- SUCCESS SCREEN -->
       <div *ngIf="isSuccess()" class="success-screen flex flex-col items-center justify-center px-6 text-center pb-12">
-        <div class="w-28 h-28 rounded-full bg-[#8CF000] flex items-center justify-center mx-auto mb-5 shadow-lg"
-          style="box-shadow: 0 8px 36px rgba(140,240,0,0.45);">
+        <div class="w-28 h-28 rounded-full bg-[var(--app-primary)] flex items-center justify-center mx-auto mb-5 shadow-lg"
+          style="box-shadow: 0 8px 36px rgba(var(--app-primary-rgb),0.45);">
           <ion-icon name="checkmark-outline" class="text-5xl text-[#111827] font-black"></ion-icon>
         </div>
         <h1 class="text-[28px] font-black text-[#111827] mb-2 m-0 leading-none">Your Venue is Live! 🎉</h1>
@@ -80,7 +80,7 @@ const STEP_TITLES = [
         <div class="w-full max-w-sm bg-white rounded-[24px] p-5 mb-6 text-left border border-[#F3F4F6] shadow-sm">
           <div *ngFor="let item of ['Venue Published', 'Search Listing Active', 'Online Booking Enabled', 'Payments Activated', 'QR Entry Enabled', 'Analytics Started']"
             class="flex items-center gap-3 py-2.5 border-b border-[#F9FAFB] last:border-0">
-            <div class="w-5 h-5 rounded-full bg-[#8CF000] flex items-center justify-center flex-shrink-0">
+            <div class="w-5 h-5 rounded-full bg-[var(--app-primary)] flex items-center justify-center flex-shrink-0">
               <ion-icon name="checkmark-outline" class="text-xs text-[#111827] font-black"></ion-icon>
             </div>
             <span class="text-[13px] font-black text-[#111827]">{{ item }}</span>
@@ -118,7 +118,7 @@ const STEP_TITLES = [
             <div *ngFor="let s of stepNumbers" class="flex items-center">
               <div class="h-1.5 rounded-full transition-all duration-200"
                 [style.width]="step() === s ? '16px' : '6px'"
-                [style.backgroundColor]="step() > s ? '#FF7A00' : step() === s ? '#8CF000' : '#E5E7EB'">
+                [style.backgroundColor]="step() > s ? '#FF7A00' : step() === s ? 'var(--app-primary)' : '#E5E7EB'">
               </div>
               <div *ngIf="s < totalSteps" class="w-1 h-px mx-0.5"
                 [style.backgroundColor]="step() > s ? '#FF7A00' : '#E5E7EB'">
@@ -418,7 +418,7 @@ const STEP_TITLES = [
                   <p class="text-[11px] text-[#9CA3AF] m-0 mt-0.5">Instantly approve bookings with deposit</p>
                 </div>
                 <button type="button" (click)="autoConfirm.set(!autoConfirm())" class="w-12 h-6 rounded-full relative flex-shrink-0 border-none transition-colors duration-200"
-                  [style.backgroundColor]="autoConfirm() ? '#8CF000' : '#E5E7EB'">
+                  [style.backgroundColor]="autoConfirm() ? 'var(--app-primary)' : '#E5E7EB'">
                   <div class="absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transition-all duration-200"
                     [style.left.px]="autoConfirm() ? 24 : 3"></div>
                 </button>
@@ -507,7 +507,7 @@ const STEP_TITLES = [
                 [class.opacity-60]="docUploading() === doc.id"
               >
                 <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-                  [style.backgroundColor]="isDocUploaded(doc.id) ? '#8CF000' : '#F3F4F6'">
+                  [style.backgroundColor]="isDocUploaded(doc.id) ? 'var(--app-primary)' : '#F3F4F6'">
                   <ion-icon [name]="isDocUploaded(doc.id) ? 'checkmark-outline' : 'document-text-outline'"
                     [style.color]="isDocUploaded(doc.id) ? '#111827' : '#C4C9D4'" class="text-base font-bold"></ion-icon>
                 </div>
@@ -561,9 +561,9 @@ const STEP_TITLES = [
         <div class="flex gap-3 max-w-md mx-auto">
           <button (click)="handleNext()" [disabled]="!canProceed() || saving()"
             class="w-full h-13 rounded-[24px] text-[15px] font-black border-none text-[#111827] transition-all"
-            [style.background]="canProceed() && !saving() ? 'linear-gradient(135deg,#8CF000,#A3E635)' : '#F3F4F6'"
+            [style.background]="canProceed() && !saving() ? 'linear-gradient(135deg,var(--app-primary),var(--app-primary-to))' : '#F3F4F6'"
             [style.color]="canProceed() && !saving() ? '#111827' : '#C4C9D4'"
-            [style.boxShadow]="canProceed() && !saving() ? '0 4px 18px rgba(140,240,0,0.38)' : 'none'"
+            [style.boxShadow]="canProceed() && !saving() ? '0 4px 18px rgba(var(--app-primary-rgb),0.38)' : 'none'"
             [style.opacity]="canProceed() && !saving() ? '1' : '0.6'">
             {{ saving() ? 'Saving…' : (step() === totalSteps ? 'Save & Go Live' : 'Continue →') }}
           </button>
@@ -625,7 +625,7 @@ const STEP_TITLES = [
     }
 
     .form-input:focus {
-      border-color: #8CF000;
+      border-color: var(--app-primary);
       background: #fff;
     }
 
@@ -654,8 +654,8 @@ const STEP_TITLES = [
     }
 
     .choice-chip.active {
-      background: rgba(140, 240, 0, 0.16);
-      border-color: #8CF000;
+      background: rgba(var(--app-primary-rgb), 0.16);
+      border-color: var(--app-primary);
       color: #111827;
     }
 
@@ -676,8 +676,8 @@ const STEP_TITLES = [
     }
 
     .day-chip.active {
-      background: rgba(140, 240, 0, 0.16);
-      border-color: #8CF000;
+      background: rgba(var(--app-primary-rgb), 0.16);
+      border-color: var(--app-primary);
       color: #111827;
     }
 
@@ -740,7 +740,7 @@ const STEP_TITLES = [
     }
 
     .toggle-btn.on {
-      background: #8CF000;
+      background: var(--app-primary);
     }
 
     .toggle-knob {
@@ -764,7 +764,7 @@ const STEP_TITLES = [
       height: 48px;
       border-radius: 16px;
       border: none;
-      background: linear-gradient(135deg, #8CF000, #A3E635);
+      background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to));
       color: #111827;
       font-size: 14px;
       font-weight: 900;
@@ -823,8 +823,8 @@ const STEP_TITLES = [
     }
 
     .doc-row--uploaded {
-      background: rgba(140, 240, 0, 0.08);
-      border-color: #8CF000;
+      background: rgba(var(--app-primary-rgb), 0.08);
+      border-color: var(--app-primary);
       border-style: solid;
     }
 
@@ -833,7 +833,7 @@ const STEP_TITLES = [
       align-items: center;
       padding: 2px 8px;
       border-radius: 999px;
-      background: #8CF000;
+      background: var(--app-primary);
       color: #111827;
       font-size: 9px;
       font-weight: 900;

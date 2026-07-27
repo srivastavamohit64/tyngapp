@@ -1,16 +1,21 @@
-<ion-content fullscreen class="has-tabs">
+<ion-content fullscreen>
   <app-brand-header-shell>
-    <div class="venues-page">
+    <div class="venues-page page-safe-bottom">
 
       <section class="venues-hero">
         <div class="venues-hero-top">
-          <div>
-            <p class="venues-kicker">Book a Court</p>
-            <button type="button" class="venues-city-btn" (click)="showCityPicker.set(true)">
-              <ion-icon name="location"></ion-icon>
-              <span>{{ city() }}</span>
-              <ion-icon name="chevron-down-outline" class="chevron"></ion-icon>
+          <div class="venues-hero-left">
+            <button type="button" class="venues-back-btn" (click)="back()" aria-label="Back">
+              <ion-icon name="chevron-back"></ion-icon>
             </button>
+            <div>
+              <p class="venues-kicker">Book a Court</p>
+              <button type="button" class="venues-city-btn" (click)="showCityPicker.set(true)">
+                <ion-icon name="location"></ion-icon>
+                <span>{{ city() }}</span>
+                <ion-icon name="chevron-down-outline" class="chevron"></ion-icon>
+              </button>
+            </div>
           </div>
           <div class="venues-count-pill">
             <strong>{{ filteredCourts().length }}</strong>

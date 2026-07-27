@@ -158,7 +158,7 @@ const SESSIONS: CoachSession[] = [
           <div class="bg-white rounded-[24px] p-5 shadow-sm border border-slate-100 text-left">
             <div class="flex items-center justify-between mb-4">
               <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest m-0">Students</p>
-              <span class="text-[12px] font-bold text-[#8CF000]">
+              <span class="text-[12px] font-bold text-[var(--app-primary)]">
                 {{ getPresentCount() }}/{{ session.students.length }} Present
               </span>
             </div>
@@ -179,7 +179,7 @@ const SESSIONS: CoachSession[] = [
                     <ion-icon name="chatbubble-ellipses-outline" class="text-[#2563EB] text-sm"></ion-icon>
                   </button>
                   <button (click)="toggleAttendance(s.id)" class="w-8 h-8 rounded-full border-none flex items-center justify-center transition-all"
-                    [style.backgroundColor]="attendance[s.id] ? '#8CF000' : '#F3F4F6'">
+                    [style.backgroundColor]="attendance[s.id] ? 'var(--app-primary)' : '#F3F4F6'">
                     <ion-icon name="checkmark-outline" [style.color]="attendance[s.id] ? '#111827' : '#C4C9D4'" style="font-weight:bold;"></ion-icon>
                   </button>
                 </div>
@@ -206,7 +206,7 @@ const SESSIONS: CoachSession[] = [
             <div class="flex items-center justify-between mt-2">
               <p class="text-[11px] text-[#C4C9D4] m-0 font-bold">{{ notes.length }}/500</p>
               <button (click)="saveNotes()" [disabled]="!notes.trim()" class="px-5 py-2 rounded-xl text-[13px] font-bold border-none"
-                [style.backgroundColor]="notes.trim() ? '#8CF000' : '#F3F4F6'"
+                [style.backgroundColor]="notes.trim() ? 'var(--app-primary)' : '#F3F4F6'"
                 [style.color]="notes.trim() ? '#111827' : '#C4C9D4'">
                 {{ savedNotes ? '✓ Saved' : 'Save Notes' }}
               </button>
@@ -242,7 +242,7 @@ const SESSIONS: CoachSession[] = [
           </div>
 
           <!-- Coach Assistant AI card -->
-          <div class="rounded-[24px] p-5 relative overflow-hidden bg-gradient-to-br from-[#8CF000] to-[#A3E635] text-left">
+          <div class="rounded-[24px] p-5 relative overflow-hidden bg-gradient-to-br from-[var(--app-primary)] to-[var(--app-primary-to)] text-left">
             <div class="absolute top-0 right-0 w-24 h-24 rounded-full bg-white/10 -translate-y-8 translate-x-8"></div>
             <div class="relative">
               <div class="flex items-center gap-2 mb-3">
@@ -341,8 +341,8 @@ const SESSIONS: CoachSession[] = [
     }
 
     .btn-green-gradient {
-      background: linear-gradient(135deg, #8CF000, #A3E635);
-      box-shadow: 0 2px 8px rgba(140,240,0,0.30);
+      background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to));
+      box-shadow: 0 2px 8px rgba(var(--app-primary-rgb),0.30);
     }
 
     .fixed-bottom-bar {

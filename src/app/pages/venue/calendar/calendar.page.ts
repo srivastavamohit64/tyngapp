@@ -274,7 +274,7 @@ interface CalendarBookingItem {
     }
 
     .day-cell.selected .day-num {
-      background: #8CF000;
+      background: var(--app-primary);
       color: #111827;
       font-weight: 900;
     }
@@ -353,8 +353,8 @@ interface CalendarBookingItem {
     }
 
     .filter-chip.active {
-      background: rgba(140, 240, 0, 0.18);
-      border-color: #8CF000;
+      background: rgba(var(--app-primary-rgb), 0.18);
+      border-color: var(--app-primary);
       color: #111827;
     }
 
@@ -422,7 +422,7 @@ interface CalendarBookingItem {
       display: inline-flex;
       padding: 4px 10px;
       border-radius: 999px;
-      background: rgba(140, 240, 0, 0.2);
+      background: rgba(var(--app-primary-rgb), 0.2);
       color: #166534;
       font-size: 10px;
       font-weight: 800;

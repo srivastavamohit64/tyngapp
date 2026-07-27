@@ -18,7 +18,7 @@ const PERIOD_DATA: Record<string, PeriodData> = {
 };
 
 const BREAKDOWNS = [
-  { icon: 'trending-up-outline', label: 'Individual Coaching', amount: 22500, pct: 30, color: '#8CF000' },
+  { icon: 'trending-up-outline', label: 'Individual Coaching', amount: 22500, pct: 30, color: 'var(--app-primary)' },
   { icon: 'people-outline', label: 'Group Sessions', amount: 18400, pct: 25, color: '#FF7A00' },
   { icon: 'book-outline', label: 'Academy Sessions', amount: 33900, pct: 45, color: '#38BDF8' },
 ];
@@ -84,7 +84,7 @@ const TRANSACTIONS = [
         <!-- Period chips -->
         <div class="flex gap-2 px-5 py-3 bg-white border-b border-[#F3F4F6] overflow-x-auto no-scrollbar">
           <button *ngFor="let p of periods" (click)="selectedPeriod.set(p)" class="flex-shrink-0 px-4 py-2 rounded-full text-[12px] font-bold border-none transition-all"
-            [style.backgroundColor]="selectedPeriod() === p ? '#8CF000' : '#F3F4F6'"
+            [style.backgroundColor]="selectedPeriod() === p ? 'var(--app-primary)' : '#F3F4F6'"
             [style.color]="selectedPeriod() === p ? '#111827' : '#6B7280'">
             {{ p }}
           </button>
@@ -93,11 +93,11 @@ const TRANSACTIONS = [
         <div class="px-5 pt-4 space-y-4">
           <!-- Summary Hero Card -->
           <div class="summary-hero-card p-6 relative overflow-hidden bg-gradient-to-br from-[#111827] to-[#1F2937] text-white">
-            <div class="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-[#8CF000]/10"></div>
+            <div class="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-[var(--app-primary)]/10"></div>
             <div class="absolute -bottom-6 left-10 w-28 h-28 rounded-full bg-[#FF7A00]/10"></div>
 
             <div class="relative text-left">
-              <p class="text-[12px] font-black text-[#8CF000] uppercase tracking-widest mb-1 m-0">{{ selectedPeriod() }}'s Earnings</p>
+              <p class="text-[12px] font-black text-[var(--app-primary)] uppercase tracking-widest mb-1 m-0">{{ selectedPeriod() }}'s Earnings</p>
               <div class="flex items-baseline gap-2 mb-1">
                 <span class="text-[16px] font-bold text-white/50">₹</span>
                 <p class="text-[42px] font-black text-white leading-none m-0">
@@ -121,8 +121,8 @@ const TRANSACTIONS = [
           <!-- Wallet card -->
           <div class="section-card p-5 bg-white text-left">
             <div class="flex items-center gap-2 mb-4">
-              <div class="w-9 h-9 rounded-xl bg-[#8CF000]/15 flex items-center justify-center">
-                <ion-icon name="wallet-outline" class="text-[#8CF000] text-lg"></ion-icon>
+              <div class="w-9 h-9 rounded-xl bg-[var(--app-primary)]/15 flex items-center justify-center">
+                <ion-icon name="wallet-outline" class="text-[var(--app-primary)] text-lg"></ion-icon>
               </div>
               <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-0 m-0">TYNG Wallet</p>
             </div>
@@ -131,7 +131,7 @@ const TRANSACTIONS = [
               <p class="text-[12px] text-[#9CA3AF] font-bold mb-1 m-0">Available Balance</p>
               <p class="text-[36px] font-black text-[#111827] m-0">₹12,500</p>
               <div class="flex items-center justify-center gap-1.5 mt-1">
-                <div class="w-2 h-2 rounded-full bg-[#8CF000]"></div>
+                <div class="w-2 h-2 rounded-full bg-[var(--app-primary)]"></div>
                 <p class="text-[11px] text-[#22C55E] font-bold m-0">Ready to withdraw</p>
               </div>
             </div>
@@ -228,7 +228,7 @@ const TRANSACTIONS = [
                       <p class="text-[12px] font-black text-[#111827] m-0 mt-0.5">{{ v.time }}</p>
                     </div>
                   </div>
-                  <button (click)="go('/app/coach/venue-collab/' + v.id)" class="w-full h-10 rounded-2xl text-[13px] font-bold text-[#111827] flex items-center justify-center gap-1 border-none bg-[#8CF000]/12 border-[#8CF000]/35 border-2">
+                  <button (click)="go('/app/coach/venue-collab/' + v.id)" class="w-full h-10 rounded-2xl text-[13px] font-bold text-[#111827] flex items-center justify-center gap-1 border-none bg-[var(--app-primary)]/12 border-[var(--app-primary)]/35 border-2">
                     View Details<ion-icon name="chevron-forward-outline"></ion-icon>
                   </button>
                 </div>
@@ -243,7 +243,7 @@ const TRANSACTIONS = [
               <div class="absolute left-2 top-2 bottom-2 w-px bg-[#F3F4F6]"></div>
               <div class="space-y-4">
                 <div *ngFor="let w of withdrawals" class="relative flex items-start gap-3">
-                  <div class="absolute -left-7 top-2 w-4 h-4 rounded-full border-2 border-white flex items-center justify-center bg-[#8CF000]">
+                  <div class="absolute -left-7 top-2 w-4 h-4 rounded-full border-2 border-white flex items-center justify-center bg-[var(--app-primary)]">
                     <ion-icon name="checkmark-outline" style="font-size:8px;color:#111827;font-weight:bold;"></ion-icon>
                   </div>
 
@@ -274,7 +274,7 @@ const TRANSACTIONS = [
           <div class="section-card p-5 bg-white text-left">
             <div class="flex items-center justify-between mb-4">
               <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-0 m-0">Recent Transactions</p>
-              <button class="text-[12px] font-bold text-[#8CF000] flex items-center gap-0.5 bg-transparent border-none">
+              <button class="text-[12px] font-bold text-[var(--app-primary)] flex items-center gap-0.5 bg-transparent border-none">
                 View All<ion-icon name="chevron-forward-outline"></ion-icon>
               </button>
             </div>
@@ -312,12 +312,12 @@ const TRANSACTIONS = [
                 XXXX XXXX 4589
               </p>
               <div class="mt-3 flex items-center gap-1.5">
-                <div class="w-2 h-2 rounded-full bg-[#8CF000]"></div>
+                <div class="w-2 h-2 rounded-full bg-[var(--app-primary)]"></div>
                 <p class="text-[11px] text-white/50 m-0 font-bold">Verified & Active</p>
               </div>
             </div>
             <div class="flex gap-3">
-              <button class="flex-1 h-10 rounded-2xl text-[13px] font-bold text-[#111827] border-none bg-[#8CF000]/12 border-[#8CF000]/35 border-2">
+              <button class="flex-1 h-10 rounded-2xl text-[13px] font-bold text-[#111827] border-none bg-[var(--app-primary)]/12 border-[var(--app-primary)]/35 border-2">
                 Edit Details
               </button>
               <button class="flex-1 h-10 rounded-2xl text-[13px] font-bold text-[#6B7280] bg-[#F9FAFB] border border-[#E5E7EB]">
@@ -342,7 +342,7 @@ const TRANSACTIONS = [
             </div>
             <p class="text-[20px] font-black text-[#111827] mb-1 m-0">Withdrawal Initiated!</p>
             <p class="text-[14px] text-[#9CA3AF] mb-4 m-0">Amount: ₹{{ withdrawVal }}</p>
-            <div class="bg-[#F0FDF4] rounded-2xl px-4 py-2.5 w-full border border-[#8CF000]/22 mb-4">
+            <div class="bg-[#F0FDF4] rounded-2xl px-4 py-2.5 w-full border border-[var(--app-primary)]/22 mb-4">
               <p class="text-[12px] font-bold text-[#16A34A] text-center m-0">Funds will credit within 24 hours.</p>
             </div>
             <button (click)="showWithdrawSheet.set(false)" class="w-full h-11 rounded-2xl text-[14px] font-black btn-orange-gradient text-white border-none">
@@ -438,9 +438,9 @@ const TRANSACTIONS = [
     .success-circle {
       width: 80px; height: 80px;
       border-radius: 50%;
-      background: #8CF000;
+      background: var(--app-primary);
       display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 8px 32px rgba(140,240,0,0.45);
+      box-shadow: 0 8px 32px rgba(var(--app-primary-rgb),0.45);
     }
   `]
 })

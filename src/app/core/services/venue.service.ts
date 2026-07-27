@@ -41,6 +41,15 @@ export interface VenueDashboardData {
     pendingRequests: number;
     revenueGoalPct: number;
   };
+  bookingPolicy?: {
+    autoConfirm?: boolean;
+    approvalTimeoutMinutes?: number;
+    rejectionCount?: number;
+    rejectionLimit?: number;
+    isBookingBlocked?: boolean;
+    bookingBlockedAt?: string | null;
+    blockMessage?: string | null;
+  };
   menu?: {
     profileName?: string;
     profilePercent?: number;
@@ -74,8 +83,76 @@ export interface VenueDashboardData {
     court: string;
   }[];
   activities: { emoji: string; bg: string; text: string; time: string }[];
-  pendingActions: { label: string; sub: string; urgency: string }[];
+  pendingActions: { label: string; sub: string; urgency: string; bookingId?: string; approvalDeadlineAt?: string | null }[];
   aiTips: { emoji: string; text: string }[];
+}
+
+export interface VenueEarningsData {
+  period: 'today' | 'week' | 'month' | 'year';
+  periodLabel: string;
+  summary: {
+    gross: number;
+    net: number;
+    changePct: number;
+    today: number;
+    week: number;
+    month: number;
+    year: number;
+    walletBalance: number;
+  };
+  breakdown: {
+    gross: number;
+    platformFee: number;
+    gstOnFee: number;
+    discounts: number;
+    refunds: number;
+    net: number;
+  };
+  analytics: {
+    todayBookings: number;
+    weekBookings: number;
+    monthBookings: number;
+    yearBookings: number;
+  };
+  facilities: {
+    id: string;
+    name: string;
+    emoji: string;
+    revenue: number;
+    bookings: number;
+    occupancy: number;
+    color: string;
+  }[];
+  trends: {
+    revenue: number[];
+    bookings: number[];
+    labels: string[];
+  };
+  payouts: {
+    id: string;
+    month: string;
+    period: string;
+    gross: number;
+    fee: number;
+    gst: number;
+    net: number;
+    status: string;
+    date: string;
+  }[];
+  transactions: {
+    id: string;
+    bookingId?: string;
+    facility: string;
+    name: string;
+    date: string;
+    amount: number;
+    fee: number;
+    gst: number;
+    net: number;
+    status: string;
+  }[];
+  aiTips: { emoji: string; text: string }[];
+  updatedAt?: string;
 }
 
 export interface VenueProfileUpdatePayload {
@@ -159,6 +236,10 @@ export class VenueService {
 
   getDashboard(): Observable<ApiResponse<VenueDashboardData>> {
     return this.api.get<VenueDashboardData>('/venue/dashboard');
+  }
+
+  getEarnings(period: 'today' | 'week' | 'month' | 'year' = 'month'): Observable<ApiResponse<VenueEarningsData>> {
+    return this.api.get<VenueEarningsData>(`/venue/earnings?period=${period}`);
   }
 
   getMyProfile(): Observable<ApiResponse<Record<string, unknown>>> {

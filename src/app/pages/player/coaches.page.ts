@@ -69,7 +69,7 @@ import { FilterChip, FilterChipsComponent } from '../../shared/components/filter
   styles: [
     `
       .sport-chip.active {
-        background: linear-gradient(135deg, #8CF000 0%, #A3E635 100%) !important;
+        background: linear-gradient(135deg, var(--app-primary) 0%, var(--app-primary-to) 100%) !important;
         color: #111827 !important;
         border-color: transparent !important;
       }

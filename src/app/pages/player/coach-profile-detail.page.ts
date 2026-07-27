@@ -62,7 +62,7 @@ import { IonicModule } from '@ionic/angular';
 
         <!-- Booking CTA -->
         <div class="cta-box mt-8">
-          <button (click)="bookSession()" class="w-full h-12 rounded-full bg-gradient-to-r from-[#8CF000] to-[#A3E635] text-[#111827] font-bold shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all">
+          <button (click)="bookSession()" class="w-full h-12 rounded-full bg-gradient-to-r from-[var(--app-primary)] to-[var(--app-primary-to)] text-[#111827] font-bold shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all">
             Book Coaching Session
           </button>
         </div>
@@ -76,7 +76,7 @@ import { IonicModule } from '@ionic/angular';
         color: #FF7A00;
       }
       button.bg-gradient-to-r {
-        background: linear-gradient(to right, #8CF000, #A3E635) !important;
+        background: linear-gradient(to right, var(--app-primary), var(--app-primary-to)) !important;
       }
     `
   ]

@@ -107,11 +107,11 @@ import { IonicModule } from '@ionic/angular';
         width: 36px;
         height: 36px;
         border-radius: 8px;
-        background: rgba(140, 240, 0, 0.2);
+        background: rgba(var(--app-primary-rgb), 0.2);
         display: grid;
         place-items: center;
         flex-shrink: 0;
-        color: #8cf000;
+        color: var(--app-primary);
         font-size: 18px;
       }
 
@@ -132,11 +132,11 @@ import { IonicModule } from '@ionic/angular';
         width: 100%;
         min-height: 52px;
         border-radius: 16px;
-        background: linear-gradient(to right, #8cf000, #a3e635);
+        background: linear-gradient(to right, var(--app-primary), var(--app-primary-to));
         color: #111827;
         font-size: 16px;
         font-weight: 700;
-        box-shadow: 0 4px 20px rgba(140, 240, 0, 0.35);
+        box-shadow: 0 4px 20px rgba(var(--app-primary-rgb), 0.35);
       }
 
       .cta-btn:active {

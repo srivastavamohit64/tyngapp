@@ -177,7 +177,7 @@ function buildDates(): DateOption[] {
     <ion-content [fullscreen]="true">
       <!-- SUCCESS SCREEN -->
       <div *ngIf="isSuccess()" class="min-h-screen bg-[#FAFBFC] flex flex-col items-center justify-center px-6 text-center py-10">
-        <div class="w-24 h-24 rounded-full bg-[#8CF000] flex items-center justify-center mx-auto mb-5 shadow-lg shadow-[#8CF000]/40">
+        <div class="w-24 h-24 rounded-full bg-[var(--app-primary)] flex items-center justify-center mx-auto mb-5 shadow-lg shadow-[var(--app-primary)]/40">
           <ion-icon name="checkmark-outline" class="text-[#111827] text-4xl font-black"></ion-icon>
         </div>
         <h1 class="text-[26px] font-black text-[#111827] mb-2 m-0">Venue Booked Successfully! 🎉</h1>
@@ -186,7 +186,7 @@ function buildDates(): DateOption[] {
         <!-- Automation Tasks status card -->
         <div class="w-full max-w-sm bg-white rounded-[24px] p-5 mb-6 text-left shadow-md border border-slate-50">
           <div *ngFor="let a of getAutomationSuccessLogs(); let idx = index" class="flex items-center gap-3 py-2.5 border-b border-[#F9FAFB] last:border-none">
-            <div class="w-6 h-6 rounded-full bg-[#8CF000] flex items-center justify-center flex-shrink-0">
+            <div class="w-6 h-6 rounded-full bg-[var(--app-primary)] flex items-center justify-center flex-shrink-0">
               <ion-icon name="checkmark-outline" class="text-[#111827] text-xs font-black"></ion-icon>
             </div>
             <span class="text-[13px] font-bold text-[#111827]">{{ a }}</span>
@@ -196,19 +196,19 @@ function buildDates(): DateOption[] {
         <!-- Dashboard shortcuts grid -->
         <div class="w-full max-w-sm grid grid-cols-2 gap-2.5">
           <button (click)="go('/app/coach/students')" class="flex flex-col items-center gap-2 py-4 bg-white rounded-[20px] text-[12px] font-black text-[#111827] border border-slate-100 shadow-sm">
-            <ion-icon name="people-outline" class="text-[#8CF000] text-xl"></ion-icon>
+            <ion-icon name="people-outline" class="text-[var(--app-primary)] text-xl"></ion-icon>
             Manage Students
           </button>
           <button (click)="go('/app/chat')" class="flex flex-col items-center gap-2 py-4 bg-white rounded-[20px] text-[12px] font-black text-[#111827] border border-slate-100 shadow-sm">
-            <ion-icon name="chatbubble-ellipses-outline" class="text-[#8CF000] text-xl"></ion-icon>
+            <ion-icon name="chatbubble-ellipses-outline" class="text-[var(--app-primary)] text-xl"></ion-icon>
             Session Chat
           </button>
           <button (click)="go('/app/coach/schedule')" class="flex flex-col items-center gap-2 py-4 bg-white rounded-[20px] text-[12px] font-black text-[#111827] border border-slate-100 shadow-sm">
-            <ion-icon name="calendar-outline" class="text-[#8CF000] text-xl"></ion-icon>
+            <ion-icon name="calendar-outline" class="text-[var(--app-primary)] text-xl"></ion-icon>
             View Schedule
           </button>
           <button (click)="go('/app/home')" class="flex flex-col items-center gap-2 py-4 bg-white rounded-[20px] text-[12px] font-black text-[#111827] border border-slate-100 shadow-sm">
-            <ion-icon name="home-outline" class="text-[#8CF000] text-xl"></ion-icon>
+            <ion-icon name="home-outline" class="text-[var(--app-primary)] text-xl"></ion-icon>
             Home Dashboard
           </button>
         </div>
@@ -234,7 +234,7 @@ function buildDates(): DateOption[] {
             <div *ngFor="let idx of [0,1,2,3,4,5,6,7]" class="flex items-center">
               <div class="h-[7px] rounded-full transition-all duration-300"
                 [style.width]="step() === (idx + 1) ? '20px' : '7px'"
-                [style.backgroundColor]="step() > (idx + 1) ? '#FF7A00' : step() === (idx + 1) ? '#8CF000' : '#E5E7EB'">
+                [style.backgroundColor]="step() > (idx + 1) ? '#FF7A00' : step() === (idx + 1) ? 'var(--app-primary)' : '#E5E7EB'">
               </div>
               <div *ngIf="idx < 7" class="w-2.5 h-[1.5px] mx-0.5"
                 [style.backgroundColor]="step() > (idx + 1) ? '#FF7A00' : '#E5E7EB'">
@@ -252,12 +252,12 @@ function buildDates(): DateOption[] {
             <div class="grid grid-cols-3 gap-3">
               <button *ngFor="let s of sports" (click)="sport.set(s.id)" class="relative rounded-[20px] overflow-hidden focus:outline-none border-none p-0"
                 [style.aspectRatio]="'3/4'"
-                [style.border]="sport() === s.id ? '2.5px solid #8CF000' : '2.5px solid transparent'"
-                [style.boxShadow]="sport() === s.id ? '0 0 0 3px rgba(140,240,0,0.20)' : 'none'">
+                [style.border]="sport() === s.id ? '2.5px solid var(--app-primary)' : '2.5px solid transparent'"
+                [style.boxShadow]="sport() === s.id ? '0 0 0 3px rgba(var(--app-primary-rgb),0.20)' : 'none'">
                 <img [src]="s.image" class="absolute inset-0 w-full h-full object-cover" />
                 <div class="absolute inset-0 bg-gradient-to-t from-black/75 to-transparent"></div>
-                <div *ngIf="sport() === s.id" class="absolute inset-0 bg-[rgba(140,240,0,0.15)]"></div>
-                <div *ngIf="sport() === s.id" class="absolute top-2 right-2 w-6 h-6 rounded-full bg-[#8CF000] flex items-center justify-center">
+                <div *ngIf="sport() === s.id" class="absolute inset-0 bg-[rgba(var(--app-primary-rgb),0.15)]"></div>
+                <div *ngIf="sport() === s.id" class="absolute top-2 right-2 w-6 h-6 rounded-full bg-[var(--app-primary)] flex items-center justify-center">
                   <ion-icon name="checkmark-outline" class="text-[#111827] text-xs font-black"></ion-icon>
                 </div>
                 <p class="absolute bottom-2 left-2 right-2 text-white font-black text-[11px] m-0 text-left">{{ s.name }}</p>
@@ -271,10 +271,10 @@ function buildDates(): DateOption[] {
             <p class="text-[13px] text-[#9CA3AF] mb-5 m-0 font-medium">When do you want to book?</p>
             <div class="flex gap-2.5 overflow-x-auto pb-2 no-scrollbar">
               <button *ngFor="let d of dates" (click)="dateIdx.set(d.idx)" class="flex-shrink-0 flex flex-col items-center px-4 py-3 rounded-2xl min-w-[58px] border-none transition-all"
-                [style.backgroundColor]="dateIdx() === d.idx ? 'rgba(140,240,0,0.12)' : 'white'"
-                [style.border]="dateIdx() === d.idx ? '2px solid #8CF000' : '2px solid #F3F4F6'"
-                [style.boxShadow]="dateIdx() === d.idx ? '0 2px 12px rgba(140,240,0,0.22)' : '0 1px 4px rgba(0,0,0,0.06)'">
-                <span class="text-[10px] font-bold" [style.color]="dateIdx() === d.idx ? '#8CF000' : '#9CA3AF'">{{ d.isToday ? 'Today' : d.day }}</span>
+                [style.backgroundColor]="dateIdx() === d.idx ? 'rgba(var(--app-primary-rgb),0.12)' : 'white'"
+                [style.border]="dateIdx() === d.idx ? '2px solid var(--app-primary)' : '2px solid #F3F4F6'"
+                [style.boxShadow]="dateIdx() === d.idx ? '0 2px 12px rgba(var(--app-primary-rgb),0.22)' : '0 1px 4px rgba(0,0,0,0.06)'">
+                <span class="text-[10px] font-bold" [style.color]="dateIdx() === d.idx ? 'var(--app-primary)' : '#9CA3AF'">{{ d.isToday ? 'Today' : d.day }}</span>
                 <span class="text-[18px] font-black text-[#111827] mt-0.5">{{ d.dateNum }}</span>
                 <span class="text-[9px] font-bold" [style.color]="dateIdx() === d.idx ? '#9CA3AF' : '#C4C9D4'">{{ d.monthShort }}</span>
               </button>
@@ -287,9 +287,9 @@ function buildDates(): DateOption[] {
             <p class="text-[13px] text-[#9CA3AF] mb-5 m-0 font-medium">Available slots at {{ selectedVenue.name }}</p>
             <div class="grid grid-cols-3 gap-2.5">
               <button *ngFor="let slot of selectedVenue.slots" (click)="time.set(slot)" class="py-3.5 rounded-2xl text-center border-none transition-all"
-                [style.backgroundColor]="time() === slot ? '#8CF000' : 'white'"
-                [style.border]="time() === slot ? '2px solid #8CF000' : '2px solid #F3F4F6'"
-                [style.boxShadow]="time() === slot ? '0 2px 10px rgba(140,240,0,0.35)' : '0 1px 4px rgba(0,0,0,0.06)'">
+                [style.backgroundColor]="time() === slot ? 'var(--app-primary)' : 'white'"
+                [style.border]="time() === slot ? '2px solid var(--app-primary)' : '2px solid #F3F4F6'"
+                [style.boxShadow]="time() === slot ? '0 2px 10px rgba(var(--app-primary-rgb),0.35)' : '0 1px 4px rgba(0,0,0,0.06)'">
                 <p class="text-[14px] font-black m-0" [style.color]="time() === slot ? '#111827' : '#6B7280'">{{ slot }}</p>
               </button>
             </div>
@@ -301,13 +301,13 @@ function buildDates(): DateOption[] {
             <p class="text-[13px] text-[#9CA3AF] mb-5 m-0 font-medium">How long is your coaching session?</p>
             <div class="space-y-3">
               <button *ngFor="let d of durations" (click)="duration.set(d.id)" class="w-full flex items-center justify-between px-5 py-4 rounded-[22px] border-none transition-all text-left"
-                [style.backgroundColor]="duration() === d.id ? 'rgba(140,240,0,0.08)' : 'white'"
-                [style.border]="duration() === d.id ? '2.5px solid #8CF000' : '2px solid #F3F4F6'"
-                [style.boxShadow]="duration() === d.id ? '0 4px 16px rgba(140,240,0,0.18)' : '0 1px 6px rgba(0,0,0,0.06)'">
+                [style.backgroundColor]="duration() === d.id ? 'rgba(var(--app-primary-rgb),0.08)' : 'white'"
+                [style.border]="duration() === d.id ? '2.5px solid var(--app-primary)' : '2px solid #F3F4F6'"
+                [style.boxShadow]="duration() === d.id ? '0 4px 16px rgba(var(--app-primary-rgb),0.18)' : '0 1px 6px rgba(0,0,0,0.06)'">
                 <p class="text-[16px] font-black text-[#111827] m-0">{{ d.label }}</p>
                 <div class="flex items-center gap-2">
                   <p class="text-[13px] text-[#9CA3AF] font-bold m-0">₹{{ (selectedVenue.pricePerHour * d.hrs).toLocaleString() }}</p>
-                  <div *ngIf="duration() === d.id" class="w-6 h-6 rounded-full bg-[#8CF000] flex items-center justify-center">
+                  <div *ngIf="duration() === d.id" class="w-6 h-6 rounded-full bg-[var(--app-primary)] flex items-center justify-center">
                     <ion-icon name="checkmark-outline" class="text-[#111827] text-xs font-black"></ion-icon>
                   </div>
                 </div>
@@ -321,12 +321,12 @@ function buildDates(): DateOption[] {
             <p class="text-[13px] text-[#9CA3AF] mb-5 m-0 font-medium">What type of coaching session?</p>
             <div class="grid grid-cols-2 gap-3">
               <button *ngFor="let t of trainingTypes" (click)="trainType.set(t.id)" class="flex flex-col items-center py-5 rounded-[22px] border-none transition-all"
-                [style.backgroundColor]="trainType() === t.id ? 'rgba(140,240,0,0.10)' : 'white'"
-                [style.border]="trainType() === t.id ? '2.5px solid #8CF000' : '2px solid #F3F4F6'"
-                [style.boxShadow]="trainType() === t.id ? '0 4px 16px rgba(140,240,0,0.18)' : '0 1px 6px rgba(0,0,0,0.06)'">
+                [style.backgroundColor]="trainType() === t.id ? 'rgba(var(--app-primary-rgb),0.10)' : 'white'"
+                [style.border]="trainType() === t.id ? '2.5px solid var(--app-primary)' : '2px solid #F3F4F6'"
+                [style.boxShadow]="trainType() === t.id ? '0 4px 16px rgba(var(--app-primary-rgb),0.18)' : '0 1px 6px rgba(0,0,0,0.06)'">
                 <span class="text-3xl mb-2">{{ t.emoji }}</span>
                 <p class="text-[13px] font-black text-[#111827] m-0">{{ t.label }}</p>
-                <div *ngIf="trainType() === t.id" class="w-5 h-5 rounded-full bg-[#8CF000] flex items-center justify-center mt-2">
+                <div *ngIf="trainType() === t.id" class="w-5 h-5 rounded-full bg-[var(--app-primary)] flex items-center justify-center mt-2">
                   <ion-icon name="checkmark-outline" class="text-[#111827] text-[10px] font-black"></ion-icon>
                 </div>
               </button>
@@ -371,7 +371,7 @@ function buildDates(): DateOption[] {
                 </div>
                 <div class="flex-1">
                   <p class="text-[13px] font-bold text-[#111827] m-0">{{ e.label }}</p>
-                  <p class="text-[11px] text-[#9CA3AF] m-0 mt-0.5 font-bold">₹{{ e.price }}/session <span *ngIf="getEquipQty(e.id) > 0" class="text-[#8CF000] font-black">= ₹{{ e.price * getEquipQty(e.id) }}</span></p>
+                  <p class="text-[11px] text-[#9CA3AF] m-0 mt-0.5 font-bold">₹{{ e.price }}/session <span *ngIf="getEquipQty(e.id) > 0" class="text-[var(--app-primary)] font-black">= ₹{{ e.price * getEquipQty(e.id) }}</span></p>
                 </div>
                 <div class="flex items-center gap-2.5">
                   <button (click)="decEquip(e.id)" class="w-8 h-8 rounded-full flex items-center justify-center border border-[#E5E7EB] bg-white border-none shadow-sm">
@@ -391,11 +391,11 @@ function buildDates(): DateOption[] {
             <h2 class="text-[20px] font-black text-[#111827] m-0">Booking Summary</h2>
 
             <!-- Smart Automation Accordion Toggle Card -->
-            <div class="bg-white rounded-[24px] overflow-hidden border-[#8CF000]/22 border-2 shadow-md">
+            <div class="bg-white rounded-[24px] overflow-hidden border-[var(--app-primary)]/22 border-2 shadow-md">
               <div class="px-5 pt-5 pb-4">
                 <div class="flex items-start gap-3">
-                  <div class="w-10 h-10 rounded-2xl bg-[#8CF000]/15 flex items-center justify-center flex-shrink-0">
-                    <ion-icon name="sparkles-outline" class="text-[#8CF000] text-lg font-bold"></ion-icon>
+                  <div class="w-10 h-10 rounded-2xl bg-[var(--app-primary)]/15 flex items-center justify-center flex-shrink-0">
+                    <ion-icon name="sparkles-outline" class="text-[var(--app-primary)] text-lg font-bold"></ion-icon>
                   </div>
                   <div class="flex-1">
                     <p class="text-[15px] font-black text-[#111827] m-0">Automate Coaching Session</p>
@@ -406,7 +406,7 @@ function buildDates(): DateOption[] {
                   </button>
                 </div>
 
-                <div *ngIf="automate()" class="flex items-center gap-2 bg-[#8CF000]/8 rounded-xl px-3 py-2.5 mt-3">
+                <div *ngIf="automate()" class="flex items-center gap-2 bg-[var(--app-primary)]/8 rounded-xl px-3 py-2.5 mt-3">
                   <ion-icon name="checkmark-circle" class="text-[#16A34A] text-base"></ion-icon>
                   <span class="text-[12px] font-bold text-[#111827]">Invite Students After Booking</span>
                 </div>
@@ -419,26 +419,26 @@ function buildDates(): DateOption[] {
                   <div class="space-y-2.5">
                     <button *ngFor="let opt of [{ id:'existing', icon:'👥', label:'Select Existing Students', sub:'Choose from your student list' }, { id:'batch', icon:'📚', label:'Select Previous Batch', sub:'Reuse a coaching batch' }, { id:'new', icon:'➕', label:'Add New Participants', sub:'Search by name or TYNG ID' }]"
                       (click)="participantType.set(opt.id)" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl border-none text-left"
-                      [style.backgroundColor]="participantType() === opt.id ? 'rgba(140,240,0,0.08)' : '#F9FAFB'"
-                      [style.border]="participantType() === opt.id ? '2px solid #8CF000' : '2px solid transparent'">
+                      [style.backgroundColor]="participantType() === opt.id ? 'rgba(var(--app-primary-rgb),0.08)' : '#F9FAFB'"
+                      [style.border]="participantType() === opt.id ? '2px solid var(--app-primary)' : '2px solid transparent'">
                       <span class="text-2xl">{{ opt.icon }}</span>
                       <div class="flex-grow">
                         <p class="text-[13px] font-bold text-[#111827] m-0">{{ opt.label }}</p>
                         <p class="text-[11px] text-[#9CA3AF] m-0 font-medium mt-0.5">{{ opt.sub }}</p>
                       </div>
-                      <ion-icon *ngIf="participantType() === opt.id" name="checkmark-circle" class="text-[#8CF000] text-lg"></ion-icon>
+                      <ion-icon *ngIf="participantType() === opt.id" name="checkmark-circle" class="text-[var(--app-primary)] text-lg"></ion-icon>
                     </button>
                   </div>
                 </div>
 
                 <div class="bg-[#111827] rounded-2xl p-4 text-white">
                   <div class="flex items-center gap-2 mb-3">
-                    <ion-icon name="flash-outline" class="text-[#8CF000] text-base"></ion-icon>
-                    <p class="text-[12px] font-black text-[#8CF000] uppercase tracking-wider m-0">TYNG Will Automatically</p>
+                    <ion-icon name="flash-outline" class="text-[var(--app-primary)] text-base"></ion-icon>
+                    <p class="text-[12px] font-black text-[var(--app-primary)] uppercase tracking-wider m-0">TYNG Will Automatically</p>
                   </div>
                   <div *ngFor="let a of ['Create a coaching session','Add it to your schedule','Add to student\\'s calendar','Create dedicated session chat','Generate unique attendance QR Code']"
                     class="flex items-center gap-2 py-1.5 border-b border-white/5 last:border-none">
-                    <div class="w-4 h-4 rounded-full bg-[#8CF000] flex items-center justify-center flex-shrink-0">
+                    <div class="w-4 h-4 rounded-full bg-[var(--app-primary)] flex items-center justify-center flex-shrink-0">
                       <ion-icon name="checkmark-outline" class="text-[#111827] text-[10px] font-black"></ion-icon>
                     </div>
                     <span class="text-[11px] text-white/70 font-medium">{{ a }}</span>
@@ -450,7 +450,7 @@ function buildDates(): DateOption[] {
             <!-- Coupon Code input validation -->
             <div class="bg-white rounded-[24px] p-5 shadow-sm border border-slate-100">
               <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-3 m-0">Coupon Code</p>
-              <div *ngIf="appliedCoupon()" class="flex items-center gap-3 bg-[#F0FDF4] rounded-2xl px-4 py-3 border border-[#8CF000]/15">
+              <div *ngIf="appliedCoupon()" class="flex items-center gap-3 bg-[#F0FDF4] rounded-2xl px-4 py-3 border border-[var(--app-primary)]/15">
                 <ion-icon name="checkmark-outline" class="text-[#22C55E] text-base"></ion-icon>
                 <div class="flex-grow">
                   <p class="text-[13px] font-black text-[#111827] m-0">{{ appliedCoupon()?.code }}</p>
@@ -463,7 +463,7 @@ function buildDates(): DateOption[] {
                 <div class="flex gap-2">
                   <input [(ngModel)]="couponInput" placeholder="Enter coupon code..." class="flex-grow bg-[#F3F4F6] rounded-2xl px-4 h-11 text-[14px] font-bold text-[#111827] uppercase border-none focus:outline-none outline-none" />
                   <button (click)="applyCoupon()" [disabled]="!couponInput.trim()" class="h-11 px-5 rounded-2xl text-[13px] font-black border-none"
-                    [style.backgroundColor]="couponInput.trim() ? '#8CF000' : '#F3F4F6'"
+                    [style.backgroundColor]="couponInput.trim() ? 'var(--app-primary)' : '#F3F4F6'"
                     [style.color]="couponInput.trim() ? '#111827' : '#C4C9D4'">
                     Apply
                   </button>
@@ -524,7 +524,7 @@ function buildDates(): DateOption[] {
                   <p class="text-[11px] text-white/50 uppercase tracking-wider m-0">Total Payable</p>
                   <p class="text-[10px] text-white/30 m-0">Incl. GST & fees</p>
                 </div>
-                <p class="text-[28px] font-black text-[#8CF000] m-0">₹{{ getTotal().toLocaleString() }}</p>
+                <p class="text-[28px] font-black text-[var(--app-primary)] m-0">₹{{ getTotal().toLocaleString() }}</p>
               </div>
             </div>
           </div>
@@ -565,8 +565,8 @@ function buildDates(): DateOption[] {
     }
 
     .btn-green-gradient {
-      background: linear-gradient(135deg, #8CF000, #A3E635);
-      box-shadow: 0 4px 14px rgba(140,240,0,0.30);
+      background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to));
+      box-shadow: 0 4px 14px rgba(var(--app-primary-rgb),0.30);
       color: #111827;
     }
 
@@ -581,7 +581,7 @@ function buildDates(): DateOption[] {
     }
 
     .toggle-on {
-      background: #8CF000;
+      background: var(--app-primary);
     }
 
     .toggle-thumb {
@@ -611,7 +611,7 @@ function buildDates(): DateOption[] {
         width: 22px;
         height: 22px;
         border-radius: 50%;
-        background: #8CF000;
+        background: var(--app-primary);
         cursor: pointer;
         box-shadow: 0 2px 6px rgba(0,0,0,0.15);
       }

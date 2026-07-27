@@ -1,19 +1,19 @@
-﻿<ion-content [fullscreen]="true" class="has-tabs">
+<ion-content [fullscreen]="true" class="has-tabs">
   <app-brand-header-shell>
   <main class="page-shell bg-[#FAFBFC]">
 
-    <!-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+    <!-- ?????????????????????????????????????????????????? -->
     <!-- COACH DASHBOARD -->
-    <!-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+    <!-- ?????????????????????????????????????????????????? -->
     <ng-container *ngIf="auth.user()?.role === 'coach'">
       <div class="px-5 pt-5 pb-4">
         <p class="text-[14px] text-[#9CA3AF] font-medium mb-0.5">{{ greeting }}</p>
         <h1 class="text-[26px] font-black text-[#111827] leading-tight">Coach Arvind</h1>
         <div class="mt-3 flex items-center gap-2 bg-white rounded-2xl px-4 py-3 coach-focus-bar">
-          <div class="w-2 h-2 rounded-full bg-[#8CF000] animate-pulse flex-shrink-0"></div>
+          <div class="w-2 h-2 rounded-full bg-[var(--app-primary)] animate-pulse flex-shrink-0"></div>
           <p class="text-[12px] font-semibold text-[#6B7280] m-0">
             <strong class="text-[#111827] font-black">Today's Focus</strong>
-            &nbsp;4 Sessions Â· 3 Requests Â· <span class="text-[#22C55E] font-black">â‚¹4,250 Expected</span>
+            &nbsp;4 Sessions � 3 Requests � <span class="text-[#22C55E] font-black">?4,250 Expected</span>
           </p>
         </div>
       </div>
@@ -26,7 +26,7 @@
               <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest">Coach Pulse</p>
               <p class="text-[11px] text-[#9CA3AF]">Your day at a glance</p>
             </div>
-            <div class="w-8 h-8 rounded-full bg-[#8CF000] flex items-center justify-center shadow-md">
+            <div class="w-8 h-8 rounded-full bg-[var(--app-primary)] flex items-center justify-center shadow-md">
               <ion-icon name="flash" class="text-white text-base"></ion-icon>
             </div>
           </div>
@@ -44,17 +44,17 @@
           <div class="mt-4 pt-4 border-t border-[#F3F4F6]">
             <div class="flex justify-between text-[11px] mb-1.5">
               <span class="text-[#9CA3AF] font-medium">Daily Goal Progress</span>
-              <span class="text-[#8CF000] font-black">62%</span>
+              <span class="text-[var(--app-primary)] font-black">62%</span>
             </div>
             <div class="h-2 bg-[#F3F4F6] rounded-full overflow-hidden">
-              <div class="h-full rounded-full" style="width: 62%; background: linear-gradient(90deg, #8CF000, #A3E635);"></div>
+              <div class="h-full rounded-full" style="width: 62%; background: linear-gradient(90deg, var(--app-primary), var(--app-primary-to));"></div>
             </div>
           </div>
         </div>
 
         <!-- Profile Completion banner -->
         <div *ngIf="!coachProfileDismissed()" class="profile-comp-banner">
-          <div class="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-[#8CF000]/10"></div>
+          <div class="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-[var(--app-primary)]/10"></div>
           <div class="absolute -bottom-4 right-16 w-16 h-16 rounded-full bg-[#FF7A00]/10"></div>
           <div class="relative">
             <div class="flex items-start justify-between mb-3">
@@ -62,24 +62,24 @@
                 <p class="text-[14px] font-black text-white">Complete Your Coach Profile</p>
                 <p class="text-[11px] text-white/50 mt-0.5">You're 40% complete</p>
               </div>
-              <button (click)="coachProfileDismissed.set(true)" class="text-white/30 text-xl font-bold w-6 h-6 flex items-center justify-center bg-transparent">Ã—</button>
+              <button (click)="coachProfileDismissed.set(true)" class="text-white/30 text-xl font-bold w-6 h-6 flex items-center justify-center bg-transparent">�</button>
             </div>
             <div class="mb-3">
               <div class="h-2 bg-white/10 rounded-full overflow-hidden">
-                <div class="h-full rounded-full" style="width: 40%; background: linear-gradient(90deg, #8CF000, #A3E635);"></div>
+                <div class="h-full rounded-full" style="width: 40%; background: linear-gradient(90deg, var(--app-primary), var(--app-primary-to));"></div>
               </div>
               <p class="text-[10px] text-white/30 mt-1 text-right">40 / 100</p>
             </div>
             <div class="space-y-1.5 mb-4">
               <div *ngFor="let perk of ['Verified Coach Badge', 'Higher Search Ranking', 'More Student Bookings']" class="flex items-center gap-2">
-                <div class="w-4 h-4 rounded-full bg-[#8CF000]/20 flex items-center justify-center">
-                  <ion-icon name="checkmark" class="text-[9px] text-[#8CF000] font-bold"></ion-icon>
+                <div class="w-4 h-4 rounded-full bg-[var(--app-primary)]/20 flex items-center justify-center">
+                  <ion-icon name="checkmark" class="text-[9px] text-[var(--app-primary)] font-bold"></ion-icon>
                 </div>
                 <span class="text-[11px] text-white/60">{{ perk }}</span>
               </div>
             </div>
             <button (click)="go('/app/coach/complete-profile')" class="btn-orange-gradient w-full h-11 rounded-2xl text-[13px] font-black text-white">
-              Complete Profile â†’
+              Complete Profile ?
             </button>
           </div>
         </div>
@@ -152,11 +152,11 @@
             <div class="flex-1">
               <p class="text-[11px] font-black text-[#111827]/60 uppercase tracking-wider mb-0.5">AI Match</p>
               <p class="text-[15px] font-black text-[#111827] leading-snug">8 Beginner Badminton Players Looking for a Coach</p>
-              <p class="text-[12px] text-[#111827]/60 mt-1">2 km Away Â· Weekend Availability</p>
+              <p class="text-[12px] text-[#111827]/60 mt-1">2 km Away � Weekend Availability</p>
             </div>
           </div>
           <button (click)="go('/app/coach/teams')" class="btn-orange-gradient mt-4 w-full h-10 rounded-2xl text-[13px] font-black text-white">
-            View Requests â†’
+            View Requests ?
           </button>
         </div>
 
@@ -167,7 +167,7 @@
             <button (click)="go('/app/coach/evaluate')" class="see-all-btn">Analytics <ion-icon name="chevron-forward-outline"></ion-icon></button>
           </div>
           <div class="grid grid-cols-3 gap-3">
-            <div *ngFor="let prog of [{ emoji:'ðŸ†', label:'2 Students Won Matches', bg:'#FFFBEB', color:'#D97706' }, { emoji:'ðŸ“ˆ', label:'5 Players Improved Rating', bg:'#F0FDF4', color:'#16A34A' }, { emoji:'â­', label:'3 New Reviews Today', bg:'#F5F3FF', color:'#7C3AED' }]"
+            <div *ngFor="let prog of [{ emoji:'??', label:'2 Students Won Matches', bg:'#FFFBEB', color:'#D97706' }, { emoji:'??', label:'5 Players Improved Rating', bg:'#F0FDF4', color:'#16A34A' }, { emoji:'?', label:'3 New Reviews Today', bg:'#F5F3FF', color:'#7C3AED' }]"
               class="rounded-[18px] p-3 text-center" [style.backgroundColor]="prog.bg">
               <span class="text-2xl">{{ prog.emoji }}</span>
               <p class="text-[10px] font-semibold mt-1.5 leading-snug" [style.color]="prog.color">{{ prog.label }}</p>
@@ -196,19 +196,19 @@
         <!-- Coach Insights -->
         <div class="section-card p-5">
           <div class="flex items-center gap-2 mb-3">
-            <div class="w-8 h-8 rounded-xl bg-[#8CF000]/15 flex items-center justify-center">
-              <ion-icon name="flame-outline" class="text-[#8CF000] text-base"></ion-icon>
+            <div class="w-8 h-8 rounded-xl bg-[var(--app-primary)]/15 flex items-center justify-center">
+              <ion-icon name="flame-outline" class="text-[var(--app-primary)] text-base"></ion-icon>
             </div>
             <p class="text-[14px] font-black text-[#111827]">Coach Insights</p>
-            <span class="text-[9px] bg-[#8CF000]/15 text-[#16A34A] font-black px-2 py-0.5 rounded-full">AI</span>
+            <span class="text-[9px] bg-[var(--app-primary)]/15 text-[#16A34A] font-black px-2 py-0.5 rounded-full">AI</span>
           </div>
           <div class="bg-[#F9FAFB] rounded-2xl px-4 py-3.5 mb-3">
             <p class="text-[13px] text-[#6B7280] leading-relaxed">
-              <strong class="text-[#111827] font-bold">Tuesday evenings</strong> are your busiest coaching hours. Increasing availability may boost bookings by <span class="text-[#8CF000] font-black">+18%</span>.
+              <strong class="text-[#111827] font-bold">Tuesday evenings</strong> are your busiest coaching hours. Increasing availability may boost bookings by <span class="text-[var(--app-primary)] font-black">+18%</span>.
             </p>
           </div>
           <button (click)="go('/app/coach/insights')" class="btn-green-ghost w-full h-10 rounded-2xl text-[13px] font-bold text-[#111827]">
-            View Full Insights â†’
+            View Full Insights ?
           </button>
         </div>
 
@@ -219,7 +219,7 @@
             <button (click)="go('/app/coach/earnings')" class="see-all-btn">View All <ion-icon name="chevron-forward-outline"></ion-icon></button>
           </div>
           <div class="grid grid-cols-3 gap-3 mb-3">
-            <div *ngFor="let earn of [{ period:'Today', amount:'â‚¹1,500', trend:'+12%' }, { period:'This Week', amount:'â‚¹8,250', trend:'+8%' }, { period:'This Month', amount:'â‚¹32,000', trend:'+22%' }]"
+            <div *ngFor="let earn of [{ period:'Today', amount:'?1,500', trend:'+12%' }, { period:'This Week', amount:'?8,250', trend:'+8%' }, { period:'This Month', amount:'?32,000', trend:'+22%' }]"
               class="bg-[#F9FAFB] rounded-2xl p-3 text-center">
               <p class="text-[10px] text-[#9CA3AF] mb-1">{{ earn.period }}</p>
               <p class="text-[14px] font-black text-[#111827]">{{ earn.amount }}</p>
@@ -228,7 +228,7 @@
           </div>
           <div class="h-10 bg-[#F9FAFB] rounded-2xl flex items-end justify-around px-3 pb-1.5">
             <div *ngFor="let h of [40, 65, 50, 80, 55, 90, 70]; let i = index" class="w-3 rounded-t-sm"
-              [style.height]="h + '%'" [style.backgroundColor]="i === 5 ? '#8CF000' : '#E5E7EB'" style="max-height: 36px;"></div>
+              [style.height]="h + '%'" [style.backgroundColor]="i === 5 ? 'var(--app-primary)' : '#E5E7EB'" style="max-height: 36px;"></div>
           </div>
         </div>
 
@@ -273,7 +273,7 @@
               <div class="p-3">
                 <p class="text-[12px] font-bold text-[#111827]">{{ com.title }}</p>
                 <p class="text-[10px] text-[#9CA3AF] mt-0.5 mb-2">{{ com.sub }}</p>
-                <button class="text-[10px] font-black text-[#8CF000] flex items-center gap-0.5 bg-transparent">
+                <button class="text-[10px] font-black text-[var(--app-primary)] flex items-center gap-0.5 bg-transparent">
                   Learn More <ion-icon name="chevron-forward-outline" style="font-size: 10px;"></ion-icon>
                 </button>
               </div>
@@ -307,7 +307,7 @@
         <div class="section-card p-5 relative overflow-hidden bg-gradient-to-br from-[#7C3AED] to-[#6D28D9] text-white">
           <div class="absolute -top-5 -right-5 w-20 h-20 rounded-full bg-white/10"></div>
           <div class="flex items-start gap-4 relative">
-            <span class="text-4xl">ðŸ†</span>
+            <span class="text-4xl">??</span>
             <div class="flex-1">
               <p class="text-[11px] font-black text-white/50 uppercase tracking-wider mb-1">Milestone</p>
               <p class="text-[17px] font-black text-white leading-tight">100 Coaching Sessions Completed!</p>
@@ -324,9 +324,9 @@
                 <ion-icon name="sunny" class="text-[#F59E0B] text-2xl"></ion-icon>
               </div>
               <div>
-                <p class="text-[11px] text-[#9CA3AF] font-medium">Today Â· Lucknow</p>
+                <p class="text-[11px] text-[#9CA3AF] font-medium">Today � Lucknow</p>
                 <div class="flex items-baseline gap-1.5">
-                  <p class="text-[24px] font-black text-[#111827]">28Â°</p>
+                  <p class="text-[24px] font-black text-[#111827]">28�</p>
                   <p class="text-[13px] font-semibold text-[#6B7280]">Sunny</p>
                 </div>
               </div>
@@ -339,7 +339,7 @@
         </div>
 
         <!-- Help support -->
-        <div (click)="go('/app/home')" class="section-card p-5 flex items-center gap-4 cursor-pointer hover:border-[#8CF000] border border-transparent transition-all">
+        <div (click)="go('/app/home')" class="section-card p-5 flex items-center gap-4 cursor-pointer hover:border-[var(--app-primary)] border border-transparent transition-all">
           <div class="w-12 h-12 rounded-2xl bg-[#EFF6FF] flex items-center justify-center flex-shrink-0">
             <ion-icon name="chatbubble-ellipses-outline" class="text-[#2563EB] text-xl"></ion-icon>
           </div>
@@ -354,9 +354,9 @@
     </ng-container>
 
 
-    <!-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+    <!-- ?????????????????????????????????????????????????? -->
     <!-- PLAYER DASHBOARD (Figma HomeScreen) -->
-    <!-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+    <!-- ?????????????????????????????????????????????????? -->
     <ng-container *ngIf="auth.user()?.role !== 'coach' && auth.user()?.role !== 'venue'">
       <section class="player-home">
         <div class="loc-row" role="button" (click)="editLocation()">
@@ -370,13 +370,13 @@
         <div class="search-wrap">
           <app-search-bar
             class="search-block"
-            placeholder="Find players, games, venues…"
+            placeholder="Find players, games, venues?"
             [(ngModel)]="searchQuery"
             (ngModelChange)="onSearchChange($event)"
           ></app-search-bar>
 
           <div class="search-suggestions" *ngIf="showSuggestions">
-            <div class="suggest-loading" *ngIf="searchLoading">Searching…</div>
+            <div class="suggest-loading" *ngIf="searchLoading">Searching?</div>
             <ng-container *ngIf="!searchLoading">
               <button
                 type="button"
@@ -392,7 +392,7 @@
                 <span class="suggest-type">{{ item.type }}</span>
               </button>
               <div class="suggest-empty" *ngIf="searchSuggestions.length === 0">
-                No matches for “{{ searchQuery }}”
+                No matches for ?{{ searchQuery }}?
               </div>
             </ng-container>
           </div>
@@ -486,7 +486,7 @@
             (action)="go('/app/ongoing')"
           ></app-section-header>
           <div class="nearby-list">
-            <div class="nearby-state" *ngIf="nearbyLoading">Loading games…</div>
+            <div class="nearby-state" *ngIf="nearbyLoading">Loading games?</div>
             <div class="nearby-state" *ngIf="!nearbyLoading && nearbyError">{{ nearbyError }}</div>
             <div class="nearby-state" *ngIf="!nearbyLoading && !nearbyError && nearbyGames.length === 0">
               No open games yet. Create one to get started.
@@ -498,6 +498,41 @@
             ></app-event-card>
           </div>
         </div>
+
+        <!-- Home ads banner slider -->
+        <section class="home-ads" *ngIf="adsLoading || homeAds.length > 0" aria-label="Promotions">
+          <div class="home-ads-frame home-ads-loading" *ngIf="adsLoading">
+            <div class="home-ads-skeleton" aria-hidden="true"></div>
+            <ion-spinner name="crescent" color="medium" class="home-ads-spinner"></ion-spinner>
+          </div>
+
+          <ng-container *ngIf="!adsLoading && homeAds.length > 0">
+            <div class="home-ads-frame">
+              <button
+                type="button"
+                class="home-ads-slide"
+                (click)="openAd(homeAds[adSlideIndex])"
+                [attr.aria-label]="homeAds[adSlideIndex].title"
+              >
+                <img
+                  [src]="homeAds[adSlideIndex].imageUrl"
+                  [alt]="homeAds[adSlideIndex].title"
+                  loading="lazy"
+                />
+              </button>
+            </div>
+            <div class="home-ads-dots" *ngIf="homeAds.length > 1">
+              <button
+                type="button"
+                class="home-ads-dot"
+                *ngFor="let ad of homeAds; let i = index"
+                [class.is-active]="i === adSlideIndex"
+                (click)="selectAdSlide(i)"
+                [attr.aria-label]="'Show ad ' + (i + 1)"
+              ></button>
+            </div>
+          </ng-container>
+        </section>
       </section>
     </ng-container>
 

@@ -8,6 +8,7 @@ import { VenueService } from '../../core/services/venue.service';
 
 export interface VenueDetail {
   id: number;
+  courtId?: string;
   courtName: string;
   venueName: string;
   sport: string;
@@ -26,6 +27,7 @@ export interface VenueDetail {
   rentalEquipment: { id: string; name: string; price: number; emoji: string }[];
   reviews: { name: string; photo: string; rating: number; text: string; date: string }[];
   offers: { title: string; desc: string; accent: string; expires: string }[];
+  autoConfirm?: boolean;
 }
 
 export const VENUE_DATA: VenueDetail[] = [
@@ -73,7 +75,7 @@ export const VENUE_DATA: VenueDetail[] = [
       { name: 'Ananya Patel', photo: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=80&h=80&fit=crop&auto=format', rating: 4, text: 'Smooth booking process through TYNG. Venue was exactly as shown. Good value for the quality.', date: '2 months ago' },
     ],
     offers: [
-      { title: '20% OFF Weekday Mornings', desc: 'Book before 10 AM Mon–Fri', accent: '#8CF000', expires: 'Ends 30 Jun' },
+      { title: '20% OFF Weekday Mornings', desc: 'Book before 10 AM Mon–Fri', accent: 'var(--app-primary)', expires: 'Ends 30 Jun' },
       { title: 'Buy 5 Hours, Get 1 Free', desc: 'Accumulate across any month', accent: '#FF7A00', expires: 'Ongoing' },
       { title: '₹500 OFF First Booking', desc: 'New users only', accent: '#38BDF8', expires: 'Limited time' },
     ],
@@ -111,7 +113,7 @@ export const VENUE_DATA: VenueDetail[] = [
       { name: 'Aryan Mehta', photo: 'https://images.unsplash.com/photo-1552058544-f2b08422138a?w=80&h=80&fit=crop&auto=format', rating: 5, text: 'Great turf, perfect for weekend matches. Booking was seamless.', date: '3 weeks ago' },
     ],
     offers: [
-      { title: '15% OFF Weekends', desc: 'Saturday & Sunday all day', accent: '#8CF000', expires: 'Ongoing' },
+      { title: '15% OFF Weekends', desc: 'Saturday & Sunday all day', accent: 'var(--app-primary)', expires: 'Ongoing' },
     ],
   },
   {
@@ -146,7 +148,7 @@ export const VENUE_DATA: VenueDetail[] = [
       { name: 'Sameer Sen', photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&auto=format', rating: 5, text: 'Great indoor setup. Good quality wooden flooring.', date: '1 week ago' },
     ],
     offers: [
-      { title: '10% off on first booking', desc: 'Welcome coupon', accent: '#8CF000', expires: 'Ongoing' },
+      { title: '10% off on first booking', desc: 'Welcome coupon', accent: 'var(--app-primary)', expires: 'Ongoing' },
     ],
   }
 ];
@@ -157,7 +159,34 @@ export const VENUE_DATA: VenueDetail[] = [
   imports: [CommonModule, IonicModule],
   template: `
     <ion-content fullscreen>
-      <div class="min-h-screen bg-[#FAFBFC] venue-detail-page text-[#111827] text-left" *ngIf="venue">
+      <!-- Loading skeleton -->
+      <div class="min-h-screen bg-[#FAFBFC] venue-detail-page" *ngIf="loading">
+        <div class="skeleton-hero"></div>
+        <div class="px-5 pt-5 pb-4 bg-white border-b border-[#F3F4F6]">
+          <div class="flex items-start justify-between mb-3">
+            <div class="flex-1 min-w-0 space-y-2">
+              <div class="skeleton-line w-48 h-6"></div>
+              <div class="skeleton-line w-28 h-4"></div>
+            </div>
+            <div class="skeleton-line w-16 h-7"></div>
+          </div>
+          <div class="skeleton-line w-40 h-4 mt-3"></div>
+          <div class="skeleton-line w-52 h-4 mt-3"></div>
+        </div>
+        <div class="px-5 pt-4 space-y-4">
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card small"></div>
+        </div>
+        <button
+          type="button"
+          (click)="back()"
+          class="skeleton-back w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/20 outline-none"
+        >
+          <ion-icon name="chevron-back" class="text-white text-lg"></ion-icon>
+        </button>
+      </div>
+
+      <div class="min-h-screen bg-[#FAFBFC] venue-detail-page text-[#111827] text-left" *ngIf="!loading && venue">
         
         <!-- Image carousel -->
         <div class="relative bg-gray-900 h-[300px]">
@@ -203,7 +232,7 @@ export const VENUE_DATA: VenueDetail[] = [
               (click)="currentImageIndex = i"
               class="h-[6px] rounded-full border-none p-0 transition-all duration-200 outline-none"
               [style.width.px]="i === currentImageIndex ? 20 : 6"
-              [style.backgroundColor]="i === currentImageIndex ? '#8CF000' : 'rgba(255,255,255,0.6)'"
+              [style.backgroundColor]="i === currentImageIndex ? 'var(--app-primary)' : 'rgba(255,255,255,0.6)'"
             ></button>
           </div>
         </div>
@@ -301,7 +330,7 @@ export const VENUE_DATA: VenueDetail[] = [
           <div class="bg-white rounded-[24px] px-5 py-5 border border-[#F3F4F6] shadow-sm">
             <div class="flex items-center justify-between mb-4">
               <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest m-0 leading-none">Rental Equipment</p>
-              <span *ngIf="rentalTotal > 0" class="text-[13px] font-black text-[#8CF000]">₹{{ rentalTotal }} added</span>
+              <span *ngIf="rentalTotal > 0" class="text-[13px] font-black text-[var(--app-primary)]">₹{{ rentalTotal }} added</span>
             </div>
 
             <div class="space-y-3">
@@ -325,7 +354,7 @@ export const VENUE_DATA: VenueDetail[] = [
                   <button
                     (click)="inc(item.id)"
                     class="w-8 h-8 rounded-full flex items-center justify-center outline-none border-none"
-                    style="background: linear-gradient(135deg,#8CF000,#A3E635); box-shadow: 0 2px 8px rgba(140,240,0,0.35);"
+                    style="background: linear-gradient(135deg,var(--app-primary),var(--app-primary-to)); box-shadow: 0 2px 8px rgba(var(--app-primary-rgb),0.35);"
                   >
                     <ion-icon name="add-outline" class="text-[#111827] text-sm font-black"></ion-icon>
                   </button>
@@ -416,7 +445,7 @@ export const VENUE_DATA: VenueDetail[] = [
             <button
               (click)="openDirections(venue.address)"
               class="w-full h-11 rounded-2xl flex items-center justify-center gap-2 text-[14px] font-black text-[#111827] border-none outline-none"
-              style="background: linear-gradient(135deg,#8CF000 0%,#A3E635 100%); box-shadow: 0 3px 12px rgba(140,240,0,0.35);"
+              style="background: linear-gradient(135deg,var(--app-primary) 0%,var(--app-primary-to) 100%); box-shadow: 0 3px 12px rgba(var(--app-primary-rgb),0.35);"
             >
               <ion-icon name="navigate-outline" class="text-base"></ion-icon>
               <span>Get Directions</span>
@@ -481,6 +510,44 @@ export const VENUE_DATA: VenueDetail[] = [
         box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.09);
         box-sizing: border-box;
       }
+
+      .skeleton-hero {
+        height: 300px;
+        background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 37%, #e5e7eb 63%);
+        background-size: 400% 100%;
+        animation: shimmer 1.4s ease infinite;
+      }
+
+      .skeleton-back {
+        position: fixed;
+        top: 48px;
+        left: 16px;
+        z-index: 20;
+      }
+
+      .skeleton-line {
+        border-radius: 8px;
+        background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 37%, #f3f4f6 63%);
+        background-size: 400% 100%;
+        animation: shimmer 1.4s ease infinite;
+      }
+
+      .skeleton-card {
+        height: 220px;
+        border-radius: 24px;
+        background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 37%, #f3f4f6 63%);
+        background-size: 400% 100%;
+        animation: shimmer 1.4s ease infinite;
+      }
+
+      .skeleton-card.small {
+        height: 160px;
+      }
+
+      @keyframes shimmer {
+        0% { background-position: 100% 0; }
+        100% { background-position: 0 0; }
+      }
     `
   ]
 })
@@ -497,7 +564,7 @@ export class VenueDetailPage implements OnInit {
   favourited = false;
   quantities: Record<string, number> = {};
   mapUrl: SafeResourceUrl | null = null;
-  loading = false;
+  loading = true;
 
   ngOnInit() {
     this.route.paramMap.subscribe((params) => {
@@ -507,16 +574,21 @@ export class VenueDetailPage implements OnInit {
         return;
       }
       this.venueId = Number(idStr);
-      void this.loadVenue(this.venueId);
+      const courtId = this.route.snapshot.queryParamMap.get('court');
+      void this.loadVenue(this.venueId, courtId);
     });
   }
 
-  private async loadVenue(id: number) {
+  private async loadVenue(id: number, preferredCourtId?: string | null) {
     if (!Number.isFinite(id) || id <= 0) {
       void this.router.navigateByUrl('/app/venues', { replaceUrl: true });
       return;
     }
     this.loading = true;
+    this.venue = null;
+    this.currentImageIndex = 0;
+    this.quantities = {};
+    this.mapUrl = null;
     try {
       const response = await firstValueFrom(this.venueService.getVenue(id));
       const data = response.data as any;
@@ -528,7 +600,10 @@ export class VenueDetailPage implements OnInit {
       }
 
       const courts = Array.isArray(data.courts) ? data.courts : [];
-      const firstCourt = courts[0];
+      const selectedCourt =
+        (preferredCourtId
+          ? courts.find((c: any) => String(c?.id) === String(preferredCourtId))
+          : null) || courts[0];
       const amenities = (data.amenities || []).map((label: string) => ({
         icon: 'checkmark-circle-outline',
         label: this.titleCaseAmenity(String(label)),
@@ -543,14 +618,15 @@ export class VenueDetailPage implements OnInit {
 
       this.venue = {
         id,
+        courtId: selectedCourt?.id != null ? String(selectedCourt.id) : undefined,
         venueName: String(data.venueName || data.displayName || data.name || 'Venue'),
-        courtName: String(firstCourt?.courtName || firstCourt?.name || 'Court'),
-        sport: String(firstCourt?.sport || (data.sports?.[0] || 'Sport')),
+        courtName: String(selectedCourt?.courtName || selectedCourt?.name || 'Court'),
+        sport: String(selectedCourt?.sport || (data.sports?.[0] || 'Sport')),
         address: String(data.address || data.location || ''),
         images: Array.isArray(data.gallery) && data.gallery.length
           ? data.gallery.map((g: unknown) => String(g))
-          : [String(data.profileImage || firstCourt?.image || 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=800')],
-        pricePerHour: Number(firstCourt?.pricePerHour || 0),
+          : [String(data.profileImage || selectedCourt?.image || 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=800')],
+        pricePerHour: Number(selectedCourt?.pricePerHour || 0),
         rating: Number(data.rating || 4.5),
         reviewCount: Number(data.gamesPlayed || 0),
         openTime: String(data.openTime || '6:00 AM'),
@@ -559,11 +635,12 @@ export class VenueDetailPage implements OnInit {
         rentalEquipment,
         description: String(data.description || ''),
         yearBuilt: Number(data.yearEstablished || 2020),
-        area: firstCourt?.areaSqft ? `${firstCourt.areaSqft} sq ft` : '—',
-        surface: String(firstCourt?.surface || '—'),
-        maxPlayers: Number(firstCourt?.maxPlayers || 10),
+        area: selectedCourt?.areaSqft ? `${selectedCourt.areaSqft} sq ft` : '—',
+        surface: String(selectedCourt?.surface || '—'),
+        maxPlayers: Number(selectedCourt?.maxPlayers || 10),
         reviews: [],
         offers: [],
+        autoConfirm: !!data.autoConfirm,
       } as VenueDetail;
       this.setMap(this.venue.address);
     } catch {

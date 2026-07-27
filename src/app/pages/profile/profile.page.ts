@@ -55,7 +55,7 @@ export class ProfilePage implements ViewWillEnter {
 
   readonly coachAchievements = [
     { name: 'Elite Coach', icon: 'star-outline', color: '#FF7A00' },
-    { name: 'Team Builder', icon: 'people-outline', color: '#8CF000' },
+    { name: 'Team Builder', icon: 'people-outline', color: 'var(--app-primary)' },
     { name: 'Season Winner', icon: 'trophy-outline', color: '#FF7A00' },
     { name: 'Development Expert', icon: 'ribbon-outline', color: '#2563EB' },
   ];

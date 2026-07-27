@@ -51,7 +51,7 @@ export class VenueDashboardPage implements OnInit {
   errorMessage = signal('');
 
   pulseMetrics = [
-    { emoji: '🏟️', label: "Today's Bookings", value: '0', accent: '#8CF000' },
+    { emoji: '🏟️', label: "Today's Bookings", value: '0', accent: 'var(--app-primary)' },
     { emoji: '💰', label: "Today's Revenue", value: '₹0', accent: '#FF7A00' },
     { emoji: '📈', label: 'Occupancy Rate', value: '0%', accent: '#38BDF8' },
     { emoji: '📩', label: 'Pending Requests', value: '0', accent: '#F59E0B' },
@@ -64,7 +64,7 @@ export class VenueDashboardPage implements OnInit {
   readonly quickActions: VenueQuickAction[] = [
     { emoji: '⏰', label: 'Block Time Slot', sub: 'Maintenance or closure', color: '#38BDF8', path: '/app/venue/calendar' },
     { emoji: '🎉', label: 'Create Event', sub: 'Tournament or camp', color: '#FF7A00', path: '/app/venue/calendar' },
-    { emoji: '🏟️', label: 'Manage Courts', sub: 'Courts & configuration', color: '#8CF000', path: '/app/venue/facilities' },
+    { emoji: '🏟️', label: 'Manage Courts', sub: 'Courts & configuration', color: 'var(--app-primary)', path: '/app/venue/facilities' },
     { emoji: '🏷️', label: 'Create Offer', sub: 'Discounts & promotions', color: '#7C3AED', path: '/app/venue/analytics' },
   ];
 
@@ -74,6 +74,7 @@ export class VenueDashboardPage implements OnInit {
   activities: { emoji: string; bg: string; text: string; time: string }[] = [];
   aiTips: { emoji: string; text: string }[] = [];
   pendingActions: { label: string; sub: string; urgency: string }[] = [];
+  bookingBlockMessage = signal<string | null>(null);
 
   async ngOnInit() {
     if (this.auth.user()?.role !== 'venue') {
@@ -116,7 +117,7 @@ export class VenueDashboardPage implements OnInit {
 
   private applyDashboard(data: VenueDashboardData) {
     this.pulseMetrics = [
-      { emoji: '🏟️', label: "Today's Bookings", value: String(data.pulse.todayBookings || 0), accent: '#8CF000' },
+      { emoji: '🏟️', label: "Today's Bookings", value: String(data.pulse.todayBookings || 0), accent: 'var(--app-primary)' },
       { emoji: '💰', label: "Today's Revenue", value: `₹${Number(data.pulse.todayRevenue || 0).toLocaleString('en-IN')}`, accent: '#FF7A00' },
       { emoji: '📈', label: 'Occupancy Rate', value: `${data.pulse.occupancyRate || 0}%`, accent: '#38BDF8' },
       { emoji: '📩', label: 'Pending Requests', value: String(data.pulse.pendingRequests || 0), accent: '#F59E0B' },
@@ -143,6 +144,12 @@ export class VenueDashboardPage implements OnInit {
     this.activities = data.activities || [];
     this.aiTips = data.aiTips || [];
     this.pendingActions = data.pendingActions || [];
+    this.bookingBlockMessage.set(
+      data.bookingPolicy?.isBookingBlocked
+        ? (data.bookingPolicy.blockMessage
+          || 'Please contact admin. You have exceeded your cancellation limit so you are temporarily blocked from the admin side.')
+        : null,
+    );
   }
 
   bookedCount(court: VenueCourt): number {

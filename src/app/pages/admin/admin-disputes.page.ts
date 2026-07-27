@@ -41,7 +41,7 @@ import { IonicModule } from '@ionic/angular';
       .top span.high { background: rgba(239,68,68,0.15); color: #ef4444; }
       p { margin: 0 0 12px; font-size: 14px; color: #6b7280; }
       .actions { display: flex; gap: 8px; }
-      .resolve { flex: 1; min-height: 44px; border-radius: 12px; background: linear-gradient(135deg,#8cf000,#a3e635); color: #111827; font-weight: 700; }
+      .resolve { flex: 1; min-height: 44px; border-radius: 12px; background: linear-gradient(135deg,var(--app-primary),var(--app-primary-to)); color: #111827; font-weight: 700; }
       .view { flex: 1; min-height: 44px; border-radius: 12px; background: #f3f4f6; color: #111827; font-weight: 600; }
     `,
   ],

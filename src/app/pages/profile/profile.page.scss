@@ -62,7 +62,7 @@
   overflow: hidden;
   display: grid;
   place-items: center;
-  background: linear-gradient(135deg, rgba(140, 240, 0, 0.28), rgba(255, 122, 0, 0.18));
+  background: linear-gradient(135deg, rgba(var(--app-primary-rgb), 0.28), rgba(255, 122, 0, 0.18));
   color: #111827;
   font-size: 34px;
   font-weight: 900;
@@ -128,7 +128,7 @@
 }
 
 .loc-icon {
-  color: #8cf000;
+  color: var(--app-primary);
   font-size: 16px;
   flex-shrink: 0;
 }
@@ -151,7 +151,7 @@
   font-size: 12px;
   font-weight: 800;
   color: #111827;
-  background: rgba(140, 240, 0, 0.22);
+  background: rgba(var(--app-primary-rgb), 0.22);
   border-radius: 999px;
   padding: 6px 10px;
 }
@@ -243,7 +243,7 @@
 .progress-fill {
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, #8cf000, #a3e635);
+  background: linear-gradient(90deg, var(--app-primary), var(--app-primary-to));
 }
 
 .progress-hint {
@@ -316,7 +316,7 @@
 
 .stat-card ion-icon {
   font-size: 22px;
-  color: #8cf000;
+  color: var(--app-primary);
   margin-bottom: 6px;
 }
 
@@ -354,7 +354,7 @@
   width: 40px;
   height: 40px;
   border-radius: 12px;
-  background: rgba(140, 240, 0, 0.14);
+  background: rgba(var(--app-primary-rgb), 0.14);
   color: #65a30d;
   display: grid;
   place-items: center;

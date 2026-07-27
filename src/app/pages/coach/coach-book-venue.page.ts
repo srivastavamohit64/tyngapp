@@ -131,7 +131,7 @@ const FILTERS = [
           <!-- Filters Chips track -->
           <div class="flex gap-2 px-5 pb-4 pt-2 overflow-x-auto no-scrollbar">
             <button *ngFor="let f of filterOptions" (click)="selectedFilter.set(f)" class="flex-shrink-0 px-3.5 py-2 rounded-full text-[11px] font-bold border-none transition-all"
-              [style.backgroundColor]="selectedFilter() === f ? '#8CF000' : '#F3F4F6'"
+              [style.backgroundColor]="selectedFilter() === f ? 'var(--app-primary)' : '#F3F4F6'"
               [style.color]="selectedFilter() === f ? '#111827' : '#6B7280'">
               {{ f }}
             </button>
@@ -160,7 +160,7 @@ const FILTERS = [
 
               <!-- Top badges -->
               <div class="absolute top-3 left-3 flex gap-1.5">
-                <span *ngIf="v.isOpenNow" class="text-[10px] font-bold bg-[#8CF000] text-[#111827] px-2.5 py-1 rounded-full shadow-sm">Open Now</span>
+                <span *ngIf="v.isOpenNow" class="text-[10px] font-bold bg-[var(--app-primary)] text-[#111827] px-2.5 py-1 rounded-full shadow-sm">Open Now</span>
                 <span *ngIf="v.isCoachFriendly" class="text-[10px] font-bold bg-[#FF7A00] text-white px-2.5 py-1 rounded-full shadow-sm">Coach Friendly 🏋️</span>
               </div>
 
@@ -209,7 +209,7 @@ const FILTERS = [
               <div class="flex items-center gap-2 mb-3 text-[11px] text-[#9CA3AF] font-bold">
                 <ion-icon name="time-outline" class="text-sm"></ion-icon>
                 <span>{{ v.slots.slice(0, 4).join(' · ') }}</span>
-                <span *ngIf="v.slots.length > 4" class="text-[#8CF000] font-black">+{{ v.slots.length - 4 }}</span>
+                <span *ngIf="v.slots.length > 4" class="text-[var(--app-primary)] font-black">+{{ v.slots.length - 4 }}</span>
               </div>
 
               <div class="flex items-center gap-2 border-t border-slate-50 pt-3 mt-1">
@@ -244,7 +244,7 @@ const FILTERS = [
                 <div class="flex gap-2">
                   <button class="flex-grow py-2 rounded-xl bg-[#F9FAFB] text-[12px] font-bold text-[#6B7280] border border-[#F3F4F6]">View Details</button>
                   <button class="flex-grow py-2 rounded-xl bg-[#FEF2F2] text-[12px] font-bold text-[#DC2626] border border-[#FCA5A5]">Cancel</button>
-                  <button (click)="go('/app/chat')" class="flex-grow py-2 rounded-xl text-[12px] font-bold text-[#111827] bg-[#8CF000]/12 border border-[#8CF000]/30 border-2">Chat</button>
+                  <button (click)="go('/app/chat')" class="flex-grow py-2 rounded-xl text-[12px] font-bold text-[#111827] bg-[var(--app-primary)]/12 border border-[var(--app-primary)]/30 border-2">Chat</button>
                 </div>
               </div>
             </div>
@@ -273,8 +273,8 @@ const FILTERS = [
     }
 
     .btn-green-gradient {
-      background: linear-gradient(135deg, #8CF000, #A3E635);
-      box-shadow: 0 4px 16px rgba(140,240,0,0.30);
+      background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to));
+      box-shadow: 0 4px 16px rgba(var(--app-primary-rgb),0.30);
     }
 
     .no-scrollbar {

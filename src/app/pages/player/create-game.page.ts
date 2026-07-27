@@ -185,9 +185,17 @@ interface DateOption {
               <div class="sum-row"><span>Venue</span><strong>{{ venueName }}</strong></div>
               <div class="sum-row"><span>When</span><strong>{{ selectedDateDisplay }} · {{ selectedTime }}</strong></div>
               <div class="sum-row"><span>Format</span><strong>{{ effectiveTeamSize || '—' }}</strong></div>
+              <div class="sum-row"><span>Venue cost</span><strong>₹{{ venueCost | number:'1.0-0' }}</strong></div>
+              <div class="sum-row"><span>Your host share (20%)</span><strong>₹{{ hostShare | number:'1.0-0' }}</strong></div>
+              <div class="sum-row" *ngIf="otherPlayersCount > 0">
+                <span>Each other player</span>
+                <strong>₹{{ playerShare | number:'1.0-0' }}</strong>
+              </div>
             </div>
+            <p class="pay-note">Host share is paid from your wallet now. Other players pay their share when they join.</p>
+            <p class="pay-error" *ngIf="confirmError">{{ confirmError }}</p>
             <app-primary-button icon="checkmark-circle" [disabled]="submitting" (pressed)="confirm()">
-              {{ submitting ? 'Creating...' : 'Create Game' }}
+              {{ submitting ? 'Creating...' : 'Pay ₹' + (hostShare | number:'1.0-0') + ' & Create' }}
             </app-primary-button>
           </ng-container>
         </section>
@@ -247,14 +255,14 @@ interface DateOption {
       }
 
       .step-dot.active {
-        background: #8cf000;
+        background: var(--app-primary);
         color: #111827;
-        box-shadow: 0 2px 10px rgba(140, 240, 0, 0.4);
+        box-shadow: 0 2px 10px rgba(var(--app-primary-rgb), 0.4);
       }
 
       .step-dot.done {
         background: #111827;
-        color: #8cf000;
+        color: var(--app-primary);
       }
 
       .step-line {
@@ -266,7 +274,7 @@ interface DateOption {
       }
 
       .step-line.done {
-        background: #8cf000;
+        background: var(--app-primary);
       }
 
       .stepper strong {
@@ -307,9 +315,9 @@ interface DateOption {
       }
 
       .picker.selected {
-        border-color: #8cf000;
-        background: rgba(140, 240, 0, 0.08);
-        box-shadow: 0 4px 16px rgba(140, 240, 0, 0.15);
+        border-color: var(--app-primary);
+        background: rgba(var(--app-primary-rgb), 0.08);
+        box-shadow: 0 4px 16px rgba(var(--app-primary-rgb), 0.15);
       }
 
       .emoji {
@@ -332,7 +340,7 @@ interface DateOption {
 
       .size-icon {
         font-size: 28px;
-        color: #8cf000;
+        color: var(--app-primary);
         margin-bottom: 8px;
       }
 
@@ -362,8 +370,8 @@ interface DateOption {
 
       .custom-size-input:focus {
         outline: none;
-        border-color: #8cf000;
-        box-shadow: 0 0 0 3px rgba(140, 240, 0, 0.15);
+        border-color: var(--app-primary);
+        box-shadow: 0 0 0 3px rgba(var(--app-primary-rgb), 0.15);
       }
 
       .custom-size-hint {
@@ -392,8 +400,8 @@ interface DateOption {
       }
 
       .venue-row.selected {
-        border-color: #8cf000;
-        background: rgba(140, 240, 0, 0.06);
+        border-color: var(--app-primary);
+        background: rgba(var(--app-primary-rgb), 0.06);
       }
 
       .venue-emoji {
@@ -424,7 +432,7 @@ interface DateOption {
       }
 
       .price {
-        color: #8cf000;
+        color: var(--app-primary);
         font-size: 13px;
         white-space: nowrap;
       }
@@ -452,8 +460,8 @@ interface DateOption {
       }
 
       .chip.active {
-        background: #8cf000;
-        border-color: #8cf000;
+        background: var(--app-primary);
+        border-color: var(--app-primary);
         color: #111827;
         transform: translateY(-1px) scale(1.02);
       }
@@ -507,6 +515,21 @@ interface DateOption {
 
       .sum-row strong {
         color: #111827;
+      }
+
+      .pay-note {
+        margin: -8px 0 14px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #6b7280;
+        line-height: 1.4;
+      }
+
+      .pay-error {
+        margin: 0 0 12px;
+        font-size: 12px;
+        font-weight: 700;
+        color: #dc2626;
       }
 
       .footer-cta {
@@ -582,6 +605,45 @@ export class CreateGamePage implements OnInit {
   get venueName() {
     return this.venues.find((v) => v.id === this.selectedVenue)?.name || '—';
   }
+
+  get selectedVenuePrice(): number {
+    const venue = this.venues.find((v) => v.id === this.selectedVenue);
+    return Number(venue?.price || 0);
+  }
+
+  get totalPlayersCount(): number {
+    const size = this.effectiveTeamSize;
+    const match = size.match(/^(\d+)v(\d+)$/i);
+    if (match) return Number(match[1]) + Number(match[2]);
+    return 1;
+  }
+
+  get otherPlayersCount(): number {
+    return Math.max(0, this.totalPlayersCount - 1);
+  }
+
+  get venueCost(): number {
+    return this.selectedVenuePrice; // 1 hour default create-game booking
+  }
+
+  /** Matches backend: venue + GST 18% + platform fee */
+  get payableTotal(): number {
+    const sub = this.venueCost;
+    const gst = Math.round(sub * 0.18);
+    return Math.max(0, sub + gst + 49);
+  }
+
+  get hostShare(): number {
+    if (this.totalPlayersCount <= 1) return this.payableTotal;
+    return Math.round(this.payableTotal * 0.2);
+  }
+
+  get playerShare(): number {
+    if (this.otherPlayersCount <= 0) return 0;
+    return Math.round((this.payableTotal - this.hostShare) / this.otherPlayersCount);
+  }
+
+  confirmError = '';
 
   get selectedDateDisplay() {
     return this.selectedDateLabel || '—';
@@ -784,6 +846,7 @@ export class CreateGamePage implements OnInit {
   async confirm() {
     if (this.submitting) return;
     this.submitting = true;
+    this.confirmError = '';
     try {
       const response = await firstValueFrom(
         this.bookingService.bookGame({
@@ -792,6 +855,8 @@ export class CreateGamePage implements OnInit {
           date: this.selectedDateKey,
           time: this.selectedTime,
           team_size: this.effectiveTeamSize,
+          duration_hours: 1,
+          payment_method: 'wallet',
         })
       );
       if (response.success) {
@@ -805,8 +870,9 @@ export class CreateGamePage implements OnInit {
         const bookingId = response.data?.id;
         void this.router.navigateByUrl(bookingId ? `/app/my-bookings/${bookingId}` : '/app/my-bookings');
       } else {
+        this.confirmError = response.message || 'Failed to create game.';
         const toast = await this.toastCtrl.create({
-          message: response.message || 'Failed to create game.',
+          message: this.confirmError,
           duration: 3000,
           color: 'danger',
           position: 'bottom'
@@ -815,8 +881,13 @@ export class CreateGamePage implements OnInit {
       }
     } catch (e: any) {
       console.error(e);
+      const fieldErrors = e?.error?.errors;
+      this.confirmError = fieldErrors?.payment_method?.[0]
+        || fieldErrors?.venue_id?.[0]
+        || e?.error?.message
+        || 'Error occurred while creating game.';
       const toast = await this.toastCtrl.create({
-        message: e?.error?.message || 'Error occurred while creating game.',
+        message: this.confirmError,
         duration: 3000,
         color: 'danger',
         position: 'bottom'

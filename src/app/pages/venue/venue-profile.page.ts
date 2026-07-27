@@ -64,14 +64,14 @@ const DOC_LABELS: Record<string, string> = {
         <div *ngIf="loading()" class="px-6 py-10 text-center text-[#9CA3AF] font-semibold">Loading profile…</div>
 
         <ng-container *ngIf="!loading()">
-          <div class="profile-hero bg-gradient-to-b from-[#8CF000]/10 to-transparent px-6 pt-6 pb-8 flex flex-col items-center text-center">
-            <div class="w-24 h-24 rounded-full bg-gradient-to-br from-[#8CF000] to-[#A3E635] flex items-center justify-center text-5xl mb-4 shadow-sm border border-white overflow-hidden">
+          <div class="profile-hero bg-gradient-to-b from-[var(--app-primary)]/10 to-transparent px-6 pt-6 pb-8 flex flex-col items-center text-center">
+            <div class="w-24 h-24 rounded-full bg-gradient-to-br from-[var(--app-primary)] to-[var(--app-primary-to)] flex items-center justify-center text-5xl mb-4 shadow-sm border border-white overflow-hidden">
               <img *ngIf="avatarUrl(); else venueEmoji" [src]="avatarUrl()!" [alt]="venueName()" class="w-full h-full object-cover" />
               <ng-template #venueEmoji>🏟️</ng-template>
             </div>
             <h1 class="text-[24px] font-black text-[#111827] m-0 leading-none">{{ venueName() }}</h1>
             <div class="flex items-center gap-1.5 text-[#9CA3AF] text-sm mt-2 mb-3 font-semibold max-w-full px-2">
-              <ion-icon name="location-outline" class="text-[#8CF000] flex-shrink-0"></ion-icon>
+              <ion-icon name="location-outline" class="text-[var(--app-primary)] flex-shrink-0"></ion-icon>
               <span class="truncate">{{ locationLabel() }}</span>
             </div>
             <div class="flex items-center gap-2 px-4 py-2 bg-white rounded-full border border-slate-50 shadow-sm">
@@ -155,8 +155,8 @@ const DOC_LABELS: Record<string, string> = {
               <p class="section-title">Performance stats</p>
               <div class="grid grid-cols-3 gap-3">
                 <div *ngFor="let stat of stats()" class="bg-white p-4 rounded-2xl border border-slate-50 text-center shadow-sm">
-                  <div class="w-8 h-8 rounded-xl bg-[#8CF000]/10 flex items-center justify-center mx-auto mb-2">
-                    <ion-icon [name]="stat.icon" class="text-[#8CF000] text-base"></ion-icon>
+                  <div class="w-8 h-8 rounded-xl bg-[var(--app-primary)]/10 flex items-center justify-center mx-auto mb-2">
+                    <ion-icon [name]="stat.icon" class="text-[var(--app-primary)] text-base"></ion-icon>
                   </div>
                   <div class="text-[18px] font-black text-[#111827] mb-0.5 leading-none">{{ stat.value }}</div>
                   <div class="text-[10px] text-[#9CA3AF] font-bold mt-1.5 uppercase leading-none">{{ stat.label }}</div>

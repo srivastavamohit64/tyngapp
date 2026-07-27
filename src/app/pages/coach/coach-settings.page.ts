@@ -144,7 +144,7 @@ const STATUSES: StatusItem[] = [
               <div class="pt-4 mt-1 border-t border-[#F9FAFB]">
                 <div class="flex justify-between items-center mb-2">
                   <p class="text-[14px] font-bold text-[#111827] m-0">Max Students Per Day</p>
-                  <span class="text-[14px] font-black text-[#8CF000]">{{ maxStudents }}</span>
+                  <span class="text-[14px] font-black text-[var(--app-primary)]">{{ maxStudents }}</span>
                 </div>
                 <input type="range" min="1" max="30" [(ngModel)]="maxStudents" class="w-full range-input-slider" />
                 <div class="flex justify-between text-[10px] text-[#9CA3AF] mt-1 font-bold"><span>1</span><span>30</span></div>
@@ -395,7 +395,7 @@ const STATUSES: StatusItem[] = [
     }
 
     .toggle-on {
-      background: #8CF000;
+      background: var(--app-primary);
     }
 
     .toggle-thumb {
@@ -425,7 +425,7 @@ const STATUSES: StatusItem[] = [
       box-sizing: border-box;
 
       &:focus {
-        border-color: #8CF000;
+        border-color: var(--app-primary);
       }
     }
 
@@ -451,7 +451,7 @@ const STATUSES: StatusItem[] = [
         width: 20px;
         height: 20px;
         border-radius: 50%;
-        background: #8CF000;
+        background: var(--app-primary);
         cursor: pointer;
         box-shadow: 0 2px 6px rgba(0,0,0,0.15);
       }
@@ -478,7 +478,7 @@ const STATUSES: StatusItem[] = [
     }
 
     .lang-btn--active {
-      background: #8CF000;
+      background: var(--app-primary);
       color: #111827;
     }
 
@@ -495,9 +495,9 @@ const STATUSES: StatusItem[] = [
     }
 
     .visibility-btn--active {
-      background: rgba(140, 240, 0, 0.12);
+      background: rgba(var(--app-primary-rgb), 0.12);
       color: #111827;
-      border-color: #8CF000;
+      border-color: var(--app-primary);
     }
 
     .connect-btn {
@@ -505,7 +505,7 @@ const STATUSES: StatusItem[] = [
       border-radius: 12px;
       font-size: 12px;
       font-weight: 700;
-      background: linear-gradient(135deg, #8CF000, #A3E635);
+      background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to));
       color: #111827;
       cursor: pointer;
     }
@@ -574,14 +574,14 @@ export class CoachSettingsPage {
     { id: 'whatsapp', label: 'WhatsApp', emoji: '🟢' },
   ];
   readonly accountRows = [
-    { icon: 'person-outline', label: 'Edit Profile', sub: 'Name, photo, bio, sports', color: '#8CF000', action: 'edit-profile' },
+    { icon: 'person-outline', label: 'Edit Profile', sub: 'Name, photo, bio, sports', color: 'var(--app-primary)', action: 'edit-profile' },
     { icon: 'phone-portrait-outline', label: 'Change Mobile Number', sub: 'Update registered mobile', color: '#FF7A00', action: 'edit-profile' },
     { icon: 'mail-outline', label: 'Change Email Address', sub: 'Update email address', color: '#38BDF8', action: 'edit-profile' },
     { icon: 'lock-closed-outline', label: 'Change Password', sub: 'Update account password', color: '#7C3AED', action: 'change-password' },
   ];
 
   readonly helpRows = [
-    { icon: 'help-circle-outline', label: 'Help Centre', sub: 'Browse articles & guides', color: '#8CF000' },
+    { icon: 'help-circle-outline', label: 'Help Centre', sub: 'Browse articles & guides', color: 'var(--app-primary)' },
     { icon: 'help-circle-outline', label: 'Frequently Asked Questions', sub: 'Common coaching queries', color: '#38BDF8' },
     { icon: 'mail-outline', label: 'Contact TYNG Support', sub: 'Response within 24 hours', color: '#FF7A00' },
     { icon: 'shield-checkmark-outline', label: 'Report a Problem', sub: 'Technical issues & bugs', color: '#EF4444' },

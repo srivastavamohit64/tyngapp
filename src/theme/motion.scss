@@ -22,16 +22,16 @@
     0 2px 8px rgba(17, 24, 39, 0.04);
 
   /* Glow tokens */
-  --app-glow-primary: 0 4px 24px rgba(140, 240, 0, 0.35);
-  --app-glow-primary-soft: 0 2px 16px rgba(140, 240, 0, 0.22);
-  --app-glow-primary-strong: 0 8px 36px rgba(140, 240, 0, 0.42),
-    0 0 0 1px rgba(140, 240, 0, 0.1);
+  --app-glow-primary: 0 4px 24px rgba(var(--app-primary-rgb), 0.35);
+  --app-glow-primary-soft: 0 2px 16px rgba(var(--app-primary-rgb), 0.22);
+  --app-glow-primary-strong: 0 8px 36px rgba(var(--app-primary-rgb), 0.42),
+    0 0 0 1px rgba(var(--app-primary-rgb), 0.1);
   --app-glow-secondary: 0 4px 24px rgba(255, 122, 0, 0.3);
   --app-glow-accent: 0 4px 20px rgba(56, 189, 248, 0.28);
-  --app-glow-focus: 0 0 0 3px rgba(140, 240, 0, 0.26),
-    0 4px 20px rgba(140, 240, 0, 0.16);
-  --app-glow-selected: 0 4px 20px rgba(140, 240, 0, 0.32),
-    0 0 0 1px rgba(140, 240, 0, 0.14);
+  --app-glow-focus: 0 0 0 3px rgba(var(--app-primary-rgb), 0.26),
+    0 4px 20px rgba(var(--app-primary-rgb), 0.16);
+  --app-glow-selected: 0 4px 20px rgba(var(--app-primary-rgb), 0.32),
+    0 0 0 1px rgba(var(--app-primary-rgb), 0.14);
 }
 
 /* ── Keyframes ── */
@@ -41,20 +41,20 @@
     box-shadow: var(--app-glow-primary-soft);
   }
   50% {
-    box-shadow: 0 4px 28px rgba(140, 240, 0, 0.45);
+    box-shadow: 0 4px 28px rgba(var(--app-primary-rgb), 0.45);
   }
 }
 
 @keyframes breathe-glow {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgba(140, 240, 0, 0.35),
-      0 4px 16px rgba(140, 240, 0, 0.25);
+    box-shadow: 0 0 0 0 rgba(var(--app-primary-rgb), 0.35),
+      0 4px 16px rgba(var(--app-primary-rgb), 0.25);
     transform: translate(-50%, -50%) scale(1);
   }
   50% {
-    box-shadow: 0 0 0 8px rgba(140, 240, 0, 0),
-      0 6px 24px rgba(140, 240, 0, 0.4);
+    box-shadow: 0 0 0 8px rgba(var(--app-primary-rgb), 0),
+      0 6px 24px rgba(var(--app-primary-rgb), 0.4);
     transform: translate(-50%, -50%) scale(1.03);
   }
 }
@@ -309,8 +309,8 @@
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: #8cf000;
-  box-shadow: 0 0 10px rgba(140, 240, 0, 0.75);
+  background: var(--app-primary);
+  box-shadow: 0 0 10px rgba(var(--app-primary-rgb), 0.75);
   transition: transform var(--app-duration-micro) var(--app-ease-spring);
 }
 
@@ -556,7 +556,7 @@
 .venue-card:active {
   transform: scale(0.985);
   box-shadow: var(--app-glow-selected);
-  border-color: rgba(140, 240, 0, 0.35) !important;
+  border-color: rgba(var(--app-primary-rgb), 0.35) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

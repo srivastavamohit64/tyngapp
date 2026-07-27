@@ -153,7 +153,7 @@ const FILTERS = [
           <!-- Filter horizontal chips scroll -->
           <div class="flex gap-2 px-5 pb-4 overflow-x-auto no-scrollbar">
             <button *ngFor="let f of filters" (click)="activeFilter.set(f.id)" class="flex items-center gap-1.5 px-3.5 py-2 rounded-full whitespace-nowrap flex-shrink-0 text-[12px] font-bold transition-all border-none"
-              [style.backgroundColor]="activeFilter() === f.id ? '#8CF000' : '#F3F4F6'"
+              [style.backgroundColor]="activeFilter() === f.id ? 'var(--app-primary)' : '#F3F4F6'"
               [style.color]="activeFilter() === f.id ? '#111827' : '#6B7280'">
               <span>{{ f.emoji }}</span>
               {{ f.label }}
@@ -190,10 +190,10 @@ const FILTERS = [
             <div class="space-y-3">
               <div *ngFor="let n of group.items; let ni = index" class="relative overflow-hidden rounded-[24px]">
                 <!-- Unread indicator bar -->
-                <div *ngIf="n.unread && !n.isAI && !n.isReward" class="absolute left-0 top-4 bottom-4 w-1 rounded-full bg-[#8CF000] z-10" style="box-shadow: 0 0 8px rgba(140,240,0,0.6);"></div>
+                <div *ngIf="n.unread && !n.isAI && !n.isReward" class="absolute left-0 top-4 bottom-4 w-1 rounded-full bg-[var(--app-primary)] z-10" style="box-shadow: 0 0 8px rgba(var(--app-primary-rgb),0.6);"></div>
 
                 <!-- AI recommendation card -->
-                <div *ngIf="n.isAI" class="rounded-[24px] p-4 relative overflow-hidden bg-gradient-to-br from-[#8CF000] to-[#A3E635]">
+                <div *ngIf="n.isAI" class="rounded-[24px] p-4 relative overflow-hidden bg-gradient-to-br from-[var(--app-primary)] to-[var(--app-primary-to)]">
                   <div class="absolute top-0 right-0 w-28 h-28 rounded-full bg-white/10 -translate-y-8 translate-x-8"></div>
                   <div *ngIf="n.unread" class="absolute top-4 right-4 w-2.5 h-2.5 rounded-full bg-[#FF7A00]"></div>
                   <div class="flex items-start gap-3">
@@ -214,7 +214,7 @@ const FILTERS = [
                 <!-- Reward achievements card -->
                 <div *ngIf="n.isReward" class="rounded-[24px] p-5 relative overflow-hidden" [style.background]="n.gradient">
                   <div class="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-white/10"></div>
-                  <div *ngIf="n.unread" class="absolute top-4 right-4 w-2.5 h-2.5 rounded-full bg-[#8CF000]"></div>
+                  <div *ngIf="n.unread" class="absolute top-4 right-4 w-2.5 h-2.5 rounded-full bg-[var(--app-primary)]"></div>
                   <div class="relative flex items-center gap-4 mb-3">
                     <div class="text-[40px] leading-none">{{ n.emoji }}</div>
                     <div class="flex-1">
@@ -232,16 +232,16 @@ const FILTERS = [
                   <div class="relative h-[130px] overflow-hidden bg-gray-200">
                     <img *ngIf="n.image" [src]="n.image" class="w-full h-full object-cover" />
                     <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                    <div *ngIf="n.unread" class="absolute top-3 right-3 w-2.5 h-2.5 rounded-full bg-[#8CF000]"></div>
+                    <div *ngIf="n.unread" class="absolute top-3 right-3 w-2.5 h-2.5 rounded-full bg-[var(--app-primary)]"></div>
                   </div>
                   <div class="px-4 py-4">
                     <p class="text-[15px] font-bold text-[#111827] mb-1 leading-snug m-0">{{ n.title }}</p>
                     <p class="text-[12px] text-[#6B7280] leading-relaxed mb-1 m-0 mt-1">{{ n.description }}</p>
                     <p class="text-[11px] text-[#9CA3AF] m-0 font-medium">{{ n.timestamp }}</p>
                     <button *ngIf="n.primaryAction" (click)="handleNotifAction(n)" class="mt-3 w-full h-10 rounded-xl text-[13px] font-bold border-none"
-                      [style.background]="n.primaryAction.style === 'orange' ? 'linear-gradient(135deg,#FF7A00,#FF9A40)' : n.primaryAction.style === 'white' ? 'white' : 'rgba(140,240,0,0.12)'"
+                      [style.background]="n.primaryAction.style === 'orange' ? 'linear-gradient(135deg,#FF7A00,#FF9A40)' : n.primaryAction.style === 'white' ? 'white' : 'rgba(var(--app-primary-rgb),0.12)'"
                       [style.color]="n.primaryAction.style === 'orange' ? 'white' : '#111827'"
-                      [style.border]="n.primaryAction.style === 'white' ? '2px solid #E5E7EB' : n.primaryAction.style === 'green' ? '2px solid rgba(140,240,0,0.35)' : 'none'">
+                      [style.border]="n.primaryAction.style === 'white' ? '2px solid #E5E7EB' : n.primaryAction.style === 'green' ? '2px solid rgba(var(--app-primary-rgb),0.35)' : 'none'">
                       {{ n.primaryAction.label }}
                     </button>
                   </div>
@@ -259,7 +259,7 @@ const FILTERS = [
                     <div class="flex-1 min-w-0">
                       <div class="flex items-start justify-between gap-1">
                         <p class="text-[14px] font-bold text-[#111827] leading-snug flex-1 m-0">{{ n.title }}</p>
-                        <div *ngIf="n.unread" class="w-2.5 h-2.5 rounded-full bg-[#8CF000] flex-shrink-0 mt-1"></div>
+                        <div *ngIf="n.unread" class="w-2.5 h-2.5 rounded-full bg-[var(--app-primary)] flex-shrink-0 mt-1"></div>
                       </div>
                       <p class="text-[12px] text-[#6B7280] mt-1 leading-relaxed m-0">{{ n.description }}</p>
                       <p class="text-[10px] text-[#9CA3AF] mt-1.5 m-0 font-medium">{{ n.timestamp }}</p>
@@ -271,9 +271,9 @@ const FILTERS = [
                       {{ n.secondaryAction.label }}
                     </button>
                     <button *ngIf="n.primaryAction" (click)="handleNotifAction(n)" class="flex-grow h-9 rounded-xl text-[12px] font-bold border-none"
-                      [style.background]="n.primaryAction.style === 'orange' ? 'linear-gradient(135deg,#FF7A00,#FF9A40)' : n.primaryAction.style === 'white' ? 'white' : 'rgba(140,240,0,0.12)'"
+                      [style.background]="n.primaryAction.style === 'orange' ? 'linear-gradient(135deg,#FF7A00,#FF9A40)' : n.primaryAction.style === 'white' ? 'white' : 'rgba(var(--app-primary-rgb),0.12)'"
                       [style.color]="n.primaryAction.style === 'orange' ? 'white' : '#111827'"
-                      [style.border]="n.primaryAction.style === 'white' ? '2px solid #E5E7EB' : n.primaryAction.style === 'green' ? '2px solid rgba(140,240,0,0.35)' : 'none'">
+                      [style.border]="n.primaryAction.style === 'white' ? '2px solid #E5E7EB' : n.primaryAction.style === 'green' ? '2px solid rgba(var(--app-primary-rgb),0.35)' : 'none'">
                       {{ n.primaryAction.label }}
                     </button>
                   </div>
@@ -311,8 +311,8 @@ const FILTERS = [
     }
 
     .btn-green-gradient {
-      background: linear-gradient(135deg, #8CF000, #A3E635);
-      box-shadow: 0 4px 16px rgba(140,240,0,0.30);
+      background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to));
+      box-shadow: 0 4px 16px rgba(var(--app-primary-rgb),0.30);
     }
 
     .btn-orange-gradient {

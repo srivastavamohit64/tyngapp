@@ -66,7 +66,7 @@ import { TextInputComponent } from '../../shared/components/text-input/text-inpu
       height: 96px;
       border-radius: 50%;
       overflow: hidden;
-      background: linear-gradient(135deg, #8cf000, #ff7a00);
+      background: linear-gradient(135deg, var(--app-primary), #ff7a00);
       display: grid;
       place-items: center;
       font-size: 32px;

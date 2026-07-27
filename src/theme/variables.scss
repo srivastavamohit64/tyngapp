@@ -1,9 +1,9 @@
-/* Tyng design tokens — matched to Figma Sports theme.css */
+/* Tyng design tokens — defaults; runtime ThemeService overrides via inline CSS vars */
 
 :root {
   --ion-font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 
-  /* Light theme (Figma default) */
+  /* Light theme defaults (overridden by ThemeService) */
   --ion-background-color: #fafbfc;
   --ion-background-color-rgb: 250, 251, 252;
   --ion-text-color: #111827;
@@ -72,12 +72,20 @@
   --app-muted-text: #6b7280;
   --app-border: #e5e7eb;
   --app-primary: #8cf000;
+  --app-primary-rgb: 140, 240, 0;
   --app-primary-to: #a3e635;
   --app-secondary: #ff7a00;
+  --app-secondary-rgb: 255, 122, 0;
   --app-accent: #38bdf8;
+  --app-accent-rgb: 56, 189, 248;
   --app-violet: #7c3aed;
   --app-info: #38bdf8;
   --app-error: #ef4444;
+  --app-success: #8cf000;
+  --app-warning: #ff7a00;
+  --app-button: #8cf000;
+  --app-button-rgb: 140, 240, 0;
+  --app-button-contrast: #111827;
   --app-input: #f9fafb;
   --app-radius-card: 20px;
   --app-radius-button: 16px;

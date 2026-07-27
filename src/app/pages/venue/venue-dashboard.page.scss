@@ -3,3 +3,36 @@
 :host {
   display: block;
 }
+
+.venue-block-banner {
+  margin: 0 16px 14px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  color: #991B1B;
+}
+
+.venue-block-banner ion-icon {
+  font-size: 22px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.venue-block-banner strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+.venue-block-banner p {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #B91C1C;
+}

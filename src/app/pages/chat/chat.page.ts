@@ -116,7 +116,7 @@ import { ChatBubbleComponent } from '../../shared/components/chat-bubble/chat-bu
         height: 48px;
         min-height: unset;
         border-radius: 50%;
-        background: #8cf000;
+        background: var(--app-primary);
         color: #111827;
         display: grid;
         place-items: center;

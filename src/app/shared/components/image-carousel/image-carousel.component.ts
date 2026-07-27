@@ -177,7 +177,7 @@ import { IonicModule } from '@ionic/angular';
 
       .carousel-dot-active {
         width: 20px;
-        background: #8cf000;
+        background: var(--app-primary);
       }
 
       @keyframes fadeIn {

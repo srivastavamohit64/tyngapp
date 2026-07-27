@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IonicModule, ToastController } from '@ionic/angular';
@@ -45,7 +45,14 @@ interface GameData {
   players: { name: string; photo: string; skill: string; tp: number }[];
   equipment: string[];
   matchVibe: string[];
-  budgetBreakdown: { venue: number; platform: number; equipment: number; refreshments: number };
+  budgetBreakdown: {
+    venue: number;
+    platform: number;
+    equipment: number;
+    refreshments: number;
+    hostShare?: number;
+    playerShare?: number;
+  };
   canJoin: boolean;
   isHost: boolean;
   isJoined: boolean;
@@ -205,14 +212,22 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
                 <span>Venue Charges</span>
                 <span>₹{{ game.budgetBreakdown.venue }}</span>
               </div>
-              <div class="budget-row">
-                <span>Platform Fee</span>
-                <span>₹{{ game.budgetBreakdown.platform }}</span>
+              <div class="budget-row" *ngIf="game.budgetBreakdown.hostShare">
+                <span>Host share (20%)</span>
+                <span>₹{{ game.budgetBreakdown.hostShare }}</span>
+              </div>
+              <div class="budget-row" *ngIf="game.budgetBreakdown.playerShare">
+                <span>Other players each</span>
+                <span>₹{{ game.budgetBreakdown.playerShare }}</span>
               </div>
             </div>
             <div class="budget-total">
-              <span>Total per Player</span>
-              <span class="total-amount">{{ game.costPerPlayer > 0 ? ('₹' + game.costPerPlayer) : 'Free' }}</span>
+              <span>{{ game.isHost ? 'Your host share paid' : 'Your join fee' }}</span>
+              <span class="total-amount">{{
+                game.isHost
+                  ? (game.budgetBreakdown.hostShare ? ('₹' + game.budgetBreakdown.hostShare) : '—')
+                  : (game.costPerPlayer > 0 ? ('₹' + game.costPerPlayer) : 'Free')
+              }}</span>
             </div>
           </div>
 
@@ -283,7 +298,7 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
         margin-top: 8px;
         border-radius: 999px;
         padding: 10px 18px;
-        background: #8cf000;
+        background: var(--app-primary);
         color: #111827;
         font-weight: 700;
       }
@@ -424,7 +439,7 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
         width: 28px;
         height: 28px;
         border-radius: 10px;
-        background: linear-gradient(135deg, #8cf000, #a3e635);
+        background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to));
         border: 2px solid white;
         display: flex;
         align-items: center;
@@ -552,7 +567,7 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
 
       .progress-fill {
         height: 100%;
-        background: linear-gradient(90deg, #8cf000, #a3e635);
+        background: linear-gradient(90deg, var(--app-primary), var(--app-primary-to));
         border-radius: 999px;
       }
 
@@ -678,13 +693,13 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
         flex: 1;
         height: 50px;
         border-radius: 999px;
-        background: linear-gradient(90deg, #8cf000, #a3e635);
+        background: linear-gradient(90deg, var(--app-primary), var(--app-primary-to));
         color: #111827;
         font-size: 16px;
         font-weight: 800;
         border: none;
         cursor: pointer;
-        box-shadow: 0 4px 16px rgba(140, 240, 0, 0.35);
+        box-shadow: 0 4px 16px rgba(var(--app-primary-rgb), 0.35);
       }
     `,
   ],
@@ -692,6 +707,7 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
 export class GameDetailPage implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly location = inject(Location);
   private readonly bookingService = inject(BookingService);
   private readonly toastCtrl = inject(ToastController);
 
@@ -724,7 +740,11 @@ export class GameDetailPage implements OnInit {
   }
 
   back() {
-    void this.router.navigateByUrl('/app/ongoing');
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      this.location.back();
+      return;
+    }
+    void this.router.navigateByUrl('/app/home');
   }
 
   async joinMatch() {
@@ -830,7 +850,7 @@ export class GameDetailPage implements OnInit {
       },
       playersJoined: booking.currentPlayers,
       maxPlayers: booking.totalPlayers,
-      costPerPlayer: price,
+      costPerPlayer: Number(booking.costPerPlayer || booking.playerShareAmount || 0),
       gameType: 'Casual',
       gameTypeEmoji: typeMeta.emoji,
       gameTypeBg: typeMeta.bg,
@@ -841,7 +861,14 @@ export class GameDetailPage implements OnInit {
       players,
       equipment: ['Bat', 'Ball', 'Shoes', 'Gloves', 'Helmet', 'Water'],
       matchVibe: ['Serious Match', 'Photography', 'Coffee After'],
-      budgetBreakdown: { venue: price, platform: 0, equipment: 0, refreshments: 0 },
+      budgetBreakdown: {
+        venue: price,
+        platform: 0,
+        equipment: 0,
+        refreshments: 0,
+        hostShare: Number(booking.hostAmount || 0),
+        playerShare: Number(booking.playerShareAmount || booking.costPerPlayer || 0),
+      },
       canJoin: !!booking.canJoin,
       isHost: !!booking.isHost,
       isJoined: !!booking.isJoined,

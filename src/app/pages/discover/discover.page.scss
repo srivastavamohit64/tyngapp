@@ -38,7 +38,7 @@
   border-radius: 12px;
   display: grid;
   place-items: center;
-  background: rgba(140, 240, 0, 0.12);
+  background: rgba(var(--app-primary-rgb), 0.12);
   color: #111827;
   font-size: 20px;
   padding: 0;
@@ -47,7 +47,7 @@
 
 .icon-btn:active {
   transform: scale(0.96);
-  background: rgba(140, 240, 0, 0.22);
+  background: rgba(var(--app-primary-rgb), 0.22);
 }
 
 .discover-body {
@@ -83,7 +83,7 @@
   position: absolute;
   inset: 0;
   background: #fff;
-  border: 1.5px solid rgba(140, 240, 0, 0.35);
+  border: 1.5px solid rgba(var(--app-primary-rgb), 0.35);
   border-radius: 24px;
   overflow: hidden;
   box-shadow: 0 8px 32px rgba(17, 24, 39, 0.08);
@@ -123,7 +123,7 @@
   height: 72px;
   margin: 0 auto 16px;
   border-radius: 20px;
-  background: rgba(140, 240, 0, 0.12);
+  background: rgba(var(--app-primary-rgb), 0.12);
   display: grid;
   place-items: center;
   font-size: 36px;
@@ -193,7 +193,7 @@
 }
 
 .swipe-btn--like {
-  border: 1.5px solid rgba(140, 240, 0, 0.45);
+  border: 1.5px solid rgba(var(--app-primary-rgb), 0.45);
   color: #65a30d;
 }
 
@@ -272,8 +272,8 @@
 }
 
 .filter-chip.active {
-  background: #8cf000;
-  border-color: #8cf000;
+  background: var(--app-primary);
+  border-color: var(--app-primary);
   color: #111827;
 }
 
@@ -307,7 +307,7 @@
   border-radius: 999px;
   appearance: none;
   background: #e5e7eb;
-  accent-color: #8cf000;
+  accent-color: var(--app-primary);
 }
 
 .range-row {

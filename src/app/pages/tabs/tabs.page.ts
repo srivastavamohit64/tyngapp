@@ -6,6 +6,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map, startWith } from 'rxjs/operators';
 import { DesignDataService } from '../../core/services/design-data.service';
 import { AuthService } from '../../core/services/auth.service';
+import { TabBadgeService } from '../../core/services/tab-badge.service';
 import { BottomTabNavigationComponent } from '../../shared/components/bottom-tab-navigation/bottom-tab-navigation.component';
 import { TabItem } from '../../shared/models/app.models';
 
@@ -31,6 +32,7 @@ import { TabItem } from '../../shared/models/app.models';
 export class TabsPage {
   private readonly data = inject(DesignDataService);
   private readonly auth = inject(AuthService);
+  private readonly badges = inject(TabBadgeService);
   private readonly router = inject(Router);
 
   private readonly url = toSignal(
@@ -42,6 +44,10 @@ export class TabsPage {
     { initialValue: this.router.url }
   );
 
+  constructor() {
+    this.badges.start();
+  }
+
   readonly showTabs = computed(() => {
     const path = (this.url() || '').split('?')[0];
     const user = this.auth.user();
@@ -49,14 +55,15 @@ export class TabsPage {
 
     // Hide on workflow / form pages (Figma AppLayout)
     if (path.startsWith('/app/game/create')) return false;
+    if (path === '/app/venues' || path.startsWith('/app/venues/')) return false;
     if (path.startsWith('/app/map')) return false;
     if (path.includes('/complete-profile')) return false;
     if (path.includes('/enroll-student')) return false;
     if (path.includes('/create-session')) return false;
     if (path.includes('/venue-booking')) return false;
     if (path.includes('/book-venue')) return false;
-    // Player venue book / payment summary (e.g. /app/venue/14/book)
-    if (/^\/app\/venue\/[^/]+\/(book|summary)$/.test(path)) return false;
+    // Player venue detail / book / payment summary (e.g. /app/venue/14, /app/venue/14/book)
+    if (/^\/app\/venue\/\d+(\/(book|summary))?$/.test(path)) return false;
 
     if (user?.role === 'coach') {
       const coachPrimary = [
@@ -65,6 +72,7 @@ export class TabsPage {
         '/app/coach/students',
         '/app/coach/schedule',
         '/app/schedule',
+        '/app/wallet',
       ];
       return coachPrimary.some((p) => path === p || path.startsWith(p + '/'));
     }
@@ -78,6 +86,7 @@ export class TabsPage {
         '/app/venue/earnings',
         '/app/venue/analytics',
         '/app/venue/profile',
+        '/app/wallet',
         '/app/chat',
       ];
       return venuePrimary.some((p) => path === p || path.startsWith(p + '/'));
@@ -90,18 +99,25 @@ export class TabsPage {
 
   readonly tabs = computed<TabItem[]>(() => {
     const user = this.auth.user();
+    const bookingsBadge = this.badges.bookingsBadge();
+
     if (user?.role === 'coach') {
       return [
         { label: 'Home', icon: 'home-outline', route: '/app/coach/dashboard' },
         { label: 'My Students', icon: 'people-outline', route: '/app/coach/students' },
         { label: 'My Schedule', icon: 'calendar-outline', route: '/app/coach/schedule' },
-        { label: 'Chat', icon: 'chatbubble-outline', route: '/app/coach/chat' },
+        { label: 'Chat', icon: 'chatbubble-outline', route: '/app/chat' },
       ];
     }
     if (user?.role === 'venue') {
       return [
         { label: 'Home', icon: 'home-outline', route: '/app/venue/dashboard' },
-        { label: 'Bookings', icon: 'calendar-outline', route: '/app/venue/bookings' },
+        {
+          label: 'Bookings',
+          icon: 'calendar-outline',
+          route: '/app/venue/bookings',
+          badge: bookingsBadge > 0 ? bookingsBadge : null,
+        },
         { label: 'Events', icon: 'sparkles-outline', route: '/app/venue/calendar' },
         { label: 'Chat', icon: 'chatbubble-outline', route: '/app/chat' },
       ];
@@ -114,6 +130,11 @@ export class TabsPage {
         { label: 'Settings', icon: 'settings-outline', route: '/app/admin/settings' },
       ];
     }
-    return this.data.tabs;
+
+    return this.data.tabs.map((tab) =>
+      tab.route === '/app/my-bookings'
+        ? { ...tab, badge: bookingsBadge > 0 ? bookingsBadge : null }
+        : tab,
+    );
   });
 }

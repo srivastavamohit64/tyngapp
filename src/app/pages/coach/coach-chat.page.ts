@@ -242,7 +242,7 @@ const COACH_CHATS: CoachChatItem[] = [
     .search-row input { flex: 1; border: none; background: transparent; outline: none; font-size: 14px; color: #111827; min-height: unset; }
     .filter-row { display: flex; gap: 8px; overflow-x: auto; padding: 0 16px 16px; scrollbar-width: none; }
     .filter-chip { flex-shrink: 0; border: none; border-radius: 999px; padding: 8px 14px; font-size: 12px; font-weight: 700; background: #F3F4F6; color: #6B7280; display: inline-flex; align-items: center; gap: 6px; }
-    .filter-chip--active { background: #8CF000; color: #111827; box-shadow: 0 2px 8px rgba(140,240,0,0.30); }
+    .filter-chip--active { background: var(--app-primary); color: #111827; box-shadow: 0 2px 8px rgba(var(--app-primary-rgb),0.30); }
     .filter-count { min-width: 18px; height: 18px; border-radius: 999px; background: #111827; color: #fff; font-size: 9px; font-weight: 900; display: inline-flex; align-items: center; justify-content: center; padding: 0 4px; }
     .filter-chip--active .filter-count { background: #111827; color: #fff; }
     .pinned-block { padding-top: 8px; }
@@ -256,23 +256,23 @@ const COACH_CHATS: CoachChatItem[] = [
     .group-avatar, .dm-avatar { width: 56px; height: 56px; border-radius: 16px; overflow: hidden; object-fit: cover; display: flex; align-items: center; justify-content: center; font-size: 24px; }
     .dm-avatar { border-radius: 50%; }
     .group-avatar img { width: 100%; height: 100%; object-fit: cover; opacity: 0.85; }
-    .online-dot { position: absolute; bottom: 2px; right: 2px; width: 13px; height: 13px; border-radius: 50%; background: #8CF000; border: 2px solid #fff; }
+    .online-dot { position: absolute; bottom: 2px; right: 2px; width: 13px; height: 13px; border-radius: 50%; background: var(--app-primary); border: 2px solid #fff; }
     .pin-badge { position: absolute; top: -4px; left: -4px; width: 14px; height: 14px; border-radius: 50%; background: #FF7A00; border: 1px solid #fff; font-size: 7px; display: grid; place-items: center; }
     .chat-content { flex: 1; min-width: 0; }
     .chat-top, .chat-bottom { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
     .chat-name { font-size: 15px; font-weight: 600; color: #111827; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .chat-name--bold { font-weight: 700; }
     .chat-time { font-size: 11px; color: #9CA3AF; flex-shrink: 0; }
-    .chat-time--active { color: #8CF000; font-weight: 700; }
+    .chat-time--active { color: var(--app-primary); font-weight: 700; }
     .chat-preview { margin: 2px 0 0; font-size: 13px; color: #9CA3AF; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
     .chat-preview--bold { color: #111827; font-weight: 500; }
     .sender { font-weight: 600; }
     .read-icon { font-size: 13px; vertical-align: middle; margin-right: 2px; color: #9CA3AF; }
     .chat-meta { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
     .members { display: flex; align-items: center; gap: 2px; color: #C4C9D4; font-size: 10px; }
-    .unread-badge { min-width: 20px; height: 20px; border-radius: 999px; background: #8CF000; color: #111827; font-size: 10px; font-weight: 900; display: inline-flex; align-items: center; justify-content: center; padding: 0 6px; }
+    .unread-badge { min-width: 20px; height: 20px; border-radius: 999px; background: var(--app-primary); color: #111827; font-size: 10px; font-weight: 900; display: inline-flex; align-items: center; justify-content: center; padding: 0 6px; }
     .active-now { display: flex; align-items: center; gap: 4px; margin-top: 2px; font-size: 10px; color: #9CA3AF; }
-    .active-now .dot { width: 6px; height: 6px; border-radius: 50%; background: #8CF000; }
+    .active-now .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--app-primary); }
     .row-divider { height: 1px; background: #F9FAFB; margin: 0 16px; }
   `],
 })

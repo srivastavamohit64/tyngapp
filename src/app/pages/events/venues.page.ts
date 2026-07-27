@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -41,6 +41,7 @@ const KNOWN_CITIES = ['Lucknow', 'Delhi', 'Mumbai', 'Bangalore', 'Hyderabad', 'C
 })
 export class VenuesPage implements OnInit {
   private readonly router = inject(Router);
+  private readonly location = inject(Location);
   private readonly venueService = inject(VenueService);
   private readonly auth = inject(AuthService);
 
@@ -188,8 +189,18 @@ export class VenuesPage implements OnInit {
     void this.loadCourts();
   }
 
+  back() {
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      this.location.back();
+      return;
+    }
+    void this.router.navigateByUrl('/app/home');
+  }
+
   bookNow(court: Court) {
-    void this.router.navigateByUrl(`/app/venue/${court.venueDetailId}`);
+    void this.router.navigate(['/app/venue', court.venueDetailId], {
+      queryParams: { court: court.id },
+    });
   }
 
   resetAll() {

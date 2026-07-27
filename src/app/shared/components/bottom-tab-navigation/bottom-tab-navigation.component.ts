@@ -23,6 +23,9 @@ import { TabItem } from '../../models/app.models';
           <!-- Icon container - filled lime green circle when active -->
           <div class="tab-icon-wrap" [class.tab-icon-active]="rla.isActive">
             <ion-icon [name]="tab.icon" class="tab-icon"></ion-icon>
+            <span class="tab-badge" *ngIf="badgeValue(tab) > 0">
+              {{ badgeValue(tab) > 9 ? '9+' : badgeValue(tab) }}
+            </span>
           </div>
           <!-- Label -->
           <span class="tab-label" [class.tab-label-active]="rla.isActive">{{ tab.label }}</span>
@@ -68,6 +71,7 @@ import { TabItem } from '../../models/app.models';
       }
 
       .tab-icon-wrap {
+        position: relative;
         width: 44px;
         height: 44px;
         border-radius: 50%;
@@ -79,8 +83,8 @@ import { TabItem } from '../../models/app.models';
       }
 
       .tab-icon-wrap.tab-icon-active {
-        background: #8CF000;
-        box-shadow: 0 2px 12px rgba(140, 240, 0, 0.40);
+        background: var(--app-primary);
+        box-shadow: 0 2px 12px rgba(var(--app-primary-rgb), 0.40);
       }
 
       .tab-icon {
@@ -91,6 +95,23 @@ import { TabItem } from '../../models/app.models';
 
       .tab-icon-wrap.tab-icon-active .tab-icon {
         color: #111827;
+      }
+
+      .tab-badge {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        min-width: 16px;
+        height: 16px;
+        padding: 0 4px;
+        border-radius: 999px;
+        background: #ef4444;
+        color: #fff;
+        font-size: 9px;
+        font-weight: 800;
+        line-height: 16px;
+        text-align: center;
+        box-shadow: 0 0 0 2px #fff;
       }
 
       .tab-label {
@@ -111,4 +132,11 @@ import { TabItem } from '../../models/app.models';
 })
 export class BottomTabNavigationComponent {
   @Input() tabs: TabItem[] = [];
+
+  badgeValue(tab: TabItem): number {
+    const raw = tab.badge;
+    if (raw === null || raw === undefined || raw === '') return 0;
+    const n = Number(raw);
+    return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
+  }
 }

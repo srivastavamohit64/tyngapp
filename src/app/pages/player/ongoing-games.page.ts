@@ -12,11 +12,12 @@ import {
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, Subscription } from 'rxjs';
 import { BookingRecord } from '../../core/models/api.model';
 import { AuthService } from '../../core/services/auth.service';
 import { BookingService } from '../../core/services/booking.service';
 import { GoogleMapsService } from '../../core/services/google-maps.service';
+import { RealtimeService } from '../../core/services/realtime.service';
 import {
   formatBookingDate,
   formatBookingTime,
@@ -365,7 +366,7 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
       border: 0;
       border-radius: 999px;
       padding: 6px 12px;
-      background: #8CF000;
+      background: var(--app-primary);
       color: #111827;
       font-size: 11px;
       font-weight: 800;
@@ -389,7 +390,7 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
     .live-dot {
       width: 7px; height: 7px;
       border-radius: 50%;
-      background: #8CF000;
+      background: var(--app-primary);
       animation: pulse 1.2s infinite;
     }
 
@@ -646,13 +647,13 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
       width: 100%;
       height: 46px;
       border-radius: 999px;
-      background: linear-gradient(90deg, #8CF000, #A3E635);
+      background: linear-gradient(90deg, var(--app-primary), var(--app-primary-to));
       color: #111827;
       font-size: 14px;
       font-weight: 800;
       border: none;
       cursor: pointer;
-      box-shadow: 0 3px 12px rgba(140,240,0,0.3);
+      box-shadow: 0 3px 12px rgba(var(--app-primary-rgb),0.3);
     }
 
     .games-state {
@@ -673,6 +674,7 @@ export class OngoingGamesPage implements OnInit, AfterViewInit, OnDestroy {
   private readonly bookingService = inject(BookingService);
   private readonly auth = inject(AuthService);
   private readonly googleMaps = inject(GoogleMapsService);
+  private readonly realtime = inject(RealtimeService);
   private readonly zone = inject(NgZone);
 
   @ViewChild('miniMapContainer') miniMapContainer?: ElementRef<HTMLDivElement>;
@@ -684,6 +686,7 @@ export class OngoingGamesPage implements OnInit, AfterViewInit, OnDestroy {
   errorMessage = '';
 
   private bookings: BookingRecord[] = [];
+  private realtimeSub?: Subscription;
   private miniMap?: google.maps.Map;
   private readonly miniMarkers: google.maps.Marker[] = [];
   private readonly miniListeners: google.maps.MapsEventListener[] = [];
@@ -691,6 +694,7 @@ export class OngoingGamesPage implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit() {
     void this.loadGames();
+    this.listenForRealtimeGames();
   }
 
   ngAfterViewInit() {
@@ -698,7 +702,30 @@ export class OngoingGamesPage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.realtimeSub?.unsubscribe();
     this.clearMiniMarkers();
+  }
+
+  private listenForRealtimeGames() {
+    void this.realtime.connect();
+    this.realtimeSub = this.realtime.nearbyGames$.subscribe((event) => {
+      const booking = event.game;
+      const index = this.bookings.findIndex((item) => item.id === booking.id);
+      if (index >= 0) {
+        this.bookings = [
+          ...this.bookings.slice(0, index),
+          booking,
+          ...this.bookings.slice(index + 1),
+        ];
+      } else if (event.type === 'created') {
+        this.bookings = [booking, ...this.bookings];
+      } else {
+        return;
+      }
+      this.games = this.bookings.map((item) => this.mapGame(item));
+      this.errorMessage = '';
+      void this.renderMiniMap();
+    });
   }
 
   get filteredGames() {
@@ -732,7 +759,7 @@ export class OngoingGamesPage implements OnInit, AfterViewInit, OnDestroy {
     const pct = this.getPercent(game);
     if (pct >= 90) return '#EF4444';
     if (pct >= 70) return '#F59E0B';
-    return '#8CF000';
+    return 'var(--app-primary)';
   }
 
   back() {

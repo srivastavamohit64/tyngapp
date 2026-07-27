@@ -32,9 +32,9 @@ import { IonicModule } from '@ionic/angular';
         border-radius: 16px;
         font-size: 16px;
         font-weight: 700;
-        background: linear-gradient(135deg, #8cf000 0%, #a3e635 100%);
+        background: linear-gradient(135deg, var(--app-primary) 0%, var(--app-primary-to) 100%);
         color: #111827;
-        box-shadow: 0 4px 20px rgba(140, 240, 0, 0.35);
+        box-shadow: 0 4px 20px rgba(var(--app-primary-rgb), 0.35);
         transition: transform 0.12s ease, opacity 0.12s ease;
       }
 

@@ -63,29 +63,29 @@ ion-content {
 }
 
 .bg-primary\/20 {
-  background-color: rgba(140, 240, 0, 0.2) !important;
+  background-color: rgba(var(--app-primary-rgb), 0.2) !important;
 }
 
 .bg-secondary\/20 {
-  background-color: rgba(255, 122, 0, 0.2) !important;
+  background-color: rgba(var(--app-secondary-rgb), 0.2) !important;
 }
 
 .bg-accent\/20 {
-  background-color: rgba(56, 189, 248, 0.2) !important;
+  background-color: rgba(var(--app-accent-rgb), 0.2) !important;
 }
 
 .btn-primary,
 .btn-green-gradient {
-  background: linear-gradient(135deg, #8cf000 0%, #a3e635 100%) !important;
-  color: #111827 !important;
+  background: linear-gradient(135deg, var(--app-primary) 0%, var(--app-primary-to) 100%) !important;
+  color: var(--app-button-contrast, #111827) !important;
 }
 
 .glow-primary {
-  box-shadow: 0 0 20px rgba(140, 240, 0, 0.35);
+  box-shadow: 0 0 20px rgba(var(--app-primary-rgb), 0.35);
 }
 
 .glow-secondary {
-  box-shadow: 0 0 20px rgba(255, 122, 0, 0.3);
+  box-shadow: 0 0 20px rgba(var(--app-secondary-rgb), 0.3);
 }
 
 .shadow-soft {
@@ -99,37 +99,20 @@ ion-content {
 /* ============================================================
    LIGHT MODE — Figma brand (no blue overrides)
    ============================================================ */
+/* Light mode keeps ThemeService brand tokens from :root.
+   Only structural neutrals that are mode-specific live here. */
 .light-mode {
-  --app-background: #fafbfc;
-  --app-card: #ffffff;
-  --app-foreground: #111827;
   --app-muted: #f3f4f6;
-  --app-muted-text: #6b7280;
   --app-border: #e5e7eb;
-  --app-primary: #8cf000;
-  --app-secondary: #ff7a00;
-  --app-accent: #38bdf8;
   --app-violet: #7c3aed;
-  --app-info: #38bdf8;
-
-  --ion-background-color: #fafbfc;
-  --ion-background-color-rgb: 250, 251, 252;
-  --ion-text-color: #111827;
-  --ion-text-color-rgb: 17, 24, 39;
   --ion-border-color: #e5e7eb;
-  --ion-color-primary: #8cf000;
-  --ion-color-primary-rgb: 140, 240, 0;
-  --ion-color-primary-contrast: #111827;
-  --ion-color-secondary: #ff7a00;
-  --ion-color-secondary-rgb: 255, 122, 0;
-  --ion-color-secondary-contrast: #ffffff;
 }
 
 .light-mode,
 .light-mode ion-app,
 .light-mode ion-content {
-  --background: #fafbfc;
-  background: #fafbfc !important;
+  --background: var(--app-background);
+  background: var(--app-background) !important;
 }
 
 .light-mode h1,
@@ -138,48 +121,48 @@ ion-content {
 .light-mode h4,
 .light-mode h5,
 .light-mode h6 {
-  color: #111827;
+  color: var(--app-foreground);
 }
 
 .light-mode .text-primary {
-  color: #8cf000 !important;
+  color: var(--app-primary) !important;
 }
 
 .light-mode .text-secondary {
-  color: #ff7a00 !important;
+  color: var(--app-secondary) !important;
 }
 
 .light-mode .text-accent {
-  color: #38bdf8 !important;
+  color: var(--app-accent) !important;
 }
 
 .light-mode .bg-primary\/20 {
-  background-color: rgba(140, 240, 0, 0.2) !important;
+  background-color: rgba(var(--app-primary-rgb), 0.2) !important;
 }
 
 .light-mode .bg-secondary\/20 {
-  background-color: rgba(255, 122, 0, 0.2) !important;
+  background-color: rgba(var(--app-secondary-rgb), 0.2) !important;
 }
 
 .light-mode .bg-accent\/20 {
-  background-color: rgba(56, 189, 248, 0.2) !important;
+  background-color: rgba(var(--app-accent-rgb), 0.2) !important;
 }
 
 .light-mode .bg-card,
 .light-mode ion-card {
-  background: #ffffff !important;
-  border-color: #e5e7eb !important;
+  background: var(--app-card) !important;
+  border-color: var(--app-border) !important;
 }
 
 .light-mode ion-menu,
 .light-mode ion-menu ion-content {
-  --background: #ffffff;
+  --background: var(--app-card);
 }
 
 .light-mode ion-item,
 .light-mode ion-label {
-  --color: #111827;
-  color: #111827;
+  --color: var(--app-foreground);
+  color: var(--app-foreground);
 }
 
 /* ============================================================
@@ -357,14 +340,20 @@ button:active,
   padding: 10px;
 }
 
-/* Mobile viewport frame for web preview */
+/* Mobile viewport frame for web preview.
+   Only constrain body — do NOT set position:relative on ion-app.
+   Ionic pages use absolute fill (top/bottom/left/right); overriding
+   ion-app to relative collapses page/ion-content height on desktop. */
 @media (min-width: 480px) {
-  html,
-  body,
-  ion-app {
+  html {
+    background: #e8eaed;
+  }
+
+  body {
     max-width: 450px !important;
     margin: 0 auto !important;
-    position: relative !important;
+    height: 100%;
+    position: relative;
     box-shadow: 0 10px 50px rgba(0, 0, 0, 0.15);
     border-inline: 1px solid rgba(0, 0, 0, 0.06);
   }

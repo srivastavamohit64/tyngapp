@@ -82,7 +82,7 @@ export interface SegmentOption {
       }
 
       .seg-count--active {
-        background: #8cf000;
+        background: var(--app-primary);
         color: #111827;
       }
     `,

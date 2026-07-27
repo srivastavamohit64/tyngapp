@@ -34,7 +34,7 @@ import { AuthService } from '../../core/services/auth.service';
       .back { width: 40px; height: 40px; min-height: unset; border-radius: 12px; background: #f3f4f6; display: grid; place-items: center; font-size: 20px; color: #111827; }
       h1 { margin: 0; font-size: 22px; font-weight: 700; color: #111827; }
       .row { display: flex; align-items: center; gap: 12px; width: 100%; background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 14px; margin-bottom: 10px; text-align: left; min-height: unset; }
-      .icon { width: 40px; height: 40px; border-radius: 12px; background: rgba(140,240,0,0.2); color: #8cf000; display: grid; place-items: center; font-size: 20px; }
+      .icon { width: 40px; height: 40px; border-radius: 12px; background: rgba(var(--app-primary-rgb),0.2); color: var(--app-primary); display: grid; place-items: center; font-size: 20px; }
       .text { flex: 1; } .text strong { display: block; color: #111827; font-size: 14px; } .text span { font-size: 12px; color: #6b7280; }
       .chevron { color: #9ca3af; }
     `,

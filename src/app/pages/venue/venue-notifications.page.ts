@@ -91,7 +91,7 @@ interface VenueNotification {
       border: 1.5px solid transparent;
     }
     .notif-card--unread {
-      border-color: rgba(140,240,0,0.25);
+      border-color: rgba(var(--app-primary-rgb),0.25);
     }
     .notif-icon {
       width: 40px;

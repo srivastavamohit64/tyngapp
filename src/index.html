@@ -19,11 +19,49 @@
   <meta name="apple-mobile-web-app-title" content="TYNG" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="theme-color" content="#ffffff" />
+
+  <!-- Apply cached brand theme before Angular boots (avoids flash of default neon). -->
+  <script>
+    (function () {
+      try {
+        var raw = localStorage.getItem('tyng_app_theme');
+        if (!raw) return;
+        var payload = JSON.parse(raw);
+        var c = payload && payload.colors ? payload.colors : null;
+        if (!c || !c.primary) return;
+        var root = document.documentElement;
+        var map = {
+          '--ion-color-primary': c.primary,
+          '--app-primary': c.primary,
+          '--app-button': c.button || c.primary,
+          '--ion-color-secondary': c.secondary,
+          '--app-secondary': c.secondary,
+          '--ion-color-tertiary': c.accent,
+          '--app-accent': c.accent,
+          '--ion-background-color': c.background,
+          '--app-background': c.background,
+          '--app-card': c.card,
+          '--ion-text-color': c.text_primary,
+          '--app-foreground': c.text_primary,
+          '--app-foreground-secondary': c.text_secondary,
+          '--ion-color-success': c.success || c.primary,
+          '--app-success': c.success || c.primary,
+          '--ion-color-warning': c.warning || c.secondary,
+          '--app-warning': c.warning || c.secondary,
+          '--ion-color-danger': c.error,
+          '--app-error': c.error
+        };
+        Object.keys(map).forEach(function (k) {
+          if (map[k]) root.style.setProperty(k, map[k]);
+        });
+      } catch (e) { /* ignore */ }
+    })();
+  </script>
 </head>
 
-<body style="background-color: #fafbfc; margin: 0; padding: 0; overflow: hidden;">
+<body style="background-color: var(--app-background, #fafbfc); margin: 0; padding: 0; overflow: hidden;">
   <app-root>
-    <div style="position: absolute; inset: 0; background-color: #fafbfc;"></div>
+    <div style="position: absolute; inset: 0; background-color: var(--app-background, #fafbfc);"></div>
   </app-root>
 </body>
 

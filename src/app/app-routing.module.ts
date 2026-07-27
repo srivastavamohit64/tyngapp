@@ -112,6 +112,10 @@ const routes: Routes = [
         loadComponent: () => import('./pages/home/home.page').then((m) => m.HomePage),
       },
       {
+        path: 'wallet',
+        loadComponent: () => import('./pages/player/wallet.page').then((m) => m.WalletPage),
+      },
+      {
         path: 'coach/dashboard',
         loadComponent: () => import('./pages/home/home.page').then((m) => m.HomePage),
       },

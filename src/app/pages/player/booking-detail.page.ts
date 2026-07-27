@@ -299,9 +299,9 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
       }
 
       .btn-primary {
-        background: linear-gradient(135deg, #8cf000, #a3e635);
+        background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to));
         color: #111827;
-        box-shadow: 0 2px 8px rgba(140, 240, 0, 0.28);
+        box-shadow: 0 2px 8px rgba(var(--app-primary-rgb), 0.28);
       }
 
       .btn-secondary {

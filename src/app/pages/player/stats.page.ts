@@ -18,7 +18,7 @@ import { IonicModule } from '@ionic/angular';
             <ion-icon name="chevron-back-outline"></ion-icon>
           </button>
           <h1 class="stats-title">Personal Stats</h1>
-          <button class="edit-btn" (click)="editing = !editing" [style.background]="editing ? '#8CF000' : '#F3F4F6'">
+          <button class="edit-btn" (click)="editing = !editing" [style.background]="editing ? 'var(--app-primary)' : '#F3F4F6'">
             <ion-icon [name]="editing ? 'checkmark-outline' : 'pencil-outline'"></ion-icon>
           </button>
         </div>
@@ -177,7 +177,7 @@ import { IonicModule } from '@ionic/angular';
               <div *ngFor="let skill of skills" class="skill-row">
                 <div class="skill-header">
                   <span class="skill-name">{{ skill.name }}</span>
-                  <span class="skill-pct" [style.color]="'#8CF000'">{{ skill.value }}%</span>
+                  <span class="skill-pct" [style.color]="'var(--app-primary)'">{{ skill.value }}%</span>
                 </div>
                 <div class="skill-bar">
                   <div class="skill-fill" [style.width]="skill.value + '%'" [style.background]="skill.color"></div>
@@ -304,7 +304,7 @@ import { IonicModule } from '@ionic/angular';
       bottom: -4px; right: -4px;
       width: 30px; height: 30px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #8CF000, #A3E635);
+      background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to));
       border: 2px solid #1F2937;
       display: flex; align-items: center; justify-content: center;
       font-size: 11px;
@@ -355,13 +355,13 @@ import { IonicModule } from '@ionic/angular';
       top: -24px; right: -24px;
       width: 96px; height: 96px;
       border-radius: 50%;
-      background: rgba(140,240,0,0.1);
+      background: rgba(var(--app-primary-rgb),0.1);
     }
 
     .tp-label {
       font-size: 10px;
       font-weight: 800;
-      color: #8CF000;
+      color: var(--app-primary);
       letter-spacing: 0.1em;
       margin-bottom: 2px;
     }
@@ -388,7 +388,7 @@ import { IonicModule } from '@ionic/angular';
     .tp-lvl {
       font-size: 40px;
       font-weight: 900;
-      color: #8CF000;
+      color: var(--app-primary);
       line-height: 1;
     }
 
@@ -401,7 +401,7 @@ import { IonicModule } from '@ionic/angular';
     }
 
     .xp-num { font-size: 11px; color: rgba(255,255,255,0.4); }
-    .xp-pct { font-size: 11px; font-weight: 800; color: #8CF000; }
+    .xp-pct { font-size: 11px; font-weight: 800; color: var(--app-primary); }
 
     .xp-bar {
       width: 100%;
@@ -414,7 +414,7 @@ import { IonicModule } from '@ionic/angular';
 
     .xp-fill {
       height: 100%;
-      background: linear-gradient(90deg, #8CF000, #FF7A00);
+      background: linear-gradient(90deg, var(--app-primary), #FF7A00);
       border-radius: 999px;
     }
 
@@ -568,9 +568,9 @@ import { IonicModule } from '@ionic/angular';
     }
 
     .chip-active {
-      background: rgba(140,240,0,0.14);
+      background: rgba(var(--app-primary-rgb),0.14);
       color: #111827;
-      border-color: #8CF000;
+      border-color: var(--app-primary);
     }
 
     /* Toggle */
@@ -591,7 +591,7 @@ import { IonicModule } from '@ionic/angular';
     }
 
     .toggle-on {
-      background: #8CF000;
+      background: var(--app-primary);
     }
 
     .toggle-thumb {
@@ -661,8 +661,8 @@ import { IonicModule } from '@ionic/angular';
     }
 
     .privacy-btn-active {
-      background: rgba(140,240,0,0.12);
-      border-color: #8CF000;
+      background: rgba(var(--app-primary-rgb),0.12);
+      border-color: var(--app-primary);
       color: #111827;
     }
   `]
@@ -687,8 +687,8 @@ export class StatsPage {
   ];
 
   readonly skills = [
-    { name: 'Stamina & Pace', value: 85, color: '#8CF000' },
-    { name: 'Ball Control', value: 78, color: '#8CF000' },
+    { name: 'Stamina & Pace', value: 85, color: 'var(--app-primary)' },
+    { name: 'Ball Control', value: 78, color: 'var(--app-primary)' },
     { name: 'Teamwork', value: 92, color: '#FF7A00' },
     { name: 'Strategy', value: 70, color: '#38BDF8' },
     { name: 'Leadership', value: 65, color: '#8B5CF6' },

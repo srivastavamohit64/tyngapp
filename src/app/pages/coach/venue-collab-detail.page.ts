@@ -222,7 +222,7 @@ const DOCS = [
                   <p class="text-[11px] text-[#9CA3AF] m-0 font-bold mt-1">{{ data().time }}</p>
                 </div>
               </div>
-              <button class="w-full h-10 rounded-2xl text-[13px] font-bold text-[#111827] flex items-center justify-center gap-1 border-none bg-[#8CF000]/12 border-[#8CF000]/30 border-2">
+              <button class="w-full h-10 rounded-2xl text-[13px] font-bold text-[#111827] flex items-center justify-center gap-1 border-none bg-[var(--app-primary)]/12 border-[var(--app-primary)]/30 border-2">
                 View Venue Profile<ion-icon name="chevron-forward-outline"></ion-icon>
               </button>
             </div>
@@ -326,12 +326,12 @@ const DOCS = [
 
             <!-- Net payable hero -->
             <div class="mt-4 rounded-[20px] px-5 py-4 flex items-center justify-between bg-gradient-to-br from-[#111827] to-[#1F2937] text-white">
-              <div class="absolute -top-5 -right-5 w-20 h-20 rounded-full bg-[#8CF000]/10"></div>
+              <div class="absolute -top-5 -right-5 w-20 h-20 rounded-full bg-[var(--app-primary)]/10"></div>
               <div>
-                <p class="text-[11px] font-black text-[#8CF000] uppercase tracking-wider mb-0.5 m-0">Net Payable</p>
+                <p class="text-[11px] font-black text-[var(--app-primary)] uppercase tracking-wider mb-0.5 m-0">Net Payable</p>
                 <p class="text-[11px] text-white/40 m-0 font-bold">After deductions</p>
               </div>
-              <p class="text-[32px] font-black text-[#8CF000] m-0">₹{{ getNet().toLocaleString('en-IN') }}</p>
+              <p class="text-[32px] font-black text-[var(--app-primary)] m-0">₹{{ getNet().toLocaleString('en-IN') }}</p>
             </div>
           </div>
 
@@ -363,7 +363,7 @@ const DOCS = [
           <div class="section-card p-5 bg-white">
             <div class="flex items-center justify-between mb-4">
               <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-0 m-0">Attendance Log</p>
-              <button class="text-[12px] font-bold text-[#8CF000] flex items-center gap-0.5 bg-transparent border-none">
+              <button class="text-[12px] font-bold text-[var(--app-primary)] flex items-center gap-0.5 bg-transparent border-none">
                 All Sessions<ion-icon name="chevron-forward-outline"></ion-icon>
               </button>
             </div>
@@ -448,7 +448,7 @@ const DOCS = [
           <div class="section-card p-5 bg-white">
             <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-4 m-0">Notes & Remarks</p>
             <div class="space-y-3">
-              <div *ngFor="let n of data().notes" class="bg-[#F9FAFB] rounded-2xl px-4 py-3.5 border-l-4 border-[#8CF000] border-t border-r border-b border-slate-100">
+              <div *ngFor="let n of data().notes" class="bg-[#F9FAFB] rounded-2xl px-4 py-3.5 border-l-4 border-[var(--app-primary)] border-t border-r border-b border-slate-100">
                 <p class="text-[13px] text-[#111827] leading-relaxed mb-1 m-0 font-medium">"{{ n.text }}"</p>
                 <p class="text-[10px] text-[#9CA3AF] m-0 mt-2 font-bold">{{ n.date }}</p>
               </div>
@@ -492,8 +492,8 @@ const DOCS = [
     }
 
     .btn-green-gradient {
-      background: linear-gradient(135deg, #8CF000, #A3E635);
-      box-shadow: 0 4px 12px rgba(140,240,0,0.30);
+      background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to));
+      box-shadow: 0 4px 12px rgba(var(--app-primary-rgb),0.30);
       color: #111827;
     }
 
@@ -578,7 +578,7 @@ export class VenueCollabDetailPage implements OnInit {
   getSessionStatsList() {
     const d = this.data();
     return [
-      { emoji: '📅', label: 'Scheduled', val: d.sessions.scheduled, sub: 'Total booked', color: '#8CF000' },
+      { emoji: '📅', label: 'Scheduled', val: d.sessions.scheduled, sub: 'Total booked', color: 'var(--app-primary)' },
       { emoji: '✅', label: 'Completed', val: d.sessions.completed, sub: 'Successfully done', color: '#22C55E' },
       { emoji: '⏱', label: 'Hours Coached', val: `${d.sessions.hours}h`, sub: 'Total coaching', color: '#38BDF8' },
       { emoji: '⏳', label: 'Remaining', val: `${d.sessions.remaining}h`, sub: 'Scheduled ahead', color: '#FF7A00' },

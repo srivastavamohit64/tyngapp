@@ -246,7 +246,7 @@ const HERO_IMAGE =
         position: absolute;
         bottom: 40px;
         right: 20px;
-        background: #8cf000;
+        background: var(--app-primary);
         color: #111827;
         font-size: 12px;
         font-weight: 900;
@@ -279,7 +279,7 @@ const HERO_IMAGE =
       }
 
       .welcome-title .dot {
-        color: #8cf000;
+        color: var(--app-primary);
       }
 
       .welcome-subtitle {
@@ -333,8 +333,8 @@ const HERO_IMAGE =
       }
 
       .role-chip.active {
-        border-color: #8cf000;
-        background: rgba(140, 240, 0, 0.08);
+        border-color: var(--app-primary);
+        background: rgba(var(--app-primary-rgb), 0.08);
         color: #111827;
       }
 
@@ -383,7 +383,7 @@ const HERO_IMAGE =
         width: 20px;
         height: 20px;
         border-radius: 50%;
-        background: #8cf000;
+        background: var(--app-primary);
         display: grid;
         place-items: center;
         flex-shrink: 0;
@@ -401,7 +401,7 @@ const HERO_IMAGE =
         font-weight: 600;
         text-decoration: underline;
         text-underline-offset: 2px;
-        text-decoration-color: #8cf000;
+        text-decoration-color: var(--app-primary);
       }
 
       .cta-wrap {
@@ -427,7 +427,7 @@ const HERO_IMAGE =
         color: #111827;
         text-decoration: underline;
         text-underline-offset: 2px;
-        text-decoration-color: #8cf000;
+        text-decoration-color: var(--app-primary);
         cursor: pointer;
       }
 

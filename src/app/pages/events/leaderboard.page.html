@@ -4,7 +4,7 @@
     
     <div class="px-5 pt-4 pb-3 flex items-center justify-between">
       <h1 class="text-[22px] font-extrabold tracking-tight text-[#111827] m-0">Leaderboard</h1>
-      <div class="w-10 h-10 rounded-xl bg-[#8CF000]/20 flex items-center justify-center text-[#111827]">
+      <div class="w-10 h-10 rounded-xl bg-[var(--app-primary)]/20 flex items-center justify-center text-[#111827]">
         <ion-icon name="trophy" class="text-xl"></ion-icon>
       </div>
     </div>
@@ -52,7 +52,7 @@
             </div>
             <div class="text-base font-extrabold text-[#111827] mb-0.5 truncate">{{ topThree[0].name.split(' ')[0] }}</div>
             <div class="text-sm font-extrabold text-[#FF7A00] mb-1">{{ topThree[0].points | number }}</div>
-            <div class="text-xs font-extrabold text-[#8CF000]">#1</div>
+            <div class="text-xs font-extrabold text-[var(--app-primary)]">#1</div>
           </div>
         </div>
 

@@ -239,7 +239,7 @@ const STUDENTS: Student[] = [
       background: #F3F4F6; color: #6B7280; border: none;
     }
     .filter-chip--active {
-      background: #8CF000; color: #111827; box-shadow: 0 2px 8px rgba(140,240,0,0.30);
+      background: var(--app-primary); color: #111827; box-shadow: 0 2px 8px rgba(var(--app-primary-rgb),0.30);
     }
     .overview-card {
       background: white; border-radius: 24px; padding: 20px;
@@ -258,7 +258,7 @@ const STUDENTS: Student[] = [
     }
     .session-badge {
       position: absolute; bottom: -4px; right: -4px; width: 20px; height: 20px;
-      border-radius: 50%; background: #8CF000; border: 2px solid white;
+      border-radius: 50%; background: var(--app-primary); border: 2px solid white;
       display: flex; align-items: center; justify-content: center;
       font-size: 8px; font-weight: 900; color: #111827;
     }
@@ -273,16 +273,16 @@ const STUDENTS: Student[] = [
     }
     .profile-btn {
       flex: 1; height: 36px; border-radius: 12px; border: none;
-      background: linear-gradient(135deg,#8CF000,#A3E635);
-      box-shadow: 0 2px 8px rgba(140,240,0,0.30);
+      background: linear-gradient(135deg,var(--app-primary),var(--app-primary-to));
+      box-shadow: 0 2px 8px rgba(var(--app-primary-rgb),0.30);
       font-size: 12px; font-weight: 900; color: #111827;
       display: flex; align-items: center; justify-content: center; gap: 4px;
     }
     .empty-state { text-align: center; padding: 48px 16px; }
     .invite-btn {
       height: 48px; padding: 0 28px; border-radius: 999px; border: none;
-      background: linear-gradient(135deg,#8CF000,#A3E635);
-      box-shadow: 0 4px 16px rgba(140,240,0,0.40);
+      background: linear-gradient(135deg,var(--app-primary),var(--app-primary-to));
+      box-shadow: 0 4px 16px rgba(var(--app-primary-rgb),0.40);
       font-size: 14px; font-weight: 900; color: #111827;
     }
     .no-scrollbar { scrollbar-width: none; }
@@ -306,7 +306,7 @@ export class CoachStudentsPage {
       STUDENTS.reduce((sum, s) => sum + Object.values(s.evaluation).reduce((a, b) => a + b, 0) / 6, 0) / STUDENTS.length
     ).toFixed(1);
     return [
-      { emoji: '👥', label: 'Active Students', value: String(active), accent: '#8CF000' },
+      { emoji: '👥', label: 'Active Students', value: String(active), accent: 'var(--app-primary)' },
       { emoji: '⭐', label: 'Average Rating', value: avgRating, accent: '#F59E0B' },
       { emoji: '✅', label: 'Average Attendance', value: `${avgAttendance}%`, accent: '#38BDF8' },
       { emoji: '📈', label: 'Monthly Growth', value: '+2 Students', accent: '#FF7A00' },

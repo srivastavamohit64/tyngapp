@@ -62,8 +62,8 @@ import { IonicModule } from '@ionic/angular';
       }
 
       .box.on {
-        background: #8cf000;
-        border-color: #8cf000;
+        background: var(--app-primary);
+        border-color: var(--app-primary);
       }
 
       .tick {

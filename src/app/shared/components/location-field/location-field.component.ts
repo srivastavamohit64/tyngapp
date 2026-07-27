@@ -119,7 +119,7 @@ const DEFAULT_CENTER = { lat: 26.8467, lng: 80.9462 };
 
       .field.focused {
         background: #ffffff;
-        border-color: #8cf000;
+        border-color: var(--app-primary);
       }
 
       .field.disabled {
@@ -148,7 +148,7 @@ const DEFAULT_CENTER = { lat: 26.8467, lng: 80.9462 };
       }
 
       .field.focused.floating .float-label {
-        color: #8cf000;
+        color: var(--app-primary);
       }
 
       .field-row {
@@ -176,7 +176,7 @@ const DEFAULT_CENTER = { lat: 26.8467, lng: 80.9462 };
       }
 
       .field.focused .field-icon {
-        color: #8cf000;
+        color: var(--app-primary);
       }
 
       input {
@@ -267,12 +267,12 @@ const DEFAULT_CENTER = { lat: 26.8467, lng: 80.9462 };
         border: none;
         border-radius: 999px;
         padding: 14px 20px;
-        background: #8cf000;
+        background: var(--app-primary);
         color: #111827;
         font-size: 15px;
         font-weight: 800;
         cursor: pointer;
-        box-shadow: 0 4px 14px rgba(140, 240, 0, 0.35);
+        box-shadow: 0 4px 14px rgba(var(--app-primary-rgb), 0.35);
       }
 
       .confirm-btn:disabled {

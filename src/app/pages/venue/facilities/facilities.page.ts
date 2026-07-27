@@ -47,7 +47,7 @@ const STATUS_OPTIONS: StatusOption[] = [
               <ion-icon name="chevron-back-outline" class="text-xl text-[#111827]"></ion-icon>
             </button>
             <p class="text-[17px] font-black text-[#111827] m-0">Facilities</p>
-            <button (click)="addFacility()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-[#8CF000]/12 border-none">
+            <button (click)="addFacility()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-[var(--app-primary)]/12 border-none">
               <ion-icon name="add-outline" class="text-xl text-[#111827] font-bold"></ion-icon>
             </button>
           </div>
@@ -55,13 +55,13 @@ const STATUS_OPTIONS: StatusOption[] = [
           <!-- Horizontal Facility Selector list track -->
           <div class="flex gap-3 px-5 pb-4 overflow-x-auto no-scrollbar">
             <button *ngFor="let f of facilityList()" (click)="selectFacility(f.id)" class="flex-shrink-0 w-[130px] rounded-[18px] overflow-hidden text-left border-none p-0"
-              [style.border]="selectedId() === f.id ? '2px solid #8CF000' : '2px solid transparent'"
-              [style.boxShadow]="selectedId() === f.id ? '0 2px 12px rgba(140,240,0,0.25)' : '0 1px 6px rgba(0,0,0,0.08)'">
+              [style.border]="selectedId() === f.id ? '2px solid var(--app-primary)' : '2px solid transparent'"
+              [style.boxShadow]="selectedId() === f.id ? '0 2px 12px rgba(var(--app-primary-rgb),0.25)' : '0 1px 6px rgba(0,0,0,0.08)'">
               <div class="relative h-[68px] bg-slate-200">
                 <img [src]="f.photo" class="w-full h-full object-cover" />
                 <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
                 <span class="absolute bottom-1.5 left-2 text-white text-[10px] font-black drop-shadow-md m-0 leading-none">{{ f.emoji }} {{ f.name }}</span>
-                <div *ngIf="selectedId() === f.id" class="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-[#8CF000] flex items-center justify-center">
+                <div *ngIf="selectedId() === f.id" class="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-[var(--app-primary)] flex items-center justify-center">
                   <ion-icon name="checkmark-outline" class="text-[#111827] text-xs font-black"></ion-icon>
                 </div>
               </div>
@@ -113,9 +113,9 @@ const STATUS_OPTIONS: StatusOption[] = [
                   <p class="field-label mb-1.5 m-0 font-bold text-[#9CA3AF]">Type</p>
                   <div class="flex gap-2">
                     <button *ngFor="let t of ['Indoor', 'Outdoor']" (click)="isIndoor.set(t === 'Indoor'); onChange()" class="flex-grow py-2.5 rounded-xl text-[12px] font-bold border-none"
-                      [style.backgroundColor]="isIndoor() === (t === 'Indoor') ? 'rgba(140,240,0,0.12)' : '#F9FAFB'"
+                      [style.backgroundColor]="isIndoor() === (t === 'Indoor') ? 'rgba(var(--app-primary-rgb),0.12)' : '#F9FAFB'"
                       [style.color]="isIndoor() === (t === 'Indoor') ? '#111827' : '#6B7280'"
-                      [style.border]="isIndoor() === (t === 'Indoor') ? '1.5px solid #8CF000' : 'none'">
+                      [style.border]="isIndoor() === (t === 'Indoor') ? '1.5px solid var(--app-primary)' : 'none'">
                       {{ t }}
                     </button>
                   </div>
@@ -127,9 +127,9 @@ const STATUS_OPTIONS: StatusOption[] = [
                 <p class="field-label mb-1.5 m-0 font-bold text-[#9CA3AF]">Playing Surface</p>
                 <div class="flex flex-wrap gap-2">
                   <button *ngFor="let s of surfaces" (click)="surface.set(s); onChange()" class="px-3 py-1.5 rounded-full text-[11px] font-bold border-none"
-                    [style.backgroundColor]="surface() === s ? 'rgba(140,240,0,0.14)' : '#F3F4F6'"
+                    [style.backgroundColor]="surface() === s ? 'rgba(var(--app-primary-rgb),0.14)' : '#F3F4F6'"
                     [style.color]="surface() === s ? '#111827' : '#6B7280'"
-                    [style.border]="surface() === s ? '1.5px solid #8CF000' : 'none'">
+                    [style.border]="surface() === s ? '1.5px solid var(--app-primary)' : 'none'">
                     {{ s }}
                   </button>
                 </div>
@@ -237,17 +237,17 @@ const STATUS_OPTIONS: StatusOption[] = [
           <div class="section-card bg-gradient-to-br from-[#111827] to-[#1F2937] text-white p-5 text-left relative overflow-hidden">
             <div class="absolute -top-10 -right-10 w-24 h-24 rounded-full bg-white/5"></div>
             <div class="flex items-center gap-2 mb-2">
-              <div class="w-9 h-9 rounded-xl bg-[#8CF000]/20 flex items-center justify-center">
-                <ion-icon name="qr-code-outline" class="text-[#8CF000] text-lg font-bold"></ion-icon>
+              <div class="w-9 h-9 rounded-xl bg-[var(--app-primary)]/20 flex items-center justify-center">
+                <ion-icon name="qr-code-outline" class="text-[var(--app-primary)] text-lg font-bold"></ion-icon>
               </div>
               <p class="text-[15px] font-black text-white m-0">QR Check-In</p>
-              <span class="text-[9px] bg-[#8CF000]/20 text-[#8CF000] font-black px-2 py-0.5 rounded-full">AUTO</span>
+              <span class="text-[9px] bg-[var(--app-primary)]/20 text-[var(--app-primary)] font-black px-2 py-0.5 rounded-full">AUTO</span>
             </div>
             <p class="text-[12px] text-white/50 mb-4 m-0 leading-relaxed font-semibold">The supervisor scans TYNG booking QR codes at the entrance to verify players and coaches.</p>
 
             <div class="space-y-2 mb-4">
               <div *ngFor="let s of ['Verify booking status in real-time','Mark attendance automatically','Record entry time & player details']" class="flex items-center gap-2.5">
-                <div class="w-4 h-4 rounded-full bg-[#8CF000] flex items-center justify-center flex-shrink-0">
+                <div class="w-4 h-4 rounded-full bg-[var(--app-primary)] flex items-center justify-center flex-shrink-0">
                   <ion-icon name="checkmark-outline" class="text-[#111827] text-[10px] font-black"></ion-icon>
                 </div>
                 <span class="text-[12px] text-white/70 font-semibold">{{ s }}</span>
@@ -318,7 +318,7 @@ const STATUS_OPTIONS: StatusOption[] = [
       box-sizing: border-box;
 
       &:focus {
-        border-color: #8CF000;
+        border-color: var(--app-primary);
         background: white;
       }
     }
@@ -337,7 +337,7 @@ const STATUS_OPTIONS: StatusOption[] = [
       resize: none;
 
       &:focus {
-        border-color: #8CF000;
+        border-color: var(--app-primary);
         background: white;
       }
     }
@@ -356,13 +356,13 @@ const STATUS_OPTIONS: StatusOption[] = [
       box-sizing: border-box;
 
       &:focus {
-        border-color: #8CF000;
+        border-color: var(--app-primary);
       }
     }
 
     .btn-green-gradient {
-      background: linear-gradient(135deg, #8CF000, #A3E635);
-      box-shadow: 0 4px 12px rgba(140,240,0,0.30);
+      background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to));
+      box-shadow: 0 4px 12px rgba(var(--app-primary-rgb),0.30);
       color: #111827;
     }
   `]

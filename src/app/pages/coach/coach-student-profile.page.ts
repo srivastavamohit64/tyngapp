@@ -241,16 +241,16 @@ const ACHIEVEMENT_COLORS: Record<string, { bg: string; color: string }> = {
           </div>
 
           <!-- Set Training Focus -->
-          <div class="bg-white rounded-[24px] p-5 shadow-md border border-[#8CF000]/20">
+          <div class="bg-white rounded-[24px] p-5 shadow-md border border-[var(--app-primary)]/20">
             <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-1 m-0">Current Training Focus</p>
             <p class="text-[12px] text-[#9CA3AF] mb-4 m-0">Set goals for the student's next coaching session.</p>
 
             <div class="flex flex-wrap gap-2 mb-4">
               <button *ngFor="let f of focusAreas" (click)="toggleFocus(f.id)"
                 class="flex items-center gap-1.5 px-3 py-2 rounded-2xl text-[12px] font-semibold transition-all border-none"
-                [style.backgroundColor]="selectedFocus.includes(f.id) ? 'rgba(140,240,0,0.12)' : '#F3F4F6'"
+                [style.backgroundColor]="selectedFocus.includes(f.id) ? 'rgba(var(--app-primary-rgb),0.12)' : '#F3F4F6'"
                 [style.color]="selectedFocus.includes(f.id) ? '#111827' : '#6B7280'"
-                [style.border]="selectedFocus.includes(f.id) ? '2px solid #8CF000' : '2px solid transparent'">
+                [style.border]="selectedFocus.includes(f.id) ? '2px solid var(--app-primary)' : '2px solid transparent'">
                 <span>{{ f.emoji }}</span>{{ f.label }}
                 <ion-icon *ngIf="selectedFocus.includes(f.id)" name="checkmark-outline" class="text-[#16A34A] text-xs font-bold"></ion-icon>
               </button>
@@ -261,7 +261,7 @@ const ACHIEVEMENT_COLORS: Record<string, { bg: string; color: string }> = {
               <p class="text-[11px] font-black text-[#9CA3AF] uppercase tracking-wider mb-2 m-0">Focus for Next Session</p>
               <div class="space-y-1.5">
                 <div *ngFor="let fid of selectedFocus" class="flex items-center gap-2">
-                  <div class="w-1.5 h-1.5 rounded-full bg-[#8CF000]"></div>
+                  <div class="w-1.5 h-1.5 rounded-full bg-[var(--app-primary)]"></div>
                   <p class="text-[13px] text-[#111827] font-bold m-0">{{ getFocusLabel(fid) }}</p>
                 </div>
               </div>
@@ -279,7 +279,7 @@ const ACHIEVEMENT_COLORS: Record<string, { bg: string; color: string }> = {
               <div *ngFor="let key of ['technique', 'fitness', 'gameAwareness', 'discipline', 'teamwork', 'confidence']">
                 <div class="flex items-center justify-between mb-1.5">
                   <span class="text-[13px] font-bold text-[#111827]">{{ getSkillLabel(key) }}</span>
-                  <span class="text-[13px] font-black text-[#8CF000]">{{ evaluation[key] }}/10</span>
+                  <span class="text-[13px] font-black text-[var(--app-primary)]">{{ evaluation[key] }}/10</span>
                 </div>
                 <input type="range" min="1" max="10" [(ngModel)]="evaluation[key]" (input)="evalSaved = false" class="w-full range-slider" />
               </div>
@@ -288,7 +288,7 @@ const ACHIEVEMENT_COLORS: Record<string, { bg: string; color: string }> = {
             <div class="bg-[#111827] rounded-2xl px-5 py-4 flex items-center justify-between mb-4">
               <div>
                 <p class="text-[11px] text-white/50 uppercase tracking-wider m-0">Overall Rating</p>
-                <p class="text-[30px] font-black text-[#8CF000] leading-none mt-0.5 m-0">{{ getOverallRating() }}</p>
+                <p class="text-[30px] font-black text-[var(--app-primary)] leading-none mt-0.5 m-0">{{ getOverallRating() }}</p>
               </div>
               <div class="flex gap-0.5">
                 <ion-icon *ngFor="let s of [1,2,3,4,5]" name="star" [class.text-[#F59E0B]]="getOverallRatingNum() >= s*2" class="text-slate-600 text-sm"></ion-icon>
@@ -307,7 +307,7 @@ const ACHIEVEMENT_COLORS: Record<string, { bg: string; color: string }> = {
               <textarea [(ngModel)]="newNote" placeholder="Add a private note about this student..." rows="2"
                 class="w-full p-3.5 rounded-2xl text-[13px] text-[#111827] placeholder:text-[#C4C9D4] focus:outline-none resize-none mb-2 border border-slate-100 bg-[#FAFBFC]"></textarea>
               <button (click)="addNote()" [disabled]="!newNote.trim()" class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[12px] font-bold border-none"
-                [style.backgroundColor]="newNote.trim() ? '#8CF000' : '#F3F4F6'"
+                [style.backgroundColor]="newNote.trim() ? 'var(--app-primary)' : '#F3F4F6'"
                 [style.color]="newNote.trim() ? '#111827' : '#C4C9D4'">
                 <ion-icon name="add-outline"></ion-icon>Add Note
               </button>
@@ -318,7 +318,7 @@ const ACHIEVEMENT_COLORS: Record<string, { bg: string; color: string }> = {
                 <p class="text-[13px] text-[#111827] leading-relaxed mb-1 m-0">"{{ note.text }}"</p>
                 <p class="text-[10px] text-[#9CA3AF] m-0 font-medium">{{ note.date }}</p>
               </div>
-              <button *ngIf="notes.length > 2" (click)="notesExpanded = !notesExpanded" class="w-full flex items-center justify-center gap-1 text-[12px] font-bold text-[#8CF000] py-1 bg-transparent border-none">
+              <button *ngIf="notes.length > 2" (click)="notesExpanded = !notesExpanded" class="w-full flex items-center justify-center gap-1 text-[12px] font-bold text-[var(--app-primary)] py-1 bg-transparent border-none">
                 <ion-icon [name]="notesExpanded ? 'chevron-up-outline' : 'chevron-down-outline'"></ion-icon>
                 {{ notesExpanded ? 'Show Less' : 'Show ' + (notes.length - 2) + ' More' }}
               </button>
@@ -333,7 +333,7 @@ const ACHIEVEMENT_COLORS: Record<string, { bg: string; color: string }> = {
               <div class="space-y-4">
                 <div *ngFor="let t of student.timeline" class="relative flex items-start gap-3">
                   <div class="absolute -left-7 top-1 w-4 h-4 rounded-full border-2 border-white flex items-center justify-center text-[10px]"
-                    [style.backgroundColor]="t.done ? '#8CF000' : '#E5E7EB'">
+                    [style.backgroundColor]="t.done ? 'var(--app-primary)' : '#E5E7EB'">
                     <ion-icon *ngIf="t.done" name="checkmark-outline" style="font-size:8px;color:#111827;font-weight:bold;"></ion-icon>
                   </div>
                   <div class="text-left">
@@ -372,7 +372,7 @@ const ACHIEVEMENT_COLORS: Record<string, { bg: string; color: string }> = {
                 </div>
               </div>
               <div class="flex flex-wrap gap-1.5 mb-3">
-                <span *ngFor="let f of student.upcomingSession.focus" class="text-[10px] font-bold bg-[#8CF000]/12 text-[#111827] px-2 py-1 rounded-full border border-[#8CF000]/25">{{ f }}</span>
+                <span *ngFor="let f of student.upcomingSession.focus" class="text-[10px] font-bold bg-[var(--app-primary)]/12 text-[#111827] px-2 py-1 rounded-full border border-[var(--app-primary)]/25">{{ f }}</span>
               </div>
               <button (click)="go('/app/schedule')" class="w-full h-10 rounded-xl text-[13px] font-black btn-green-gradient border-none text-[#111827] flex items-center justify-center gap-1">
                 View Session
@@ -386,7 +386,7 @@ const ACHIEVEMENT_COLORS: Record<string, { bg: string; color: string }> = {
       <!-- Sticky Quick actions footer -->
       <div class="fixed-bottom-bar bg-white px-4 pt-3 pb-8">
         <div class="grid grid-cols-4 gap-2">
-          <button (click)="go('/app/coach/evaluate')" class="quick-action-btn" style="background-color:rgba(140,240,0,0.08);color:#8CF000;">
+          <button (click)="go('/app/coach/evaluate')" class="quick-action-btn" style="background-color:rgba(var(--app-primary-rgb),0.08);color:var(--app-primary);">
             <ion-icon name="list-outline"></ion-icon>
             <span>Evaluate</span>
           </button>
@@ -419,7 +419,7 @@ const ACHIEVEMENT_COLORS: Record<string, { bg: string; color: string }> = {
             <p class="text-[20px] font-black text-[#111827] mb-1">Attendance Marked!</p>
             <p class="text-[14px] text-[#9CA3AF] mb-1">{{ student?.name }}</p>
             <p class="text-[12px] text-[#9CA3AF] mb-4">12:30 PM · {{ todayString }}</p>
-            <div class="bg-[#F0FDF4] rounded-2xl px-4 py-2.5 w-full border border-[#8CF000]/22">
+            <div class="bg-[#F0FDF4] rounded-2xl px-4 py-2.5 w-full border border-[var(--app-primary)]/22">
               <p class="text-[12px] font-semibold text-[#16A34A] text-center m-0">Attendance updated to {{ student ? Math.min(student.attendance + 2, 100) : 96 }}%</p>
             </div>
             <button (click)="closeQRScanner()" class="mt-4 w-full h-11 rounded-2xl text-[14px] font-black btn-green-gradient text-[#111827] border-none">
@@ -444,10 +444,10 @@ const ACHIEVEMENT_COLORS: Record<string, { bg: string; color: string }> = {
               </div>
 
               <!-- Brackets corners visual -->
-              <div class="absolute top-3 left-3 w-6 h-6 border-t-4 border-l-4 border-[#8CF000]"></div>
-              <div class="absolute top-3 right-3 w-6 h-6 border-t-4 border-r-4 border-[#8CF000]"></div>
-              <div class="absolute bottom-3 left-3 w-6 h-6 border-b-4 border-l-4 border-[#8CF000]"></div>
-              <div class="absolute bottom-3 right-3 w-6 h-6 border-b-4 border-r-4 border-[#8CF000]"></div>
+              <div class="absolute top-3 left-3 w-6 h-6 border-t-4 border-l-4 border-[var(--app-primary)]"></div>
+              <div class="absolute top-3 right-3 w-6 h-6 border-t-4 border-r-4 border-[var(--app-primary)]"></div>
+              <div class="absolute bottom-3 left-3 w-6 h-6 border-b-4 border-l-4 border-[var(--app-primary)]"></div>
+              <div class="absolute bottom-3 right-3 w-6 h-6 border-b-4 border-r-4 border-[var(--app-primary)]"></div>
             </div>
 
             <button (click)="startScanning()" class="w-full h-12 rounded-2xl text-[15px] font-black btn-green-gradient text-[#111827] border-none">
@@ -472,8 +472,8 @@ const ACHIEVEMENT_COLORS: Record<string, { bg: string; color: string }> = {
     }
 
     .btn-green-gradient {
-      background: linear-gradient(135deg, #8CF000, #A3E635);
-      box-shadow: 0 4px 16px rgba(140,240,0,0.30);
+      background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to));
+      box-shadow: 0 4px 16px rgba(var(--app-primary-rgb),0.30);
       color: #111827;
     }
 
@@ -497,7 +497,7 @@ const ACHIEVEMENT_COLORS: Record<string, { bg: string; color: string }> = {
         width: 20px;
         height: 20px;
         border-radius: 50%;
-        background: #8CF000;
+        background: var(--app-primary);
         cursor: pointer;
         box-shadow: 0 2px 6px rgba(0,0,0,0.15);
       }
@@ -556,16 +556,16 @@ const ACHIEVEMENT_COLORS: Record<string, { bg: string; color: string }> = {
     .success-circle {
       width: 80px; height: 80px;
       border-radius: 50%;
-      background: #8CF000;
+      background: var(--app-primary);
       display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 8px 32px rgba(140,240,0,0.45);
+      box-shadow: 0 8px 32px rgba(var(--app-primary-rgb),0.45);
     }
 
     .scanning-laser {
       position: absolute;
       left: 0; right: 0;
       height: 2px;
-      background: #8CF000;
+      background: var(--app-primary);
       animation: scanLaser 1.8s infinite ease-in-out;
     }
 
@@ -653,7 +653,7 @@ export class CoachStudentProfilePage implements OnInit {
   getMetricsList() {
     if (!this.student) return [];
     return [
-      { emoji: '📅', label: 'Sessions', value: String(this.student.stats.sessions), accent: '#8CF000' },
+      { emoji: '📅', label: 'Sessions', value: String(this.student.stats.sessions), accent: 'var(--app-primary)' },
       { emoji: '⏱', label: 'Training Hours', value: `${this.student.stats.hours}h`, accent: '#FF7A00' },
       { emoji: '✅', label: 'Attendance', value: `${this.student.stats.attendance}%`, accent: '#38BDF8' },
       { emoji: '📈', label: 'Improvement', value: `+${this.student.stats.improvement}%`, accent: '#22C55E' },

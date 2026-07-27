@@ -1,12 +1,14 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, signal, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
-import { firstValueFrom } from 'rxjs';
+import { Subscription, firstValueFrom } from 'rxjs';
 import { BookingRecord } from '../../../core/models/api.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { BookingService } from '../../../core/services/booking.service';
+import { RealtimeService } from '../../../core/services/realtime.service';
+import { TabBadgeService } from '../../../core/services/tab-badge.service';
 import { BrandHeaderShellComponent } from '../../../shared/components/brand-header-shell/brand-header-shell.component';
 import { formatBookingDate, formatBookingTimeRange } from '../../../core/utils/booking.utils';
 
@@ -25,6 +27,7 @@ interface BookingItem {
   paymentMethodLabel: string;
   paymentStatusLabel: string;
   couponLabel: string | null;
+  approvalDeadlineAt: string | null;
   rentals: Array<{ name: string; qty: number; lineTotal: string }>;
   raw: BookingRecord;
 }
@@ -61,7 +64,7 @@ interface BookingItem {
               [class.active]="selectedFilter() === filter"
               (click)="selectedFilter.set(filter)"
             >
-              {{ filter }}
+              {{ filter | titlecase }}
             </button>
           </div>
         </header>
@@ -122,6 +125,11 @@ interface BookingItem {
             <div class="kit-box kit-box--empty" *ngIf="!booking.rentals.length">
               <p class="detail-box__label">Rental kit / equipment</p>
               <p class="detail-box__sub">No rental items selected</p>
+            </div>
+
+            <div class="detail-box detail-box--full" *ngIf="booking.status === 'pending'">
+              <p class="detail-box__label">Approval window</p>
+              <p class="detail-box__value detail-box__value--warn">{{ approvalCountdown(booking) }}</p>
             </div>
 
             <div class="booking-card__actions" *ngIf="booking.status === 'pending'">
@@ -225,7 +233,7 @@ interface BookingItem {
     }
 
     .search-wrap input:focus {
-      border-color: #8CF000;
+      border-color: var(--app-primary);
       background: #fff;
     }
 
@@ -263,8 +271,8 @@ interface BookingItem {
     }
 
     .filter-chip.active {
-      background: #8CF000;
-      border-color: #8CF000;
+      background: var(--app-primary);
+      border-color: var(--app-primary);
       color: #111827;
     }
 
@@ -474,6 +482,10 @@ interface BookingItem {
       color: #16A34A;
     }
 
+    .detail-box__value--warn {
+      color: #C2410C;
+    }
+
     .detail-box__sub {
       margin: 3px 0 0;
       font-size: 11px;
@@ -531,9 +543,9 @@ interface BookingItem {
 
     .btn-accept {
       flex: 1;
-      background: linear-gradient(135deg, #8CF000, #A3E635);
+      background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to));
       color: #111827;
-      box-shadow: 0 4px 12px rgba(140, 240, 0, 0.28);
+      box-shadow: 0 4px 12px rgba(var(--app-primary-rgb), 0.28);
     }
 
     .btn-decline {
@@ -573,79 +585,179 @@ interface BookingItem {
     }
   `],
 })
-export class VenueBookingsPage implements OnInit {
+export class VenueBookingsPage implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
   private readonly bookingService = inject(BookingService);
+  private readonly realtime = inject(RealtimeService);
+  private readonly tabBadges = inject(TabBadgeService);
 
   searchQuery = '';
   selectedFilter = signal('all');
   loading = signal(false);
   errorMessage = signal('');
   bookings = signal<BookingItem[]>([]);
+  /** Ticks every second so approval countdowns stay live. */
+  private readonly nowTick = signal(Date.now());
+  private tickTimer: ReturnType<typeof setInterval> | null = null;
+  private expiredRefreshScheduled = false;
+  private realtimeSub: Subscription | null = null;
+  private realtimeReloadTimer: ReturnType<typeof setTimeout> | null = null;
 
   readonly filters = ['all', 'confirmed', 'pending', 'completed', 'cancelled'];
 
   filteredBookings = computed(() => {
+    this.nowTick(); // keep filtered list view in sync with countdown ticks
     const q = this.searchQuery.trim().toLowerCase();
+    const filter = this.selectedFilter();
     return this.bookings().filter((b) => {
-      const matchesSearch = !q
-        || b.customer.toLowerCase().includes(q)
-        || b.court.toLowerCase().includes(q)
-        || b.sport.toLowerCase().includes(q);
-      const matchesFilter = this.selectedFilter() === 'all' || b.status === this.selectedFilter();
-      return matchesSearch && matchesFilter;
+      const matchesFilter = filter === 'all' || b.status === filter;
+      const matchesSearch =
+        !q ||
+        b.customer.toLowerCase().includes(q) ||
+        b.court.toLowerCase().includes(q) ||
+        b.sport.toLowerCase().includes(q) ||
+        b.customerPhone.includes(q) ||
+        b.customerEmail.toLowerCase().includes(q);
+      return matchesFilter && matchesSearch;
     });
   });
 
-  ngOnInit() {
+  ngOnInit(): void {
     void this.loadBookings();
+    this.startCountdown();
+    void this.bindRealtime();
   }
 
-  async loadBookings() {
-    this.loading.set(true);
+  ionViewWillEnter(): void {
+    void this.loadBookings(true);
+    void this.tabBadges.refresh();
+  }
+
+  ngOnDestroy(): void {
+    this.stopCountdown();
+    this.realtimeSub?.unsubscribe();
+    if (this.realtimeReloadTimer) {
+      clearTimeout(this.realtimeReloadTimer);
+      this.realtimeReloadTimer = null;
+    }
+  }
+
+  private async bindRealtime(): Promise<void> {
+    try {
+      await this.realtime.connect();
+      const venueId = String(this.auth.user()?.id || '');
+      this.realtimeSub = this.realtime.nearbyGames$.subscribe((event) => {
+        if (!venueId || !event.game?.id) return;
+        const gameVenueId = String(event.game.venueId || event.game.venue?.id || '');
+        if (gameVenueId !== venueId) return;
+
+        // Instantly surface pending Accept/Decline from the live event.
+        this.upsertFromRealtime(event.game);
+        if (String(event.game.bookingStatus || '').toLowerCase() === 'pending') {
+          this.selectedFilter.set('pending');
+        }
+        this.queueRealtimeReload();
+      });
+    } catch {
+      // Reverb optional — pull-to-refresh still works.
+    }
+  }
+
+  private upsertFromRealtime(game: BookingRecord): void {
+    const mapped = this.mapBooking(game);
+    const current = this.bookings();
+    const idx = current.findIndex((b) => String(b.id) === String(mapped.id));
+    if (idx >= 0) {
+      const next = [...current];
+      next[idx] = mapped;
+      this.bookings.set(this.sortBookings(next));
+      return;
+    }
+    this.bookings.set(this.sortBookings([mapped, ...current]));
+  }
+
+  private sortBookings(items: BookingItem[]): BookingItem[] {
+    return [...items].sort((a, b) => {
+      // Pending approvals first so Accept is visible immediately.
+      if (a.status === 'pending' && b.status !== 'pending') return -1;
+      if (b.status === 'pending' && a.status !== 'pending') return 1;
+      return String(b.raw.bookingDate || '').localeCompare(String(a.raw.bookingDate || ''))
+        || String(b.raw.startTime || '').localeCompare(String(a.raw.startTime || ''));
+    });
+  }
+
+  private queueRealtimeReload(): void {
+    if (this.realtimeReloadTimer) clearTimeout(this.realtimeReloadTimer);
+    this.realtimeReloadTimer = setTimeout(() => {
+      this.realtimeReloadTimer = null;
+      void this.loadBookings(true);
+      void this.tabBadges.refresh();
+    }, 200);
+  }
+
+  private startCountdown(): void {
+    this.stopCountdown();
+    this.tickTimer = setInterval(() => {
+      this.nowTick.set(Date.now());
+      const hasExpiredPending = this.bookings().some((b) => {
+        if (b.status !== 'pending' || !b.approvalDeadlineAt) return false;
+        return new Date(b.approvalDeadlineAt).getTime() <= Date.now();
+      });
+      if (hasExpiredPending && !this.expiredRefreshScheduled && !this.loading()) {
+        this.expiredRefreshScheduled = true;
+        void this.loadBookings(true).finally(() => {
+          this.expiredRefreshScheduled = false;
+        });
+      }
+    }, 1000);
+  }
+
+  private stopCountdown(): void {
+    if (this.tickTimer) {
+      clearInterval(this.tickTimer);
+      this.tickTimer = null;
+    }
+  }
+
+  approvalCountdown(booking: BookingItem): string {
+    this.nowTick(); // dependency for template updates
+    return this.formatApprovalWindow(booking.approvalDeadlineAt);
+  }
+
+  async loadBookings(silent = false) {
+    if (!silent) this.loading.set(true);
     this.errorMessage.set('');
     try {
       const response = await firstValueFrom(this.bookingService.getMyBookings());
       if (!response.success || !response.data) {
         this.errorMessage.set(response.message || 'Unable to load bookings.');
-        this.bookings.set([]);
+        if (!silent) this.bookings.set([]);
         return;
       }
 
       const all = [
-        ...(response.data.upcoming || []),
-        ...(response.data.past || []),
-        ...(response.data.cancelled || []),
-        ...(response.data.completed || []),
+        ...this.asBookingList(response.data.upcoming),
+        ...this.asBookingList(response.data.past),
+        ...this.asBookingList(response.data.cancelled),
+        ...this.asBookingList(response.data.completed),
+        ...this.asBookingList(response.data.invited),
       ];
 
-      const venueBookings = all
-        .map((b) => this.mapBooking(b))
-        .sort((a, b) => String(b.raw.bookingDate || '').localeCompare(String(a.raw.bookingDate || ''))
-          || String(b.raw.startTime || '').localeCompare(String(a.raw.startTime || '')));
+      const venueBookings = this.sortBookings(all.map((b) => this.mapBooking(b)));
 
       this.bookings.set(venueBookings);
     } catch (error: any) {
       this.errorMessage.set(error?.error?.message || String(error) || 'Unable to load bookings.');
-      this.bookings.set([]);
+      if (!silent) this.bookings.set([]);
     } finally {
       this.loading.set(false);
     }
   }
 
   async acceptBooking(id: string) {
-    const item = this.bookings().find((b) => b.id === id);
-    if (!item) return;
     try {
-      await firstValueFrom(this.bookingService.updateBooking({
-        booking_id: id,
-        sport: item.raw.sport,
-        venue_id: item.raw.venueId,
-        date: item.raw.bookingDate,
-        time: this.toAmPm(item.raw.startTime),
-        team_size: item.raw.teamSize || String(item.raw.totalPlayers || 2),
-      }));
+      await firstValueFrom(this.bookingService.approveBooking(id));
       await this.loadBookings();
     } catch (error: any) {
       this.errorMessage.set(error?.error?.message || 'Unable to accept booking.');
@@ -707,9 +819,25 @@ export class VenueBookingsPage implements OnInit {
       couponLabel: booking.couponCode
         ? `${booking.couponCode}${booking.couponDiscount ? ` (−₹${Number(booking.couponDiscount).toLocaleString('en-IN')})` : ''}`
         : null,
+      approvalDeadlineAt: status === 'pending' ? (booking.approvalDeadlineAt || null) : null,
       rentals,
       raw: booking,
     };
+  }
+
+  private formatApprovalWindow(deadline?: string | null): string {
+    if (!deadline) return 'Approve within 10:00';
+    const end = new Date(deadline).getTime();
+    if (Number.isNaN(end)) return 'Approve within 10:00';
+    const remainingMs = end - this.nowTick();
+    if (remainingMs <= 0) return 'Expired — refreshing…';
+
+    const totalSec = Math.ceil(remainingMs / 1000);
+    const mins = Math.floor(totalSec / 60);
+    const secs = totalSec % 60;
+    const clock = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    const by = new Date(deadline).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    return `Approve within ${clock} (by ${by})`;
   }
 
   private formatPaymentStatus(status: string): string {
@@ -725,6 +853,14 @@ export class VenueBookingsPage implements OnInit {
     if (value === 'cancelled' || value === 'expired') return 'cancelled';
     if (value === 'completed') return 'completed';
     return 'confirmed';
+  }
+
+  private asBookingList(value: unknown): BookingRecord[] {
+    if (Array.isArray(value)) return value as BookingRecord[];
+    if (value && typeof value === 'object' && Array.isArray((value as { data?: unknown }).data)) {
+      return (value as { data: BookingRecord[] }).data;
+    }
+    return [];
   }
 
   private toAmPm(time24?: string | null): string {

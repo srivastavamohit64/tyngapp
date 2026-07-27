@@ -61,7 +61,7 @@ import { IonicModule } from '@ionic/angular';
 
       .field.focused {
         background: #ffffff;
-        border-color: #8cf000;
+        border-color: var(--app-primary);
       }
 
       .field.disabled {
@@ -90,7 +90,7 @@ import { IonicModule } from '@ionic/angular';
       }
 
       .field.focused.floating .float-label {
-        color: #8cf000;
+        color: var(--app-primary);
       }
 
       .field-row {
@@ -118,7 +118,7 @@ import { IonicModule } from '@ionic/angular';
       }
 
       .field.focused .field-icon {
-        color: #8cf000;
+        color: var(--app-primary);
       }
 
       input {

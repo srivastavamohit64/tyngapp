@@ -2,7 +2,7 @@
 $venue-bg: #fafbfc;
 $venue-text: #111827;
 $venue-muted: #9ca3af;
-$venue-primary: #8cf000;
+$venue-primary: var(--app-primary);
 $venue-orange: #ff7a00;
 $venue-card-shadow: 0 2px 16px rgba(0, 0, 0, 0.07);
 
@@ -95,7 +95,7 @@ $venue-card-shadow: 0 2px 16px rgba(0, 0, 0, 0.07);
 .venue-hero-orb {
   position: absolute;
   border-radius: 50%;
-  background: rgba(140, 240, 0, 0.1);
+  background: rgba(var(--app-primary-rgb), 0.1);
   pointer-events: none;
 }
 
@@ -209,7 +209,7 @@ $venue-card-shadow: 0 2px 16px rgba(0, 0, 0, 0.07);
 .venue-progress-fill {
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, #8cf000, #a3e635);
+  background: linear-gradient(90deg, var(--app-primary), var(--app-primary-to));
   transition: width 0.8s ease-out;
 }
 
@@ -220,7 +220,7 @@ $venue-card-shadow: 0 2px 16px rgba(0, 0, 0, 0.07);
   overflow: hidden;
   background: #111827;
   box-shadow: 0 10px 28px rgba(17, 24, 39, 0.18);
-  border: 1px solid rgba(140, 240, 0, 0.28);
+  border: 1px solid rgba(var(--app-primary-rgb), 0.28);
   color: #fff;
 }
 
@@ -285,7 +285,7 @@ $venue-card-shadow: 0 2px 16px rgba(0, 0, 0, 0.07);
 }
 
 .venue-completion-card .venue-progress-fill {
-  background: linear-gradient(90deg, #8cf000 0%, #b8f54a 100%);
+  background: linear-gradient(90deg, var(--app-primary) 0%, #b8f54a 100%);
 }
 
 .venue-checklist {
@@ -319,8 +319,8 @@ $venue-card-shadow: 0 2px 16px rgba(0, 0, 0, 0.07);
 }
 
 .venue-check-dot.is-done {
-  background: #8cf000 !important;
-  border-color: #8cf000;
+  background: var(--app-primary) !important;
+  border-color: var(--app-primary);
 }
 
 .venue-check-dot.is-pending {
@@ -355,8 +355,8 @@ $venue-card-shadow: 0 2px 16px rgba(0, 0, 0, 0.07);
   height: 46px;
   border: none;
   border-radius: 14px;
-  background: #8cf000;
-  box-shadow: 0 4px 16px rgba(140, 240, 0, 0.28);
+  background: var(--app-primary);
+  box-shadow: 0 4px 16px rgba(var(--app-primary-rgb), 0.28);
   font-size: 13px;
   font-weight: 900;
   color: $venue-text;
@@ -647,8 +647,8 @@ $venue-card-shadow: 0 2px 16px rgba(0, 0, 0, 0.07);
   padding: 20px;
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, #8cf000 0%, #a3e635 100%);
-  box-shadow: 0 4px 24px rgba(140, 240, 0, 0.35);
+  background: linear-gradient(135deg, var(--app-primary) 0%, var(--app-primary-to) 100%);
+  box-shadow: 0 4px 24px rgba(var(--app-primary-rgb), 0.35);
 }
 
 .venue-ai-orb {
@@ -840,8 +840,8 @@ $venue-card-shadow: 0 2px 16px rgba(0, 0, 0, 0.07);
   font-size: 11px;
   font-weight: 700;
   color: $venue-text;
-  background: linear-gradient(135deg, #8cf000, #a3e635);
-  box-shadow: 0 2px 6px rgba(140, 240, 0, 0.28);
+  background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to));
+  box-shadow: 0 2px 6px rgba(var(--app-primary-rgb), 0.28);
   cursor: pointer;
   flex-shrink: 0;
 

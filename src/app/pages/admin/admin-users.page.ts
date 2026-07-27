@@ -41,7 +41,7 @@ import { IonicModule } from '@ionic/angular';
       .user-card { display: flex; align-items: center; gap: 12px; background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 14px; margin-bottom: 10px; }
       .avatar { width: 44px; height: 44px; border-radius: 50%; background: #f3f4f6; display: grid; place-items: center; font-size: 22px; }
       .info { flex: 1; } .info strong { display: block; color: #111827; font-size: 14px; } .info span { font-size: 12px; color: #6b7280; }
-      .badge { font-size: 11px; font-weight: 700; text-transform: uppercase; padding: 4px 10px; border-radius: 999px; background: rgba(140,240,0,0.2); color: #111827; }
+      .badge { font-size: 11px; font-weight: 700; text-transform: uppercase; padding: 4px 10px; border-radius: 999px; background: rgba(var(--app-primary-rgb),0.2); color: #111827; }
       .badge.banned { background: rgba(239,68,68,0.15); color: #ef4444; }
     `,
   ],

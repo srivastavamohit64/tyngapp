@@ -179,7 +179,7 @@ export interface VenueCardData {
       .badge-status {
         font-size: 10px;
         font-weight: 700;
-        background: #8cf000;
+        background: var(--app-primary);
         color: #111827;
         padding: 4px 10px;
         border-radius: 999px;

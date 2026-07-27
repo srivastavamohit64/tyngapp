@@ -425,7 +425,7 @@ const FILTERS: { id: FilterId; label: string; emoji: string }[] = [
     .clear-btn {
       font-size: 12px;
       font-weight: 700;
-      color: #8CF000;
+      color: var(--app-primary);
       background: none;
       border: none;
       cursor: pointer;
@@ -455,8 +455,8 @@ const FILTERS: { id: FilterId; label: string; emoji: string }[] = [
     .ai-card {
       border-radius: 28px;
       padding: 16px;
-      background: linear-gradient(135deg, #8CF000 0%, #A3E635 100%);
-      box-shadow: 0 4px 24px rgba(140,240,0,0.35);
+      background: linear-gradient(135deg, var(--app-primary) 0%, var(--app-primary-to) 100%);
+      box-shadow: 0 4px 24px rgba(var(--app-primary-rgb),0.35);
       position: relative;
       overflow: hidden;
     }
@@ -520,7 +520,7 @@ const FILTERS: { id: FilterId; label: string; emoji: string }[] = [
       top: 16px; right: 16px;
       width: 10px; height: 10px;
       border-radius: 50%;
-      background: #8CF000;
+      background: var(--app-primary);
     }
 
     .reward-inner {
@@ -562,14 +562,14 @@ const FILTERS: { id: FilterId; label: string; emoji: string }[] = [
     }
 
     .std-card-unread {
-      border-color: rgba(140,240,0,0.3);
+      border-color: rgba(var(--app-primary-rgb),0.3);
     }
 
     .std-unread-bar {
       position: absolute;
       left: 0; top: 0; bottom: 0;
       width: 3px;
-      background: #8CF000;
+      background: var(--app-primary);
       border-radius: 0 2px 2px 0;
     }
 
@@ -726,7 +726,7 @@ const FILTERS: { id: FilterId; label: string; emoji: string }[] = [
       margin-top: 8px;
       padding: 8px 16px;
       border-radius: 999px;
-      background: #8CF000;
+      background: var(--app-primary);
       color: #111827;
       font-size: 12px;
       font-weight: 800;

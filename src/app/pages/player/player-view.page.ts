@@ -165,7 +165,7 @@ import { sportEmoji } from '../../core/utils/booking.utils';
         gap: 8px;
       }
       .chips span {
-        background: rgba(140, 240, 0, 0.12);
+        background: rgba(var(--app-primary-rgb), 0.12);
         color: #111827;
         border-radius: 999px;
         padding: 6px 12px;
@@ -192,7 +192,7 @@ import { sportEmoji } from '../../core/utils/booking.utils';
         margin-top: 8px;
         min-height: 52px;
         border-radius: 999px;
-        background: linear-gradient(135deg, #8cf000, #a3e635);
+        background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to));
         color: #111827;
         font-weight: 800;
       }

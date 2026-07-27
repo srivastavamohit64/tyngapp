@@ -7,6 +7,9 @@ import { PlatformService } from './core/services/platform.service';
 import { ThemeService } from './core/services/theme.service';
 import { AuthService } from './core/services/auth.service';
 import { VenueService } from './core/services/venue.service';
+import { RealtimeService } from './core/services/realtime.service';
+import { PushNotificationService } from './core/services/push-notification.service';
+import { TabBadgeService } from './core/services/tab-badge.service';
 
 interface CoachMenuItem {
   label: string;
@@ -38,6 +41,9 @@ export class AppComponent implements OnInit {
   private readonly menu = inject(MenuController);
   private readonly router = inject(Router);
   private readonly venueService = inject(VenueService);
+  private readonly realtime = inject(RealtimeService);
+  private readonly pushNotifications = inject(PushNotificationService);
+  private readonly tabBadges = inject(TabBadgeService);
 
   showLogoutConfirm = false;
 
@@ -67,10 +73,11 @@ export class AppComponent implements OnInit {
     { label: 'Complete Profile', sub: 'Finish your coach profile', path: '/app/coach/complete-profile', icon: 'clipboard-outline' },
     { label: 'Personal Stats', sub: 'Health & fitness info', path: '/app/stats', icon: 'pulse-outline' },
     { label: 'My Schedule', sub: 'Sessions & calendar', path: '/app/coach/schedule', icon: 'calendar-outline', badge: '3' },
+    { label: 'Wallet', sub: 'Balance, top-up & history', path: '/app/wallet', icon: 'wallet-outline' },
     { label: 'Chat', sub: 'Students & community', path: '/app/coach/chat', icon: 'chatbubbles-outline', badge: '7' },
     { label: 'Book Venue', sub: 'Discover & reserve venues', path: '/app/coach/book-venue', icon: 'location-outline' },
     { label: 'My Students', sub: 'Manage your students', path: '/app/coach/students', icon: 'people-outline' },
-    { label: 'Earnings', sub: 'Revenue & payouts', path: '/app/coach/earnings', icon: 'wallet-outline' },
+    { label: 'Earnings', sub: 'Revenue & payouts', path: '/app/coach/earnings', icon: 'cash-outline' },
     { label: 'Analytics', sub: 'Profile & booking stats', path: '/app/coach/insights', icon: 'bar-chart-outline' },
     { label: 'Settings', sub: 'Preferences & privacy', path: '/app/coach/settings', icon: 'settings-outline' },
   ];
@@ -89,7 +96,8 @@ export class AppComponent implements OnInit {
     return [
       { label: 'Venue Profile', sub: profileSub, path: '/app/venue/profile', icon: 'business-outline' },
       { label: 'Facilities', sub: facilitiesSub, path: '/app/venue/facilities', icon: 'cube-outline' },
-      { label: 'Earnings', sub: earnings, path: '/app/venue/earnings', icon: 'wallet-outline' },
+      { label: 'Wallet', sub: 'Balance, top-up & history', path: '/app/wallet', icon: 'wallet-outline' },
+      { label: 'Earnings', sub: earnings, path: '/app/venue/earnings', icon: 'cash-outline' },
       {
         label: 'Bookings',
         sub: bookingsSub,
@@ -125,6 +133,11 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     void this.platform.init();
+    void this.realtime.connect();
+    if (this.auth.getToken()) {
+      void this.pushNotifications.syncIfAuthenticated();
+      this.tabBadges.start();
+    }
   }
 
   user(): AuthUser | null {

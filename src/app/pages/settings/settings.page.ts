@@ -17,6 +17,7 @@ export class SettingsPage {
   readonly auth = inject(AuthService);
 
   readonly options = [
+    { name: 'Wallet', sub: 'Balance, top-up & transactions', icon: 'wallet-outline', path: '/app/wallet' },
     { name: 'Edit Profile', sub: 'Name, photo, location', icon: 'person-outline', path: '/app/profile/edit' },
     { name: 'Change Password', sub: 'Update your password', icon: 'lock-closed-outline', path: '/app/change-password' },
     { name: 'Notifications', sub: 'Alerts and reminders', icon: 'notifications-outline', path: null },

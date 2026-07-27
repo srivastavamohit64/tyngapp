@@ -11,6 +11,14 @@
 
         <ng-container *ngIf="!loading() && !errorMessage()">
 
+        <section *ngIf="bookingBlockMessage()" class="venue-block-banner">
+          <ion-icon name="warning-outline"></ion-icon>
+          <div>
+            <strong>Temporarily blocked</strong>
+            <p>{{ bookingBlockMessage() }}</p>
+          </div>
+        </section>
+
         <!-- Venue Pulse -->
         <section class="venue-hero-dark">
           <div class="venue-hero-orb venue-hero-orb--lg"></div>
@@ -125,7 +133,7 @@
           </div>
           <div class="venue-legend">
             <div class="venue-legend-item">
-              <div class="venue-legend-swatch" style="background: #8cf000"></div>
+              <div class="venue-legend-swatch" style="background: var(--app-primary)"></div>
               <span>Booked</span>
             </div>
             <div class="venue-legend-item">

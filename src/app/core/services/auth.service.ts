@@ -1,4 +1,4 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, Injector, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, catchError, map, of, tap, throwError } from 'rxjs';
 import {
@@ -12,6 +12,10 @@ import {
   UpdateProfilePayload,
 } from '../models/api.model';
 import { ApiService } from './api.service';
+import { PushNotificationService } from './push-notification.service';
+import { TabBadgeService } from './tab-badge.service';
+import { ThemeService } from './theme.service';
+import { resolveMediaUrl } from '../utils/media-url.util';
 
 const TOKEN_KEY = 'tyng_auth_token';
 const USER_KEY = 'tyng_user';
@@ -20,6 +24,7 @@ const USER_KEY = 'tyng_user';
 export class AuthService {
   private readonly api = inject(ApiService);
   private readonly router = inject(Router);
+  private readonly injector = inject(Injector);
 
   readonly user = signal<AuthUser | null>(this.readCachedUser());
   readonly sessionReady = signal(false);
@@ -40,6 +45,11 @@ export class AuthService {
 
   logout(): Observable<void> {
     const clear = () => {
+      try {
+        this.injector.get(TabBadgeService).stop();
+      } catch {
+        // ignore
+      }
       this.clearSession();
       void this.router.navigateByUrl('/welcome');
     };
@@ -49,14 +59,31 @@ export class AuthService {
       return of(undefined);
     }
 
-    return this.api.post<null>('/logout').pipe(
-      tap(() => clear()),
-      catchError(() => {
-        clear();
-        return of(undefined);
-      }),
-      map(() => undefined),
-    );
+    return new Observable<void>((subscriber) => {
+      const push = this.injector.get(PushNotificationService);
+      const deviceToken = push.getCurrentToken();
+      const deviceId = push.getDeviceId();
+
+      void push.unregister().finally(() => {
+        this.api.post<null>('/logout', {
+          device_token: deviceToken || undefined,
+          device_id: deviceId || undefined,
+        }).pipe(
+          tap(() => clear()),
+          catchError(() => {
+            clear();
+            return of(undefined);
+          }),
+          map(() => undefined),
+        ).subscribe({
+          next: () => {
+            subscriber.next();
+            subscriber.complete();
+          },
+          error: (err) => subscriber.error(err),
+        });
+      });
+    });
   }
 
   fetchMe(): Observable<AuthUser> {
@@ -197,6 +224,11 @@ export class AuthService {
   private persistAuth(data: AuthTokenResponse): AuthUser {
     localStorage.setItem(TOKEN_KEY, data.token);
     this.setUser(data.user);
+    queueMicrotask(() => {
+      void this.injector.get(PushNotificationService).syncIfAuthenticated();
+      this.injector.get(TabBadgeService).start();
+      void this.injector.get(ThemeService).refreshFromApi(true);
+    });
     return data.user;
   }
 
@@ -204,8 +236,11 @@ export class AuthService {
     const unwrapped = this.unwrapUser(user);
     const normalized: AuthUser = {
       ...unwrapped,
-      // Bust image caches so Profile / drawer / edit screens refresh immediately.
-      profileImage: this.withCacheBust(unwrapped.profileImage, unwrapped.updatedAt || String(Date.now())),
+      // Absolute media URL + cache-bust so Profile / drawer refresh immediately.
+      profileImage: this.withCacheBust(
+        resolveMediaUrl(unwrapped.profileImage),
+        unwrapped.updatedAt || String(Date.now()),
+      ),
     };
     localStorage.setItem(USER_KEY, JSON.stringify(normalized));
     this.user.set(normalized);
@@ -229,7 +264,15 @@ export class AuthService {
   private readCachedUser(): AuthUser | null {
     try {
       const stored = localStorage.getItem(USER_KEY);
-      return stored ? (JSON.parse(stored) as AuthUser) : null;
+      if (!stored) return null;
+      const parsed = JSON.parse(stored) as AuthUser;
+      return {
+        ...parsed,
+        profileImage: this.withCacheBust(
+          resolveMediaUrl(parsed.profileImage),
+          parsed.updatedAt || String(Date.now()),
+        ),
+      };
     } catch {
       return null;
     }

@@ -157,6 +157,14 @@ export interface BookingRecord {
   bookingStatus: BookingStatus;
   paymentStatus: PaymentStatus | string;
   paymentMethod?: string | null;
+  walletAmount?: number;
+  hostAmount?: number;
+  playerShareAmount?: number;
+  costPerPlayer?: number;
+  refundAmount?: number;
+  refundStatus?: string | null;
+  approvalDeadlineAt?: string | null;
+  cancellationReason?: string | null;
   couponCode?: string | null;
   couponDiscount?: number;
   rentalDetails?: Array<{
@@ -168,9 +176,12 @@ export interface BookingRecord {
   canJoin: boolean;
   canLeave: boolean;
   canCancel: boolean;
+  canApprove?: boolean;
+  canReject?: boolean;
   canAcceptInvite?: boolean;
   canRejectInvite?: boolean;
   isHost: boolean;
+  isVenue?: boolean;
   isJoined: boolean;
   isInvited?: boolean;
   host: AuthUser;
@@ -243,4 +254,35 @@ export interface FriendItem {
   online?: boolean;
   lastSeen?: string | null;
   bio?: string | null;
+}
+
+export interface HomeAd {
+  id: number;
+  title: string;
+  imageUrl: string;
+  linkUrl?: string | null;
+  sortOrder: number;
+}
+
+export interface AppThemeColors {
+  primary: string;
+  secondary: string;
+  accent: string;
+  background: string;
+  card: string;
+  text_primary: string;
+  text_secondary: string;
+  button: string;
+  success: string;
+  warning: string;
+  error: string;
+}
+
+export interface AppThemePayload {
+  id?: number;
+  name?: string;
+  updated_at?: string | null;
+  colors: AppThemeColors;
+  branding?: Record<string, unknown>;
+  meta?: Record<string, unknown>;
 }

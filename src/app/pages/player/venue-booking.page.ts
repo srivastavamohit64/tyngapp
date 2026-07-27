@@ -410,9 +410,9 @@ interface DateItem {
       }
 
       .date-chip.is-active {
-        border-color: #8cf000;
-        background: rgba(140, 240, 0, 0.12);
-        box-shadow: 0 4px 14px rgba(140, 240, 0, 0.22);
+        border-color: var(--app-primary);
+        background: rgba(var(--app-primary-rgb), 0.12);
+        box-shadow: 0 4px 14px rgba(var(--app-primary-rgb), 0.22);
       }
 
       .date-day {
@@ -497,7 +497,7 @@ interface DateItem {
         height: 18px;
         border-radius: 999px;
         background: #111827;
-        color: #8cf000;
+        color: var(--app-primary);
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -509,9 +509,9 @@ interface DateItem {
       }
 
       .slot-chip.is-selected {
-        background: #8cf000;
-        border-color: #8cf000;
-        box-shadow: 0 6px 16px rgba(140, 240, 0, 0.28);
+        background: var(--app-primary);
+        border-color: var(--app-primary);
+        box-shadow: 0 6px 16px rgba(var(--app-primary-rgb), 0.28);
       }
 
       .slot-chip.is-selected .slot-time {
@@ -556,7 +556,7 @@ interface DateItem {
       }
 
       .swatch--selected {
-        background: #8cf000;
+        background: var(--app-primary);
       }
 
       .swatch--available {
@@ -582,7 +582,7 @@ interface DateItem {
         font-weight: 900;
         letter-spacing: 0.1em;
         text-transform: uppercase;
-        color: #8cf000;
+        color: var(--app-primary);
       }
 
       .summary-grid {
@@ -600,7 +600,7 @@ interface DateItem {
 
       .summary-item ion-icon {
         font-size: 18px;
-        color: #8cf000;
+        color: var(--app-primary);
         margin-top: 2px;
       }
 
@@ -660,7 +660,7 @@ interface DateItem {
 
       .cost-row--total strong {
         font-size: 18px;
-        color: #8cf000;
+        color: var(--app-primary);
       }
 
       .duration-pill {
@@ -669,8 +669,8 @@ interface DateItem {
         gap: 8px;
         padding: 12px 14px;
         border-radius: 16px;
-        background: rgba(140, 240, 0, 0.1);
-        border: 1px solid rgba(140, 240, 0, 0.28);
+        background: rgba(var(--app-primary-rgb), 0.1);
+        border: 1px solid rgba(var(--app-primary-rgb), 0.28);
         font-size: 13px;
         font-weight: 800;
         color: #111827;

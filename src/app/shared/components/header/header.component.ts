@@ -184,7 +184,7 @@ export type AppHeaderVariant = 'brand' | 'page' | 'venue';
       }
 
       .brand .dot {
-        color: #8cf000;
+        color: var(--app-primary);
       }
 
       .bell-icon {

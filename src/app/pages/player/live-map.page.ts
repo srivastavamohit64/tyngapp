@@ -140,7 +140,7 @@ const SPORT_COLORS: Record<string, string> = {
         border-radius: 12px;
         display: grid;
         place-items: center;
-        background: rgba(140, 240, 0, 0.2);
+        background: rgba(var(--app-primary-rgb), 0.2);
         color: #111827;
         font-size: 20px;
         padding: 0;
@@ -232,7 +232,7 @@ const SPORT_COLORS: Record<string, string> = {
         min-height: unset;
         padding: 10px 18px;
         border-radius: 999px;
-        background: #8cf000;
+        background: var(--app-primary);
         color: #111827;
         font-size: 13px;
         font-weight: 700;
@@ -259,7 +259,7 @@ const SPORT_COLORS: Record<string, string> = {
         text-transform: capitalize;
         font-size: 12px;
         font-weight: 700;
-        color: #8cf000;
+        color: var(--app-primary);
         margin-bottom: 4px;
       }
 
@@ -293,7 +293,7 @@ const SPORT_COLORS: Record<string, string> = {
       }
 
       .status.live {
-        background: rgba(140, 240, 0, 0.2);
+        background: rgba(var(--app-primary-rgb), 0.2);
         color: #111827;
       }
     `,

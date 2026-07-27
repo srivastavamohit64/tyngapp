@@ -44,7 +44,7 @@ import { IonicModule } from '@ionic/angular';
         align-items: center;
         gap: 2px;
         background: transparent;
-        color: #8cf000;
+        color: var(--app-primary);
         font-size: 14px;
         font-weight: 500;
         min-height: unset;
