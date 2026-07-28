@@ -115,14 +115,19 @@ export class TabBadgeService implements OnDestroy {
         const venueId = String(game.venueId || game.venue?.id || '');
         const hostId = String(game.hostUserId || '');
 
+        // Always refresh from API — never optimistic +1 (that double-counted
+        // when Firebase emitted create and the badge already had the pending).
         if (user.role === 'venue' && venueId === userId) {
           void this.refresh();
           return;
         }
 
-        if (user.role !== 'venue' && hostId === userId) {
-          if (event.type === 'updated' && ['approved', 'rejected', 'cancelled', 'joined'].includes(event.action)) {
-            this.bumpBookings(1);
+        if (user.role !== 'venue' && (hostId === userId || this.isPlayerInGame(game, userId))) {
+          if (
+            event.type === 'created' ||
+            (event.type === 'updated' &&
+              ['approved', 'rejected', 'cancelled', 'joined', 'pending_approval'].includes(event.action))
+          ) {
             void this.refresh();
           }
         }
@@ -130,6 +135,10 @@ export class TabBadgeService implements OnDestroy {
     } catch {
       // optional
     }
+  }
+
+  private isPlayerInGame(game: { acceptedPlayers?: { user?: { id?: string } }[] }, userId: string): boolean {
+    return (game.acceptedPlayers || []).some((p) => String(p.user?.id || '') === userId);
   }
 
   private async handleRoute(path: string): Promise<void> {

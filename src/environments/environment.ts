@@ -4,13 +4,16 @@ export const environment = {
   production: false,
   apiUrl: 'https://tyngpeople.com/api',
   googleMapsApiKey: envSecrets.googleMapsApiKey,
-  reverb: {
-    // Set enabled=true after Reverb is deployed behind wss on the live host.
+  // Firebase Realtime Database (replaces Laravel Reverb)
+  firebase: {
     enabled: true,
-    key: '',
-    host: 'tyngpeople.com',
-    port: 443,
-    scheme: 'https',
-    channel: 'nearby-games',
+    apiKey: 'AIzaSyBvHY2HbmgEau-DVO10-oiYr9FFuB5wDqU',
+    authDomain: 'tyng-64f71.firebaseapp.com',
+    databaseURL: 'https://tyng-64f71-default-rtdb.firebaseio.com',
+    projectId: 'tyng-64f71',
+    storageBucket: 'tyng-64f71.firebasestorage.app',
+    messagingSenderId: '209498346476',
+    appId: '',
+    path: 'realtime/nearby-games',
   },
 };

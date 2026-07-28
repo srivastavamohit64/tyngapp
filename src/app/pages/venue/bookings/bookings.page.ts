@@ -660,7 +660,7 @@ export class VenueBookingsPage implements OnInit, OnDestroy {
         this.queueRealtimeReload();
       });
     } catch {
-      // Reverb optional — pull-to-refresh still works.
+      // Firebase RTDB optional — pull-to-refresh still works.
     }
   }
 

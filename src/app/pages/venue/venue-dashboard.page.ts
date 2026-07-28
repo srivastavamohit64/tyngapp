@@ -1,9 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { IonicModule } from '@ionic/angular';
-import { firstValueFrom } from 'rxjs';
+import { IonicModule, ViewWillEnter } from '@ionic/angular';
+import { Subscription, firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
+import { RealtimeService } from '../../core/services/realtime.service';
+import { TabBadgeService } from '../../core/services/tab-badge.service';
 import { VenueDashboardData, VenueService } from '../../core/services/venue.service';
 import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 
@@ -41,10 +43,12 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
   templateUrl: './venue-dashboard.page.html',
   styleUrl: './venue-dashboard.page.scss',
 })
-export class VenueDashboardPage implements OnInit {
+export class VenueDashboardPage implements OnInit, OnDestroy, ViewWillEnter {
   private readonly router = inject(Router);
   readonly auth = inject(AuthService);
   private readonly venueService = inject(VenueService);
+  private readonly realtime = inject(RealtimeService);
+  private readonly tabBadges = inject(TabBadgeService);
 
   profileDismissed = signal(false);
   loading = signal(true);
@@ -76,6 +80,9 @@ export class VenueDashboardPage implements OnInit {
   pendingActions: { label: string; sub: string; urgency: string }[] = [];
   bookingBlockMessage = signal<string | null>(null);
 
+  private realtimeSub: Subscription | null = null;
+  private realtimeReloadTimer: ReturnType<typeof setTimeout> | null = null;
+
   async ngOnInit() {
     if (this.auth.user()?.role !== 'venue') {
       void this.router.navigateByUrl('/app/home', { replaceUrl: true });
@@ -91,10 +98,27 @@ export class VenueDashboardPage implements OnInit {
     // Do not hard-redirect on venueProfileReady=false — older APIs still
     // flag optional Amenities/Verification. Dashboard shows a completion card instead.
     await this.loadDashboard();
+    void this.bindRealtime();
   }
 
-  async loadDashboard() {
-    this.loading.set(true);
+  ionViewWillEnter(): void {
+    if (this.auth.user()?.role === 'venue') {
+      void this.loadDashboard(true);
+      void this.tabBadges.refresh();
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.realtimeSub?.unsubscribe();
+    this.realtimeSub = null;
+    if (this.realtimeReloadTimer) {
+      clearTimeout(this.realtimeReloadTimer);
+      this.realtimeReloadTimer = null;
+    }
+  }
+
+  async loadDashboard(silent = false) {
+    if (!silent) this.loading.set(true);
     this.errorMessage.set('');
     try {
       const response = await firstValueFrom(this.venueService.getDashboard());
@@ -113,6 +137,32 @@ export class VenueDashboardPage implements OnInit {
     } finally {
       this.loading.set(false);
     }
+  }
+
+  private async bindRealtime(): Promise<void> {
+    try {
+      await this.realtime.connect();
+      const venueId = String(this.auth.user()?.id || '');
+      this.realtimeSub = this.realtime.nearbyGames$.subscribe((event) => {
+        if (!venueId || !event.game?.id) return;
+        const gameVenueId = String(event.game.venueId || event.game.venue?.id || '');
+        if (gameVenueId !== venueId) return;
+
+        // Reload from API only — no optimistic +1 (was double-counting).
+        this.queueRealtimeReload();
+        void this.tabBadges.refresh();
+      });
+    } catch {
+      // Firebase optional — manual refresh still works.
+    }
+  }
+
+  private queueRealtimeReload(): void {
+    if (this.realtimeReloadTimer) clearTimeout(this.realtimeReloadTimer);
+    this.realtimeReloadTimer = setTimeout(() => {
+      this.realtimeReloadTimer = null;
+      void this.loadDashboard(true);
+    }, 250);
   }
 
   private applyDashboard(data: VenueDashboardData) {
