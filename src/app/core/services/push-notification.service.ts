@@ -13,6 +13,9 @@ import { ApiService } from './api.service';
 import { AuthService } from './auth.service';
 
 const DEVICE_ID_KEY = 'tyng_device_id';
+const LOG_PREFIX = '[TYNG Push]';
+/** Must match android/app/.../strings.xml default_notification_channel_id */
+const ANDROID_CHANNEL_ID = 'tyng_default';
 
 interface DeviceInfoLike {
   model?: string;
@@ -38,6 +41,7 @@ export class PushNotificationService {
   private readonly router = inject(Router);
 
   private initialized = false;
+  private listenersAttached = false;
   private currentToken: string | null = null;
   private deviceId: string | null = null;
 
@@ -49,50 +53,62 @@ export class PushNotificationService {
     return this.deviceId || localStorage.getItem(DEVICE_ID_KEY);
   }
 
+  /**
+   * Register for FCM on native platforms. Safe to call multiple times;
+   * re-attempts if a previous run failed before registration completed.
+   */
   async init(): Promise<void> {
-    if (!Capacitor.isNativePlatform() || this.initialized) {
+    if (!Capacitor.isNativePlatform()) {
+      console.info(`${LOG_PREFIX} skip init — not a native platform (${Capacitor.getPlatform()})`);
       return;
     }
 
-    this.initialized = true;
+    if (this.initialized) {
+      console.info(`${LOG_PREFIX} already initialized`, {
+        tokenPreview: this.previewToken(this.currentToken),
+      });
+      return;
+    }
+
     await this.ensureDeviceId();
+    console.info(`${LOG_PREFIX} init start`, {
+      platform: Capacitor.getPlatform(),
+      deviceId: this.getDeviceId(),
+    });
 
     try {
       let perm = await PushNotifications.checkPermissions();
+      console.info(`${LOG_PREFIX} checkPermissions`, perm);
+
       if (perm.receive === 'prompt' || perm.receive === 'prompt-with-rationale') {
+        console.info(`${LOG_PREFIX} requesting POST_NOTIFICATIONS permission`);
         perm = await PushNotifications.requestPermissions();
+        console.info(`${LOG_PREFIX} requestPermissions result`, perm);
       }
 
       if (perm.receive !== 'granted') {
-        console.warn('Push notification permission not granted');
+        // Do not mark initialized — user can grant later in system settings.
+        console.warn(`${LOG_PREFIX} permission not granted — notifications will not display`, perm);
         return;
       }
 
+      await this.ensureAndroidChannel();
+      await this.attachListeners();
+
+      console.info(`${LOG_PREFIX} calling PushNotifications.register()`);
       await PushNotifications.register();
+      console.info(`${LOG_PREFIX} register() resolved (token arrives via "registration" listener)`);
 
-      PushNotifications.addListener('registration', (token: Token) => {
-        this.currentToken = token.value;
-        void this.syncToken(token.value);
-      });
-
-      PushNotifications.addListener('registrationError', (error) => {
-        console.warn('Push registration error', error);
-      });
-
-      PushNotifications.addListener('pushNotificationReceived', (notification: PushNotificationSchema) => {
-        console.info('Push received in foreground', notification);
-      });
-
-      PushNotifications.addListener('pushNotificationActionPerformed', (action: ActionPerformed) => {
-        this.handleNotificationTap(action.notification);
-      });
+      this.initialized = true;
     } catch (error) {
-      console.warn('Push notification init failed', error);
+      console.error(`${LOG_PREFIX} init failed`, error);
+      this.initialized = false;
     }
   }
 
   async syncIfAuthenticated(): Promise<void> {
     if (!this.auth.getToken()) {
+      console.info(`${LOG_PREFIX} syncIfAuthenticated skipped — user not authenticated`);
       return;
     }
 
@@ -100,6 +116,8 @@ export class PushNotificationService {
 
     if (this.currentToken) {
       await this.syncToken(this.currentToken);
+    } else {
+      console.info(`${LOG_PREFIX} waiting for FCM token before backend sync`);
     }
   }
 
@@ -113,6 +131,10 @@ export class PushNotificationService {
     }
 
     try {
+      console.info(`${LOG_PREFIX} unregister / mark logged-out on backend`, {
+        tokenPreview: this.previewToken(token),
+        deviceId,
+      });
       await firstValueFrom(
         this.api.delete('/device-token', {
           token: token || undefined,
@@ -126,21 +148,102 @@ export class PushNotificationService {
     }
   }
 
+  private async ensureAndroidChannel(): Promise<void> {
+    if (Capacitor.getPlatform() !== 'android') {
+      return;
+    }
+
+    try {
+      await PushNotifications.createChannel({
+        id: ANDROID_CHANNEL_ID,
+        name: 'TYNG Notifications',
+        description: 'Booking, wallet, and account alerts',
+        importance: 5, // IMPORTANCE_HIGH — heads-up eligible
+        visibility: 1, // VISIBILITY_PUBLIC
+        sound: 'default',
+        vibration: true,
+        lights: true,
+        lightColor: '#2212CC',
+      });
+      console.info(`${LOG_PREFIX} Android notification channel ready`, { id: ANDROID_CHANNEL_ID });
+    } catch (error) {
+      console.warn(`${LOG_PREFIX} createChannel failed (non-fatal on older Android)`, error);
+    }
+  }
+
+  private async attachListeners(): Promise<void> {
+    if (this.listenersAttached) {
+      return;
+    }
+
+    // Attach BEFORE register() so retained registration events are not missed.
+    await PushNotifications.removeAllListeners();
+
+    await PushNotifications.addListener('registration', (token: Token) => {
+      const value = token?.value || '';
+      console.info(`${LOG_PREFIX} FCM registration token received`, {
+        length: value.length,
+        preview: this.previewToken(value),
+        looksLikeFcm: this.looksLikeFcmToken(value),
+      });
+      this.currentToken = value;
+      void this.syncToken(value);
+    });
+
+    await PushNotifications.addListener('registrationError', (error) => {
+      console.error(`${LOG_PREFIX} registrationError`, error);
+    });
+
+    await PushNotifications.addListener(
+      'pushNotificationReceived',
+      (notification: PushNotificationSchema) => {
+        // Foreground: Capacitor displays via FCM when presentationOptions includes "alert"
+        // and ApplicationInfo.metaData is present (see AndroidManifest meta-data tags).
+        console.info(`${LOG_PREFIX} pushNotificationReceived (foreground)`, {
+          id: notification.id,
+          title: notification.title,
+          body: notification.body,
+          data: notification.data,
+        });
+      },
+    );
+
+    await PushNotifications.addListener(
+      'pushNotificationActionPerformed',
+      (action: ActionPerformed) => {
+        console.info(`${LOG_PREFIX} pushNotificationActionPerformed (opened)`, {
+          actionId: action.actionId,
+          notification: action.notification,
+        });
+        this.handleNotificationTap(action.notification);
+      },
+    );
+
+    this.listenersAttached = true;
+    console.info(`${LOG_PREFIX} listeners attached (registration, received, actionPerformed)`);
+  }
+
   private async syncToken(token: string): Promise<void> {
     if (!this.auth.getToken()) {
+      console.info(`${LOG_PREFIX} token held locally — backend sync deferred until login`);
       return;
     }
 
     try {
       const details = await this.collectDeviceDetails();
+      console.info(`${LOG_PREFIX} syncing token to backend /device-token`, {
+        tokenPreview: this.previewToken(token),
+        ...details,
+      });
       await firstValueFrom(
         this.api.post('/device-token', {
           token,
           ...details,
         }),
       );
+      console.info(`${LOG_PREFIX} backend token sync OK`);
     } catch (error) {
-      console.warn('Failed to sync device token', error);
+      console.warn(`${LOG_PREFIX} Failed to sync device token`, error);
     }
   }
 
@@ -209,14 +312,36 @@ export class PushNotificationService {
     this.deviceId = id;
   }
 
+  private looksLikeFcmToken(token: string): boolean {
+    // FCM registration tokens are long opaque strings (typically 140+ chars).
+    return typeof token === 'string' && token.length >= 100 && !token.includes(' ');
+  }
+
+  private previewToken(token: string | null): string | null {
+    if (!token) {
+      return null;
+    }
+    if (token.length <= 16) {
+      return token;
+    }
+    return `${token.slice(0, 8)}…${token.slice(-6)} (len=${token.length})`;
+  }
+
   private handleNotificationTap(notification: PushNotificationSchema): void {
     const data = (notification.data || {}) as Record<string, unknown>;
     const action = String(data['action'] || '');
     const bookingId = data['booking_id'] ? String(data['booking_id']) : null;
     const role = this.auth.user()?.role;
 
+    console.info(`${LOG_PREFIX} handleNotificationTap`, { action, bookingId, role });
+
     if (action === 'wallet_credit') {
       void this.router.navigateByUrl('/app/wallet');
+      return;
+    }
+
+    if (action === 'friend_added' || action === 'friend_matched') {
+      void this.router.navigateByUrl('/app/discover');
       return;
     }
 
@@ -241,6 +366,12 @@ export class PushNotificationService {
       return;
     }
 
-    void this.router.navigateByUrl(role === 'venue' ? '/app/venue/bookings' : '/app/notifications');
+    void this.router.navigateByUrl(
+      role === 'venue'
+        ? '/app/venue/notifications'
+        : role === 'coach'
+          ? '/app/coach/notifications'
+          : '/app/notifications',
+    );
   }
 }

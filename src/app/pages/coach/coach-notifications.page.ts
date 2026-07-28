@@ -1,117 +1,23 @@
 import { CommonModule } from '@angular/common';
-import { Component, signal, computed, inject } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
+import {
+  AppNotification,
+  NotificationFeedService,
+  NotificationCategory,
+} from '../../core/services/notification-feed.service';
 
-interface CoachNotif {
-  id: string;
-  category: 'messages' | 'bookings' | 'students' | 'coaching' | 'venues' | 'achievements' | 'payments';
-  group: 'today' | 'yesterday' | 'earlier';
-  unread: boolean;
-  timestamp: string;
-  title: string;
-  description: string;
-  image?: string;
-  avatar?: string;
-  emoji?: string;
-  gradient?: string;
-  isAI?: boolean;
-  isWide?: boolean;
-  isReward?: boolean;
-  primaryAction?: { label: string; style: 'green' | 'orange' | 'white' };
+type CoachNotif = AppNotification & {
   secondaryAction?: { label: string; style: 'red' };
-}
-
-const SEED_NOTIFS: CoachNotif[] = [
-  {
-    id: 'cn1', category: 'coaching', group: 'today', unread: true, timestamp: 'Just now',
-    title: '12 football players nearby need a weekend coach 🤖',
-    description: 'Beginner-friendly sessions. Perfect match for your Saturday availability and skill level.',
-    isAI: true, emoji: '🤖', primaryAction: { label: 'Apply Now', style: 'orange' },
-  },
-  {
-    id: 'cn2', category: 'messages', group: 'today', unread: true, timestamp: '5 min ago',
-    title: 'Rahul Sharma',
-    description: '"Can we reschedule tomorrow\'s session to 7 PM? Something came up at work."',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&auto=format',
-    primaryAction: { label: 'Reply', style: 'green' },
-  },
-  {
-    id: 'cn3', category: 'bookings', group: 'today', unread: true, timestamp: '30 min ago',
-    title: 'New Coaching Session Booked 📅',
-    description: 'Aryan Mehta booked an Individual Cricket Session · Tomorrow · 6:00 PM · 90 min',
-    avatar: 'https://images.unsplash.com/photo-1552058544-f2b08422138a?w=100&h=100&fit=crop&auto=format',
-    primaryAction: { label: 'View Booking', style: 'green' },
-  },
-  {
-    id: 'cn4', category: 'bookings', group: 'today', unread: true, timestamp: '1 hr ago',
-    title: 'Reschedule Request',
-    description: 'Priya has requested to move today\'s session from 5:00 PM → 7:00 PM.',
-    avatar: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=100&h=100&fit=crop&auto=format',
-    primaryAction: { label: 'Accept', style: 'green' },
-    secondaryAction: { label: 'Decline', style: 'red' },
-  },
-  {
-    id: 'cn5', category: 'students', group: 'today', unread: true, timestamp: '2 hrs ago',
-    title: '🏆 Congratulations! Your student won!',
-    description: 'Aarav Kapoor won the District Badminton Championship. Your coaching made this possible!',
-    image: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=700&h=280&fit=crop&auto=format',
-    isWide: true, primaryAction: { label: 'Send Congratulations 🎉', style: 'green' },
-  },
-  {
-    id: 'cn6', category: 'payments', group: 'yesterday', unread: false, timestamp: 'Yesterday, 9 PM',
-    title: 'Payment Received', description: '₹1,500 credited for today\'s cricket coaching sessions. Total this week: ₹7,200.',
-    emoji: '💰', isReward: true, gradient: 'linear-gradient(135deg,#111827 0%,#1F2937 100%)',
-  },
-  {
-    id: 'cn7', category: 'venues', group: 'yesterday', unread: false, timestamp: 'Yesterday, 3 PM',
-    title: 'New Court Available — Elite Sports Arena',
-    description: 'A new air-conditioned badminton court is now available for coaching bookings.',
-    image: 'https://images.unsplash.com/photo-1722087642932-9b070e9a066e?w=700&h=260&fit=crop&auto=format',
-    isWide: true, primaryAction: { label: 'Book Venue', style: 'orange' },
-  },
-  {
-    id: 'cn8', category: 'coaching', group: 'yesterday', unread: false, timestamp: 'Yesterday, 3 PM',
-    title: 'New 5-Star Review Received ⭐',
-    description: '"Fantastic coach with excellent attention to detail." — Riya Sharma',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&auto=format',
-    primaryAction: { label: 'View Review', style: 'green' },
-  },
-  {
-    id: 'cn9', category: 'coaching', group: 'yesterday', unread: false, timestamp: 'Yesterday, 10 AM',
-    title: 'Complete Your Profile ✨',
-    description: "You're 40% complete. Finish your profile to unlock bookings, earn the Verified Coach badge and rank higher in search.",
-    isAI: true, emoji: '📋', primaryAction: { label: 'Complete Profile', style: 'orange' },
-  },
-  {
-    id: 'cn10', category: 'coaching', group: 'yesterday', unread: false, timestamp: 'Yesterday, 9 AM',
-    title: 'Football Coach Workshop This Saturday',
-    description: 'Five football coaches are hosting a skills & tactics workshop. Open to all TYNG coaches. Limited seats.',
-    image: 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=700&h=260&fit=crop&auto=format',
-    isWide: true, primaryAction: { label: 'Register Now', style: 'orange' },
-  },
-  {
-    id: 'cn11', category: 'achievements', group: 'earlier', unread: false, timestamp: 'Mon, 2 PM',
-    title: 'Verification Approved 🛡️',
-    description: "Congratulations! You're now a Verified Coach on TYNG. Your badge is live.",
-    emoji: '🛡️', isReward: true, gradient: 'linear-gradient(135deg,#16A34A 0%,#22C55E 100%)',
-  },
-  {
-    id: 'cn12', category: 'payments', group: 'earlier', unread: false, timestamp: 'Mon, 8 AM',
-    title: "Weekly Earnings Summary 📈",
-    description: "You've earned ₹12,500 this week — your best week on TYNG yet! Keep it up.",
-    emoji: '📈', isReward: true, gradient: 'linear-gradient(135deg,#FF7A00 0%,#FF9A40 100%)',
-    primaryAction: { label: 'View Earnings', style: 'white' },
-  },
-];
+};
 
 const FILTERS = [
   { id: 'all', label: 'All', emoji: '🔔' },
   { id: 'messages', label: 'Messages', emoji: '💬' },
   { id: 'bookings', label: 'Bookings', emoji: '📅' },
   { id: 'students', label: 'Students', emoji: '🎓' },
-  { id: 'coaching', label: 'Coaching', emoji: '🏆' },
   { id: 'venues', label: 'Venues', emoji: '🏟️' },
   { id: 'achievements', label: 'Achievements', emoji: '🥇' },
   { id: 'payments', label: 'Payments', emoji: '💰' },
@@ -152,7 +58,7 @@ const FILTERS = [
 
           <!-- Filter horizontal chips scroll -->
           <div class="flex gap-2 px-5 pb-4 overflow-x-auto no-scrollbar">
-            <button *ngFor="let f of filters" (click)="activeFilter.set(f.id)" class="flex items-center gap-1.5 px-3.5 py-2 rounded-full whitespace-nowrap flex-shrink-0 text-[12px] font-bold transition-all border-none"
+            <button *ngFor="let f of filters" (click)="setFilter(f.id)" class="flex items-center gap-1.5 px-3.5 py-2 rounded-full whitespace-nowrap flex-shrink-0 text-[12px] font-bold transition-all border-none"
               [style.backgroundColor]="activeFilter() === f.id ? 'var(--app-primary)' : '#F3F4F6'"
               [style.color]="activeFilter() === f.id ? '#111827' : '#6B7280'">
               <span>{{ f.emoji }}</span>
@@ -167,11 +73,12 @@ const FILTERS = [
 
         <!-- Notification Feed List -->
         <div class="px-4 pt-4 text-left">
-          <div *ngIf="filteredNotifs().length === 0" class="py-20 flex flex-col items-center text-center px-8">
+          <div *ngIf="loading()" class="py-6 text-center text-[12px] font-semibold text-[#6B7280]">Loading…</div>
+          <div *ngIf="filteredNotifs().length === 0 && !loading()" class="py-20 flex flex-col items-center text-center px-8">
             <div class="text-6xl mb-3">🏆</div>
             <h3 class="text-[20px] font-black text-[#111827] mb-1">You're all caught up!</h3>
             <p class="text-[13px] text-[#6B7280] leading-relaxed mb-5">We'll notify you when students book sessions, message you, or important coaching updates become available.</p>
-            <button (click)="go('/app/home')" class="h-11 px-6 rounded-full text-[13px] font-black btn-green-gradient text-[#111827] border-none">
+            <button (click)="go('/app/coach/dashboard')" class="h-11 px-6 rounded-full text-[13px] font-black btn-green-gradient text-[#111827] border-none">
               Go to Dashboard
             </button>
           </div>
@@ -321,67 +228,91 @@ const FILTERS = [
     }
   `]
 })
-export class CoachNotificationsPage {
+export class CoachNotificationsPage implements OnInit {
   private readonly router = inject(Router);
+  private readonly feed = inject(NotificationFeedService);
 
-  items = signal<CoachNotif[]>(SEED_NOTIFS);
+  readonly items = this.feed.items;
+  readonly loading = this.feed.loading;
   activeFilter = signal<string>('all');
   readonly filters = FILTERS;
 
-  totalUnread = computed(() => this.items().filter(n => n.unread).length);
+  totalUnread = computed(() => this.items().filter((n) => n.unread).length);
 
   filteredNotifs = computed(() => {
     const f = this.activeFilter();
-    const list = this.items();
+    const list = this.items() as CoachNotif[];
     if (f === 'all') return list;
-    return list.filter(n => n.category === f);
+    return list.filter((n) => n.category === f);
   });
+
+  ngOnInit(): void {
+    void this.reload();
+  }
+
+  setFilter(id: string) {
+    this.activeFilter.set(id);
+    void this.reload();
+  }
 
   unreadCount(cat: string): number {
     const list = this.items();
-    if (cat === 'all') return list.filter(n => n.unread).length;
-    return list.filter(n => n.category === cat && n.unread).length;
+    if (cat === 'all') return list.filter((n) => n.unread).length;
+    return list.filter((n) => n.category === cat && n.unread).length;
   }
 
   getGroups() {
     const filtered = this.filteredNotifs();
     return [
-      { id: 'today', label: 'Today', items: filtered.filter(n => n.group === 'today') },
-      { id: 'yesterday', label: 'Yesterday', items: filtered.filter(n => n.group === 'yesterday') },
-      { id: 'earlier', label: 'Earlier This Week', items: filtered.filter(n => n.group === 'earlier') },
-    ].filter(g => g.items.length > 0);
+      { id: 'today', label: 'Today', items: filtered.filter((n) => n.group === 'today') },
+      { id: 'yesterday', label: 'Yesterday', items: filtered.filter((n) => n.group === 'yesterday') },
+      { id: 'earlier', label: 'Earlier This Week', items: filtered.filter((n) => n.group === 'earlier') },
+    ].filter((g) => g.items.length > 0);
   }
 
   getGroupUnreadCount(items: CoachNotif[]): number {
-    return items.filter(n => n.unread).length;
+    return items.filter((n) => n.unread).length;
   }
 
-  markAllRead() {
-    this.items.update(list => list.map(n => ({ ...n, unread: false })));
+  async markAllRead() {
+    await this.feed.markAllRead();
   }
 
-  markRead(id: string) {
-    this.items.update(list => list.map(n => n.id === id ? { ...n, unread: false } : n));
+  async markRead(id: string) {
+    await this.feed.markRead(id);
   }
 
-  deleteNotif(id: string) {
-    this.items.update(list => list.filter(n => n.id !== id));
+  async deleteNotif(id: string) {
+    await this.feed.remove(id);
   }
 
-  handleNotifAction(n: CoachNotif) {
-    this.markRead(n.id);
+  async handleNotifAction(n: CoachNotif) {
+    await this.markRead(n.id);
+    if (n.route) {
+      this.go(n.route);
+      return;
+    }
     if (n.primaryAction?.label === 'View Earnings') {
       this.go('/app/coach/earnings');
     } else if (n.primaryAction?.label === 'Complete Profile') {
       this.go('/app/coach/complete-profile');
+    } else if (n.category === 'bookings') {
+      this.go('/app/coach/schedule');
+    } else if (n.category === 'payments') {
+      this.go('/app/wallet');
     }
   }
 
   back() {
-    this.router.navigateByUrl('/app/coach/dashboard');
+    void this.router.navigateByUrl('/app/coach/dashboard');
   }
 
   go(path: string) {
-    this.router.navigateByUrl(path);
+    void this.router.navigateByUrl(path);
+  }
+
+  private async reload() {
+    const cat = this.activeFilter() as NotificationCategory;
+    await this.feed.load(cat);
   }
 }

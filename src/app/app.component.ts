@@ -134,8 +134,14 @@ export class AppComponent implements OnInit {
   ngOnInit(): void {
     void this.platform.init();
     void this.realtime.connect();
+    // Register FCM as soon as the native app boots (Firebase Console works without Laravel).
+    // Token sync to the backend still requires an authenticated session.
+    void this.pushNotifications.init().then(() => {
+      if (this.auth.getToken()) {
+        void this.pushNotifications.syncIfAuthenticated();
+      }
+    });
     if (this.auth.getToken()) {
-      void this.pushNotifications.syncIfAuthenticated();
       this.tabBadges.start();
     }
   }

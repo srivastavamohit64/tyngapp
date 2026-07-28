@@ -6,4 +6,5 @@
     <string name="custom_url_scheme">com.tyng.app</string>
     <string name="camera_permission_description">TYNG needs camera access to take profile and venue photos.</string>
     <string name="photos_permission_description">TYNG needs photo library access to upload images from your gallery.</string>
+    <string name="default_notification_channel_id">tyng_default</string>
 </resources>

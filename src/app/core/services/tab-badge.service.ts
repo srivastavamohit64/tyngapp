@@ -9,6 +9,7 @@ import { RealtimeService } from './realtime.service';
 export interface TabBadges {
   bookings: number;
   chat: number;
+  notifications?: number;
 }
 
 @Injectable({ providedIn: 'root' })

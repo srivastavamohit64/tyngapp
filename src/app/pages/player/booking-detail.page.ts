@@ -1,4 +1,4 @@
-import { CommonModule, TitleCasePipe } from '@angular/common';
+import { CommonModule, Location, TitleCasePipe } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController, IonicModule, RefresherCustomEvent, ToastController } from '@ionic/angular';
@@ -360,6 +360,7 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
 export class BookingDetailPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly location = inject(Location);
   private readonly bookingService = inject(BookingService);
   private readonly social = inject(SocialService);
   private readonly toastCtrl = inject(ToastController);
@@ -419,6 +420,10 @@ export class BookingDetailPage implements OnInit {
   }
 
   goBack(): void {
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      this.location.back();
+      return;
+    }
     void this.router.navigateByUrl('/app/my-bookings');
   }
 

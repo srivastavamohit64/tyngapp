@@ -55,6 +55,7 @@ export class TabsPage {
 
     // Hide on workflow / form pages (Figma AppLayout)
     if (path.startsWith('/app/game/create')) return false;
+    if (path === '/app/wallet' || path.startsWith('/app/wallet/')) return false;
     if (path === '/app/venues' || path.startsWith('/app/venues/')) return false;
     if (path.startsWith('/app/map')) return false;
     if (path.includes('/complete-profile')) return false;
@@ -72,7 +73,6 @@ export class TabsPage {
         '/app/coach/students',
         '/app/coach/schedule',
         '/app/schedule',
-        '/app/wallet',
       ];
       return coachPrimary.some((p) => path === p || path.startsWith(p + '/'));
     }
@@ -86,7 +86,6 @@ export class TabsPage {
         '/app/venue/earnings',
         '/app/venue/analytics',
         '/app/venue/profile',
-        '/app/wallet',
         '/app/chat',
       ];
       return venuePrimary.some((p) => path === p || path.startsWith(p + '/'));

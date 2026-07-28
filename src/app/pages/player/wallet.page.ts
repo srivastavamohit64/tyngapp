@@ -1,6 +1,7 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { IonicModule, RefresherCustomEvent, ToastController } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 import {
@@ -16,14 +17,14 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
   standalone: true,
   imports: [CommonModule, IonicModule, FormsModule, BrandHeaderShellComponent, PageHeaderComponent],
   template: `
-    <ion-content fullscreen class="has-tabs">
+    <ion-content fullscreen>
       <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
         <ion-refresher-content></ion-refresher-content>
       </ion-refresher>
 
-      <app-brand-header-shell>
-        <main class="page-with-tab-bar min-h-full bg-[#FAFBFC] text-[#111827] pb-[calc(112px+env(safe-area-inset-bottom,0px))]">
-          <app-page-header title="Wallet"></app-page-header>
+      <app-brand-header-shell [showBrand]="false">
+        <main class="min-h-full bg-[#FAFBFC] text-[#111827] pb-[calc(32px+env(safe-area-inset-bottom,0px))]">
+          <app-page-header title="Wallet" [showBack]="true" (back)="goBack()"></app-page-header>
 
           <div class="px-4 pt-2 space-y-4">
             <section class="balance-card">
@@ -191,6 +192,8 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
 export class WalletPage implements OnInit {
   private readonly walletService = inject(WalletService);
   private readonly toast = inject(ToastController);
+  private readonly location = inject(Location);
+  private readonly router = inject(Router);
 
   readonly wallet = signal<WalletSummary | null>(null);
   readonly transactions = signal<WalletTransaction[]>([]);
@@ -206,6 +209,14 @@ export class WalletPage implements OnInit {
 
   ngOnInit(): void {
     void this.loadAll();
+  }
+
+  goBack(): void {
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      this.location.back();
+      return;
+    }
+    void this.router.navigateByUrl('/app/home');
   }
 
   async refresh(event?: RefresherCustomEvent) {
