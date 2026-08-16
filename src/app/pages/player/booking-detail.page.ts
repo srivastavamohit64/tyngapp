@@ -1,10 +1,12 @@
 import { CommonModule, Location, TitleCasePipe } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AlertController, IonicModule, RefresherCustomEvent, ToastController } from '@ionic/angular';
-import { firstValueFrom } from 'rxjs';
-import { BookingRecord, FriendItem } from '../../core/models/api.model';
+import { AlertController, IonicModule, RefresherCustomEvent, ToastController, ViewWillEnter } from '@ionic/angular';
+import { Subscription, firstValueFrom } from 'rxjs';
+import { BookingParticipant, BookingRecord, FriendItem } from '../../core/models/api.model';
 import { BookingService } from '../../core/services/booking.service';
+import { ChatService } from '../../core/services/chat.service';
+import { AuthService } from '../../core/services/auth.service';
 import { SocialService } from '../../core/services/social.service';
 import {
   bookingStatusTone,
@@ -12,15 +14,17 @@ import {
   formatBookingTime,
   formatBookingTimeRange,
   formatDurationLabel,
+  gameChatMemberIds,
   sportEmoji,
 } from '../../core/utils/booking.utils';
 import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { PlayerBookingCardComponent } from '../../shared/components/player-booking-card/player-booking-card.component';
 
 @Component({
   selector: 'app-booking-detail',
   standalone: true,
-  imports: [CommonModule, IonicModule, BrandHeaderShellComponent, PageHeaderComponent, TitleCasePipe],
+  imports: [CommonModule, IonicModule, BrandHeaderShellComponent, PageHeaderComponent, TitleCasePipe, PlayerBookingCardComponent],
   template: `
     <ion-content fullscreen>
       <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
@@ -29,7 +33,7 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
 
       <app-brand-header-shell [showBrand]="false">
         <main class="min-h-full bg-[#FAFBFC] text-[#111827] pb-[calc(96px+env(safe-area-inset-bottom,0px))]">
-          <app-page-header title="Booking Details" [showBack]="true" (back)="goBack()"></app-page-header>
+          <app-page-header title="My Bookings" [showBack]="true" (back)="goBack()"></app-page-header>
 
           <div class="px-4 py-4 space-y-4" *ngIf="loading">
             <div class="skeleton-card"></div>
@@ -47,115 +51,59 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
 
           <ng-container *ngIf="!loading && booking">
             <div class="px-4 py-4 space-y-4">
-              <div class="hero-card">
-                <div class="flex items-start justify-between gap-3">
-                  <div class="flex items-center gap-3 min-w-0">
-                    <span class="text-4xl">{{ sportEmoji(booking.sport) }}</span>
-                    <div class="min-w-0">
-                      <h2 class="text-[20px] font-black text-[#111827] m-0">{{ booking.sport | titlecase }} Booking</h2>
-                      <p class="text-[13px] text-[#6B7280] mt-1 mb-0">{{ booking.venue.name || 'Venue TBD' }}</p>
-                    </div>
-                  </div>
-                  <span class="status-badge" [style.background]="statusTone.bg" [style.color]="statusTone.text" [style.border-color]="statusTone.border">
-                    {{ booking.bookingStatus | titlecase }}
-                  </span>
-                </div>
+              <app-player-booking-card
+                [booking]="booking"
+                [nowTick]="nowTick"
+                variant="detail"
+                [segment]="detailSegment"
+                [pendingNote]="booking.bookingStatus === 'pending' ? 'Venue approval is still pending for this booking.' : ''"
+                (updated)="booking = $event"
+                (bookAgain)="bookAgain($event)"
+              ></app-player-booking-card>
 
-                <div class="grid grid-cols-2 gap-3 mt-4">
-                  <div class="info-tile">
-                    <span class="tile-label">Date</span>
-                    <strong>{{ formatBookingDate(booking.bookingDate) }}</strong>
-                  </div>
-                  <div class="info-tile">
-                    <span class="tile-label">Time</span>
-                    <strong>{{ formatBookingTimeRange(booking.startTime, booking.endTime) }}</strong>
-                  </div>
-                  <div class="info-tile">
-                    <span class="tile-label">Duration</span>
-                    <strong>{{ formatDurationLabel(booking.durationMinutes) }}</strong>
-                  </div>
-                  <div class="info-tile">
-                    <span class="tile-label">Players</span>
-                    <strong>{{ booking.currentPlayers }}/{{ booking.totalPlayers }}</strong>
+              <div class="detail-card" *ngIf="booking.session?.status === 'live' || booking.session?.status === 'ended'">
+                <h3>Attendance</h3>
+                <div class="detail-row"><span>Status</span><strong>{{ booking.session?.status === 'live' ? 'Live' : 'Ended' }}</strong></div>
+                <div class="detail-row"><span>Checked in</span><strong>{{ booking.session?.checkedIn || 0 }}/{{ booking.session?.totalPlayers || booking.currentPlayers }}</strong></div>
+                <div class="player-row" *ngFor="let row of booking.session?.attendance || []">
+                  <div>
+                    <strong>{{ row.name }}</strong>
+                    <p>{{ row.status === 'checked_in' ? 'Checked In' : (row.status === 'late' ? 'Late' : (row.status === 'absent' ? 'Absent' : 'Awaiting')) }}</p>
                   </div>
                 </div>
               </div>
 
               <div class="detail-card">
-                <h3>Venue</h3>
-                <div class="detail-row"><span>Name</span><strong>{{ booking.venue.name || '—' }}</strong></div>
-                <div class="detail-row"><span>Address</span><strong>{{ booking.venue.address || booking.venue.location || '—' }}</strong></div>
-                <div class="detail-row"><span>Coordinates</span><strong>{{ coordinateLabel }}</strong></div>
-              </div>
-
-              <div class="detail-card">
-                <h3>Host & Players</h3>
-                <div class="detail-row"><span>Host</span><strong>{{ booking.host.name || '—' }}</strong></div>
-                <div class="detail-row"><span>Pending Invitations</span><strong>{{ booking.pendingInvitations || 0 }}</strong></div>
-
-                <div class="players-list">
-                  <div class="player-row" *ngFor="let player of booking.players">
+                <h3>Players</h3>
+                <div class="players-list" *ngIf="joinedPlayers.length; else noPlayers">
+                  <div class="player-row" *ngFor="let player of joinedPlayers">
                     <div>
-                      <strong>{{ player.user.name || 'Player' }}</strong>
+                      <strong>{{ player.user?.name || 'Player' }}</strong>
                       <p>{{ player.role | titlecase }} · {{ player.status | titlecase }}</p>
                     </div>
                     <div class="text-right flex flex-col items-end gap-2">
-                      <span>{{ player.user.phone || player.user.email || '—' }}</span>
+                      <span>{{ player.user?.phone || player.user?.email || '—' }}</span>
                       <div class="flex gap-2" *ngIf="booking.isHost && player.role !== 'host'">
-                        <button
-                          class="btn btn-secondary"
-                          [disabled]="actionLoading"
-                          (click)="replacePlayer(player.user.id)"
-                        >
-                          Replace
-                        </button>
-                        <button
-                          class="btn btn-secondary"
-                          [disabled]="actionLoading"
-                          (click)="removePlayer(player.user.id)"
-                        >
-                          Remove
-                        </button>
+                        <button class="btn btn-secondary" [disabled]="actionLoading" (click)="replacePlayer(player.user.id)">Replace</button>
+                        <button class="btn btn-secondary" [disabled]="actionLoading" (click)="removePlayer(player.user.id)">Remove</button>
                       </div>
                     </div>
                   </div>
                 </div>
-
-                <button
-                  *ngIf="booking.isHost"
-                  type="button"
-                  class="btn btn-primary mt-3"
-                  [disabled]="actionLoading"
-                  (click)="openInviteFriends()"
-                >
-                  Add / Invite Player
-                </button>
-              </div>
-
-              <div class="detail-card">
-                <h3>Booking Info</h3>
-                <div class="detail-row"><span>Price</span><strong>₹{{ booking.price || 0 }}</strong></div>
-                <div class="detail-row"><span>Skill Level</span><strong>{{ booking.skillLevel || 'Open' }}</strong></div>
-                <div class="detail-row"><span>Payment</span><strong>{{ booking.paymentStatus | titlecase }}</strong></div>
-                <div class="detail-row"><span>Starts</span><strong>{{ formatBookingTime(booking.startTime) }}</strong></div>
-              </div>
-
-              <div class="detail-card">
-                <h3>Rules</h3>
-                <div *ngIf="booking.rules?.length; else noRules">
-                  <div class="rule-item" *ngFor="let rule of booking.rules">• {{ rule }}</div>
-                </div>
-                <ng-template #noRules>
-                  <p class="empty-copy">No venue rules have been added for this booking yet.</p>
+                <ng-template #noPlayers>
+                  <p class="empty-copy">No players have joined yet.</p>
                 </ng-template>
-              </div>
 
-              <div class="action-bar" *ngIf="booking.canJoin || booking.canLeave || booking.canCancel || booking.canAcceptInvite || booking.canRejectInvite">
-                <button *ngIf="booking.canJoin" type="button" class="btn btn-primary" [disabled]="actionLoading" (click)="joinBooking()">Join</button>
-                <button *ngIf="booking.canAcceptInvite" type="button" class="btn btn-primary" [disabled]="actionLoading" (click)="acceptInvite()">Accept Invite</button>
-                <button *ngIf="booking.canRejectInvite" type="button" class="btn btn-secondary" [disabled]="actionLoading" (click)="rejectInvite()">Reject Invite</button>
-                <button *ngIf="booking.canLeave" type="button" class="btn btn-secondary" [disabled]="actionLoading" (click)="leaveBooking()">Leave</button>
-                <button *ngIf="booking.canCancel" type="button" class="btn btn-danger" [disabled]="actionLoading" (click)="cancelBooking()">Cancel Booking</button>
+                <div class="invited-block" *ngIf="invitedPlayers.length">
+                  <p class="invited-label">Invited</p>
+                  <div class="player-row" *ngFor="let player of invitedPlayers">
+                    <div>
+                      <strong>{{ player.user?.name || 'Player' }}</strong>
+                      <p>Invited</p>
+                    </div>
+                    <span>{{ player.user?.phone || player.user?.email || '—' }}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </ng-container>
@@ -244,6 +192,20 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
         display: flex;
         flex-direction: column;
         gap: 10px;
+        margin-top: 8px;
+      }
+
+      .invited-block {
+        margin-top: 14px;
+      }
+
+      .invited-label {
+        margin: 0 0 8px;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #9ca3af;
       }
 
       .player-row {
@@ -304,6 +266,21 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
         box-shadow: 0 2px 8px rgba(var(--app-primary-rgb), 0.28);
       }
 
+      .btn-chat {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        background: #111827;
+        color: #fff;
+        width: 100%;
+      }
+
+      .action-bar .btn-chat {
+        width: auto;
+        flex: 1;
+      }
+
       .btn-secondary {
         background: #f9fafb;
         border: 1px solid #e5e7eb;
@@ -357,11 +334,13 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
     `,
   ],
 })
-export class BookingDetailPage implements OnInit {
+export class BookingDetailPage implements OnInit, OnDestroy, ViewWillEnter {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly location = inject(Location);
   private readonly bookingService = inject(BookingService);
+  private readonly chat = inject(ChatService);
+  private readonly auth = inject(AuthService);
   private readonly social = inject(SocialService);
   private readonly toastCtrl = inject(ToastController);
   private readonly alertCtrl = inject(AlertController);
@@ -369,14 +348,83 @@ export class BookingDetailPage implements OnInit {
   booking: BookingRecord | null = null;
   loading = true;
   actionLoading = false;
+  openingChat = false;
   errorMessage = '';
+  nowTick = Date.now();
+  private paramSub: Subscription | null = null;
+  private timerId: number | null = null;
 
   ngOnInit(): void {
-    void this.loadBooking();
+    this.timerId = window.setInterval(() => {
+      this.nowTick = Date.now();
+    }, 15000);
+    this.paramSub = this.route.paramMap.subscribe((params) => {
+      const id = params.get('id');
+      if (id) {
+        void this.loadBooking();
+      }
+    });
+  }
+
+  ionViewWillEnter(): void {
+    // Ionic caches pages — always refresh so newly joined players appear.
+    if (this.bookingId) {
+      void this.loadBooking();
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.paramSub?.unsubscribe();
+    if (this.timerId !== null) {
+      clearInterval(this.timerId);
+      this.timerId = null;
+    }
+  }
+
+  get detailSegment(): 'upcoming' | 'past' {
+    const status = String(this.booking?.bookingStatus || '').toLowerCase();
+    return ['cancelled', 'completed', 'expired'].includes(status) ? 'past' : 'upcoming';
   }
 
   get bookingId(): string {
     return this.route.snapshot.paramMap.get('id') || '';
+  }
+
+  get joinedPlayers(): BookingParticipant[] {
+    const list = this.booking?.acceptedPlayers?.length
+      ? this.booking.acceptedPlayers
+      : (this.booking?.players || []).filter((p) =>
+          ['joined', 'host'].includes(String(p.status || '').toLowerCase()),
+        );
+    return list || [];
+  }
+
+  get invitedPlayers(): BookingParticipant[] {
+    const list = this.booking?.invitedPlayers?.length
+      ? this.booking.invitedPlayers
+      : (this.booking?.players || []).filter((p) => String(p.status || '').toLowerCase() === 'invited');
+    return list || [];
+  }
+
+  /** Captain, joined player, or venue can open the shared game chat. */
+  get canOpenGameChat(): boolean {
+    if (!this.booking) return false;
+    return !!(this.booking.isHost || this.booking.isJoined || this.booking.isVenue);
+  }
+
+  get canScanCheckIn(): boolean {
+    const booking = this.booking;
+    if (!booking || booking.session?.status !== 'live') return false;
+    if (!(booking.isHost || booking.isJoined)) return false;
+    const uid = String(this.auth.user()?.id || '');
+    const mine = (booking.session?.attendance || []).find((row) => String(row.userId) === uid);
+    return !mine || mine.status === 'awaiting';
+  }
+
+  openCheckIn(): void {
+    const id = this.booking?.id;
+    if (!id) return;
+    void this.router.navigate(['/app/check-in'], { queryParams: { b: id } });
   }
 
   get statusTone() {
@@ -425,6 +473,35 @@ export class BookingDetailPage implements OnInit {
       return;
     }
     void this.router.navigateByUrl('/app/my-bookings');
+  }
+
+  bookAgain(booking: BookingRecord): void {
+    if (booking.venueId) {
+      void this.router.navigateByUrl(`/app/venue/${booking.venueId}/book`);
+      return;
+    }
+    void this.router.navigateByUrl('/app/game/create');
+  }
+
+  async openGameChat(): Promise<void> {
+    if (!this.booking || this.openingChat || !this.canOpenGameChat) return;
+    this.openingChat = true;
+    try {
+      const memberIds = gameChatMemberIds(this.booking);
+      const res = await this.chat.openGame(this.booking.id, {
+        title: `${this.booking.sport}${this.booking.bookingDate ? ' · ' + this.booking.bookingDate : ''}`,
+        memberIds,
+      });
+      if (res.success && res.data?.id) {
+        void this.router.navigateByUrl(`/app/chat/${encodeURIComponent(res.data.id)}`);
+        return;
+      }
+      await this.presentToast(res.message || 'Unable to open game chat.', 'danger');
+    } catch (error: any) {
+      await this.presentToast(error?.message || 'Unable to open game chat.', 'danger');
+    } finally {
+      this.openingChat = false;
+    }
   }
 
   async joinBooking(): Promise<void> {

@@ -1,9 +1,10 @@
-import { Injectable, inject, signal, computed, OnDestroy } from '@angular/core';
+import { Injectable, OnDestroy, computed, inject, signal } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { Subscription, firstValueFrom } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { ApiService } from './api.service';
 import { AuthService } from './auth.service';
+import { ChatService } from './chat.service';
 import { RealtimeService } from './realtime.service';
 
 export interface TabBadges {
@@ -16,12 +17,14 @@ export interface TabBadges {
 export class TabBadgeService implements OnDestroy {
   private readonly api = inject(ApiService);
   private readonly auth = inject(AuthService);
+  private readonly chat = inject(ChatService);
   private readonly realtime = inject(RealtimeService);
   private readonly router = inject(Router);
 
   private readonly badges = signal<TabBadges>({ bookings: 0, chat: 0 });
   private realtimeSub: Subscription | null = null;
   private navSub: Subscription | null = null;
+  private stopChatBadge: (() => void) | null = null;
   private started = false;
 
   readonly bookingsBadge = computed(() => this.badges().bookings);
@@ -33,6 +36,7 @@ export class TabBadgeService implements OnDestroy {
 
     void this.refresh();
     void this.bindRealtime();
+    void this.bindChatBadge();
 
     this.navSub = this.router.events
       .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
@@ -47,6 +51,9 @@ export class TabBadgeService implements OnDestroy {
     this.navSub?.unsubscribe();
     this.realtimeSub = null;
     this.navSub = null;
+    this.stopChatBadge?.();
+    this.stopChatBadge = null;
+    this.chat.stopBadgeListening();
     this.started = false;
     this.badges.set({ bookings: 0, chat: 0 });
   }
@@ -62,15 +69,25 @@ export class TabBadgeService implements OnDestroy {
     }
 
     try {
-      const res = await firstValueFrom(this.api.get<TabBadges>('/notifications/badges'));
-      if (res.success && res.data) {
-        this.badges.set({
-          bookings: Number(res.data.bookings || 0),
-          chat: Number(res.data.chat || 0),
-        });
-      }
+      const [badgeRes, chatUnread] = await Promise.all([
+        firstValueFrom(this.api.get<TabBadges>('/notifications/badges')),
+        this.chat.totalUnread(),
+      ]);
+
+      const bookings =
+        badgeRes.success && badgeRes.data ? Number(badgeRes.data.bookings || 0) : this.badges().bookings;
+
+      this.badges.set({
+        bookings,
+        chat: chatUnread,
+      });
     } catch {
-      // ignore — badges are best-effort
+      try {
+        const chatUnread = await this.chat.totalUnread();
+        this.badges.update((b) => ({ ...b, chat: chatUnread }));
+      } catch {
+        // ignore — badges are best-effort
+      }
     }
   }
 
@@ -85,10 +102,10 @@ export class TabBadgeService implements OnDestroy {
     try {
       const res = await firstValueFrom(this.api.post<TabBadges>('/notifications/bookings/seen', {}));
       if (res.success && res.data) {
-        this.badges.set({
-          bookings: Number(res.data.bookings || 0),
-          chat: Number(res.data.chat || 0),
-        });
+        this.badges.update((b) => ({
+          ...b,
+          bookings: Number(res.data!.bookings || 0),
+        }));
       } else {
         this.badges.update((b) => ({ ...b, bookings: 0 }));
       }
@@ -104,6 +121,13 @@ export class TabBadgeService implements OnDestroy {
     }));
   }
 
+  private async bindChatBadge(): Promise<void> {
+    this.stopChatBadge?.();
+    this.stopChatBadge = await this.chat.listenUnreadTotal((total) => {
+      this.badges.update((b) => ({ ...b, chat: total }));
+    });
+  }
+
   private async bindRealtime(): Promise<void> {
     try {
       await this.realtime.connect();
@@ -115,8 +139,6 @@ export class TabBadgeService implements OnDestroy {
         const venueId = String(game.venueId || game.venue?.id || '');
         const hostId = String(game.hostUserId || '');
 
-        // Always refresh from API — never optimistic +1 (that double-counted
-        // when Firebase emitted create and the badge already had the pending).
         if (user.role === 'venue' && venueId === userId) {
           void this.refresh();
           return;
@@ -144,6 +166,9 @@ export class TabBadgeService implements OnDestroy {
   private async handleRoute(path: string): Promise<void> {
     if (path.startsWith('/app/venue/bookings') || path.startsWith('/app/my-bookings')) {
       await this.markBookingsSeen();
+    }
+    if (path === '/app/chat' || path.startsWith('/app/chat/') || path.startsWith('/app/coach/chat')) {
+      await this.refresh();
     }
   }
 }

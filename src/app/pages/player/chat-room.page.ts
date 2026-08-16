@@ -1,306 +1,631 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IonicModule } from '@ionic/angular';
-import { QuickAction, QuickActionChipsComponent } from '../../shared/components/quick-action-chips/quick-action-chips.component';
+import { IonicModule, NavController, ToastController, ViewWillEnter, ViewWillLeave } from '@ionic/angular';
+import { Subscription, firstValueFrom } from 'rxjs';
+import { BookingRecord } from '../../core/models/api.model';
+import { AuthService } from '../../core/services/auth.service';
+import { BookingService } from '../../core/services/booking.service';
+import { ChatMessage, ChatService, ChatThread, ChatTypingUser } from '../../core/services/chat.service';
+import { ForegroundNotificationService } from '../../core/services/foreground-notification.service';
+import { TabBadgeService } from '../../core/services/tab-badge.service';
+import { formatBookingDate, formatBookingTime, sportEmoji } from '../../core/utils/booking.utils';
 
-interface Message {
-  id: number;
-  text: string;
+interface GameChatDetails {
+  bookingId: string;
+  title: string;
+  emoji: string;
+  venue: string;
   time: string;
-  sender: string;
-  avatar: string;
-  reactions?: string;
-  isSelf?: boolean;
+  players: string;
+  payment: string;
+  rating: string;
+  sport: string;
+  isHost: boolean;
 }
 
 @Component({
   selector: 'app-chat-room',
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule, QuickActionChipsComponent],
+  imports: [CommonModule, FormsModule, IonicModule],
   template: `
     <ion-content fullscreen>
-      <main class="safe-area-top page-with-tab-bar flex flex-col min-h-full bg-white text-slate-800 select-none">
-        
-        <!-- Custom Header Matching Image 2 -->
+      <main class="safe-area-top flex flex-col min-h-full bg-white text-slate-800 select-none">
         <header class="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-white sticky top-0 z-20">
-          <div class="flex items-center gap-2">
-            <button (click)="back()" class="h-10 w-10 grid place-items-center rounded-full bg-transparent text-slate-800 active:scale-95 transition-all">
+          <div class="flex items-center gap-2 min-w-0">
+            <button (click)="back()" class="h-10 w-10 grid place-items-center rounded-full bg-transparent text-slate-800">
               <ion-icon name="chevron-back-outline" class="text-2xl"></ion-icon>
             </button>
-            <div class="h-10 w-10 rounded-full overflow-hidden bg-slate-100 flex items-center justify-center border border-slate-100 text-2xl">
-              🏏
+            <div class="h-10 w-10 rounded-full overflow-hidden bg-slate-100 flex items-center justify-center border border-slate-100 text-xl flex-shrink-0">
+              <img *ngIf="thread?.avatar" [src]="thread?.avatar" class="w-full h-full object-cover" alt="" (error)="onAvatarError()" />
+              <span *ngIf="!thread?.avatar">{{ isGameChat ? '⚽' : '💬' }}</span>
             </div>
-            <div>
-              <h1 class="text-sm font-extrabold text-slate-900 leading-tight">Lucknow Cricket Club</h1>
-              <p class="text-[10px] text-slate-400 font-bold mt-0.5">18 members &bull; 6 active</p>
+            <div class="min-w-0">
+              <h1 class="text-sm font-extrabold text-slate-900 leading-tight truncate">
+                {{ thread?.title || 'Chat' }}
+              </h1>
+              <p
+                class="text-[10px] font-bold mt-0.5"
+                [class.typing-status]="!!typingLabel"
+                [class.text-slate-400]="!typingLabel"
+              >
+                {{ typingLabel || (isGameChat ? 'Game chat' : 'Direct message') }}
+              </p>
             </div>
           </div>
-          <div class="flex items-center gap-1.5">
-            <button (click)="callGroup()" class="h-10 w-10 grid place-items-center rounded-full bg-transparent text-slate-700 active:scale-95 transition-all">
-              <ion-icon name="call-outline" class="text-xl"></ion-icon>
-            </button>
-            <button (click)="showInfo()" class="h-10 w-10 grid place-items-center rounded-full bg-transparent text-slate-700 active:scale-95 transition-all">
-              <ion-icon name="information-circle-outline" class="text-2xl"></ion-icon>
-            </button>
-          </div>
+          <button
+            type="button"
+            class="pin-btn"
+            [class.pin-btn--on]="thread?.pinned"
+            [disabled]="pinning"
+            (click)="togglePin()"
+            [attr.aria-label]="thread?.pinned ? 'Unpin chat' : 'Pin chat'"
+          >
+            <ion-icon [name]="thread?.pinned ? 'pin' : 'pin-outline'"></ion-icon>
+          </button>
         </header>
 
-        <!-- Match Details Pin Card (Expandable) -->
-        <div class="px-4 pt-4">
-          <div class="bg-[#FAFBFC] border border-slate-100 rounded-3xl overflow-hidden shadow-sm">
-            <!-- Pin Card Header -->
-            <button 
-              (click)="isDetailsExpanded = !isDetailsExpanded" 
-              class="w-full px-5 py-3.5 flex items-center justify-between text-left bg-transparent border-none outline-none cursor-pointer"
-            >
-              <div class="flex items-center gap-3">
-                <div class="h-9 w-9 rounded-full bg-[#111827] flex items-center justify-center text-base">
-                  📌
-                </div>
-                <span class="font-extrabold text-sm text-[#111827] tracking-tight">Today's Match &bull; Elite Cricket Arena</span>
+        <div *ngIf="isGameChat && gameDetails" class="game-card-wrap">
+          <button type="button" class="game-card" (click)="gameCardOpen = !gameCardOpen">
+            <div class="game-card-head">
+              <span class="game-pin">📌</span>
+              <div class="game-card-title">
+                {{ gameDetails.emoji }} {{ gameDetails.title }}
               </div>
-              <ion-icon 
-                [name]="isDetailsExpanded ? 'chevron-up-outline' : 'chevron-down-outline'" 
-                class="text-slate-400 text-lg transition-transform duration-200"
-              ></ion-icon>
-            </button>
+              <ion-icon [name]="gameCardOpen ? 'chevron-up-outline' : 'chevron-down-outline'" class="game-chevron"></ion-icon>
+            </div>
+            <div *ngIf="gameCardOpen" class="game-grid">
+              <div class="game-cell">
+                <span class="game-label">VENUE</span>
+                <span class="game-val"><ion-icon name="location-outline"></ion-icon>{{ gameDetails.venue }}</span>
+              </div>
+              <div class="game-cell">
+                <span class="game-label">TIME</span>
+                <span class="game-val"><ion-icon name="time-outline"></ion-icon>{{ gameDetails.time }}</span>
+              </div>
+              <div class="game-cell">
+                <span class="game-label">PLAYERS</span>
+                <span class="game-val"><ion-icon name="people-outline"></ion-icon>{{ gameDetails.players }}</span>
+              </div>
+              <div class="game-cell">
+                <span class="game-label">PAYMENT</span>
+                <span class="game-val"><ion-icon name="wallet-outline"></ion-icon>{{ gameDetails.payment }}</span>
+              </div>
+              <div class="game-cell">
+                <span class="game-label">RATING</span>
+                <span class="game-val"><ion-icon name="star-outline"></ion-icon>{{ gameDetails.rating }}</span>
+              </div>
+              <div class="game-cell">
+                <span class="game-label">SPORT</span>
+                <span class="game-val">{{ gameDetails.emoji }} {{ gameDetails.sport }}</span>
+              </div>
+            </div>
+          </button>
+        </div>
 
-            <!-- Card Inner Details Grid -->
-            <div 
-              *ngIf="isDetailsExpanded" 
-              class="px-5 pb-5 pt-1 grid grid-cols-2 gap-x-4 gap-y-3.5 border-t border-slate-100/60 bg-white"
+        <div *ngIf="loading" class="flex-1 grid place-items-center text-sm text-slate-400 font-semibold">
+          Loading messages…
+        </div>
+
+        <div *ngIf="!loading && errorMessage" class="flex-1 grid place-items-center px-6 text-center">
+          <p class="text-sm text-red-500 font-semibold">{{ errorMessage }}</p>
+          <button class="mt-3 px-4 py-2 rounded-xl bg-[#111827] text-white text-xs font-bold" (click)="reload()">
+            Retry
+          </button>
+        </div>
+
+        <div *ngIf="!loading && !errorMessage" class="flex-1 overflow-y-auto px-4 py-4 space-y-3" #scrollArea>
+          <div *ngIf="messages.length === 0" class="text-center text-xs text-slate-400 py-10 font-semibold">
+            No messages yet. Say hello!
+          </div>
+
+          <div
+            *ngFor="let m of messages"
+            class="flex"
+            [class.justify-end]="m.isSelf"
+            [class.justify-start]="!m.isSelf"
+          >
+            <div
+              class="max-w-[78%] rounded-2xl px-3.5 py-2.5 shadow-sm"
+              [class.self-bubble]="m.isSelf"
+              [class.other-bubble]="!m.isSelf"
             >
-              <div class="space-y-1">
-                <span class="text-[9px] font-black uppercase text-slate-400 tracking-wider block">Venue</span>
-                <span class="text-xs font-bold text-slate-800 flex items-center gap-1">
-                  📍 Elite Cricket Arena
-                </span>
+              <div *ngIf="!m.isSelf" class="text-[10px] font-bold text-slate-500 mb-1">{{ m.senderName || 'Player' }}</div>
+              <div class="text-[13px] leading-snug whitespace-pre-wrap break-words">{{ m.text }}</div>
+              <div class="text-[9px] font-bold mt-1 opacity-60 text-right">{{ formatTime(m.createdAt) }}</div>
+            </div>
+          </div>
+
+          <div *ngIf="typingUsers.length" class="flex justify-start">
+            <div class="max-w-[78%] rounded-2xl px-3.5 py-2.5 shadow-sm other-bubble typing-bubble">
+              <div *ngIf="isGameChat && typingUsers[0]?.name" class="text-[10px] font-bold text-slate-500 mb-1">
+                {{ typingUsers[0].name }}
               </div>
-              <div class="space-y-1">
-                <span class="text-[9px] font-black uppercase text-slate-400 tracking-wider block">Time</span>
-                <span class="text-xs font-bold text-slate-800 flex items-center gap-1">
-                  ⏰ 7:00 PM today
-                </span>
-              </div>
-              <div class="space-y-1">
-                <span class="text-[9px] font-black uppercase text-slate-400 tracking-wider block">Players</span>
-                <span class="text-xs font-bold text-slate-800 flex items-center gap-1">
-                  👥 10/12 confirmed
-                </span>
-              </div>
-              <div class="space-y-1">
-                <span class="text-[9px] font-black uppercase text-slate-400 tracking-wider block">Payment</span>
-                <span class="text-xs font-black text-slate-900 flex items-center gap-1">
-                  💳 ₹420 paid <span class="text-green-600 font-bold ml-0.5">✓</span>
-                </span>
-              </div>
-              <div class="space-y-1">
-                <span class="text-[9px] font-black uppercase text-slate-400 tracking-wider block">Weather</span>
-                <span class="text-xs font-bold text-slate-800 flex items-center gap-1">
-                  ☀️ 28°C, Partly cloudy
-                </span>
-              </div>
-              <div class="space-y-1">
-                <span class="text-[9px] font-black uppercase text-slate-400 tracking-wider block">Rating</span>
-                <span class="text-xs font-bold text-slate-800 flex items-center gap-1">
-                  ⭐️ Ekana &bull; 4.8
-                </span>
+              <div class="typing-dots">
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Chat Feed Area -->
-        <section class="flex-1 overflow-y-auto px-4 py-5 space-y-5 bg-[#FDFDFD]">
-          
-          <!-- System Confirmation Bubble -->
-          <div class="text-center my-3">
-            <span class="bg-[#EEF1F6] text-slate-500 font-extrabold px-5 py-2 rounded-full text-xs inline-block shadow-sm">
-              Match confirmed for tonight at 7:00 PM
-            </span>
-          </div>
+        <div *ngIf="isGameChat && gameDetails" class="quick-actions">
+          <button type="button" class="quick-btn" (click)="openGamePage()">
+            <ion-icon name="location-outline"></ion-icon>
+            Share Venue
+          </button>
+          <button type="button" class="quick-btn" (click)="openInvite()">
+            <ion-icon name="globe-outline"></ion-icon>
+            Invite to Game
+          </button>
+          <button type="button" class="quick-btn" (click)="openGamePage()">
+            <ion-icon name="calendar-outline"></ion-icon>
+            Schedule
+          </button>
+        </div>
 
-          <!-- Messages Loop -->
-          <div *ngFor="let msg of messages" class="flex flex-col">
-            <!-- Bubble Structure -->
-            <div class="flex gap-3 max-w-[85%]" [class.self-end]="msg.isSelf" [class.flex-row-reverse]="msg.isSelf">
-              <!-- Profile Avatar -->
-              <div *ngIf="!msg.isSelf" class="h-9 w-9 rounded-full overflow-hidden bg-slate-100 flex items-center justify-center text-base flex-shrink-0 shadow-sm border border-slate-100">
-                {{ msg.avatar }}
-              </div>
-
-              <!-- Message Text and Meta -->
-              <div class="flex flex-col">
-                <!-- Sender Name -->
-                <span *ngIf="!msg.isSelf" class="text-[10px] text-slate-400 font-black ml-1.5 mb-1">{{ msg.sender }}</span>
-                
-                <!-- Bubble Container with Reaction Badge -->
-                <div class="relative">
-                  <div 
-                    class="p-3.5 rounded-3xl text-sm leading-relaxed" 
-                    [class.bg-[var(--app-primary)]]="msg.isSelf" 
-                    [class.text-[#111827]]="msg.isSelf"
-                    [class.bg-[#F0F2F5]]="!msg.isSelf"
-                    [class.text-slate-800]="!msg.isSelf"
-                    [style.borderTopLeftRadius]="!msg.isSelf ? '4px' : null"
-                    [style.borderTopRightRadius]="msg.isSelf ? '4px' : null"
-                  >
-                    {{ msg.text }}
-                  </div>
-
-                  <!-- Overlay Reaction Badge -->
-                  <div 
-                    *ngIf="msg.reactions" 
-                    class="absolute -bottom-2 right-2 bg-white border border-slate-100 shadow-sm rounded-full px-2 py-0.5 text-[10px] flex items-center gap-1 font-bold text-slate-600"
-                  >
-                    {{ msg.reactions }}
-                  </div>
-                </div>
-
-                <!-- Time display -->
-                <span class="text-[9px] text-slate-400 font-bold mt-1.5 px-1.5" [class.self-end]="msg.isSelf">{{ msg.time }}</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Quick actions + input (Figma ChatRoomScreen footer) -->
-        <section class="bg-white border-t border-[#F3F4F6] sticky bottom-0 z-20">
-          <app-quick-action-chips
-            [actions]="quickActions"
-            (actionClick)="onQuickAction($event)"
-          ></app-quick-action-chips>
-
-          <div class="flex gap-2.5 items-center px-4 pb-4">
-            <input 
-              class="h-12 flex-1 rounded-xl border border-slate-100 bg-[#FAFBFC] px-4 outline-none text-sm font-medium focus:border-[var(--app-primary)] focus:bg-white" 
-              placeholder="Type a message..." 
-              [(ngModel)]="newMessageText" 
-              (keyup.enter)="sendMessage()" 
-            />
-            <button 
-              (click)="sendMessage()" 
-              [disabled]="!newMessageText.trim()"
-              class="grid h-12 w-12 place-items-center rounded-full bg-gradient-to-r from-[var(--app-primary)] to-[var(--app-primary-to)] text-[#111827] shadow-sm disabled:opacity-50 transition-all border-none outline-none cursor-pointer"
-            >
-              <ion-icon name="send" class="text-lg"></ion-icon>
-            </button>
-          </div>
-        </section>
+        <div class="border-t border-slate-100 px-3 py-2 pb-[calc(12px+env(safe-area-inset-bottom))] bg-white flex items-end gap-2">
+          <textarea
+            [(ngModel)]="newMessageText"
+            rows="1"
+            placeholder="Type a message…"
+            class="flex-1 resize-none border border-slate-200 rounded-2xl px-3 py-2.5 text-sm outline-none max-h-28"
+            (keydown.enter)="onEnter($event)"
+            (ngModelChange)="onComposerChange()"
+            (blur)="clearLocalTyping()"
+          ></textarea>
+          <button
+            class="h-11 w-11 rounded-full bg-[#111827] text-white grid place-items-center disabled:opacity-40"
+            [disabled]="sending || !newMessageText.trim()"
+            (click)="sendMessage()"
+          >
+            <ion-icon name="send" class="text-lg"></ion-icon>
+          </button>
+        </div>
       </main>
     </ion-content>
   `,
   styles: [
     `
-      .self-end {
-        align-self: flex-end;
+      .self-bubble {
+        background: var(--app-primary, #a3e635);
+        color: #111827;
+        border-bottom-right-radius: 6px;
       }
-      .flex-row-reverse {
-        flex-direction: row-reverse;
+      .other-bubble {
+        background: #f3f4f6;
+        color: #111827;
+        border-bottom-left-radius: 6px;
       }
-      .no-scrollbar::-webkit-scrollbar {
-        display: none;
+      .pin-btn {
+        width: 40px;
+        height: 40px;
+        border: none;
+        border-radius: 999px;
+        background: #f3f4f6;
+        color: #111827;
+        display: grid;
+        place-items: center;
+        font-size: 18px;
+        flex-shrink: 0;
       }
-      .no-scrollbar {
-        -ms-overflow-style: none;
+      .pin-btn--on {
+        background: #111827;
+        color: #fff;
+      }
+      .game-card-wrap {
+        padding: 10px 12px 0;
+        background: #fff;
+        position: sticky;
+        top: 61px;
+        z-index: 15;
+      }
+      .game-card {
+        width: 100%;
+        text-align: left;
+        border: none;
+        border-radius: 16px;
+        background: #f4f6f8;
+        padding: 12px 14px;
+      }
+      .game-card-head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .game-pin {
+        width: 22px;
+        height: 22px;
+        border-radius: 999px;
+        background: #111827;
+        color: #fff;
+        font-size: 11px;
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+      }
+      .game-card-title {
+        flex: 1;
+        min-width: 0;
+        font-size: 13px;
+        font-weight: 800;
+        color: #111827;
+      }
+      .game-chevron {
+        color: #9ca3af;
+        font-size: 16px;
+      }
+      .game-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px 12px;
+        margin-top: 12px;
+      }
+      .game-label {
+        display: block;
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        color: #9ca3af;
+        margin-bottom: 3px;
+      }
+      .game-val {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 12px;
+        font-weight: 700;
+        color: #111827;
+      }
+      .game-val ion-icon {
+        font-size: 13px;
+        color: #6b7280;
+      }
+      .quick-actions {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding: 8px 12px 0;
         scrollbar-width: none;
       }
-    `
-  ]
+      .quick-btn {
+        flex-shrink: 0;
+        border: none;
+        border-radius: 999px;
+        background: #f3f4f6;
+        color: #111827;
+        font-size: 12px;
+        font-weight: 700;
+        padding: 8px 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .typing-status { color: #65a30d; }
+      .typing-bubble {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        min-height: 36px;
+      }
+      .typing-dots {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        height: 16px;
+      }
+      .typing-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #9ca3af;
+        animation: typing-bounce 1.1s infinite ease-in-out;
+      }
+      .typing-dot:nth-child(2) { animation-delay: 0.15s; }
+      .typing-dot:nth-child(3) { animation-delay: 0.3s; }
+      @keyframes typing-bounce {
+        0%, 60%, 100% { transform: translateY(0); opacity: .45; }
+        30% { transform: translateY(-4px); opacity: 1; }
+      }
+    `,
+  ],
 })
-export class ChatRoomPage implements OnInit {
+export class ChatRoomPage implements OnInit, OnDestroy, ViewWillEnter, ViewWillLeave {
   private readonly router = inject(Router);
+  private readonly navCtrl = inject(NavController);
   private readonly route = inject(ActivatedRoute);
+  private readonly chat = inject(ChatService);
+  private readonly auth = inject(AuthService);
+  private readonly bookings = inject(BookingService);
+  private readonly foregroundNotifications = inject(ForegroundNotificationService);
+  private readonly tabBadges = inject(TabBadgeService);
+  private readonly toastCtrl = inject(ToastController);
 
   chatId: string | null = null;
+  thread: ChatThread | null = null;
+  messages: ChatMessage[] = [];
   newMessageText = '';
-  isDetailsExpanded = true;
+  loading = true;
+  sending = false;
+  pinning = false;
+  errorMessage = '';
+  gameCardOpen = true;
+  gameDetails: GameChatDetails | null = null;
+  typingUsers: ChatTypingUser[] = [];
 
-  messages: Message[] = [];
+  private paramSub: Subscription | null = null;
+  private stopListen: (() => void) | null = null;
+  private stopTypingListen: (() => void) | null = null;
+  private typingIdleTimer: ReturnType<typeof setTimeout> | null = null;
+  private lastTypingWrite = 0;
+  private locallyTyping = false;
 
-  readonly quickActions: QuickAction[] = [
-    { id: 'share-venue', icon: '📍', label: 'Share Venue', color: '#EFF6FF' },
-    { id: 'invite-game', icon: '⚽', label: 'Invite to Game', color: '#F0FDF4' },
-    { id: 'schedule', icon: '📅', label: 'Schedule Match', color: '#FFF7ED' },
-    { id: 'photo', icon: '📷', label: 'Send Photo', color: '#F5F3FF' },
-  ];
+  get isGameChat(): boolean {
+    const type = String(this.thread?.type || this.thread?.chatType || this.chatId || '').toLowerCase();
+    return type === 'game' || type.startsWith('game_');
+  }
 
-  ngOnInit() {
-    this.route.paramMap.subscribe(params => {
+  get typingLabel(): string {
+    if (!this.typingUsers.length) return '';
+    if (!this.isGameChat) return 'typing…';
+    const names = this.typingUsers.map((u) => u.name || 'Player');
+    if (names.length === 1) return `${names[0]} is typing…`;
+    if (names.length === 2) return `${names[0]} and ${names[1]} are typing…`;
+    return 'Several people are typing…';
+  }
+
+  ngOnInit(): void {
+    this.paramSub = this.route.paramMap.subscribe((params) => {
       this.chatId = params.get('id');
-      this.loadChatMessages();
+      this.foregroundNotifications.setActiveChat(this.chatId);
+      void this.reload();
     });
   }
 
-  loadChatMessages() {
-    // Loaded to exactly match screenshots
-    this.messages = [
-      { 
-        id: 1, 
-        sender: 'Vikram Singh', 
-        avatar: '👨', 
-        text: "Guys, everyone's confirmed right? I've booked the courts.", 
-        time: '7:45 PM', 
-        reactions: '👍 4' 
-      },
-      { 
-        id: 2, 
-        sender: 'Priya V', 
-        avatar: '👩‍🦰', 
-        text: "Yes! I'll be there at 6:45.", 
-        time: '7:48 PM' 
+  ionViewWillEnter(): void {
+    this.foregroundNotifications.setActiveChat(this.chatId || this.route.snapshot.paramMap.get('id'));
+  }
+
+  ionViewWillLeave(): void {
+    this.foregroundNotifications.clearActiveChat(this.chatId);
+    this.teardownRealtime();
+  }
+
+  ngOnDestroy(): void {
+    this.paramSub?.unsubscribe();
+    this.foregroundNotifications.clearActiveChat(this.chatId);
+    this.teardownRealtime();
+  }
+
+  async reload(): Promise<void> {
+    if (!this.chatId) {
+      this.errorMessage = 'Missing chat id.';
+      this.loading = false;
+      return;
+    }
+
+    this.loading = true;
+    this.errorMessage = '';
+    this.teardownRealtime();
+
+    try {
+      const threadRes = await this.chat.getThread(this.chatId);
+      if (!threadRes.success || !threadRes.data) {
+        this.errorMessage = threadRes.message || 'Chat not found.';
+        this.loading = false;
+        return;
       }
-    ];
+
+      this.thread = threadRes.data;
+      const userId = String(this.auth.user()?.id || '');
+
+      this.messages = await this.chat.fetchMessagesOnce(this.chatId, userId);
+      this.stopListen = await this.chat.listenMessages(this.chatId, userId, (live) => {
+        const pending = this.messages.filter((m) => String(m.id).startsWith('local-'));
+        const liveTexts = new Set(live.filter((m) => m.isSelf).map((m) => m.text));
+        const stillPending = pending.filter((m) => !liveTexts.has(m.text));
+        this.messages = [...live, ...stillPending];
+      });
+      this.stopTypingListen = await this.chat.listenTyping(this.chatId, userId, (people) => {
+        this.typingUsers = people;
+      });
+
+      await this.chat.markRead(this.chatId);
+      void this.tabBadges.refresh();
+      void this.loadGameDetails();
+    } catch {
+      this.errorMessage = 'Unable to open this chat.';
+    } finally {
+      this.loading = false;
+    }
   }
 
-  back() {
-    this.router.navigateByUrl('/app/chat');
+  async togglePin(): Promise<void> {
+    if (!this.chatId || !this.thread || this.pinning) return;
+    this.pinning = true;
+    const next = !this.thread.pinned;
+    const res = await this.chat.setPinned(this.chatId, next);
+    if (res.success) {
+      this.thread = { ...this.thread, pinned: next };
+      const toast = await this.toastCtrl.create({
+        message: next ? 'Chat pinned' : 'Chat unpinned',
+        duration: 1400,
+        color: 'dark',
+      });
+      await toast.present();
+    }
+    this.pinning = false;
   }
 
-  callGroup() {
-    alert('Calling group match host...');
+  openGamePage(): void {
+    const id = this.gameDetails?.bookingId;
+    if (!id) return;
+    void this.router.navigateByUrl(`/app/game/${encodeURIComponent(id)}`);
   }
 
-  showInfo() {
-    alert('Match rules and details info sheet');
+  openInvite(): void {
+    const id = this.gameDetails?.bookingId;
+    if (!id) return;
+    void this.router.navigateByUrl(`/app/my-bookings/${encodeURIComponent(id)}`);
   }
 
-  onQuickAction(action: QuickAction) {
-    this.actionClick(action.label);
+  onEnter(event: Event): void {
+    const ke = event as KeyboardEvent;
+    if (!ke.shiftKey) {
+      ke.preventDefault();
+      void this.sendMessage();
+    }
   }
 
-  actionClick(action: string) {
-    alert(`Trigger action: ${action}`);
+  onComposerChange(): void {
+    if (this.newMessageText.trim()) {
+      this.bumpTyping();
+      return;
+    }
+    this.clearLocalTyping();
   }
 
-  sendMessage() {
-    if (!this.newMessageText.trim()) return;
+  clearLocalTyping(): void {
+    if (this.typingIdleTimer) {
+      clearTimeout(this.typingIdleTimer);
+      this.typingIdleTimer = null;
+    }
+    if (!this.locallyTyping || !this.chatId) {
+      this.locallyTyping = false;
+      return;
+    }
+    this.locallyTyping = false;
+    void this.chat.setTyping(this.chatId, false);
+  }
 
-    this.messages.push({
-      id: Date.now(),
-      sender: 'You',
-      avatar: '👤',
-      text: this.newMessageText,
-      time: 'Just now',
-      isSelf: true
-    });
+  private bumpTyping(): void {
+    if (!this.chatId) return;
+    const now = Date.now();
+    if (!this.locallyTyping || now - this.lastTypingWrite > 2000) {
+      this.locallyTyping = true;
+      this.lastTypingWrite = now;
+      void this.chat.setTyping(this.chatId, true);
+    }
+    if (this.typingIdleTimer) clearTimeout(this.typingIdleTimer);
+    this.typingIdleTimer = setTimeout(() => this.clearLocalTyping(), 2500);
+  }
 
-    const reply = this.newMessageText;
+  async sendMessage(): Promise<void> {
+    const text = this.newMessageText.trim();
+    if (!text || !this.chatId || this.sending) return;
+
+    this.clearLocalTyping();
+    this.sending = true;
+    const optimistic: ChatMessage = {
+      id: `local-${Date.now()}`,
+      chatId: this.chatId,
+      text,
+      senderId: String(this.auth.user()?.id || ''),
+      senderName: this.auth.user()?.name || 'You',
+      createdAt: new Date().toISOString(),
+      isSelf: true,
+    };
+    this.messages = [...this.messages, optimistic];
     this.newMessageText = '';
 
-    // Simulate reactive responses
-    setTimeout(() => {
-      if (reply.toLowerCase().includes('hello') || reply.toLowerCase().includes('yes')) {
-        this.messages.push({
-          id: Date.now() + 1,
-          sender: 'Vikram Singh',
-          avatar: '👨',
-          text: 'Awesome, see you soon!',
-          time: 'Just now'
-        });
+    try {
+      const res = await this.chat.sendMessage(this.chatId, text);
+      if (!res.success) {
+        this.messages = this.messages.filter((m) => m.id !== optimistic.id);
+        this.newMessageText = text;
       }
-    }, 1000);
+    } catch {
+      this.messages = this.messages.filter((m) => m.id !== optimistic.id);
+      this.newMessageText = text;
+    } finally {
+      this.sending = false;
+    }
+  }
+
+  back(): void {
+    this.navCtrl.back();
+  }
+
+  onAvatarError(): void {
+    if (this.thread) {
+      this.thread = { ...this.thread, avatar: null };
+    }
+  }
+
+  formatTime(iso?: string | null): string {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return '';
+    return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  }
+
+  private async loadGameDetails(): Promise<void> {
+    if (!this.isGameChat) {
+      this.gameDetails = null;
+      return;
+    }
+
+    const bookingId = String(
+      this.thread?.gameId || this.thread?.bookingId || String(this.chatId || '').replace(/^game_/, ''),
+    );
+    if (!bookingId) {
+      this.gameDetails = null;
+      return;
+    }
+
+    try {
+      const res = await firstValueFrom(this.bookings.getBooking(bookingId));
+      if (!res.success || !res.data) {
+        this.gameDetails = null;
+        return;
+      }
+      this.gameDetails = this.mapGameDetails(res.data);
+    } catch {
+      this.gameDetails = null;
+    }
+  }
+
+  private mapGameDetails(booking: BookingRecord): GameChatDetails {
+    const sport = (booking.sport || 'Game').replace(/\b\w/g, (c) => c.toUpperCase());
+    const venue = booking.venue?.name || 'Venue TBD';
+    const amount = Number(booking.costPerPlayer || booking.playerShareAmount || booking.walletAmount || 0);
+    const paid = String(booking.paymentStatus || '').toLowerCase() === 'paid';
+    const payment = amount > 0
+      ? (paid ? `₹${amount} paid ✓` : `₹${amount}`)
+      : (paid ? 'Paid ✓' : '—');
+    const rating = booking.venue?.rating
+      ? `${venue} · ${Number(booking.venue.rating).toFixed(1)} ⭐`
+      : venue;
+
+    const dateLabel = formatBookingDate(booking.bookingDate);
+    const matchTitle = dateLabel.startsWith('Today')
+      ? `Today's Match · ${venue}`
+      : `${sport} · ${venue}`;
+
+    return {
+      bookingId: String(booking.id),
+      title: matchTitle,
+      emoji: sportEmoji(booking.sport),
+      venue,
+      time: `${formatBookingTime(booking.startTime)} · ${formatBookingDate(booking.bookingDate)}`,
+      players: `${booking.currentPlayers}/${booking.totalPlayers} confirmed`,
+      payment,
+      rating,
+      sport,
+      isHost: !!booking.isHost,
+    };
+  }
+
+  private teardownRealtime(): void {
+    this.clearLocalTyping();
+    this.stopListen?.();
+    this.stopListen = null;
+    this.stopTypingListen?.();
+    this.stopTypingListen = null;
+    this.typingUsers = [];
+    this.chat.stopMessageListening();
+    this.chat.stopTypingListening();
   }
 }

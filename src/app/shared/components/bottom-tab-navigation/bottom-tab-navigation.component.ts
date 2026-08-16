@@ -1,35 +1,31 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Component, Input, inject } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
+import { TabSwitchService } from '../../../core/services/tab-switch.service';
 import { TabItem } from '../../models/app.models';
 
 @Component({
   selector: 'app-bottom-tab-navigation',
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, IonicModule],
   template: `
-    <!-- Floating pill nav matching Figma BottomNav.tsx exactly -->
     <nav class="tab-bar-outer">
       <div class="tab-bar-pill">
-        <a
+        <button
+          type="button"
           *ngFor="let tab of tabs"
-          [routerLink]="tab.route"
-          routerLinkActive="is-active"
-          [routerLinkActiveOptions]="{ exact: false }"
           class="tab-item"
-          #rla="routerLinkActive"
+          [class.is-active]="isActive(tab)"
+          (click)="onTabClick(tab)"
         >
-          <!-- Icon container - filled lime green circle when active -->
-          <div class="tab-icon-wrap" [class.tab-icon-active]="rla.isActive">
+          <div class="tab-icon-wrap" [class.tab-icon-active]="isActive(tab)">
             <ion-icon [name]="tab.icon" class="tab-icon"></ion-icon>
             <span class="tab-badge" *ngIf="badgeValue(tab) > 0">
               {{ badgeValue(tab) > 9 ? '9+' : badgeValue(tab) }}
             </span>
           </div>
-          <!-- Label -->
-          <span class="tab-label" [class.tab-label-active]="rla.isActive">{{ tab.label }}</span>
-        </a>
+          <span class="tab-label" [class.tab-label-active]="isActive(tab)">{{ tab.label }}</span>
+        </button>
       </div>
     </nav>
   `,
@@ -65,9 +61,13 @@ import { TabItem } from '../../models/app.models';
         align-items: center;
         gap: 5px;
         min-width: 64px;
-        text-decoration: none;
+        border: none;
+        background: transparent;
+        padding: 0;
         cursor: pointer;
         outline: none;
+        color: inherit;
+        font-family: inherit;
       }
 
       .tab-icon-wrap {
@@ -131,7 +131,17 @@ import { TabItem } from '../../models/app.models';
   ],
 })
 export class BottomTabNavigationComponent {
+  private readonly tabsService = inject(TabSwitchService);
+
   @Input() tabs: TabItem[] = [];
+
+  onTabClick(tab: TabItem): void {
+    void this.tabsService.openTab(tab.route);
+  }
+
+  isActive(tab: TabItem): boolean {
+    return this.tabsService.isActive(tab, this.tabs);
+  }
 
   badgeValue(tab: TabItem): number {
     const raw = tab.badge;

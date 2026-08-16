@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, computed, inject, signal } from '@angular/core';
+import { Capacitor } from '@capacitor/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { IonicModule, MenuController, ViewWillEnter } from '@ionic/angular';
@@ -10,6 +11,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { BookingService } from '../../core/services/booking.service';
 import { DesignDataService } from '../../core/services/design-data.service';
 import { RealtimeService } from '../../core/services/realtime.service';
+import { LocationService, UserLocation, LocationError, LocationErrorType } from '../../core/services/location.service';
 import {
   formatBookingDate,
   formatBookingTime,
@@ -59,6 +61,7 @@ export class HomePage implements ViewWillEnter, OnDestroy {
   private readonly realtime = inject(RealtimeService);
   private readonly router = inject(Router);
   private readonly menu = inject(MenuController);
+  private readonly locationService = inject(LocationService);
 
   readonly notificationRoute = computed(() =>
     this.auth.user()?.role === 'coach' ? '/app/coach/notifications' : '/app/notifications'
@@ -85,6 +88,9 @@ export class HomePage implements ViewWillEnter, OnDestroy {
 
   // General state
   greeting = '';
+  currentLocation?: UserLocation;
+  locationLoading = false;
+  locationError?: string;
 
   // Coach Dashboard state
   coachProfileDismissed = signal(false);
@@ -193,6 +199,7 @@ export class HomePage implements ViewWillEnter, OnDestroy {
     if (role === 'player' || !role) {
       void this.loadNearbyGames();
       void this.loadHomeAds();
+      void this.loadCurrentLocation();
       this.listenForNearbyGames();
     }
   }
@@ -200,6 +207,108 @@ export class HomePage implements ViewWillEnter, OnDestroy {
   ngOnDestroy() {
     this.nearbyRealtimeSub?.unsubscribe();
     this.stopAdSlider();
+  }
+
+  async loadCurrentLocation() {
+    this.seedSavedLocation();
+    this.locationLoading = true;
+    this.locationError = undefined;
+
+    try {
+      const location = await this.locationService.getLocationWithFallback();
+      if (location) {
+        this.currentLocation = await this.enrichLocation(location);
+        await this.syncProfileLocation(this.currentLocation);
+      }
+    } catch (error: any) {
+      this.seedSavedLocation();
+      if (error instanceof LocationError && error.type === LocationErrorType.GPS_DISABLED) {
+        this.locationError = 'Enable GPS to see your location';
+      } else if (error instanceof LocationError) {
+        this.locationError = 'Location permission denied';
+      }
+    } finally {
+      this.locationLoading = false;
+    }
+  }
+
+  private seedSavedLocation() {
+    if (this.currentLocation?.shortLabel || this.currentLocation?.address) {
+      return;
+    }
+    const saved = this.locationService.getSavedLocation();
+    if (saved) {
+      this.currentLocation = saved;
+      return;
+    }
+    const profile = (this.auth.user()?.location || '').trim();
+    if (profile) {
+      this.currentLocation = {
+        latitude: 0,
+        longitude: 0,
+        shortLabel: profile,
+        address: profile,
+        timestamp: 0,
+      };
+    }
+  }
+
+  private async enrichLocation(location: UserLocation): Promise<UserLocation> {
+    if (location.postalArea && location.pincode) {
+      return location;
+    }
+    try {
+      const details = await this.locationService.reverseGeocodeDetails(location.latitude, location.longitude);
+      const enriched: UserLocation = {
+        ...location,
+        address: details.address || location.address,
+        postalArea: details.postalArea,
+        pincode: details.pincode,
+        city: details.city,
+        shortLabel: details.shortLabel,
+      };
+      this.locationService.saveLocation(enriched);
+      return enriched;
+    } catch {
+      return location;
+    }
+  }
+
+  private async syncProfileLocation(location: UserLocation) {
+    const label = (location.shortLabel || '').trim();
+    if (!label) return;
+
+    const current = (this.auth.user()?.location || '').trim();
+    if (current.toLowerCase() === label.toLowerCase()) return;
+
+    try {
+      await firstValueFrom(this.auth.updateProfile({ location: label }));
+      void this.loadNearbyGames();
+    } catch (error) {
+      console.warn('Could not save GPS location to profile:', error);
+    }
+  }
+
+  async refreshLocation() {
+    await this.loadCurrentLocation();
+  }
+
+  async openAppSettings() {
+    try {
+      // For Android, open app settings using intent URL
+      window.open('package:com.tyng.app', '_system');
+    } catch (error) {
+      console.error('Failed to open app settings:', error);
+    }
+  }
+
+  async openLocationSettings() {
+    try {
+      // For Android, open location settings
+      window.open('android.settings.LOCATION_SOURCE_SETTINGS', '_system');
+    } catch (error) {
+      console.error('Failed to open location settings:', error);
+    }
   }
 
   private listenForNearbyGames() {
@@ -253,19 +362,67 @@ export class HomePage implements ViewWillEnter, OnDestroy {
       && status !== 'completed';
   }
 
+  get locationLabel(): string {
+    const live = (this.currentLocation?.shortLabel || this.currentLocation?.address || '').trim();
+    if (live) return live;
+
+    const saved = this.locationService.getSavedLocation();
+    const cached = (saved?.shortLabel || saved?.address || '').trim();
+    if (cached) return cached;
+
+    const profile = (this.auth.user()?.location || '').trim();
+    if (profile) return profile;
+
+    return this.locationLoading ? 'Detecting location…' : 'Set your location';
+  }
+
   get playerLocation(): string {
-    return (this.auth.user()?.location || '').trim();
+    return this.locationLabel === 'Detecting location…' || this.locationLabel === 'Set your location'
+      ? ''
+      : this.locationLabel;
   }
 
+  /** Postal area / neighbourhood from GPS, else profile. */
   get locationCity(): string {
-    if (!this.playerLocation) return 'Set your location';
-    return this.playerLocation.split(/[>,\-\/|]/)[0]?.trim() || this.playerLocation;
+    if (this.currentLocation?.postalArea) {
+      return this.currentLocation.postalArea;
+    }
+    const parts = this.shortLocationParts;
+    if (parts[0]) return parts[0];
+    if (this.locationLoading) return 'Detecting location…';
+    return 'Set your location';
   }
 
+  /** PIN code from GPS, else city from profile. */
   get locationArea(): string {
-    if (!this.playerLocation) return '';
-    const parts = this.playerLocation.split(/[>,\-\/|]/).map((p) => p.trim()).filter(Boolean);
-    return parts.length > 1 ? parts.slice(1).join(' · ') : '';
+    if (this.currentLocation?.pincode) {
+      return this.currentLocation.pincode;
+    }
+    if (this.currentLocation?.city && this.currentLocation.city.toLowerCase() !== this.locationCity.toLowerCase()) {
+      return this.currentLocation.city;
+    }
+    const parts = this.shortLocationParts;
+    if (parts.length < 2) return '';
+    const pin = parts.find((part) => /^\d{5,6}$/.test(part));
+    if (pin) return pin;
+    const city = this.pickCityName(parts);
+    return city && city.toLowerCase() !== parts[0].toLowerCase() ? city : '';
+  }
+
+  private get shortLocationParts(): string[] {
+    if (!this.playerLocation) return [];
+    return this.playerLocation
+      .split(/[>,\-\/|]+/)
+      .map((part) => part.trim())
+      .filter(Boolean)
+      .filter((part) => part.length > 0 && !/^(india|bharat)$/i.test(part));
+  }
+
+  private pickCityName(parts: string[]): string {
+    const stateLike =
+      /(pradesh|nadu|bengal|rashtra|delhi|goa|gujarat|rajasthan|punjab|haryana|kerala|karnataka|odisha|bihar|assam|sikkim|jharkhand|chhattisgarh|uttarakhand|himachal|telangana|andhra|madhya|west bengal)$/i;
+    const candidates = parts.slice(1).filter((part) => !stateLike.test(part));
+    return candidates[candidates.length - 1] || parts[1] || '';
   }
 
   editLocation() {

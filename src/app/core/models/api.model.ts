@@ -25,6 +25,8 @@ export interface AuthUser {
   xpProgressPct?: number;
   xpToNextLevel?: number;
   percentileRank?: string | null;
+  rating?: number | null;
+  gamesPlayed?: number | null;
   profileCompletion?: number;
   sportsLabel?: string;
   sports?: string[];
@@ -99,6 +101,9 @@ export interface BookingVenue {
   name?: string | null;
   location?: string | null;
   address?: string | null;
+  rating?: number | null;
+  image?: string | null;
+  coverImage?: string | null;
   coordinates?: {
     lat: number | null;
     lng: number | null;
@@ -109,6 +114,9 @@ export interface BookingParticipant {
   id: string;
   role: string;
   status: string;
+  amountPaid?: number;
+  paymentStatus?: string | null;
+  rating?: number | null;
   joinedAt?: string | null;
   user: AuthUser;
 }
@@ -138,12 +146,42 @@ export interface BookingCalendarEvent {
   meta?: Record<string, unknown>;
 }
 
+export interface BookingSessionAttendance {
+  userId: string;
+  name: string;
+  status: 'awaiting' | 'checked_in' | 'late' | 'absent' | string;
+  source?: string | null;
+  checkedInAt?: string | null;
+}
+
+export interface BookingSessionEvent {
+  id: string;
+  type: string;
+  text: string;
+  icon?: string | null;
+  at?: string | null;
+}
+
+export interface BookingSession {
+  status: 'idle' | 'live' | 'ended' | string;
+  startedAt?: string | null;
+  endedAt?: string | null;
+  checkinToken?: string | null;
+  checkinTokenExpiresAt?: string | null;
+  checkedIn: number;
+  totalPlayers: number;
+  attendance: BookingSessionAttendance[];
+  timeline: BookingSessionEvent[];
+}
+
 export interface BookingRecord {
   id: string;
   gameId: string;
   venueId: string;
   hostUserId: string;
   sport: string;
+  title?: string | null;
+  reference?: string | null;
   skillLevel?: string | null;
   teamSize?: string | null;
   bookingDate?: string | null;
@@ -164,6 +202,7 @@ export interface BookingRecord {
   refundAmount?: number;
   refundStatus?: string | null;
   approvalDeadlineAt?: string | null;
+  captainContinuedAt?: string | null;
   cancellationReason?: string | null;
   couponCode?: string | null;
   couponDiscount?: number;
@@ -172,7 +211,36 @@ export interface BookingRecord {
     name?: string;
     qty?: number;
     price?: number;
+    status?: 'pending' | 'prepared' | 'delivered';
   }> | null;
+  amenityChecklist?: Array<{
+    key: string;
+    name: string;
+    qty: number;
+    status: 'pending' | 'prepared' | 'delivered';
+    source?: string;
+  }>;
+  specialRequests?: Array<{ icon?: string; text: string }>;
+  disputes?: Array<{
+    id: string;
+    message: string;
+    status: string;
+    author?: string | null;
+    createdAt?: string | null;
+  }>;
+  hostReliability?: {
+    trusted: boolean;
+    attendanceRate: number;
+    attendanceDetail: string;
+    cancellationRate: number;
+    cancellationDetail: string;
+    lateRate: number;
+    lateDetail: string;
+    totalBookings: number;
+    totalDetail: string;
+    reliabilityPct: number;
+  } | null;
+  session?: BookingSession | null;
   canJoin: boolean;
   canLeave: boolean;
   canCancel: boolean;
@@ -195,6 +263,7 @@ export interface BookingRecord {
   createdAt?: string | null;
   updatedAt?: string | null;
   rules?: string[];
+  viewerRating?: number | null;
 }
 
 export interface MyBookingsResponse {

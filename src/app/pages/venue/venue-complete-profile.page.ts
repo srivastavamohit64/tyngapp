@@ -3,14 +3,14 @@ import { Component, signal, inject, ElementRef, ViewChild } from '@angular/core'
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Capacitor } from '@capacitor/core';
-import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { ActionSheetController, AlertController, IonicModule, ViewWillEnter } from '@ionic/angular';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { MediaPermissionService } from '../../core/services/media-permission.service';
+import { NativeMediaPickerService } from '../../core/services/native-media-picker.service';
 import { VenueService, SportsEquipmentItem } from '../../core/services/venue.service';
-import { fetchWebPathAsImageFile, normalizeImageFile } from '../../core/utils/image-file.util';
+import { normalizeImageFile } from '../../core/utils/image-file.util';
 import { LocationFieldComponent } from '../../shared/components/location-field/location-field.component';
 import { sportEmoji } from '../../core/utils/booking.utils';
 
@@ -23,6 +23,11 @@ interface MaintFacility {
   court: string;
   status: string;
   photo: string;
+  hourlyPrice: string;
+  peakPrice: string;
+  weekendPrice: string;
+  cancelFee: string;
+  meta?: Record<string, unknown>;
 }
 
 const OWNERSHIP_TYPES = ['Private', 'Academy', 'Corporate', 'Government', 'School', 'Society', 'Other'];
@@ -318,6 +323,7 @@ const STEP_TITLES = [
                     <p class="text-white font-black text-[14px] m-0 mt-0.5">{{ f.name }}</p>
                     <p class="text-white/70 text-[10px] m-0 mt-0.5 font-bold">
                       {{ f.sport }} · {{ f.indoor ? 'Indoor' : 'Outdoor' }}
+                      <ng-container *ngIf="f.hourlyPrice"> · ₹{{ f.hourlyPrice }}/hr</ng-container>
                     </p>
                   </div>
                 </div>
@@ -372,30 +378,46 @@ const STEP_TITLES = [
           <div *ngIf="step() === 4" class="space-y-5">
             <div>
               <h2 class="text-[20px] font-black text-[#111827] m-0">Pricing & Booking</h2>
-              <p class="text-[13px] text-[#9CA3AF] m-0 mt-0.5">Hourly charge, discounts, and booking automation</p>
+              <p class="text-[13px] text-[#9CA3AF] m-0 mt-0.5">Each turf or court has its own hourly rate</p>
             </div>
-            <div class="bg-white rounded-[24px] p-5 space-y-4 border border-[#F3F4F6] shadow-sm">
+
+            <div *ngIf="facilities().length === 0" class="empty-facilities">
+              <p class="text-[15px] font-black text-[#111827] m-0">No facilities yet</p>
+              <p class="text-[12px] text-[#9CA3AF] m-0 mt-1">Go back and add courts first — pricing is set per facility.</p>
+            </div>
+
+            <div *ngFor="let f of facilities(); let idx = index" class="bg-white rounded-[24px] p-5 space-y-4 border border-[#F3F4F6] shadow-sm">
+              <div class="flex items-center gap-3">
+                <span class="text-2xl leading-none">{{ f.emoji }}</span>
+                <div class="min-w-0">
+                  <p class="text-[15px] font-black text-[#111827] m-0">{{ f.name }}</p>
+                  <p class="text-[11px] font-bold text-[#9CA3AF] m-0 mt-0.5">{{ f.sport }} · {{ f.indoor ? 'Indoor' : 'Outdoor' }}</p>
+                </div>
+              </div>
               <div class="grid grid-cols-2 gap-3">
                 <div>
                   <p class="text-[11px] text-[#9CA3AF] uppercase tracking-wider font-semibold mb-1.5 m-0">Hourly Charge (₹) *</p>
-                  <input type="number" [(ngModel)]="hourlyPrice" placeholder="e.g. 800" class="form-input" />
+                  <input type="number" [ngModel]="f.hourlyPrice" (ngModelChange)="setFacilityPrice(idx, 'hourlyPrice', $event)" placeholder="e.g. 800" class="form-input" />
                 </div>
                 <div>
                   <p class="text-[11px] text-[#9CA3AF] uppercase tracking-wider font-semibold mb-1.5 m-0">Peak Hours Price (₹)</p>
-                  <input type="number" [(ngModel)]="peakPrice" placeholder="e.g. 1200" class="form-input" />
+                  <input type="number" [ngModel]="f.peakPrice" (ngModelChange)="setFacilityPrice(idx, 'peakPrice', $event)" placeholder="e.g. 1200" class="form-input" />
                 </div>
               </div>
               <div class="grid grid-cols-2 gap-3">
                 <div>
                   <p class="text-[11px] text-[#9CA3AF] uppercase tracking-wider font-semibold mb-1.5 m-0">Weekend Price (₹)</p>
-                  <input type="number" [(ngModel)]="weekendPrice" placeholder="e.g. 2000" class="form-input" />
+                  <input type="number" [ngModel]="f.weekendPrice" (ngModelChange)="setFacilityPrice(idx, 'weekendPrice', $event)" placeholder="e.g. 2000" class="form-input" />
                 </div>
                 <div>
                   <p class="text-[11px] text-[#9CA3AF] uppercase tracking-wider font-semibold mb-1.5 m-0">Cancellation Fee (₹)</p>
-                  <input type="number" [(ngModel)]="cancelFee" placeholder="e.g. 400" class="form-input" />
+                  <input type="number" [ngModel]="f.cancelFee" (ngModelChange)="setFacilityPrice(idx, 'cancelFee', $event)" placeholder="e.g. 400" class="form-input" />
                 </div>
               </div>
-              <div class="border-t border-[#F3F4F6] pt-4 mt-2">
+            </div>
+
+            <div class="bg-white rounded-[24px] p-5 space-y-4 border border-[#F3F4F6] shadow-sm">
+              <div>
                 <p class="text-[12px] font-black text-[#111827] uppercase tracking-wider mb-3 m-0">Partner Discounts (%)</p>
                 <div class="grid grid-cols-3 gap-2">
                   <div>
@@ -505,6 +527,7 @@ const STEP_TITLES = [
                 class="doc-row w-full flex items-center gap-3 px-4 py-4 rounded-[20px] transition-all text-left border cursor-pointer"
                 [class.doc-row--uploaded]="isDocUploaded(doc.id)"
                 [class.opacity-60]="docUploading() === doc.id"
+                (click)="prepareDocumentPick($event)"
               >
                 <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
                   [style.backgroundColor]="isDocUploaded(doc.id) ? 'var(--app-primary)' : '#F3F4F6'">
@@ -880,6 +903,7 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
   private readonly actionSheetCtrl = inject(ActionSheetController);
   private readonly alertCtrl = inject(AlertController);
   private readonly mediaPermissions = inject(MediaPermissionService);
+  private readonly mediaPicker = inject(NativeMediaPickerService);
 
   readonly totalSteps = TOTAL_STEPS;
   readonly stepNumbers = Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1);
@@ -929,11 +953,6 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
   newFacilitySport = 'football';
   newFacilityIndoor = false;
 
-  // Pricing
-  hourlyPrice = '';
-  peakPrice = '';
-  weekendPrice = '';
-  cancelFee = '';
   coachDisc = '';
   academyDisc = '';
   corpDisc = '';
@@ -1027,7 +1046,8 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
       return this.facilities().length > 0;
     }
     if (s === 4) {
-      return String(this.hourlyPrice ?? '').trim() !== '';
+      const list = this.facilities();
+      return list.length > 0 && list.every((f) => String(f.hourlyPrice ?? '').trim() !== '');
     }
     if (s === 7) {
       return this.allRequiredDocsUploaded();
@@ -1060,6 +1080,10 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
         court: String(nextIndex),
         status: 'Open',
         photo: sportMeta.photo,
+        hourlyPrice: '',
+        peakPrice: '',
+        weekendPrice: '',
+        cancelFee: '',
       },
     ]);
     this.newFacilityIndoor = false;
@@ -1069,6 +1093,12 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
   removeFacility(index: number) {
     this.facilities.update((list) => list.filter((_, i) => i !== index));
     this.suggestFacilityName();
+  }
+
+  setFacilityPrice(index: number, field: 'hourlyPrice' | 'peakPrice' | 'weekendPrice' | 'cancelFee', value: string) {
+    this.facilities.update((list) =>
+      list.map((item, i) => (i === index ? { ...item, [field]: value } : item)),
+    );
   }
 
   private suggestFacilityName() {
@@ -1130,39 +1160,25 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
   }
 
   private async openGalleryCamera() {
-    const allowed = await this.mediaPermissions.ensureCamera();
-    if (!allowed) {
-      await this.showMediaPermissionDenied('Camera access is required to take venue photos. Enable it in App settings.');
+    if (Capacitor.isNativePlatform()) {
+      const file = await this.mediaPicker.takePhoto('venue-camera');
+      if (file) {
+        await this.uploadNormalizedGallery([file]);
+      }
       return;
     }
-
-    if (Capacitor.isNativePlatform()) {
-      try {
-        const photo = await Camera.getPhoto({
-          quality: 85,
-          resultType: CameraResultType.Uri,
-          source: CameraSource.Camera,
-          correctOrientation: true,
-          saveToGallery: false,
-        });
-        if (!photo.webPath) {
-          this.saveError.set('Camera did not return an image. Please try again.');
-          return;
-        }
-        const file = await fetchWebPathAsImageFile(photo.webPath, 'venue-camera');
-        await this.uploadNormalizedGallery([file]);
-        return;
-      } catch (error: unknown) {
-        const message = String((error as { message?: string })?.message || error || '');
-        if (/cancel/i.test(message)) return;
-        console.warn('Capacitor camera failed, falling back to file input', error);
-      }
-    }
-
     this.galleryCameraInput?.nativeElement.click();
   }
 
   private async openGalleryLibrary() {
+    if (Capacitor.isNativePlatform()) {
+      const files = await this.mediaPicker.pickPhotos('venue', 8);
+      if (files.length) {
+        await this.uploadNormalizedGallery(files);
+      }
+      return;
+    }
+
     const allowed = await this.mediaPermissions.ensurePhotos();
     if (!allowed) {
       await this.showMediaPermissionDenied('Photo library access is required to choose venue photos. Enable it in App settings.');
@@ -1227,6 +1243,29 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
 
   removePhoto(index: number) {
     this.uploadedPhotos.update((list) => list.filter((_, i) => i !== index));
+  }
+
+  async prepareDocumentPick(event: Event): Promise<void> {
+    if (!Capacitor.isNativePlatform()) return;
+    // Request gallery/storage access before the system file chooser (Samsung WebViews
+    // often return empty results without a prior runtime grant).
+    const target = event.target as HTMLElement | null;
+    if (target?.closest?.('.doc-preview-btn')) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const allowed = await this.mediaPermissions.ensurePhotos();
+    if (!allowed) {
+      await this.showMediaPermissionDenied(
+        'Files / Photos access is required to upload documents. Enable it in App settings.',
+      );
+      return;
+    }
+
+    const label = event.currentTarget as HTMLElement | null;
+    const input = label?.querySelector('input[type="file"]') as HTMLInputElement | null;
+    input?.click();
   }
 
   async onDocumentSelected(docId: string, event: Event) {
@@ -1442,6 +1481,8 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
             const sportId = String(court.sport || 'football').toLowerCase();
             const sportMeta = this.facilitySports.find((s) => s.id === sportId);
             const label = sportMeta?.label || this.titleCase(sportId);
+            const meta = (court.meta && typeof court.meta === 'object') ? court.meta : {};
+            const cancel = meta['cancellationFee'] ?? meta['cancelFee'];
             return {
               id: String(court.id ?? `court-${index}`),
               name: String(court.courtName || court.name || `${label} Court ${index + 1}`),
@@ -1451,20 +1492,15 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
               court: String(index + 1),
               status: String(court.status || 'open').toLowerCase() === 'open' ? 'Open' : 'Maintenance',
               photo: String(court.image || court.imageUrl || sportMeta?.photo || FACILITY_SPORTS[0].photo),
+              hourlyPrice: court.pricePerHour != null && court.pricePerHour !== '' ? String(court.pricePerHour) : '',
+              peakPrice: court.peakPrice != null && court.peakPrice !== '' ? String(court.peakPrice) : '',
+              weekendPrice: court.weekendPrice != null && court.weekendPrice !== '' ? String(court.weekendPrice) : '',
+              cancelFee: cancel != null && cancel !== '' ? String(cancel) : '',
+              meta,
             } satisfies MaintFacility;
           }),
         );
 
-        const first = courts[0];
-        if (first?.pricePerHour != null && first.pricePerHour !== '') {
-          this.hourlyPrice = String(first.pricePerHour);
-        }
-        if (first?.peakPrice != null && first.peakPrice !== '') {
-          this.peakPrice = String(first.peakPrice);
-        }
-        if (first?.weekendPrice != null && first.weekendPrice !== '') {
-          this.weekendPrice = String(first.weekendPrice);
-        }
         this.suggestFacilityName();
       }
     } catch {
@@ -1501,18 +1537,23 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
 
       const courts = this.facilities().map((facility, index) => {
         const numericId = Number(facility.id);
+        const cancel = String(facility.cancelFee ?? '').trim();
         return {
           ...(Number.isFinite(numericId) && numericId > 0 ? { id: numericId } : {}),
           name: facility.name,
           sport: facility.sport.toLowerCase(),
           isIndoor: facility.indoor,
-          pricePerHour: Number(this.hourlyPrice || 0),
-          peakPrice: this.peakPrice !== '' ? Number(this.peakPrice) : null,
-          weekendPrice: this.weekendPrice !== '' ? Number(this.weekendPrice) : null,
+          pricePerHour: Number(facility.hourlyPrice || 0),
+          peakPrice: String(facility.peakPrice ?? '').trim() !== '' ? Number(facility.peakPrice) : null,
+          weekendPrice: String(facility.weekendPrice ?? '').trim() !== '' ? Number(facility.weekendPrice) : null,
           hasRentalGear: Object.values(this.equipQty()).some((qty) => qty > 0),
           imageUrl: facility.photo || null,
           status: facility.status.toLowerCase() === 'open' ? 'open' : 'maintenance',
           sortOrder: index,
+          meta: {
+            ...(facility.meta || {}),
+            cancellationFee: cancel !== '' ? Number(cancel) : null,
+          },
         };
       });
 
@@ -1521,13 +1562,14 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
           name: `${this.venueName || 'Main'} Court 1`,
           sport: sports[0] || 'football',
           isIndoor: false,
-          pricePerHour: Number(this.hourlyPrice || 0),
-          peakPrice: this.peakPrice !== '' ? Number(this.peakPrice) : null,
-          weekendPrice: this.weekendPrice !== '' ? Number(this.weekendPrice) : null,
+          pricePerHour: 0,
+          peakPrice: null,
+          weekendPrice: null,
           hasRentalGear: false,
           imageUrl: null,
           status: 'open',
           sortOrder: 0,
+          meta: { cancellationFee: null },
         });
       }
 

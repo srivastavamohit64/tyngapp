@@ -73,7 +73,7 @@ interface BookingItem {
           <p *ngIf="loading()" class="status">Loading bookings…</p>
           <div *ngIf="!loading() && errorMessage()" class="error-box">{{ errorMessage() }}</div>
 
-          <article class="booking-card" *ngFor="let booking of filteredBookings()">
+          <article class="booking-card" *ngFor="let booking of filteredBookings()" (click)="openBooking(booking.id)">
             <div class="booking-card__top">
               <div class="booking-card__meta">
                 <span><ion-icon name="calendar-outline"></ion-icon>{{ booking.date }}</span>
@@ -132,7 +132,7 @@ interface BookingItem {
               <p class="detail-box__value detail-box__value--warn">{{ approvalCountdown(booking) }}</p>
             </div>
 
-            <div class="booking-card__actions" *ngIf="booking.status === 'pending'">
+            <div class="booking-card__actions" *ngIf="booking.status === 'pending'" (click)="$event.stopPropagation()">
               <button type="button" class="btn-accept" (click)="acceptBooking(booking.id)">Accept</button>
               <button type="button" class="btn-decline" (click)="declineBooking(booking.id)">Decline</button>
             </div>
@@ -307,6 +307,7 @@ interface BookingItem {
       padding: 16px;
       margin-bottom: 12px;
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+      cursor: pointer;
     }
 
     .booking-card__top {
@@ -775,6 +776,10 @@ export class VenueBookingsPage implements OnInit, OnDestroy {
 
   goHome() {
     void this.router.navigateByUrl('/app/venue/dashboard');
+  }
+
+  openBooking(id: string) {
+    void this.router.navigateByUrl(`/app/venue/bookings/${encodeURIComponent(id)}`);
   }
 
   private mapBooking(booking: BookingRecord): BookingItem {

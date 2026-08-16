@@ -11,8 +11,13 @@ export function resolveMediaUrl(pathOrUrl: string | null | undefined): string | 
   const value = String(pathOrUrl).trim();
   if (!value) return null;
 
-  if (/^(https?:|data:|blob:)/i.test(value)) {
+  if (/^(data:|blob:)/i.test(value)) {
     return value;
+  }
+
+  if (/^https?:\/\//i.test(value)) {
+    const rewritten = rewriteAppOriginMediaUrl(value);
+    return rewritten || value;
   }
 
   const origin = mediaOriginFromApiUrl(environment.apiUrl);
@@ -23,6 +28,22 @@ export function resolveMediaUrl(pathOrUrl: string | null | undefined): string | 
   }
 
   return `${origin}/${relative}`;
+}
+
+/** Relative media paths that the browser already resolved against Ionic (localhost:8100). */
+function rewriteAppOriginMediaUrl(value: string): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const parsed = new URL(value);
+    if (parsed.origin !== window.location.origin) return null;
+    const path = parsed.pathname.replace(/^\/+/, '');
+    if (!/^(storage\/|profile-images\/|venue-|gallery)/i.test(path)) return null;
+    const origin = mediaOriginFromApiUrl(environment.apiUrl);
+    const relative = path.startsWith('storage/') ? path : `storage/${path}`;
+    return `${origin}/${relative}`;
+  } catch {
+    return null;
+  }
 }
 
 function mediaOriginFromApiUrl(apiUrl: string): string {

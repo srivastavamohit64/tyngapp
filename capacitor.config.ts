@@ -25,7 +25,9 @@ const config: CapacitorConfig = {
       splashImmersive: true,
     },
     PushNotifications: {
-      presentationOptions: ['badge', 'sound', 'alert'],
+      // Omit "alert" so foreground pushes use the in-app banner instead of a
+      // duplicate OS heads-up. Background/terminated still use system tray.
+      presentationOptions: ['badge', 'sound'],
     },
   },
 };

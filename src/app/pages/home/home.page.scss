@@ -154,46 +154,103 @@
   color: #111827;
 }
 
-.loc-row {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-bottom: 16px;
-  cursor: pointer;
-}
-
-.loc-icon {
-  color: var(--app-primary);
-  font-size: 16px;
-}
-
-.loc-city {
-  font-size: 14px;
-  font-weight: 600;
-  color: #111827;
-}
-
-.loc-chevron {
-  font-size: 14px;
-  color: #9ca3af;
-}
-
-.loc-area {
-  font-size: 12px;
-  color: #9ca3af;
-  margin-left: 4px;
-  flex: 1;
-  min-width: 0;
+.location-banner {
+  position: relative;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  margin-bottom: 16px;
+  padding: 16px;
+  border-radius: 20px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--app-primary) 0%, var(--app-primary-to, var(--app-primary)) 100%);
+  box-shadow: 0 10px 24px rgba(17, 24, 39, 0.12);
 }
 
-.loc-edit {
-  margin-left: auto;
+.location-banner-glow {
+  position: absolute;
+  top: -32px;
+  right: -24px;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  pointer-events: none;
+}
+
+.location-banner-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.location-kicker {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.location-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+}
+
+.location-line ion-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  font-size: 18px;
+}
+
+.location-line p {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.location-refresh {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+}
+
+.location-refresh ion-icon {
+  font-size: 18px;
+}
+
+.location-refresh .spin {
+  animation: location-spin 0.8s linear infinite;
+}
+
+.location-error {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.18);
   font-size: 12px;
-  font-weight: 700;
-  color: var(--app-primary);
+  font-weight: 600;
+}
+
+.location-error p {
+  margin: 0;
+}
+
+@keyframes location-spin {
+  to { transform: rotate(360deg); }
 }
 
 .search-wrap {

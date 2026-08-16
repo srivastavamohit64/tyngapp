@@ -9,15 +9,20 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-    <!-- Camera (venue photos, profile photo, capture="environment") -->
+    <!-- Camera (profile / venue photos, capture) -->
     <uses-permission android:name="android.permission.CAMERA" />
 
-    <!-- Photos / files: Android 13+ -->
+    <!--
+      Media library:
+      - Android 13+ (API 33): granular READ_MEDIA_*
+      - Android 14+ (API 34): READ_MEDIA_VISUAL_USER_SELECTED for partial access (Samsung One UI)
+      - Android 12 and below: READ_EXTERNAL_STORAGE
+      Note: system Photo Picker often works without these, but Samsung gallery /
+      WebView file inputs still need them on many devices.
+    -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-    <!-- Partial gallery access on Android 14+ -->
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
     <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
-
-    <!-- Photos / files: Android 12 and below -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29" />
 
@@ -30,14 +35,15 @@
     <!-- Maps / location picker -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-
+<uses-feature android:name="android.hardware.location.gps" />
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        android:requestLegacyExternalStorage="true">
 
         <!-- Required so Capacitor can read ApplicationInfo.metaData on Android 13+
              and display foreground FCM notifications. Channel ID must match createChannel(). -->

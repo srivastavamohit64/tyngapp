@@ -221,6 +221,10 @@ export class AuthService {
     return '/app/venue/dashboard';
   }
 
+  hydrateUser(user: AuthUser): void {
+    this.setUser(user);
+  }
+
   private persistAuth(data: AuthTokenResponse): AuthUser {
     localStorage.setItem(TOKEN_KEY, data.token);
     this.setUser(data.user);

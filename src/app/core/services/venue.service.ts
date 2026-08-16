@@ -72,7 +72,7 @@ export interface VenueDashboardData {
     status: string;
     type: string;
   }[];
-  courts: { id: string; name: string; slots: boolean[] }[];
+  courts: { id: string; name: string; status?: string; slots: boolean[] }[];
   coachSessions: {
     id: string;
     name: string;
@@ -254,9 +254,10 @@ export class VenueService {
     return this.api.put('/venue/profile', payload);
   }
 
-  uploadGallery(files: File[]): Observable<ApiResponse<{
+  uploadGallery(files: File[], opts?: { asCover?: boolean; courtId?: string | number }): Observable<ApiResponse<{
     uploaded: string[];
     gallery: string[];
+    courtImage?: string | null;
     profileImage?: string | null;
     user?: AuthUser;
   }>> {
@@ -264,6 +265,8 @@ export class VenueService {
     files.forEach((file, index) => {
       form.append('photos[]', file, file.name || `venue-${Date.now()}-${index}.jpg`);
     });
+    if (opts?.asCover) form.append('asCover', '1');
+    if (opts?.courtId) form.append('courtId', String(opts.courtId));
     return this.api.postForm('/venue/gallery', form);
   }
 

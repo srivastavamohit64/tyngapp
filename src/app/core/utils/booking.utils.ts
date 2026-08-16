@@ -56,12 +56,12 @@ export function formatDurationLabel(durationMinutes?: number | null): string {
   return `${durationMinutes} min`;
 }
 
-export function formatStartsIn(date?: string | null, startTime?: string | null): string | null {
+export function formatStartsIn(date?: string | null, startTime?: string | null, now = Date.now()): string | null {
   if (!date || !startTime) return null;
   const start = toDateTime(date, startTime);
   if (!start) return null;
 
-  const diff = start.getTime() - Date.now();
+  const diff = start.getTime() - now;
   if (diff <= 0) return null;
 
   const totalMinutes = Math.floor(diff / 60000);
@@ -69,7 +69,103 @@ export function formatStartsIn(date?: string | null, startTime?: string | null):
   const minutes = totalMinutes % 60;
 
   if (hours <= 0) return `Starts in ${minutes}m`;
-  return `Starts in ${hours}h ${minutes}m`;
+  return `Starts in ${hours}h ${String(minutes).padStart(2, '0')}m`;
+}
+
+export function bookingTitle(booking: { title?: string | null; sport?: string | null; bookingDate?: string | null }): string {
+  if (booking.title) return booking.title;
+  const sport = booking.sport
+    ? booking.sport.charAt(0).toUpperCase() + booking.sport.slice(1)
+    : 'Game';
+  if (!booking.bookingDate) return `${sport} Match`;
+  const date = new Date(`${booking.bookingDate}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return `${sport} Match`;
+  const day = date.getDay();
+  if (day === 0 || day === 6) return `Weekend ${sport} Match`;
+  const weekday = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(date);
+  return `${weekday} ${sport} Game`;
+}
+
+export function bookingReference(booking: { reference?: string | null; id?: string | number; sport?: string | null; bookingDate?: string | null }): string {
+  if (booking.reference) return booking.reference;
+  const sport = String(booking.sport || 'GM').replace(/[^A-Za-z]/g, '').toUpperCase().slice(0, 2) || 'GM';
+  const stamp = (booking.bookingDate || '').replace(/-/g, '').slice(2) || '000000';
+  const id = String(booking.id || '0').padStart(3, '0');
+  return `TY-${sport}-${stamp}-${id}`;
+}
+
+export function bookingPaymentLabel(booking: {
+  isHost?: boolean;
+  paymentStatus?: string | null;
+  paymentMethod?: string | null;
+  playerShareAmount?: number;
+}): string {
+  const paid = String(booking.paymentStatus || '').toLowerCase();
+  if (!booking.isHost && (paid === 'paid' || paid === 'completed')) return 'Paid ✓';
+  if (Number(booking.playerShareAmount || 0) > 0) return 'Split Equally';
+  const method = String(booking.paymentMethod || '').toLowerCase();
+  if (method === 'online') return 'Online';
+  if (method === 'wallet') return 'Wallet';
+  if (method === 'at_venue') return 'At venue';
+  if (paid === 'paid' || paid === 'completed') return 'Paid ✓';
+  return paid ? paid.charAt(0).toUpperCase() + paid.slice(1) : 'Pending';
+}
+
+export function isUpcomingStatus(status?: string | null): boolean {
+  const value = String(status || '').toLowerCase();
+  return value === 'pending' || value === 'confirmed' || value === 'full';
+}
+
+export function isBookingGameDay(date?: string | null, now = Date.now()): boolean {
+  if (!date) return false;
+  const bookingDate = new Date(`${date}T00:00:00`);
+  if (Number.isNaN(bookingDate.getTime())) return false;
+  return isSameDate(bookingDate, new Date(now));
+}
+
+/** HTTPS origin used in venue attendance QR so native apps don't encode capacitor://localhost. */
+export function checkInAppOrigin(apiUrl?: string): string {
+  const candidates = [apiUrl, typeof window !== 'undefined' ? window.location.origin : ''];
+  for (const raw of candidates) {
+    try {
+      const url = new URL(String(raw || ''));
+      if (url.protocol === 'http:' || url.protocol === 'https:') {
+        if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
+          continue;
+        }
+        return url.origin;
+      }
+    } catch {
+      // try next
+    }
+  }
+  if (typeof window !== 'undefined' && /^https?:$/.test(window.location.protocol)) {
+    return window.location.origin;
+  }
+  return 'https://tyngpeople.com';
+}
+
+export function gameChatMemberIds(booking: {
+  hostUserId?: string | number | null;
+  venueId?: string | number | null;
+  host?: { id?: string | number | null } | null;
+  acceptedPlayers?: Array<{ status?: string | null; user?: { id?: string | number | null } | null }>;
+  players?: Array<{ status?: string | null; user?: { id?: string | number | null } | null }>;
+}): string[] {
+  const ids = new Set<string>();
+  const add = (value?: string | number | null) => {
+    if (value == null || value === '') return;
+    ids.add(String(value));
+  };
+  add(booking.hostUserId);
+  add(booking.host?.id);
+  add(booking.venueId);
+  for (const player of [...(booking.acceptedPlayers || []), ...(booking.players || [])]) {
+    const status = String(player.status || '').toLowerCase();
+    if (status && !['joined', 'host', 'accepted'].includes(status)) continue;
+    add(player.user?.id);
+  }
+  return Array.from(ids);
 }
 
 export function bookingStatusTone(status: BookingStatus | string): { bg: string; text: string; border: string } {

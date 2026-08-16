@@ -34,6 +34,7 @@ interface Game {
   address: string;
   distance: string;
   date: string;
+  bookingDate: string;
   time: string;
   duration: string;
   image: string;
@@ -47,6 +48,7 @@ interface Game {
   difficulty: string;
   weather: string;
   isIndoor: boolean;
+  bookingStatus: string;
 }
 
 const FILTERS = ['All', 'Today', 'Tomorrow', 'Nearby'];
@@ -181,6 +183,7 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
                 <ion-icon name="time-outline" style="font-size:10px;"></ion-icon>
                 <span>{{ game.time }}</span>
               </div>
+              <div *ngIf="game.bookingStatus === 'pending'" class="pending-badge">Awaiting venue</div>
 
               <!-- Sport emoji bottom right -->
               <div class="sport-emoji-circle">{{ game.emoji }}</div>
@@ -518,6 +521,20 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
 
     .time-sep { opacity: 0.6; }
 
+    .pending-badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: #FFF7ED;
+      color: #C2410C;
+      border: 1px solid #FDBA74;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 800;
+      z-index: 2;
+    }
+
     .sport-emoji-circle {
       position: absolute;
       bottom: 12px; right: 12px;
@@ -731,7 +748,35 @@ export class OngoingGamesPage implements OnInit, AfterViewInit, OnDestroy {
   get filteredGames() {
     const filter = this.activeFilter();
     if (filter === 'All' || filter === 'Nearby') return this.games;
-    return this.games.filter((game) => game.date.toLowerCase().includes(filter.toLowerCase()));
+
+    const today = this.localDateKey(new Date());
+    const tomorrowDate = new Date();
+    tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+    const tomorrow = this.localDateKey(tomorrowDate);
+
+    return this.games.filter((game) => {
+      const key = this.bookingDateKey(game.bookingDate);
+      if (filter === 'Today') return key === today;
+      if (filter === 'Tomorrow') return key === tomorrow;
+      return true;
+    });
+  }
+
+  private localDateKey(d: Date): string {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  private bookingDateKey(value?: string | null): string {
+    if (!value) return '';
+    // Handles "2026-08-10", "2026-08-10 00:00:00", ISO strings.
+    const match = String(value).match(/^(\d{4}-\d{2}-\d{2})/);
+    if (match) return match[1];
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return '';
+    return this.localDateKey(parsed);
   }
 
   setFilter(f: string) {
@@ -921,19 +966,21 @@ export class OngoingGamesPage implements OnInit, AfterViewInit, OnDestroy {
       address: booking.venue?.location || booking.venue?.address || '',
       distance: booking.venue?.location || 'Nearby',
       date: formatBookingDate(booking.bookingDate),
+      bookingDate: String(booking.bookingDate || ''),
       time: formatBookingTime(booking.startTime),
       duration: formatDurationLabel(booking.durationMinutes),
       image: SPORT_IMAGES[sportKey] || SPORT_IMAGES['cricket'],
       hostName: booking.host?.name || 'Host',
       hostPhoto: booking.host?.profileImage || DEFAULT_PHOTO,
       isCaptain: true,
-      playersJoined: booking.currentPlayers,
-      maxPlayers: booking.totalPlayers,
-      costPerPlayer: Number(booking.price || 0),
+      playersJoined: Number(booking.currentPlayers || 0),
+      maxPlayers: Number(booking.totalPlayers || 0),
+      costPerPlayer: Number(booking.playerShareAmount || booking.price || 0),
       gameType: 'Casual',
       difficulty: skill,
-      weather: 'Clear ☀️',
+      weather: 'Clear',
       isIndoor: false,
+      bookingStatus: String(booking.bookingStatus || ''),
     };
   }
 }

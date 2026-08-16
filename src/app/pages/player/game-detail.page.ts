@@ -5,10 +5,12 @@ import { IonicModule, ToastController } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 import { BookingRecord } from '../../core/models/api.model';
 import { BookingService } from '../../core/services/booking.service';
+import { ChatService } from '../../core/services/chat.service';
 import {
   formatBookingDate,
   formatBookingTime,
   formatDurationLabel,
+  gameChatMemberIds,
   sportEmoji,
 } from '../../core/utils/booking.utils';
 
@@ -43,6 +45,8 @@ interface GameData {
   difficultyColor: string;
   weather: string;
   players: { name: string; photo: string; skill: string; tp: number }[];
+  chatMemberIds: string[];
+  chatTitle: string;
   equipment: string[];
   matchVibe: string[];
   budgetBreakdown: {
@@ -251,13 +255,23 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
             <div class="cta-amount">{{ game.costPerPlayer > 0 ? ('₹' + game.costPerPlayer) : 'Free' }}</div>
             <div class="cta-label">per player</div>
           </div>
-          <button
-            class="join-btn"
-            [disabled]="joining || (!game.canJoin && !game.isJoined && !game.isHost)"
-            (click)="joinMatch()"
-          >
-            {{ joining ? 'Joining…' : game.ctaLabel }}
-          </button>
+          <div class="cta-actions">
+            <button
+              *ngIf="game.isJoined || game.isHost"
+              class="chat-btn"
+              [disabled]="openingChat"
+              (click)="openGameChat()"
+            >
+              {{ openingChat ? 'Opening…' : 'Chat' }}
+            </button>
+            <button
+              class="join-btn"
+              [disabled]="joining || (!game.canJoin && !game.isJoined && !game.isHost)"
+              (click)="joinMatch()"
+            >
+              {{ joining ? 'Joining…' : game.ctaLabel }}
+            </button>
+          </div>
         </div>
       </div>
     </ion-content>
@@ -689,6 +703,26 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
         color: #9ca3af;
       }
 
+      .cta-actions {
+        flex: 1;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .chat-btn {
+        height: 50px;
+        padding: 0 16px;
+        border-radius: 999px;
+        background: #111827;
+        color: #fff;
+        font-size: 14px;
+        font-weight: 800;
+        border: none;
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+
       .join-btn {
         flex: 1;
         height: 50px;
@@ -709,6 +743,7 @@ export class GameDetailPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly location = inject(Location);
   private readonly bookingService = inject(BookingService);
+  private readonly chat = inject(ChatService);
   private readonly toastCtrl = inject(ToastController);
 
   game: GameData | null = null;
@@ -716,6 +751,7 @@ export class GameDetailPage implements OnInit {
   budgetOpen = false;
   loading = true;
   joining = false;
+  openingChat = false;
   errorMessage = '';
   private bookingId = '';
 
@@ -745,6 +781,36 @@ export class GameDetailPage implements OnInit {
       return;
     }
     void this.router.navigateByUrl('/app/home');
+  }
+
+  async openGameChat(): Promise<void> {
+    if (!this.game || this.openingChat) return;
+    this.openingChat = true;
+    try {
+      const res = await this.chat.openGame(this.game.id, {
+        title: this.game.chatTitle,
+        memberIds: this.game.chatMemberIds,
+      });
+      if (res.success && res.data?.id) {
+        void this.router.navigateByUrl(`/app/chat/${encodeURIComponent(res.data.id)}`);
+        return;
+      }
+      const toast = await this.toastCtrl.create({
+        message: res.message || 'Unable to open game chat.',
+        duration: 2200,
+        color: 'dark',
+      });
+      await toast.present();
+    } catch {
+      const toast = await this.toastCtrl.create({
+        message: 'Unable to open game chat.',
+        duration: 2200,
+        color: 'dark',
+      });
+      await toast.present();
+    } finally {
+      this.openingChat = false;
+    }
   }
 
   async joinMatch() {
@@ -823,10 +889,18 @@ export class GameDetailPage implements OnInit {
         tp: 1000,
       }));
 
+    const chatMemberIds = gameChatMemberIds(booking);
+
     let ctaLabel = 'Join Game';
     if (booking.isHost) ctaLabel = 'Manage Booking';
     else if (booking.isJoined) ctaLabel = 'View Booking';
-    else if (!booking.canJoin) ctaLabel = booking.bookingStatus === 'full' ? 'Game Full' : 'Unavailable';
+    else if (!booking.canJoin) {
+      if (booking.bookingStatus === 'full') ctaLabel = 'Game Full';
+      else if (booking.bookingStatus === 'pending') ctaLabel = 'Awaiting venue approval';
+      else if (booking.bookingStatus === 'cancelled') ctaLabel = 'Cancelled';
+      else if (booking.bookingStatus === 'expired') ctaLabel = 'Expired';
+      else ctaLabel = 'Unavailable';
+    }
 
     return {
       id: booking.id,
@@ -859,6 +933,8 @@ export class GameDetailPage implements OnInit {
       difficultyColor: DIFF_MAP[skill] || DIFF_MAP['Intermediate'],
       weather: 'Clear ☀️',
       players,
+      chatMemberIds: Array.from(chatMemberIds),
+      chatTitle: `${sportName}${booking.bookingDate ? ' · ' + booking.bookingDate : ''}`,
       equipment: ['Bat', 'Ball', 'Shoes', 'Gloves', 'Helmet', 'Water'],
       matchVibe: ['Serious Match', 'Photography', 'Coffee After'],
       budgetBreakdown: {

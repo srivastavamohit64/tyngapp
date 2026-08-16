@@ -156,6 +156,14 @@ const routes: Routes = [
         loadComponent: () => import('./pages/coach/schedule/schedule.page').then((m) => m.CoachSchedulePage),
       },
       {
+        path: 'venue/events/create',
+        loadComponent: () => import('./pages/venue/events/create-event.page').then((m) => m.VenueCreateEventPage),
+      },
+      {
+        path: 'venue/events',
+        loadComponent: () => import('./pages/venue/events/events-hub.page').then((m) => m.VenueEventsHubPage),
+      },
+      {
         path: 'venue/calendar',
         loadComponent: () => import('./pages/venue/calendar/calendar.page').then((m) => m.VenueCalendarPage),
       },
@@ -166,6 +174,10 @@ const routes: Routes = [
       {
         path: 'venue/bookings',
         loadComponent: () => import('./pages/venue/bookings/bookings.page').then((m) => m.VenueBookingsPage),
+      },
+      {
+        path: 'venue/bookings/:id',
+        loadComponent: () => import('./pages/venue/bookings/booking-detail.page').then((m) => m.VenueBookingDetailPage),
       },
       {
         path: 'venue/facilities',
@@ -229,6 +241,10 @@ const routes: Routes = [
         loadComponent: () => import('./pages/player/booking-detail.page').then((m) => m.BookingDetailPage),
       },
       {
+        path: 'check-in',
+        loadComponent: () => import('./pages/player/check-in.page').then((m) => m.CheckInPage),
+      },
+      {
         path: 'notifications',
         loadComponent: () => import('./pages/player/notifications.page').then((m) => m.NotificationsPage),
       },
@@ -250,7 +266,7 @@ const routes: Routes = [
       },
       {
         path: 'coach/chat',
-        loadComponent: () => import('./pages/coach/coach-chat.page').then((m) => m.CoachChatPage),
+        loadComponent: () => import('./pages/player/chat-list.page').then((m) => m.ChatListPage),
       },
       {
         path: 'coach/profile',
@@ -357,7 +373,11 @@ const routes: Routes = [
 
 @NgModule({
   imports: [
-    RouterModule.forRoot(routes, { preloadingStrategy: PreloadAllModules })
+    RouterModule.forRoot(routes, {
+      preloadingStrategy: PreloadAllModules,
+      scrollPositionRestoration: 'top',
+      anchorScrolling: 'disabled',
+    })
   ],
   exports: [RouterModule]
 })

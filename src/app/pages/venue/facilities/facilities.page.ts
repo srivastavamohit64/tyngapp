@@ -1,10 +1,14 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
+import { Capacitor } from '@capacitor/core';
+import { ActionSheetController, IonicModule } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
+import { AuthService } from '../../../core/services/auth.service';
+import { NativeMediaPickerService } from '../../../core/services/native-media-picker.service';
 import { VenueService } from '../../../core/services/venue.service';
+import { normalizeImageFile } from '../../../core/utils/image-file.util';
 
 interface MaintFacility {
   id: string;
@@ -13,6 +17,9 @@ interface MaintFacility {
   emoji: string;
   status: string;
   photo: string;
+  pricePerHour?: number;
+  hasActiveBookings?: boolean;
+  activeBookingCount?: number;
 }
 
 interface StatusOption {
@@ -24,6 +31,21 @@ interface StatusOption {
 }
 
 const SURFACES = ['Artificial Turf', 'Natural Grass', 'Wooden Court', 'Synthetic Court', 'Clay', 'Concrete'];
+
+const AMENITY_OPTIONS = [
+  'Changing Rooms', 'Washrooms', 'Drinking Water', 'Floodlights', 'Parking', 'CCTV',
+  'Accessible Washroom', 'Showers', 'Lockers', 'Water Dispenser', 'First Aid Kit', 'Medical Room',
+  'Air Conditioning', 'Spectator Seating', 'Wi-Fi', 'Charging Station', 'Scoreboard', 'Music System',
+  'Cafeteria', 'Pro Shop', 'Wheelchair Accessible',
+];
+
+const DEFAULT_RULES = [
+  'Sports shoes mandatory inside the turf',
+  'No outside food or drinks',
+  'Maximum 22 players at a time',
+  'No smoking on premises',
+  'Respect all equipment',
+];
 
 const STATUS_OPTIONS: StatusOption[] = [
   { id: 'open', label: 'Open', emoji: '🟢', color: '#22C55E', bg: '#F0FDF4' },
@@ -38,347 +60,959 @@ const STATUS_OPTIONS: StatusOption[] = [
   imports: [CommonModule, IonicModule, FormsModule],
   template: `
     <ion-content [fullscreen]="true" class="has-tabs">
-      <div class="facilities-page pb-36 text-left">
-        
-        <!-- Header -->
-        <div class="sticky-header bg-white border-b border-[#F3F4F6]">
-          <div class="flex items-center justify-between px-5 h-14">
-            <button (click)="goBack()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
-              <ion-icon name="chevron-back-outline" class="text-xl text-[#111827]"></ion-icon>
-            </button>
-            <p class="text-[17px] font-black text-[#111827] m-0">Facilities</p>
-            <button (click)="addFacility()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-[var(--app-primary)]/12 border-none">
-              <ion-icon name="add-outline" class="text-xl text-[#111827] font-bold"></ion-icon>
-            </button>
+      <div class="fac-page" [class.has-save]="hasChanges() || saved()">
+        <header class="sticky-header fac-header">
+          <button type="button" class="fac-icon-btn" (click)="goBack()" aria-label="Back">
+            <ion-icon name="chevron-back-outline"></ion-icon>
+          </button>
+          <div class="fac-header-copy">
+            <h1>Facilities & Amenities</h1>
+            <p>{{ facilityList().length }} court{{ facilityList().length === 1 ? '' : 's' }}</p>
           </div>
+          <button type="button" class="fac-icon-btn fac-icon-btn--add" (click)="addFacility()" aria-label="Add facility">
+            <ion-icon name="add-outline"></ion-icon>
+          </button>
+        </header>
 
-          <!-- Horizontal Facility Selector list track -->
-          <div class="flex gap-3 px-5 pb-4 overflow-x-auto no-scrollbar">
-            <button *ngFor="let f of facilityList()" (click)="selectFacility(f.id)" class="flex-shrink-0 w-[130px] rounded-[18px] overflow-hidden text-left border-none p-0"
-              [style.border]="selectedId() === f.id ? '2px solid var(--app-primary)' : '2px solid transparent'"
-              [style.boxShadow]="selectedId() === f.id ? '0 2px 12px rgba(var(--app-primary-rgb),0.25)' : '0 1px 6px rgba(0,0,0,0.08)'">
-              <div class="relative h-[68px] bg-slate-200">
-                <img [src]="f.photo" class="w-full h-full object-cover" />
-                <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                <span class="absolute bottom-1.5 left-2 text-white text-[10px] font-black drop-shadow-md m-0 leading-none">{{ f.emoji }} {{ f.name }}</span>
-                <div *ngIf="selectedId() === f.id" class="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-[var(--app-primary)] flex items-center justify-center">
-                  <ion-icon name="checkmark-outline" class="text-[#111827] text-xs font-black"></ion-icon>
-                </div>
-              </div>
-              <div class="bg-white px-2 py-1.5 flex items-center justify-between">
-                <span class="text-[9px] font-black text-[#9CA3AF] uppercase tracking-wide">{{ f.sport }}</span>
-                <span class="text-[8px] font-bold px-1.5 py-0.5 rounded-full"
-                  [style.backgroundColor]="getStatusStyle(f.status).bg"
-                  [style.color]="getStatusStyle(f.status).color">
-                  {{ f.status }}
-                </span>
-              </div>
-            </button>
-          </div>
+        <div class="fac-track no-scrollbar" *ngIf="!loading() && facilityList().length">
+          <button
+            type="button"
+            class="fac-chip"
+            *ngFor="let f of facilityList()"
+            [class.is-selected]="selectedId() === f.id"
+            (click)="selectFacility(f.id)"
+          >
+            <div class="fac-chip-media">
+              <img [src]="f.photo" [alt]="f.name" />
+              <span class="fac-chip-name">{{ f.emoji }} {{ f.name }}</span>
+            </div>
+            <div class="fac-chip-meta">
+              <span class="fac-chip-sport">{{ f.sport }}</span>
+              <span class="fac-chip-price" *ngIf="f.pricePerHour">₹{{ f.pricePerHour }}</span>
+              <span class="fac-chip-status" [style.background]="getStatusStyle(f.status).bg" [style.color]="getStatusStyle(f.status).color">
+                {{ f.status }}
+              </span>
+            </div>
+          </button>
         </div>
 
-        <div class="px-5 pt-4 space-y-4">
-          <p *ngIf="loading()" class="text-[13px] font-bold text-[#9CA3AF] text-center m-0 py-6">Loading facilities…</p>
-          <div *ngIf="saveError()" class="rounded-2xl bg-[#FEF2F2] border border-[#FECACA] px-4 py-3 text-[13px] font-bold text-[#DC2626]">
-            {{ saveError() }}
+        <div class="fac-body">
+          <p *ngIf="loading()" class="fac-muted">Loading facilities…</p>
+
+          <div *ngIf="saveError()" class="fac-alert fac-alert--error">{{ saveError() }}</div>
+          <div *ngIf="saved()" class="fac-alert fac-alert--ok">Facility saved.</div>
+
+          <div *ngIf="!loading() && facilityList().length === 0" class="fac-card fac-empty">
+            <p>No facilities yet</p>
+            <span>Add your first court so players can book it.</span>
+            <button type="button" class="fac-primary" (click)="addFacility()">Add facility</button>
           </div>
 
-          <div *ngIf="!loading() && facilityList().length === 0" class="section-card p-5 bg-white text-center">
-            <p class="text-[15px] font-black text-[#111827] m-0">No facilities yet</p>
-            <p class="text-[12px] text-[#9CA3AF] mt-2 mb-4 m-0 font-bold">Add your first court so players can book it.</p>
-            <button type="button" (click)="addFacility()" class="h-11 px-5 rounded-2xl text-[13px] font-black border-none btn-green-gradient">
-              Add facility
-            </button>
-          </div>
+          <ng-container *ngIf="!loading() && (facilityList().length || selectedId())">
+            <section class="fac-card">
+              <h2>Facility information</h2>
+              <label class="fac-label">Facility name *</label>
+              <input [(ngModel)]="facilityName" (ngModelChange)="onChange()" placeholder="Enter facility name" class="fac-input" />
 
-          <!-- Form Section 1: Info -->
-          <div class="section-card p-5 bg-white text-left" *ngIf="!loading() && (facilityList().length || selectedId())">
-            <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-4 m-0">Facility Information</p>
-            <div class="space-y-4">
-              <div>
-                <p class="field-label mb-1.5 m-0 font-bold text-[#9CA3AF]">Facility Name <span class="text-red-500">*</span></p>
-                <input [(ngModel)]="facilityName" (ngModelChange)="onChange()" placeholder="Enter facility name" class="text-input-field" />
-              </div>
-              <div>
-                <p class="field-label mb-1.5 m-0 font-bold text-[#9CA3AF]">Sport <span class="text-red-500">*</span></p>
-                <input [(ngModel)]="sport" (ngModelChange)="onChange()" placeholder="Enter sport type" class="text-input-field" />
-              </div>
+              <label class="fac-label">Sport *</label>
+              <input [(ngModel)]="sport" (ngModelChange)="onChange()" placeholder="Enter sport type" class="fac-input" />
 
-              <div class="grid grid-cols-2 gap-3">
+              <div class="fac-grid">
                 <div>
-                  <p class="field-label mb-1.5 m-0 font-bold text-[#9CA3AF]">Court Number</p>
-                  <input [(ngModel)]="courtNumber" (ngModelChange)="onChange()" placeholder="Enter court number" class="text-input-field" />
+                  <label class="fac-label">Court number</label>
+                  <input [(ngModel)]="courtNumber" (ngModelChange)="onChange()" placeholder="e.g. 1" class="fac-input" />
                 </div>
                 <div>
-                  <p class="field-label mb-1.5 m-0 font-bold text-[#9CA3AF]">Type</p>
-                  <div class="flex gap-2">
-                    <button *ngFor="let t of ['Indoor', 'Outdoor']" (click)="isIndoor.set(t === 'Indoor'); onChange()" class="flex-grow py-2.5 rounded-xl text-[12px] font-bold border-none"
-                      [style.backgroundColor]="isIndoor() === (t === 'Indoor') ? 'rgba(var(--app-primary-rgb),0.12)' : '#F9FAFB'"
-                      [style.color]="isIndoor() === (t === 'Indoor') ? '#111827' : '#6B7280'"
-                      [style.border]="isIndoor() === (t === 'Indoor') ? '1.5px solid var(--app-primary)' : 'none'">
+                  <label class="fac-label">Type</label>
+                  <div class="fac-pills">
+                    <button type="button" *ngFor="let t of ['Indoor', 'Outdoor']" class="fac-pill" [class.is-on]="isIndoor() === (t === 'Indoor')" (click)="isIndoor.set(t === 'Indoor'); onChange()">
                       {{ t }}
                     </button>
                   </div>
                 </div>
               </div>
 
-              <!-- Surface types selection -->
-              <div>
-                <p class="field-label mb-1.5 m-0 font-bold text-[#9CA3AF]">Playing Surface</p>
-                <div class="flex flex-wrap gap-2">
-                  <button *ngFor="let s of surfaces" (click)="surface.set(s); onChange()" class="px-3 py-1.5 rounded-full text-[11px] font-bold border-none"
-                    [style.backgroundColor]="surface() === s ? 'rgba(var(--app-primary-rgb),0.14)' : '#F3F4F6'"
-                    [style.color]="surface() === s ? '#111827' : '#6B7280'"
-                    [style.border]="surface() === s ? '1.5px solid var(--app-primary)' : 'none'">
-                    {{ s }}
-                  </button>
-                </div>
+              <label class="fac-label">Playing surface</label>
+              <div class="fac-pills fac-pills--wrap">
+                <button type="button" *ngFor="let s of surfaces" class="fac-pill" [class.is-on]="surface() === s" (click)="surface.set(s); onChange()">
+                  {{ s }}
+                </button>
               </div>
 
-              <div class="grid grid-cols-2 gap-3">
+              <div class="fac-grid">
                 <div>
-                  <p class="field-label mb-1.5 m-0 font-bold text-[#9CA3AF]">Dimensions</p>
-                  <input [(ngModel)]="dimensions" (ngModelChange)="onChange()" placeholder="Enter dimensions" class="text-input-field" />
+                  <label class="fac-label">Dimensions</label>
+                  <input [(ngModel)]="dimensions" (ngModelChange)="onChange()" placeholder="e.g. 40 × 20 m" class="fac-input" />
                 </div>
                 <div>
-                  <p class="field-label mb-1.5 m-0 font-bold text-[#9CA3AF]">Max Capacity <span class="text-red-500">*</span></p>
-                  <input type="number" [(ngModel)]="capacity" (ngModelChange)="onChange()" placeholder="Enter capacity" class="text-input-field" />
+                  <label class="fac-label">Max capacity *</label>
+                  <input type="number" [(ngModel)]="capacity" (ngModelChange)="onChange()" placeholder="22" class="fac-input" />
                 </div>
               </div>
-            </div>
-          </div>
+            </section>
 
-          <!-- Form Section 2: Status -->
-          <div class="section-card p-5 bg-white text-left">
-            <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-4 m-0">Facility Status</p>
-            <div class="grid grid-cols-2 gap-2.5">
-              <button *ngFor="let opt of statusOptions" (click)="status.set(opt.id); onChange()" class="flex items-center gap-3 px-4 py-3.5 rounded-2xl border-none transition-all text-left"
-                [style.backgroundColor]="status() === opt.id ? opt.bg : '#F9FAFB'"
-                [style.border]="status() === opt.id ? '2px solid ' + opt.color : '2px solid transparent'">
-                <span class="text-xl leading-none">{{ opt.emoji }}</span>
-                <p class="text-[13px] font-bold text-[#111827] m-0">{{ opt.label }}</p>
-                <div *ngIf="status() === opt.id" class="ml-auto w-5 h-5 rounded-full flex items-center justify-center" [style.backgroundColor]="opt.color">
-                  <ion-icon name="checkmark-outline" class="text-white text-xs font-black"></ion-icon>
+            <section class="fac-card">
+              <h2>Facility photos</h2>
+              <p class="fac-sub">Cover photo replaces the default image at the top and on every venue / turf listing.</p>
+              <p class="fac-label">Cover image</p>
+              <button type="button" class="photo-cover" [disabled]="photoBusy()" (click)="pickPhoto('cover')">
+                <img *ngIf="coverUrl()" [src]="coverUrl()!" alt="Cover" />
+                <div *ngIf="!coverUrl()" class="photo-empty">
+                  <ion-icon name="camera-outline"></ion-icon>
+                  <span>Upload cover image</span>
                 </div>
+                <span *ngIf="coverUrl()" class="photo-change">Change</span>
               </button>
-            </div>
-            <div *ngIf="status() === 'maintenance' || status() === 'closed'" class="bg-[#FFF7ED] rounded-xl px-3.5 py-2.5 flex items-start gap-2 mt-3">
-              <span class="text-base leading-none">⚠️</span>
-              <p class="text-[11px] text-[#C2410C] leading-relaxed m-0 font-bold">Facilities marked as Maintenance or Closed will not accept new bookings.</p>
-            </div>
-          </div>
+              <p class="fac-label">Gallery images</p>
+              <div class="photo-grid">
+                <button type="button" class="photo-tile" *ngFor="let url of galleryUrls(); let i = index" (click)="pickPhoto('gallery')">
+                  <img [src]="url" [alt]="'Gallery ' + (i + 1)" />
+                </button>
+                <button type="button" class="photo-tile photo-tile--add" *ngFor="let _ of gallerySlots()" [disabled]="photoBusy()" (click)="pickPhoto('gallery')">
+                  <span>+</span>
+                </button>
+                <button type="button" class="photo-tile photo-tile--add" [disabled]="photoBusy()" (click)="pickPhoto('pano')">
+                  <img *ngIf="panoUrl()" [src]="panoUrl()!" alt="360" />
+                  <div *ngIf="!panoUrl()" class="pano-empty">
+                    <span>⚡</span>
+                    <strong>360°</strong>
+                  </div>
+                </button>
+              </div>
+              <p class="fac-hint" *ngIf="photoBusy()">Uploading photo…</p>
+            </section>
 
-          <!-- Form Section 4: Equipment rentals count plus/minus -->
-          <div class="section-card p-5 bg-white text-left">
-            <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-4 m-0">Equipment Available</p>
-            <div class="space-y-3">
-              <div *ngFor="let eq of equipmentOptions()" class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl bg-[#F3F4F6] flex items-center justify-center flex-shrink-0 text-xl">{{ eq.emoji }}</div>
-                <div class="flex-grow min-w-0">
-                  <p class="text-[13px] font-bold text-[#111827] m-0">{{ eq.label }}</p>
-                  <input *ngIf="getEquipQty(eq.id) > 0" [(ngModel)]="rentalPrices[eq.id]" (ngModelChange)="onChange()" placeholder="₹ Rental price (optional)" class="rental-price-input" />
+            <section class="fac-card">
+              <h2>Amenities</h2>
+              <p class="fac-sub">Select all that apply to this facility</p>
+              <div class="amenity-wrap">
+                <button
+                  type="button"
+                  class="amenity-pill"
+                  *ngFor="let a of amenityOptions"
+                  [class.is-on]="isAmenityOn(a)"
+                  (click)="toggleAmenity(a)"
+                >
+                  <span *ngIf="isAmenityOn(a)">✓</span>{{ a }}
+                </button>
+              </div>
+            </section>
+
+            <section class="fac-card">
+              <div class="fac-card-head">
+                <h2>Pricing for this facility</h2>
+                <span class="fac-lock" *ngIf="priceLocked()">Locked</span>
+              </div>
+              <p class="fac-hint" *ngIf="!priceLocked()">Hourly rate is unique to this turf or court.</p>
+              <div class="fac-alert fac-alert--warn" *ngIf="priceLocked()">
+                Price cannot be edited while this facility has {{ activeBookingCount() }} active booking{{ activeBookingCount() === 1 ? '' : 's' }}. Finish or cancel those bookings first.
+              </div>
+              <div class="fac-grid" [class.is-locked]="priceLocked()">
+                <div>
+                  <label class="fac-label">Hourly charge (₹) *</label>
+                  <input type="number" [(ngModel)]="pricePerHour" (ngModelChange)="onPriceChange()" [disabled]="priceLocked()" placeholder="800" class="fac-input" />
                 </div>
-                <div class="flex items-center gap-2 flex-shrink-0">
-                  <button (click)="decQty(eq.id)" class="w-8 h-8 rounded-full flex items-center justify-center border border-[#E5E7EB] bg-white border-none shadow-sm">
-                    <ion-icon name="remove-outline" class="text-[#6B7280] text-xs font-bold"></ion-icon>
+                <div>
+                  <label class="fac-label">Peak hours (₹)</label>
+                  <input type="number" [(ngModel)]="peakPrice" (ngModelChange)="onPriceChange()" [disabled]="priceLocked()" placeholder="1200" class="fac-input" />
+                </div>
+                <div>
+                  <label class="fac-label">Weekend (₹)</label>
+                  <input type="number" [(ngModel)]="weekendPrice" (ngModelChange)="onPriceChange()" [disabled]="priceLocked()" placeholder="2000" class="fac-input" />
+                </div>
+                <div>
+                  <label class="fac-label">Cancellation fee (₹)</label>
+                  <input type="number" [(ngModel)]="cancelFee" (ngModelChange)="onPriceChange()" [disabled]="priceLocked()" placeholder="400" class="fac-input" />
+                </div>
+              </div>
+            </section>
+
+            <section class="fac-card">
+              <h2>Facility status</h2>
+              <div class="fac-status-grid">
+                <button type="button" *ngFor="let opt of statusOptions" class="fac-status" [class.is-on]="status() === opt.id" [style.background]="status() === opt.id ? opt.bg : '#F9FAFB'" (click)="status.set(opt.id); onChange()">
+                  <span>{{ opt.emoji }}</span>
+                  <strong>{{ opt.label }}</strong>
+                </button>
+              </div>
+              <p class="fac-hint" *ngIf="status() === 'maintenance' || status() === 'closed'">Maintenance or closed courts will not accept new bookings.</p>
+            </section>
+
+            <section class="fac-card">
+              <h2>Equipment available</h2>
+              <div class="fac-equip" *ngFor="let eq of equipmentOptions()">
+                <div class="fac-equip-ico">{{ eq.emoji }}</div>
+                <div class="fac-equip-copy">
+                  <p>{{ eq.label }}</p>
+                  <input *ngIf="getEquipQty(eq.id) > 0" [(ngModel)]="rentalPrices[eq.id]" (ngModelChange)="onChange()" placeholder="₹ Rental price" class="fac-input fac-input--sm" />
+                </div>
+                <div class="fac-stepper">
+                  <button type="button" (click)="decQty(eq.id)" aria-label="Decrease">−</button>
+                  <strong>{{ getEquipQty(eq.id) }}</strong>
+                  <button type="button" class="is-add" (click)="incQty(eq.id)" aria-label="Increase">+</button>
+                </div>
+              </div>
+            </section>
+
+            <section class="fac-card">
+              <h2>Cleaning & maintenance</h2>
+              <div class="fac-grid">
+                <div>
+                  <label class="fac-label">Last cleaned</label>
+                  <input type="date" [(ngModel)]="lastCleaned" (ngModelChange)="onChange()" class="fac-input" />
+                </div>
+                <div>
+                  <label class="fac-label">Next cleaning</label>
+                  <input type="date" [(ngModel)]="nextCleaning" (ngModelChange)="onChange()" class="fac-input" />
+                </div>
+              </div>
+              <label class="fac-label">Notes</label>
+              <textarea [(ngModel)]="maintNotes" (ngModelChange)="onChange()" rows="2" placeholder="Issues, upcoming work, or special notes" class="fac-input fac-textarea"></textarea>
+            </section>
+
+            <section class="fac-card">
+              <h2>Turf supervisor</h2>
+              <p class="fac-label">Supervisor photo</p>
+              <div class="sup-photo-row">
+                <div class="sup-photo-wrap">
+                  <button type="button" class="sup-photo" [disabled]="photoBusy()" (click)="pickPhoto('supervisor')">
+                    <img *ngIf="supPhoto" [src]="supPhoto" alt="Supervisor" />
+                    <ion-icon *ngIf="!supPhoto" name="camera-outline"></ion-icon>
                   </button>
-                  <span class="w-6 text-center text-[14px] font-black text-[#111827]">{{ getEquipQty(eq.id) }}</span>
-                  <button (click)="incQty(eq.id)" class="w-8 h-8 rounded-full flex items-center justify-center border-none btn-green-gradient shadow-sm">
-                    <ion-icon name="add-outline" class="text-[#111827] text-xs font-bold"></ion-icon>
-                  </button>
+                  <span class="sup-plus" aria-hidden="true">+</span>
+                </div>
+                <div class="sup-photo-actions">
+                  <button type="button" class="sup-btn sup-btn--upload" [disabled]="photoBusy()" (click)="pickPhoto('supervisor', 'library')">Upload</button>
+                  <button type="button" class="sup-btn sup-btn--camera" [disabled]="photoBusy()" (click)="pickPhoto('supervisor', 'camera')">Take Photo</button>
                 </div>
               </div>
-            </div>
-          </div>
-
-          <!-- Form Section 5: Cleaning & Maintenance logs dates -->
-          <div class="section-card p-5 bg-white text-left">
-            <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-4 m-0">Cleaning & Maintenance</p>
-            <div class="space-y-4">
-              <div class="grid grid-cols-2 gap-3">
+              <label class="fac-label">Full name *</label>
+              <input [(ngModel)]="supName" (ngModelChange)="onChange()" placeholder="Supervisor name" class="fac-input" />
+              <label class="fac-label">Designation</label>
+              <input [(ngModel)]="supRole" (ngModelChange)="onChange()" placeholder="e.g. Ground Supervisor" class="fac-input" />
+              <div class="fac-grid">
                 <div>
-                  <p class="field-label mb-1.5 m-0 font-bold text-[#9CA3AF]">Last Cleaned</p>
-                  <input type="date" [(ngModel)]="lastCleaned" (ngModelChange)="onChange()" class="text-input-field" />
+                  <label class="fac-label">Mobile *</label>
+                  <input [(ngModel)]="supPhone" (ngModelChange)="onChange()" placeholder="10-digit number" class="fac-input" />
                 </div>
                 <div>
-                  <p class="field-label mb-1.5 m-0 font-bold text-[#9CA3AF]">Next Cleaning</p>
-                  <input type="date" [(ngModel)]="nextCleaning" (ngModelChange)="onChange()" class="text-input-field" />
+                  <label class="fac-label">Alternate</label>
+                  <input [(ngModel)]="supAlt" (ngModelChange)="onChange()" placeholder="Optional" class="fac-input" />
                 </div>
               </div>
-              <div>
-                <p class="field-label mb-1.5 m-0 font-bold text-[#9CA3AF]">Maintenance Notes</p>
-                <textarea [(ngModel)]="maintNotes" (ngModelChange)="onChange()" rows="2" placeholder="Any issues, upcoming maintenance or special notes..." class="notes-textarea"></textarea>
-              </div>
-            </div>
-          </div>
+              <label class="fac-label">Email</label>
+              <input [(ngModel)]="supEmail" (ngModelChange)="onChange()" placeholder="Optional" class="fac-input" />
+              <label class="fac-label">Shift timing</label>
+              <input [(ngModel)]="supShift" (ngModelChange)="onChange()" placeholder="e.g. 6 AM – 2 PM" class="fac-input" />
+            </section>
 
-          <!-- Form Section 6: Supervisor -->
-          <div class="section-card p-5 bg-white text-left">
-            <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-4 m-0">Turf Supervisor</p>
-            <div class="space-y-3">
-              <div>
-                <p class="field-label mb-1.5 m-0 font-bold text-[#9CA3AF]">Full Name <span class="text-red-500">*</span></p>
-                <input [(ngModel)]="supName" (ngModelChange)="onChange()" placeholder="Enter supervisor name" class="text-input-field" />
-              </div>
-              <div class="grid grid-cols-2 gap-3">
-                <div>
-                  <p class="field-label mb-1.5 m-0 font-bold text-[#9CA3AF]">Mobile <span class="text-red-500">*</span></p>
-                  <input [(ngModel)]="supPhone" (ngModelChange)="onChange()" placeholder="Enter mobile number" class="text-input-field" />
-                </div>
-                <div>
-                  <p class="field-label mb-1.5 m-0 font-bold text-[#9CA3AF]">Shift Timing</p>
-                  <input [(ngModel)]="supShift" (ngModelChange)="onChange()" placeholder="Enter shift timing" class="text-input-field" />
+            <section class="fac-card">
+              <h2>Facility rules</h2>
+              <div class="rules-box">
+                <div class="rule-row" *ngFor="let rule of rulesList; let i = index">
+                  <span>•</span>
+                  <input [(ngModel)]="rulesList[i]" (ngModelChange)="onChange()" class="fac-input fac-input--rule" />
+                  <button type="button" class="rule-del" (click)="removeRule(i)" aria-label="Remove rule">×</button>
                 </div>
               </div>
-            </div>
-          </div>
-
-          <!-- Attendance QR illustration scans -->
-          <div class="section-card bg-gradient-to-br from-[#111827] to-[#1F2937] text-white p-5 text-left relative overflow-hidden">
-            <div class="absolute -top-10 -right-10 w-24 h-24 rounded-full bg-white/5"></div>
-            <div class="flex items-center gap-2 mb-2">
-              <div class="w-9 h-9 rounded-xl bg-[var(--app-primary)]/20 flex items-center justify-center">
-                <ion-icon name="qr-code-outline" class="text-[var(--app-primary)] text-lg font-bold"></ion-icon>
-              </div>
-              <p class="text-[15px] font-black text-white m-0">QR Check-In</p>
-              <span class="text-[9px] bg-[var(--app-primary)]/20 text-[var(--app-primary)] font-black px-2 py-0.5 rounded-full">AUTO</span>
-            </div>
-            <p class="text-[12px] text-white/50 mb-4 m-0 leading-relaxed font-semibold">The supervisor scans TYNG booking QR codes at the entrance to verify players and coaches.</p>
-
-            <div class="space-y-2 mb-4">
-              <div *ngFor="let s of ['Verify booking status in real-time','Mark attendance automatically','Record entry time & player details']" class="flex items-center gap-2.5">
-                <div class="w-4 h-4 rounded-full bg-[var(--app-primary)] flex items-center justify-center flex-shrink-0">
-                  <ion-icon name="checkmark-outline" class="text-[#111827] text-[10px] font-black"></ion-icon>
-                </div>
-                <span class="text-[12px] text-white/70 font-semibold">{{ s }}</span>
-              </div>
-            </div>
-
-            <button class="w-full h-11 rounded-2xl text-[14px] font-black btn-green-gradient border-none">
-              Open QR Scanner
-            </button>
-          </div>
+              <button type="button" class="fac-pill" (click)="addRule()">+ Add rule</button>
+            </section>
+          </ng-container>
         </div>
 
-        <!-- Discard/Save floating footer track -->
-        <div *ngIf="hasChanges() || saved()" class="venue-safe-footer fixed bottom-0 left-0 right-0 z-30 bg-white max-w-md mx-auto px-5 pt-4 shadow-2xl border-t border-[#F3F4F6]">
-          <div class="flex gap-3">
-            <button (click)="discardChanges()" [disabled]="saving()" class="flex-1 h-12 rounded-2xl text-[14px] font-bold text-[#6B7280] bg-[#F3F4F6] border-none flex items-center justify-center gap-1">
-              <ion-icon name="close-outline" class="text-base"></ion-icon>Discard
-            </button>
-            <button (click)="saveChanges()" [disabled]="saving()" class="flex-[2] h-12 rounded-2xl text-[16px] font-black border-none text-white flex items-center justify-center gap-1.5 transition-all"
-              [style.background]="saved() ? 'linear-gradient(135deg,#22C55E,#16A34A)' : 'linear-gradient(135deg,#FF7A00,#FF9A40)'"
-              [style.boxShadow]="saved() ? 'none' : '0 4px 16px rgba(255,122,0,0.40)'">
-              <ion-icon [name]="saved() ? 'checkmark-circle-outline' : 'save-outline'" class="text-lg"></ion-icon>
-              <span>{{ saving() ? 'Saving…' : (saved() ? 'Saved!' : 'Save Facility') }}</span>
-            </button>
-          </div>
+        <div *ngIf="hasChanges() || saved()" class="venue-safe-footer fac-footer">
+          <button type="button" class="fac-ghost" [disabled]="saving()" (click)="discardChanges()">Discard</button>
+          <button type="button" class="fac-primary fac-primary--wide" [disabled]="saving()" (click)="saveChanges()">
+            {{ saving() ? 'Saving…' : (saved() ? 'Saved' : 'Save facility') }}
+          </button>
         </div>
-
       </div>
+      <input #photoInput type="file" accept="image/*" hidden (change)="onPhotoFile($event)" />
     </ion-content>
   `,
   styles: [`
-    .facilities-page {
-      background: #FAFBFC;
+    .fac-page {
       min-height: 100%;
-      padding-bottom: calc(144px + env(safe-area-inset-bottom, 0px));
+      background: #F7F8FA;
+      padding-bottom: 16px;
     }
 
-    .sticky-header {
-      position: sticky;
-      top: 0;
-      z-index: 30;
-      padding-top: env(safe-area-inset-top, 0px);
-      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    .fac-page.has-save {
+      padding-bottom: 88px;
     }
 
-    .section-card {
-      border-radius: 24px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    .fac-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px 12px;
+      background: #fff;
+      border-bottom: 1px solid #F3F4F6;
     }
+
+    .fac-header-copy {
+      flex: 1;
+      min-width: 0;
+      text-align: center;
+    }
+
+    .fac-header-copy h1 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 900;
+      color: #111827;
+      line-height: 1.2;
+    }
+
+    .fac-header-copy p {
+      margin: 2px 0 0;
+      font-size: 11px;
+      font-weight: 700;
+      color: #9CA3AF;
+    }
+
+    .fac-icon-btn {
+      width: 40px;
+      height: 40px;
+      border: none;
+      border-radius: 12px;
+      background: #F3F4F6;
+      color: #111827;
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .fac-icon-btn--add {
+      background: rgba(var(--app-primary-rgb), 0.18);
+    }
+
+    .fac-track {
+      display: flex;
+      gap: 10px;
+      padding: 12px 16px 4px;
+      overflow-x: auto;
+      background: #fff;
+      border-bottom: 1px solid #F3F4F6;
+    }
+
+    .fac-chip {
+      flex: 0 0 148px;
+      padding: 0;
+      border: 1.5px solid #E5E7EB;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #fff;
+      text-align: left;
+      box-shadow: 0 1px 4px rgba(17, 24, 39, 0.04);
+    }
+
+    .fac-chip.is-selected {
+      border-color: var(--app-primary);
+      box-shadow: 0 0 0 3px rgba(var(--app-primary-rgb), 0.16);
+    }
+
+    .fac-chip-media {
+      position: relative;
+      height: 78px;
+      background: #E5E7EB;
+    }
+
+    .fac-chip-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .fac-chip-name {
+      position: absolute;
+      left: 8px;
+      right: 8px;
+      bottom: 6px;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      line-height: 1.2;
+      text-shadow: 0 1px 4px rgba(0,0,0,.45);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .fac-chip-meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 8px;
+      min-height: 34px;
+    }
+
+    .fac-chip-sport {
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      color: #9CA3AF;
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .fac-chip-price {
+      font-size: 10px;
+      font-weight: 800;
+      color: #111827;
+      white-space: nowrap;
+    }
+
+    .fac-chip-status {
+      font-size: 8px;
+      font-weight: 800;
+      text-transform: lowercase;
+      border-radius: 999px;
+      padding: 2px 6px;
+      white-space: nowrap;
+    }
+
+    .fac-body {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .fac-card {
+      background: #fff;
+      border: 1px solid #F3F4F6;
+      border-radius: 20px;
+      padding: 16px;
+      box-shadow: 0 1px 8px rgba(17, 24, 39, 0.04);
+    }
+
+    .fac-card h2,
+    .fac-card-head h2 {
+      margin: 0 0 12px;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #6B7280;
+    }
+
+    .fac-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .fac-card-head h2 { margin: 0; }
+
+    .fac-lock {
+      font-size: 10px;
+      font-weight: 800;
+      color: #B45309;
+      background: #FEF3C7;
+      border-radius: 999px;
+      padding: 4px 8px;
+    }
+
+    .fac-label {
+      display: block;
+      margin: 12px 0 6px;
+      font-size: 11px;
+      font-weight: 800;
+      color: #6B7280;
+    }
+
+    .fac-card > .fac-label:first-of-type { margin-top: 0; }
+
+    .fac-input {
+      width: 100%;
+      box-sizing: border-box;
+      height: 44px;
+      padding: 0 12px;
+      border: 1.5px solid #E5E7EB;
+      border-radius: 12px;
+      background: #F9FAFB;
+      font-size: 14px;
+      font-weight: 700;
+      color: #111827;
+      outline: none;
+    }
+
+    .fac-input:focus {
+      border-color: var(--app-primary);
+      background: #fff;
+    }
+
+    .fac-input:disabled {
+      opacity: .7;
+      color: #6B7280;
+    }
+
+    .fac-input--sm { height: 36px; margin-top: 6px; font-size: 12px; }
+
+    .fac-textarea {
+      height: auto;
+      padding: 10px 12px;
+      resize: none;
+      font-weight: 600;
+    }
+
+    .fac-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .fac-grid.is-locked { opacity: .85; }
+
+    .fac-pills {
+      display: flex;
+      gap: 8px;
+    }
+
+    .fac-pills--wrap {
+      flex-wrap: wrap;
+    }
+
+    .fac-pill {
+      flex: 1;
+      min-height: 40px;
+      padding: 8px 10px;
+      border: 1.5px solid #E5E7EB;
+      border-radius: 12px;
+      background: #F9FAFB;
+      color: #6B7280;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .fac-pills--wrap .fac-pill {
+      flex: 0 0 auto;
+      border-radius: 999px;
+      min-height: 34px;
+    }
+
+    .fac-pill.is-on {
+      background: rgba(var(--app-primary-rgb), 0.12);
+      border-color: var(--app-primary);
+      color: #111827;
+    }
+
+    .fac-status-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .fac-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 48px;
+      padding: 10px 12px;
+      border: 1.5px solid transparent;
+      border-radius: 14px;
+      text-align: left;
+    }
+
+    .fac-status.is-on {
+      border-color: currentColor;
+    }
+
+    .fac-status strong {
+      font-size: 13px;
+      font-weight: 800;
+      color: #111827;
+    }
+
+    .fac-equip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid #F3F4F6;
+    }
+
+    .fac-equip:last-child { border-bottom: none; }
+
+    .fac-equip-ico {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      background: #F3F4F6;
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .fac-equip-copy { flex: 1; min-width: 0; }
+    .fac-equip-copy p { margin: 0; font-size: 13px; font-weight: 800; color: #111827; }
+
+    .fac-stepper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .fac-stepper button {
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      border: 1px solid #E5E7EB;
+      background: #fff;
+      font-weight: 800;
+      color: #6B7280;
+    }
+
+    .fac-stepper .is-add {
+      border: none;
+      background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to));
+      color: #111827;
+    }
+
+    .fac-stepper strong {
+      width: 18px;
+      text-align: center;
+      font-size: 14px;
+      color: #111827;
+    }
+
+    .fac-hint {
+      margin: 8px 0 0;
+      font-size: 12px;
+      font-weight: 600;
+      color: #9CA3AF;
+      line-height: 1.4;
+    }
+
+    .fac-sub {
+      margin: -6px 0 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #9CA3AF;
+    }
+
+    .amenity-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .amenity-pill {
+      border: 1.5px solid transparent;
+      border-radius: 999px;
+      padding: 8px 12px;
+      background: #F3F4F6;
+      color: #4B5563;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+      line-height: 1.2;
+    }
+
+    .amenity-pill.is-on {
+      background: #F7FEE7;
+      border-color: var(--app-primary);
+      color: #3F6212;
+    }
+
+    .fac-page button {
+      font-family: inherit;
+      color: inherit;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .photo-cover {
+      position: relative;
+      width: 100%;
+      height: 140px;
+      border: 1.5px dashed #D1D5DB;
+      border-radius: 16px;
+      background: #F3F4F6;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      color: #9CA3AF;
+    }
+
+    .photo-cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .photo-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      color: #9CA3AF;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .photo-empty ion-icon { font-size: 28px; }
+
+    .photo-change {
+      position: absolute;
+      right: 10px;
+      bottom: 10px;
+      background: #111827;
+      color: #fff;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .photo-tile {
+      aspect-ratio: 1;
+      border: 1.5px dashed #D1D5DB;
+      border-radius: 14px;
+      background: #F3F4F6;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      color: #9CA3AF;
+      font-size: 22px;
+      font-weight: 800;
+      padding: 0;
+      line-height: 1;
+    }
+
+    .photo-tile img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .pano-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      color: #6B7280;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .sup-photo-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .sup-photo-wrap {
+      position: relative;
+      width: 76px;
+      height: 76px;
+      flex-shrink: 0;
+    }
+
+    .sup-photo {
+      width: 72px;
+      height: 72px;
+      border: none;
+      border-radius: 16px;
+      background: #F3F4F6;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      color: #9CA3AF;
+      font-size: 26px;
+      padding: 0;
+    }
+
+    .sup-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .sup-plus {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #22C55E;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 900;
+      line-height: 22px;
+      text-align: center;
+      border: 2px solid #fff;
+      box-sizing: border-box;
+      pointer-events: none;
+    }
+
+    .sup-photo-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .sup-btn {
+      flex: 1;
+      height: 40px;
+      padding: 0 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 800;
+      white-space: nowrap;
+      line-height: 1;
+    }
+
+    .sup-btn--upload {
+      border: 1.5px solid var(--app-primary);
+      background: rgba(var(--app-primary-rgb), 0.18);
+      color: #111827;
+    }
+
+    .sup-btn--camera {
+      border: 1.5px solid #E5E7EB;
+      background: #F3F4F6;
+      color: #111827;
+    }
+
+    .rules-box {
+      background: #F3F4F6;
+      border-radius: 14px;
+      padding: 8px 10px;
+      margin-bottom: 10px;
+    }
+
+    .rule-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 6px 0;
+    }
+
+    .fac-input--rule {
+      height: 38px;
+      background: #fff;
+    }
+
+    .rule-del {
+      width: 28px;
+      height: 28px;
+      border: none;
+      border-radius: 999px;
+      background: #fff;
+      color: #9CA3AF;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .fac-muted {
+      text-align: center;
+      color: #9CA3AF;
+      font-weight: 700;
+      font-size: 13px;
+      padding: 24px 0;
+    }
+
+    .fac-empty {
+      text-align: center;
+      padding: 28px 16px;
+    }
+
+    .fac-empty p { margin: 0; font-size: 16px; font-weight: 900; color: #111827; }
+    .fac-empty span { display: block; margin: 6px 0 14px; font-size: 12px; font-weight: 600; color: #9CA3AF; }
+
+    .fac-alert {
+      border-radius: 14px;
+      padding: 10px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.4;
+    }
+
+    .fac-alert--error { background: #FEF2F2; color: #DC2626; }
+    .fac-alert--ok { background: #F0FDF4; color: #15803D; }
+    .fac-alert--warn { background: #FFFBEB; color: #B45309; margin: 8px 0 12px; }
+
+    .fac-footer {
+      display: flex;
+      gap: 10px;
+      background: #fff;
+      border-top: 1px solid #F3F4F6;
+      box-shadow: 0 -8px 24px rgba(17, 24, 39, 0.06);
+    }
+
+    .fac-ghost,
+    .fac-primary {
+      height: 48px;
+      border: none;
+      border-radius: 16px;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .fac-ghost {
+      flex: 1;
+      background: #F3F4F6;
+      color: #6B7280;
+    }
+
+    .fac-primary {
+      background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to));
+      color: #111827;
+      box-shadow: 0 4px 12px rgba(var(--app-primary-rgb), 0.28);
+      padding: 0 18px;
+    }
+
+    .fac-primary--wide { flex: 2; }
 
     .no-scrollbar {
       scrollbar-width: none;
-      &::-webkit-scrollbar {
-        display: none;
-      }
     }
-
-    .text-input-field {
-      width: 100%;
-      padding: 12px 14px;
-      border-radius: 12px;
-      border: 2px solid #F3F4F6;
-      background: #F9FAFB;
-      font-size: 14px;
-      font-weight: 600;
-      color: #111827;
-      outline: none;
-      box-sizing: border-box;
-
-      &:focus {
-        border-color: var(--app-primary);
-        background: white;
-      }
-    }
-
-    .notes-textarea {
-      width: 100%;
-      padding: 12px 14px;
-      border-radius: 12px;
-      border: 2px solid #F3F4F6;
-      background: #F9FAFB;
-      font-size: 14px;
-      font-weight: 500;
-      color: #111827;
-      outline: none;
-      box-sizing: border-box;
-      resize: none;
-
-      &:focus {
-        border-color: var(--app-primary);
-        background: white;
-      }
-    }
-
-    .rental-price-input {
-      width: 100%;
-      margin-top: 6px;
-      padding: 8px 10px;
-      border-radius: 8px;
-      border: 1px solid #F3F4F6;
-      background: #F9FAFB;
-      font-size: 11px;
-      font-weight: 600;
-      color: #111827;
-      outline: none;
-      box-sizing: border-box;
-
-      &:focus {
-        border-color: var(--app-primary);
-      }
-    }
-
-    .btn-green-gradient {
-      background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to));
-      box-shadow: 0 4px 12px rgba(var(--app-primary-rgb),0.30);
-      color: #111827;
-    }
-  `]
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+  `],
 })
 export class VenueFacilitiesPage implements OnInit {
+  @ViewChild('photoInput') photoInput?: ElementRef<HTMLInputElement>;
+
   private readonly router = inject(Router);
   private readonly venueService = inject(VenueService);
+  private readonly auth = inject(AuthService);
+  private readonly mediaPicker = inject(NativeMediaPickerService);
+  private readonly actionSheet = inject(ActionSheetController);
 
   facilityList = signal<MaintFacility[]>([]);
   selectedId = signal('');
   loading = signal(false);
   saving = signal(false);
   saveError = signal('');
-
   hasChanges = signal(false);
   saved = signal(false);
+  photoBusy = signal(false);
+  coverUrl = signal('');
+  galleryUrls = signal<string[]>([]);
+  panoUrl = signal('');
+  selectedAmenities = signal<string[]>([]);
 
   facilityName = '';
   sport = 'Football';
@@ -389,6 +1023,9 @@ export class VenueFacilitiesPage implements OnInit {
   capacity = 22;
   status = signal('open');
   pricePerHour = 0;
+  peakPrice: number | null = null;
+  weekendPrice: number | null = null;
+  cancelFee: number | null = null;
 
   equipQty = signal<Record<string, number>>({});
   rentalPrices: Record<string, string> = {};
@@ -398,23 +1035,41 @@ export class VenueFacilitiesPage implements OnInit {
   maintNotes = '';
 
   supName = '';
+  supRole = '';
   supShift = '';
   supPhone = '';
+  supAlt = '';
+  supEmail = '';
+  supPhoto = '';
+  rulesList: string[] = [...DEFAULT_RULES];
 
   readonly surfaces = SURFACES;
   readonly statusOptions = STATUS_OPTIONS;
+  readonly amenityOptions = AMENITY_OPTIONS;
   equipmentOptions = signal<Array<{ id: string; label: string; emoji: string; defaultPrice: number }>>([]);
-  readonly Math = Math;
 
   private courtsRaw: any[] = [];
+  private venueAmenities: string[] = [];
+  private photoKind: 'cover' | 'gallery' | 'pano' | 'supervisor' = 'cover';
 
   ngOnInit() {
     void this.bootstrap();
   }
 
+  priceLocked(): boolean {
+    const court = this.courtsRaw.find((c) => String(c.id) === this.selectedId()) || {};
+    return !!court.hasActiveBookings && Number(this.selectedId()) > 0;
+  }
+
+  activeBookingCount(): number {
+    const court = this.courtsRaw.find((c) => String(c.id) === this.selectedId()) || {};
+    return Number(court.activeBookingCount || 0);
+  }
+
   private async bootstrap() {
     this.loading.set(true);
     this.saveError.set('');
+    const keepId = this.selectedId();
     try {
       const [equipRes, profileRes] = await Promise.all([
         firstValueFrom(this.venueService.getEquipmentCatalog()),
@@ -437,7 +1092,7 @@ export class VenueFacilitiesPage implements OnInit {
       }
 
       const data = profileRes.data as Record<string, any>;
-
+      this.venueAmenities = Array.isArray(data['amenities']) ? data['amenities'].map((a: unknown) => String(a)) : [];
       const rental = Array.isArray(data['rentalEquipment']) ? data['rentalEquipment'] : [];
       const qty: Record<string, number> = {};
       const prices: Record<string, string> = {};
@@ -461,12 +1116,16 @@ export class VenueFacilitiesPage implements OnInit {
           emoji: this.sportEmoji(sport),
           status: String(court.status || 'open').toLowerCase(),
           photo: String(court.image || court.imageUrl || DEFAULT_PHOTOS[sport.toLowerCase()] || DEFAULT_PHOTOS['football']),
+          pricePerHour: Number(court.pricePerHour || 0),
+          hasActiveBookings: !!court.hasActiveBookings,
+          activeBookingCount: Number(court.activeBookingCount || 0),
         };
       });
 
       this.facilityList.set(mapped);
       if (mapped.length) {
-        this.selectFacility(mapped[0].id);
+        const next = mapped.find((item) => item.id === keepId) || mapped[0];
+        this.selectFacility(next.id);
       } else {
         this.resetFormForNew();
       }
@@ -493,12 +1152,32 @@ export class VenueFacilitiesPage implements OnInit {
     this.dimensions = String(meta['dimensions'] || '');
     this.capacity = Number(court.maxPlayers || meta['capacity'] || 22);
     this.pricePerHour = Number(court.pricePerHour || 0);
+    this.peakPrice = court.peakPrice != null && court.peakPrice !== '' ? Number(court.peakPrice) : null;
+    this.weekendPrice = court.weekendPrice != null && court.weekendPrice !== '' ? Number(court.weekendPrice) : null;
+    this.cancelFee = meta['cancellationFee'] != null && meta['cancellationFee'] !== ''
+      ? Number(meta['cancellationFee'])
+      : null;
     this.lastCleaned = String(meta['lastCleaned'] || '');
     this.nextCleaning = String(meta['nextCleaning'] || '');
     this.maintNotes = String(meta['maintNotes'] || '');
     this.supName = String(meta['supervisorName'] || '');
+    this.supRole = String(meta['supervisorRole'] || '');
     this.supPhone = String(meta['supervisorPhone'] || '');
+    this.supAlt = String(meta['supervisorAlt'] || '');
+    this.supEmail = String(meta['supervisorEmail'] || '');
     this.supShift = String(meta['supervisorShift'] || '');
+    this.supPhoto = String(meta['supervisorPhoto'] || '');
+    const savedRules = Array.isArray(meta['rules']) ? meta['rules'].map((r: unknown) => String(r)).filter(Boolean) : [];
+    this.rulesList = savedRules.length ? savedRules : [...DEFAULT_RULES];
+    const savedAmenities = Array.isArray(meta['amenities']) ? meta['amenities'].map((a: unknown) => String(a)) : this.venueAmenities;
+    this.selectedAmenities.set(savedAmenities);
+    const gallery = Array.isArray(meta['gallery']) ? meta['gallery'].map((u: unknown) => String(u)).filter(Boolean) : [];
+    this.galleryUrls.set(gallery);
+    this.panoUrl.set(String(meta['panoramaUrl'] || ''));
+    this.coverUrl.set(String(court.image || court.imageUrl || f.photo || ''));
+    if (this.coverUrl().startsWith('https://images.unsplash.com')) {
+      this.coverUrl.set('');
+    }
 
     this.hasChanges.set(false);
     this.saved.set(false);
@@ -539,6 +1218,11 @@ export class VenueFacilitiesPage implements OnInit {
     this.saved.set(false);
   }
 
+  onPriceChange() {
+    if (this.priceLocked()) return;
+    this.onChange();
+  }
+
   async saveChanges() {
     if (this.saving()) return;
     this.saving.set(true);
@@ -546,7 +1230,7 @@ export class VenueFacilitiesPage implements OnInit {
     try {
       const selectedId = this.selectedId();
       const numericId = Number(selectedId);
-      const meta = {
+      const meta: Record<string, unknown> = {
         courtNumber: this.courtNumber,
         dimensions: this.dimensions,
         capacity: this.capacity,
@@ -554,15 +1238,32 @@ export class VenueFacilitiesPage implements OnInit {
         nextCleaning: this.nextCleaning,
         maintNotes: this.maintNotes,
         supervisorName: this.supName,
+        supervisorRole: this.supRole,
         supervisorPhone: this.supPhone,
+        supervisorAlt: this.supAlt,
+        supervisorEmail: this.supEmail,
         supervisorShift: this.supShift,
+        supervisorPhoto: this.supPhoto,
+        amenities: this.selectedAmenities(),
+        gallery: this.galleryUrls(),
+        panoramaUrl: this.panoUrl(),
+        rules: this.rulesList.map((r) => r.trim()).filter(Boolean),
       };
 
-      const courtPayload = {
+      if (!this.priceLocked()) {
+        meta['cancellationFee'] = this.cancelFee != null && String(this.cancelFee) !== '' ? Number(this.cancelFee) : null;
+      } else {
+        const court = this.courtsRaw.find((c) => String(c.id) === selectedId) || {};
+        const existing = (court.meta && typeof court.meta === 'object') ? court.meta : {};
+        if (existing['cancellationFee'] != null) {
+          meta['cancellationFee'] = existing['cancellationFee'];
+        }
+      }
+
+      const courtPayload: Record<string, unknown> = {
         name: this.facilityName.trim() || 'Court',
         sport: this.sport.toLowerCase(),
         isIndoor: this.isIndoor(),
-        pricePerHour: Number(this.pricePerHour || 0),
         hasRentalGear: Object.values(this.equipQty()).some((q) => q > 0),
         status: this.status(),
         surface: this.surface(),
@@ -570,9 +1271,22 @@ export class VenueFacilitiesPage implements OnInit {
         meta,
       };
 
+      if (this.coverUrl() && !this.coverUrl().startsWith('https://images.unsplash.com')) {
+        courtPayload['imageUrl'] = this.coverUrl();
+      }
+
+      if (!this.priceLocked()) {
+        courtPayload['pricePerHour'] = Number(this.pricePerHour || 0);
+        courtPayload['peakPrice'] = this.peakPrice != null && String(this.peakPrice) !== '' ? Number(this.peakPrice) : null;
+        courtPayload['weekendPrice'] = this.weekendPrice != null && String(this.weekendPrice) !== '' ? Number(this.weekendPrice) : null;
+      }
+
       if (Number.isFinite(numericId) && numericId > 0) {
         await firstValueFrom(this.venueService.updateCourt(numericId, courtPayload));
       } else {
+        courtPayload['pricePerHour'] = Number(this.pricePerHour || 0);
+        courtPayload['peakPrice'] = this.peakPrice != null && String(this.peakPrice) !== '' ? Number(this.peakPrice) : null;
+        courtPayload['weekendPrice'] = this.weekendPrice != null && String(this.weekendPrice) !== '' ? Number(this.weekendPrice) : null;
         const created = await firstValueFrom(this.venueService.createCourt(courtPayload as any));
         if (created.data?.id) {
           this.selectedId.set(String(created.data.id));
@@ -581,6 +1295,7 @@ export class VenueFacilitiesPage implements OnInit {
 
       await firstValueFrom(
         this.venueService.updateMyProfile({
+          amenities: this.selectedAmenities(),
           rentalEquipment: this.equipmentOptions()
             .filter((item) => (this.equipQty()[item.id] || 0) > 0)
             .map((item) => ({
@@ -598,7 +1313,9 @@ export class VenueFacilitiesPage implements OnInit {
       this.saved.set(true);
       setTimeout(() => this.saved.set(false), 2000);
     } catch (error: any) {
-      this.saveError.set(error?.error?.message || 'Unable to save facility.');
+      const field = error?.error?.errors?.pricePerHour;
+      const fieldMsg = Array.isArray(field) ? field[0] : field;
+      this.saveError.set(fieldMsg || error?.error?.message || 'Unable to save facility.');
     } finally {
       this.saving.set(false);
     }
@@ -618,6 +1335,7 @@ export class VenueFacilitiesPage implements OnInit {
       emoji: '🏀',
       status: 'open',
       photo: DEFAULT_PHOTOS['basketball'],
+      pricePerHour: 0,
     };
     this.facilityList.update((list) => [...list, newFac]);
     this.courtsRaw = [...this.courtsRaw, { id: nextId, meta: {} }];
@@ -627,6 +1345,160 @@ export class VenueFacilitiesPage implements OnInit {
 
   goBack() {
     void this.router.navigateByUrl('/app/venue/dashboard');
+  }
+
+  gallerySlots(): number[] {
+    return Array.from({ length: Math.max(0, 5 - this.galleryUrls().length) });
+  }
+
+  isAmenityOn(name: string): boolean {
+    return this.selectedAmenities().includes(name);
+  }
+
+  toggleAmenity(name: string) {
+    this.selectedAmenities.update((list) =>
+      list.includes(name) ? list.filter((item) => item !== name) : [...list, name],
+    );
+    this.onChange();
+  }
+
+  addRule() {
+    this.rulesList = [...this.rulesList, ''];
+    this.onChange();
+  }
+
+  removeRule(index: number) {
+    this.rulesList = this.rulesList.filter((_, i) => i !== index);
+    this.onChange();
+  }
+
+  async pickPhoto(kind: 'cover' | 'gallery' | 'pano' | 'supervisor', source?: 'camera' | 'library'): Promise<void> {
+    this.photoKind = kind;
+    if (source === 'camera') {
+      await this.openCamera();
+      return;
+    }
+    if (source === 'library') {
+      await this.openLibrary();
+      return;
+    }
+    const sheet = await this.actionSheet.create({
+      header: kind === 'cover' ? 'Cover photo' : kind === 'supervisor' ? 'Supervisor photo' : 'Add photo',
+      buttons: [
+        { text: 'Take photo', icon: 'camera-outline', handler: () => { void this.openCamera(); } },
+        { text: 'Choose from gallery', icon: 'image-outline', handler: () => { void this.openLibrary(); } },
+        { text: 'Cancel', role: 'cancel' },
+      ],
+    });
+    await sheet.present();
+  }
+
+  async onPhotoFile(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    try {
+      const normalized = await normalizeImageFile(file, this.photoKind);
+      await this.uploadPickedFile(normalized);
+    } catch {
+      this.saveError.set('Unable to read that image. Please try another photo.');
+    }
+  }
+
+  private async openCamera(): Promise<void> {
+    if (Capacitor.isNativePlatform()) {
+      const file = await this.mediaPicker.takePhoto(`facility-${this.photoKind}`);
+      if (file) await this.uploadPickedFile(file);
+      return;
+    }
+    this.photoInput?.nativeElement.click();
+  }
+
+  private async openLibrary(): Promise<void> {
+    if (Capacitor.isNativePlatform()) {
+      const file = await this.mediaPicker.pickPhoto(`facility-${this.photoKind}`);
+      if (file) await this.uploadPickedFile(file);
+      return;
+    }
+    this.photoInput?.nativeElement.click();
+  }
+
+  private async uploadPickedFile(file: File): Promise<void> {
+    this.photoBusy.set(true);
+    this.saveError.set('');
+    try {
+      const courtId = await this.ensureCourtId();
+      const asCover = this.photoKind === 'cover';
+      const res = await firstValueFrom(
+        this.venueService.uploadGallery([file], {
+          asCover,
+          courtId: courtId || undefined,
+        }),
+      );
+      const url = res.data?.uploaded?.[0] || '';
+      if (!url) {
+        this.saveError.set(res.message || 'Upload failed.');
+        return;
+      }
+      if (res.data?.user) this.auth.hydrateUser(res.data.user);
+
+      if (this.photoKind === 'cover') {
+        this.coverUrl.set(url);
+        this.facilityList.update((list) =>
+          list.map((item) => item.id === this.selectedId() ? { ...item, photo: url } : item),
+        );
+      } else if (this.photoKind === 'gallery') {
+        this.galleryUrls.update((urls) => urls.includes(url) ? urls : [...urls, url]);
+      } else if (this.photoKind === 'pano') {
+        this.panoUrl.set(url);
+      } else {
+        this.supPhoto = url;
+      }
+      this.onChange();
+      if (courtId && this.photoKind !== 'cover') {
+        await this.persistPhotoMeta(Number(courtId));
+      }
+    } catch (error: any) {
+      this.saveError.set(error?.error?.message || 'Unable to upload photo.');
+    } finally {
+      this.photoBusy.set(false);
+    }
+  }
+
+  private async persistPhotoMeta(courtId: number): Promise<void> {
+    const court = this.courtsRaw.find((c) => String(c.id) === String(courtId)) || {};
+    const existing = (court.meta && typeof court.meta === 'object') ? court.meta : {};
+    await firstValueFrom(this.venueService.updateCourt(courtId, {
+      name: this.facilityName.trim() || 'Court',
+      sport: this.sport.toLowerCase(),
+      meta: {
+        ...existing,
+        gallery: this.galleryUrls(),
+        panoramaUrl: this.panoUrl(),
+        supervisorPhoto: this.supPhoto,
+      },
+    }));
+  }
+
+  private async ensureCourtId(): Promise<string | null> {
+    const selectedId = this.selectedId();
+    const numericId = Number(selectedId);
+    if (Number.isFinite(numericId) && numericId > 0) return String(numericId);
+    const created = await firstValueFrom(this.venueService.createCourt({
+      name: this.facilityName.trim() || 'Court',
+      sport: this.sport.toLowerCase(),
+      isIndoor: this.isIndoor(),
+      pricePerHour: Number(this.pricePerHour || 0),
+      status: this.status(),
+      surface: this.surface(),
+      maxPlayers: Number(this.capacity || 0) || null,
+    }));
+    if (created.data?.id) {
+      this.selectedId.set(String(created.data.id));
+      return String(created.data.id);
+    }
+    return null;
   }
 
   private resetFormForNew() {
@@ -640,6 +1512,9 @@ export class VenueFacilitiesPage implements OnInit {
     this.dimensions = '';
     this.capacity = 22;
     this.pricePerHour = 0;
+    this.peakPrice = null;
+    this.weekendPrice = null;
+    this.cancelFee = null;
   }
 
   private titleCase(value: string): string {
@@ -653,6 +1528,8 @@ export class VenueFacilitiesPage implements OnInit {
     if (key.includes('badminton')) return '🏸';
     if (key.includes('cricket')) return '🏏';
     if (key.includes('tennis')) return '🎾';
+    if (key.includes('volley')) return '🏐';
+    if (key.includes('table')) return '🏓';
     return '🏟️';
   }
 }
@@ -662,5 +1539,5 @@ const DEFAULT_PHOTOS: Record<string, string> = {
   basketball: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=300&h=200&fit=crop&auto=format',
   badminton: 'https://images.unsplash.com/photo-1722087642932-9b070e9a066e?w=300&h=200&fit=crop&auto=format',
   cricket: 'https://images.unsplash.com/photo-1593341646782-e0b495cff86d?w=300&h=200&fit=crop&auto=format',
+  tennis: 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=300&h=200&fit=crop&auto=format',
 };
-

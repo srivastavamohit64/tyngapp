@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
-import { Router } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
 import { MenuController, Platform } from '@ionic/angular';
+import { filter } from 'rxjs/operators';
 import { firstValueFrom } from 'rxjs';
 import { AuthUser } from './core/models/api.model';
 import { PlatformService } from './core/services/platform.service';
@@ -10,6 +11,7 @@ import { VenueService } from './core/services/venue.service';
 import { RealtimeService } from './core/services/realtime.service';
 import { PushNotificationService } from './core/services/push-notification.service';
 import { TabBadgeService } from './core/services/tab-badge.service';
+import { ForegroundNotificationService } from './core/services/foreground-notification.service';
 
 interface CoachMenuItem {
   label: string;
@@ -44,8 +46,10 @@ export class AppComponent implements OnInit {
   private readonly realtime = inject(RealtimeService);
   private readonly pushNotifications = inject(PushNotificationService);
   private readonly tabBadges = inject(TabBadgeService);
+  private readonly foregroundNotifications = inject(ForegroundNotificationService);
 
   showLogoutConfirm = false;
+  private lastScrollPath = '';
 
   private readonly venueMenuStats = signal<{
     profileName: string;
@@ -95,7 +99,7 @@ export class AppComponent implements OnInit {
 
     return [
       { label: 'Venue Profile', sub: profileSub, path: '/app/venue/profile', icon: 'business-outline' },
-      { label: 'Facilities', sub: facilitiesSub, path: '/app/venue/facilities', icon: 'cube-outline' },
+      { label: 'Facilities & Amenities', sub: facilitiesSub, path: '/app/venue/facilities', icon: 'cube-outline' },
       { label: 'Wallet', sub: 'Balance, top-up & history', path: '/app/wallet', icon: 'wallet-outline' },
       { label: 'Earnings', sub: earnings, path: '/app/venue/earnings', icon: 'cash-outline' },
       {
@@ -113,6 +117,7 @@ export class AppComponent implements OnInit {
         badge: m.unreadChat > 0 ? String(m.unreadChat) : undefined,
       },
       { label: 'Coaches', sub: 'Partner coaches', path: '/app/venue/facilities', icon: 'people-outline' },
+      { label: 'Events', sub: 'Create & manage events', path: '/app/venue/events', icon: 'sparkles-outline' },
       { label: 'Analytics', sub: 'Occupancy & insights', path: '/app/venue/analytics', icon: 'bar-chart-outline' },
       { label: 'Settings', sub: 'Preferences & billing', path: '/app/venue/profile', icon: 'settings-outline' },
     ];
@@ -132,8 +137,12 @@ export class AppComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    this.router.events
+      .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
+      .subscribe((event) => this.resetPageScroll(event.urlAfterRedirects));
     void this.platform.init();
     void this.realtime.connect();
+    this.foregroundNotifications.bindAppState();
     // Register FCM as soon as the native app boots (Firebase Console works without Laravel).
     // Token sync to the backend still requires an authenticated session.
     void this.pushNotifications.init().then(() => {
@@ -160,9 +169,7 @@ export class AppComponent implements OnInit {
 
   userHandle(): string {
     const u = this.user();
-    const handle = u?.username ? `@${u.username}` : '@player';
-    const location = u?.location?.trim() || 'Add location';
-    return `${handle} · ${location}`;
+    return u?.username ? `@${u.username}` : '@player';
   }
 
   coachSubtitle(): string {
@@ -223,6 +230,34 @@ export class AppComponent implements OnInit {
     this.showLogoutConfirm = false;
     await this.menu.close();
     void this.router.navigateByUrl(path);
+  }
+
+  private resetPageScroll(url: string): void {
+    const path = (url || '').split('?')[0].split('#')[0];
+    if (path === this.lastScrollPath) {
+      return;
+    }
+    this.lastScrollPath = path;
+
+    const run = () => {
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      document.querySelectorAll('ion-app ion-content').forEach((node) => {
+        const content = node as HTMLElement & { scrollToTop?: (duration?: number) => Promise<void> };
+        if (typeof content.scrollToTop === 'function') {
+          void content.scrollToTop(0);
+        }
+        const inner = content.shadowRoot?.querySelector('.inner-scroll') as HTMLElement | null;
+        if (inner) {
+          inner.scrollTop = 0;
+        }
+      });
+    };
+
+    run();
+    requestAnimationFrame(run);
+    setTimeout(run, 50);
   }
 
   refreshProfile() {

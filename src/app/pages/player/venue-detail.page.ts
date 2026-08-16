@@ -623,9 +623,14 @@ export class VenueDetailPage implements OnInit {
         courtName: String(selectedCourt?.courtName || selectedCourt?.name || 'Court'),
         sport: String(selectedCourt?.sport || (data.sports?.[0] || 'Sport')),
         address: String(data.address || data.location || ''),
-        images: Array.isArray(data.gallery) && data.gallery.length
-          ? data.gallery.map((g: unknown) => String(g))
-          : [String(data.profileImage || selectedCourt?.image || 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=800')],
+        images: (() => {
+          const gallery = Array.isArray(data.gallery) ? data.gallery.map((g: unknown) => String(g)).filter(Boolean) : [];
+          const cover = String(selectedCourt?.image || selectedCourt?.imageUrl || data.profileImage || data.coverImage || '');
+          const ordered = [cover, ...gallery].filter(Boolean);
+          return [...new Set(ordered)].length
+            ? [...new Set(ordered)]
+            : ['https://images.unsplash.com/photo-1546519638-68e109498ffc?w=800'];
+        })(),
         pricePerHour: Number(selectedCourt?.pricePerHour || 0),
         rating: Number(data.rating || 4.5),
         reviewCount: Number(data.gamesPlayed || 0),

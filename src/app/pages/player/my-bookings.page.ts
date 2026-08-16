@@ -1,22 +1,15 @@
-import { CommonModule, TitleCasePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { AlertController, IonicModule, RefresherCustomEvent, ToastController } from '@ionic/angular';
+import { IonicModule, RefresherCustomEvent, ToastController } from '@ionic/angular';
 import { Subscription, firstValueFrom } from 'rxjs';
 import { BookingRecord, MyBookingsResponse } from '../../core/models/api.model';
 import { AuthService } from '../../core/services/auth.service';
 import { BookingService } from '../../core/services/booking.service';
 import { RealtimeService } from '../../core/services/realtime.service';
-import {
-  bookingStatusTone,
-  formatBookingDate,
-  formatBookingTimeRange,
-  formatDurationLabel,
-  formatStartsIn,
-  sportEmoji,
-} from '../../core/utils/booking.utils';
 import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { PlayerBookingCardComponent } from '../../shared/components/player-booking-card/player-booking-card.component';
 import { SegmentControlComponent, SegmentOption } from '../../shared/components/segment-control/segment-control.component';
 
 @Component({
@@ -28,7 +21,7 @@ import { SegmentControlComponent, SegmentOption } from '../../shared/components/
     BrandHeaderShellComponent,
     PageHeaderComponent,
     SegmentControlComponent,
-    TitleCasePipe,
+    PlayerBookingCardComponent,
   ],
   template: `
     <ion-content fullscreen class="has-tabs">
@@ -69,131 +62,16 @@ import { SegmentControlComponent, SegmentOption } from '../../shared/components/
               </div>
             </ng-container>
 
-            <ng-container *ngFor="let booking of currentBookings">
-              <div
-                class="bg-white overflow-hidden rounded-3xl booking-card"
-                [style.border-left]="'4px solid ' + statusTone(booking).text"
-              >
-                <div class="px-4 pt-4 pb-3">
-                  <div class="flex items-start justify-between gap-3 mb-3">
-                    <div class="flex items-center gap-3 min-w-0">
-                      <span class="text-3xl flex-shrink-0">{{ sportEmoji(booking.sport) }}</span>
-                      <div class="min-w-0">
-                        <div class="flex items-center gap-2 flex-wrap">
-                          <span class="text-[15px] font-black text-[#111827] truncate">{{ booking.sport | titlecase }} Booking</span>
-                          <span *ngIf="booking.isHost" class="tag tag-host">Host</span>
-                          <span *ngIf="!booking.isHost && booking.isInvited" class="tag tag-invited">Invited</span>
-                          <span *ngIf="!booking.isHost && !booking.isInvited && booking.isJoined" class="tag tag-joined">Joined</span>
-                        </div>
-                        <p class="text-[12px] text-[#9CA3AF] mt-1 flex items-center gap-1 truncate">
-                          <ion-icon name="location-outline" class="text-[11px]"></ion-icon>
-                          {{ booking.venue.name || 'Venue TBD' }}
-                        </p>
-                      </div>
-                    </div>
-
-                    <span
-                      class="status-badge"
-                      [style.background]="statusTone(booking).bg"
-                      [style.color]="statusTone(booking).text"
-                      [style.border-color]="statusTone(booking).border"
-                    >
-                      {{ statusLabel(booking) }}
-                    </span>
-                  </div>
-
-                  <p *ngIf="booking.bookingStatus === 'pending'" class="pending-note">
-                    {{ approvalCountdown(booking) }}
-                  </p>
-
-                  <div class="flex items-center gap-3 flex-wrap">
-                    <div class="meta-chip">
-                      <ion-icon name="calendar-outline"></ion-icon>
-                      {{ formatBookingDate(booking.bookingDate) }}
-                    </div>
-                    <div class="meta-chip">
-                      <ion-icon name="time-outline"></ion-icon>
-                      {{ formatBookingTimeRange(booking.startTime, booking.endTime) }}
-                    </div>
-                    <span *ngIf="formatStartsIn(booking)" class="meta-pill">
-                      <span class="h-1.5 w-1.5 rounded-full bg-[#FF7A00]"></span>
-                      {{ formatStartsIn(booking) }}
-                    </span>
-                  </div>
-                </div>
-
-                <div class="px-4 pb-3">
-                  <div class="bg-[#FAFBFC] border border-[#F3F4F6] rounded-2xl p-3.5 grid grid-cols-2 gap-3">
-                    <div>
-                      <p class="metric-label">Players</p>
-                      <p class="metric-value">{{ booking.currentPlayers }}/{{ booking.totalPlayers }}</p>
-                      <p class="metric-sub">{{ booking.availableSlots }} seats left</p>
-                    </div>
-                    <div>
-                      <p class="metric-label">Host</p>
-                      <p class="metric-value">{{ booking.host.name || '—' }}</p>
-                    </div>
-                    <div>
-                      <p class="metric-label">Duration</p>
-                      <p class="metric-value">{{ formatDurationLabel(booking.durationMinutes) }}</p>
-                    </div>
-                    <div>
-                      <p class="metric-label">Payment</p>
-                      <p class="metric-value">{{ booking.paymentStatus | titlecase }}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="px-4 pb-4 action-row">
-                  <button type="button" class="btn btn-secondary" (click)="viewDetails(booking)">View Details</button>
-                  <button
-                    *ngIf="booking.canJoin"
-                    type="button"
-                    class="btn btn-primary"
-                    [disabled]="isBusy(booking.id)"
-                    (click)="joinBooking(booking)"
-                  >
-                    Join
-                  </button>
-                  <button
-                    *ngIf="booking.canAcceptInvite"
-                    type="button"
-                    class="btn btn-primary"
-                    [disabled]="isBusy(booking.id)"
-                    (click)="acceptInvite(booking)"
-                  >
-                    Accept Invite
-                  </button>
-                  <button
-                    *ngIf="booking.canRejectInvite"
-                    type="button"
-                    class="btn btn-secondary"
-                    [disabled]="isBusy(booking.id)"
-                    (click)="rejectInvite(booking)"
-                  >
-                    Reject Invite
-                  </button>
-                  <button
-                    *ngIf="booking.canLeave"
-                    type="button"
-                    class="btn btn-secondary"
-                    [disabled]="isBusy(booking.id)"
-                    (click)="leaveBooking(booking)"
-                  >
-                    Leave
-                  </button>
-                  <button
-                    *ngIf="booking.canCancel"
-                    type="button"
-                    class="btn btn-danger"
-                    [disabled]="isBusy(booking.id)"
-                    (click)="cancelBooking(booking)"
-                  >
-                    Cancel Booking
-                  </button>
-                </div>
-              </div>
-            </ng-container>
+            <app-player-booking-card
+              *ngFor="let booking of currentBookings"
+              [booking]="booking"
+              [nowTick]="nowTick"
+              [segment]="activeSegment"
+              [pendingNote]="booking.bookingStatus === 'pending' ? approvalCountdown(booking) : ''"
+              (updated)="onBookingUpdated($event)"
+              (viewDetails)="viewDetails($event)"
+              (bookAgain)="bookAgain($event)"
+            ></app-player-booking-card>
           </div>
         </main>
       </app-brand-header-shell>
@@ -201,133 +79,6 @@ import { SegmentControlComponent, SegmentOption } from '../../shared/components/
   `,
   styles: [
     `
-      .booking-card {
-        box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08);
-      }
-
-      .status-badge {
-        border: 1px solid transparent;
-        padding: 6px 10px;
-        border-radius: 999px;
-        font-size: 10px;
-        font-weight: 800;
-        line-height: 1;
-        flex-shrink: 0;
-      }
-
-      .pending-note {
-        margin: 0 16px 10px;
-        padding: 8px 10px;
-        border-radius: 12px;
-        background: #FFF7ED;
-        border: 1px solid #FFEDD5;
-        color: #C2410C;
-        font-size: 11px;
-        font-weight: 700;
-        line-height: 1.35;
-      }
-
-      .tag {
-        padding: 2px 8px;
-        border-radius: 999px;
-        font-size: 10px;
-        font-weight: 800;
-      }
-
-      .tag-host {
-        background: rgba(var(--app-primary-rgb), 0.15);
-        color: #166534;
-      }
-
-      .tag-joined {
-        background: rgba(251, 191, 36, 0.15);
-        color: #b45309;
-      }
-
-      .tag-invited {
-        background: rgba(59, 130, 246, 0.15);
-        color: #1d4ed8;
-      }
-
-      .meta-chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        color: #6b7280;
-        font-size: 11px;
-        font-weight: 700;
-      }
-
-      .meta-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 4px 8px;
-        border-radius: 999px;
-        background: #fff7ed;
-        color: #ff7a00;
-        font-size: 10px;
-        font-weight: 800;
-      }
-
-      .metric-label {
-        font-size: 10px;
-        color: #9ca3af;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        margin: 0 0 4px;
-      }
-
-      .metric-value {
-        font-size: 13px;
-        color: #111827;
-        font-weight: 800;
-        margin: 0;
-      }
-
-      .metric-sub {
-        font-size: 10px;
-        color: #ff7a00;
-        font-weight: 700;
-        margin: 4px 0 0;
-      }
-
-      .action-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-      }
-
-      .btn {
-        min-height: unset;
-        border-radius: 16px;
-        padding: 12px 14px;
-        font-size: 12px;
-        font-weight: 800;
-        transition: transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
-      }
-
-      .btn:active {
-        transform: scale(0.98);
-      }
-
-      .btn-primary {
-        background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to));
-        color: #111827;
-        box-shadow: 0 2px 8px rgba(var(--app-primary-rgb), 0.28);
-      }
-
-      .btn-secondary {
-        background: #f9fafb;
-        border: 1px solid #e5e7eb;
-        color: #374151;
-      }
-
-      .btn-danger {
-        background: #ef4444;
-        color: #fff;
-      }
-
       .state-card {
         background: #fff;
         border-radius: 24px;
@@ -368,7 +119,7 @@ import { SegmentControlComponent, SegmentOption } from '../../shared/components/
       }
 
       .skeleton-card {
-        height: 220px;
+        height: 280px;
         border-radius: 24px;
         background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 37%, #f3f4f6 63%);
         background-size: 400% 100%;
@@ -376,12 +127,8 @@ import { SegmentControlComponent, SegmentOption } from '../../shared/components/
       }
 
       @keyframes shimmer {
-        0% {
-          background-position: 100% 0;
-        }
-        100% {
-          background-position: 0 0;
-        }
+        0% { background-position: 100% 0; }
+        100% { background-position: 0 0; }
       }
     `,
   ],
@@ -392,12 +139,10 @@ export class MyBookingsPage implements OnInit, OnDestroy {
   private readonly auth = inject(AuthService);
   private readonly realtime = inject(RealtimeService);
   private readonly toastCtrl = inject(ToastController);
-  private readonly alertCtrl = inject(AlertController);
 
-  activeSegment: keyof Omit<MyBookingsResponse, 'counts'> = 'upcoming';
+  activeSegment: 'upcoming' | 'past' = 'upcoming';
   loading = true;
   errorMessage = '';
-  busyIds = new Set<string>();
   nowTick = Date.now();
   private timerId: number | null = null;
   private realtimeSub: Subscription | null = null;
@@ -434,41 +179,42 @@ export class MyBookingsPage implements OnInit, OnDestroy {
   }
 
   setSegment(value: string): void {
-    if (value === 'upcoming' || value === 'past' || value === 'cancelled' || value === 'completed') {
+    if (value === 'upcoming' || value === 'past') {
       this.activeSegment = value;
     }
   }
 
   get segments(): SegmentOption[] {
+    const upcoming = (this.bookings.counts.upcoming || 0) + (this.bookings.counts.invited || 0);
+    const past = (this.bookings.counts.past || 0)
+      + (this.bookings.counts.cancelled || 0)
+      + (this.bookings.counts.completed || 0);
     return [
-      { id: 'upcoming', label: 'Upcoming', count: (this.bookings.counts.upcoming || 0) + (this.bookings.counts.invited || 0) },
-      { id: 'past', label: 'Past', count: this.bookings.counts.past },
-      { id: 'cancelled', label: 'Cancelled', count: this.bookings.counts.cancelled },
-      { id: 'completed', label: 'Completed', count: this.bookings.counts.completed },
+      { id: 'upcoming', label: `Upcoming (${upcoming})` },
+      { id: 'past', label: `Past (${past})` },
     ];
   }
 
   get currentBookings(): BookingRecord[] {
-    // Touch nowTick so pending countdowns / starts-in refresh every second.
     void this.nowTick;
     if (this.activeSegment === 'upcoming') {
       return [...(this.bookings.invited || []), ...(this.bookings.upcoming || [])];
     }
-
-    return this.bookings[this.activeSegment] ?? [];
+    const seen = new Set<string>();
+    const list: BookingRecord[] = [];
+    for (const booking of [...(this.bookings.past || []), ...(this.bookings.completed || []), ...(this.bookings.cancelled || [])]) {
+      if (seen.has(String(booking.id))) continue;
+      seen.add(String(booking.id));
+      list.push(booking);
+    }
+    return list;
   }
 
   get emptyMessage(): string {
-    switch (this.activeSegment) {
-      case 'past':
-        return 'Your finished and expired matches will appear here.';
-      case 'cancelled':
-        return 'Cancelled bookings will show up here for reference.';
-      case 'completed':
-        return 'Completed matches will appear here once they are marked done.';
-      default:
-        return 'Create a new game or join an open booking to see it here.';
+    if (this.activeSegment === 'past') {
+      return 'Your finished, cancelled, and expired matches will appear here.';
     }
+    return 'Create a new game or join an open booking to see it here.';
   }
 
   async loadBookings(event?: RefresherCustomEvent, silent = false): Promise<void> {
@@ -504,8 +250,17 @@ export class MyBookingsPage implements OnInit, OnDestroy {
     void this.router.navigateByUrl(`/app/my-bookings/${booking.id}`);
   }
 
-  isBusy(id: string): boolean {
-    return this.busyIds.has(id);
+  bookAgain(booking: BookingRecord): void {
+    if (booking.venueId) {
+      void this.router.navigateByUrl(`/app/venue/${booking.venueId}/book`);
+      return;
+    }
+    this.goCreateGame();
+  }
+
+  onBookingUpdated(booking: BookingRecord): void {
+    this.patchLocalBooking(booking.id, booking);
+    this.queueSilentReload();
   }
 
   approvalCountdown(booking: BookingRecord): string {
@@ -621,120 +376,17 @@ export class MyBookingsPage implements OnInit, OnDestroy {
     }, 250);
   }
 
-  async joinBooking(booking: BookingRecord): Promise<void> {
-    await this.runBookingAction(booking.id, async () => {
-      const response = await firstValueFrom(this.bookingService.joinBooking(booking.id));
-      return response.message || 'Joined booking successfully.';
-    });
-  }
-
-  async acceptInvite(booking: BookingRecord): Promise<void> {
-    await this.runBookingAction(booking.id, async () => {
-      const response = await firstValueFrom(this.bookingService.acceptInvite(booking.id));
-      return response.message || 'Invite accepted successfully.';
-    });
-  }
-
-  async rejectInvite(booking: BookingRecord): Promise<void> {
-    await this.runBookingAction(booking.id, async () => {
-      const response = await firstValueFrom(this.bookingService.rejectInvite(booking.id));
-      return response.message || 'Invite rejected successfully.';
-    });
-  }
-
-  async leaveBooking(booking: BookingRecord): Promise<void> {
-    await this.runBookingAction(booking.id, async () => {
-      const response = await firstValueFrom(this.bookingService.leaveBooking(booking.id));
-      return response.message || 'Left booking successfully.';
-    });
-  }
-
-  async cancelBooking(booking: BookingRecord): Promise<void> {
-    const alert = await this.alertCtrl.create({
-      header: 'Cancel booking?',
-      message: 'This will release the venue slot and cancel the match for all players.',
-      buttons: [
-        { text: 'Keep Booking', role: 'cancel' },
-        {
-          text: 'Cancel Booking',
-          role: 'destructive',
-          handler: () => {
-            void this.runBookingAction(booking.id, async () => {
-              const response = await firstValueFrom(this.bookingService.cancelBooking(booking.id));
-              return response.message || 'Booking cancelled successfully.';
-            });
-          },
-        },
-      ],
-    });
-
-    await alert.present();
-  }
-
-  sportEmoji = sportEmoji;
-  formatBookingDate = formatBookingDate;
-  formatBookingTimeRange = formatBookingTimeRange;
-  formatDurationLabel = formatDurationLabel;
-
-  formatStartsIn(booking: BookingRecord): string | null {
-    return this.formatStartsInWithNow(booking, this.nowTick);
-  }
-
-  private formatStartsInWithNow(booking: BookingRecord, now: number): string | null {
-    if (!booking.bookingDate || !booking.startTime) return null;
-    const [hours = '0', minutes = '0'] = booking.startTime.split(':');
-    const start = new Date(`${booking.bookingDate}T00:00:00`);
-    if (Number.isNaN(start.getTime())) return null;
-    start.setHours(Number(hours), Number(minutes), 0, 0);
-    const diff = start.getTime() - now;
-    if (diff <= 0) return null;
-    const totalMinutes = Math.floor(diff / 60000);
-    const hoursLeft = Math.floor(totalMinutes / 60);
-    const minutesLeft = totalMinutes % 60;
-    if (hoursLeft <= 0) return `Starts in ${minutesLeft}m`;
-    return `Starts in ${hoursLeft}h ${minutesLeft}m`;
-  }
-
   private startTimer(): void {
     if (this.timerId !== null) return;
     this.timerId = window.setInterval(() => {
       this.nowTick = Date.now();
-    }, 1000);
+    }, 15000);
   }
 
   private stopTimer(): void {
     if (this.timerId !== null) {
       clearInterval(this.timerId);
       this.timerId = null;
-    }
-  }
-
-  statusTone(booking: BookingRecord) {
-    return bookingStatusTone(booking.bookingStatus);
-  }
-
-  statusLabel(booking: BookingRecord): string {
-    const status = String(booking.bookingStatus || '').toLowerCase();
-    if (status === 'pending') return 'Awaiting venue';
-    if (status === 'confirmed' || status === 'full') return 'Confirmed';
-    if (status === 'cancelled') return 'Cancelled';
-    if (status === 'completed') return 'Completed';
-    if (status === 'expired') return 'Expired';
-    return status ? status.charAt(0).toUpperCase() + status.slice(1) : 'Unknown';
-  }
-
-  private async runBookingAction(id: string, action: () => Promise<string>): Promise<void> {
-    if (this.busyIds.has(id)) return;
-    this.busyIds.add(id);
-
-    try {
-      const message = await action();
-      await this.presentToast(message, 'success');
-      await this.loadBookings();
-    } catch (error: any) {
-      await this.presentToast(error?.error?.message || 'Action failed. Please try again.', 'danger');
-    } finally {
-      this.busyIds.delete(id);
     }
   }
 

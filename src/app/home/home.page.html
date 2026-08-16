@@ -1,20 +1,100 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-title>
-      Blank
+      Current Location
     </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="refreshLocation()" [disabled]="isLoadingLocation">
+        <ion-icon slot="icon-only" name="refresh"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large">Blank</ion-title>
+      <ion-title size="large">Current Location</ion-title>
     </ion-toolbar>
   </ion-header>
 
-  <div id="container">
-    <strong>Ready to create an app?</strong>
-    <p>Start with Ionic <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>
+  <div class="location-container">
+    <!-- Loading State -->
+    <div *ngIf="isLoadingLocation" class="loading-section">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Getting your location...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="locationError && !isLoadingLocation" class="error-section">
+      <ion-card color="warning">
+        <ion-card-content>
+          <div class="error-content">
+            <ion-icon name="warning-outline" class="error-icon"></ion-icon>
+            <p>{{ locationError }}</p>
+          </div>
+          <app-primary-button 
+            *ngIf="showErrorAction" 
+            [block]="true"
+            (pressed)="errorActionHandler && errorActionHandler()"
+            style="margin-top: 12px;">
+            {{ errorActionLabel }}
+          </app-primary-button>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <!-- Location Information -->
+    <div *ngIf="currentLocation && !isLoadingLocation" class="location-info">
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="location" color="primary"></ion-icon>
+            Your Address
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <p class="address">{{ currentLocation.address || 'Address not available' }}</p>
+        </ion-card-content>
+      </ion-card>
+
+      <ion-card>
+        <ion-card-header>
+          <ion-card-subtitle>Coordinates</ion-card-subtitle>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-list lines="none">
+            <ion-item>
+              <ion-label>
+                <h3>Latitude</h3>
+                <p>{{ currentLocation.latitude | number:'1.6-6' }}</p>
+              </ion-label>
+            </ion-item>
+            <ion-item>
+              <ion-label>
+                <h3>Longitude</h3>
+                <p>{{ currentLocation.longitude | number:'1.6-6' }}</p>
+              </ion-label>
+            </ion-item>
+            <ion-item>
+              <ion-label>
+                <h3>Last Updated</h3>
+                <p>{{ currentLocation.timestamp | date:'short' }}</p>
+              </ion-label>
+            </ion-item>
+          </ion-list>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Map Link -->
+      <ion-button 
+        expand="block" 
+        [href]="'https://www.google.com/maps?q=' + currentLocation.latitude + ',' + currentLocation.longitude"
+        target="_blank"
+        class="map-button">
+        <ion-icon slot="start" name="map"></ion-icon>
+        View on Google Maps
+      </ion-button>
+    </div>
   </div>
 </ion-content>

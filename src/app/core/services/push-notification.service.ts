@@ -1,5 +1,4 @@
 import { Injectable, inject } from '@angular/core';
-import { Router } from '@angular/router';
 import { App } from '@capacitor/app';
 import { Capacitor, registerPlugin } from '@capacitor/core';
 import {
@@ -11,6 +10,7 @@ import {
 import { firstValueFrom } from 'rxjs';
 import { ApiService } from './api.service';
 import { AuthService } from './auth.service';
+import { ForegroundNotificationService } from './foreground-notification.service';
 
 const DEVICE_ID_KEY = 'tyng_device_id';
 const LOG_PREFIX = '[TYNG Push]';
@@ -38,7 +38,7 @@ const Device = registerPlugin<DevicePluginLike>('Device');
 export class PushNotificationService {
   private readonly api = inject(ApiService);
   private readonly auth = inject(AuthService);
-  private readonly router = inject(Router);
+  private readonly foregroundNotifications = inject(ForegroundNotificationService);
 
   private initialized = false;
   private listenersAttached = false;
@@ -71,6 +71,7 @@ export class PushNotificationService {
     }
 
     await this.ensureDeviceId();
+    this.foregroundNotifications.bindAppState();
     console.info(`${LOG_PREFIX} init start`, {
       platform: Capacitor.getPlatform(),
       deviceId: this.getDeviceId(),
@@ -88,7 +89,8 @@ export class PushNotificationService {
 
       if (perm.receive !== 'granted') {
         // Do not mark initialized — user can grant later in system settings.
-        console.warn(`${LOG_PREFIX} permission not granted — notifications will not display`, perm);
+        // App + realtime chat continue; in-app banners still work if events arrive another way.
+        console.warn(`${LOG_PREFIX} permission not granted — system pushes disabled`, perm);
         return;
       }
 
@@ -197,14 +199,14 @@ export class PushNotificationService {
     await PushNotifications.addListener(
       'pushNotificationReceived',
       (notification: PushNotificationSchema) => {
-        // Foreground: Capacitor displays via FCM when presentationOptions includes "alert"
-        // and ApplicationInfo.metaData is present (see AndroidManifest meta-data tags).
+        // Foreground: show centralized in-app banner (OS alert disabled in capacitor.config).
         console.info(`${LOG_PREFIX} pushNotificationReceived (foreground)`, {
           id: notification.id,
           title: notification.title,
           body: notification.body,
           data: notification.data,
         });
+        this.foregroundNotifications.handleIncoming(notification);
       },
     );
 
@@ -215,7 +217,7 @@ export class PushNotificationService {
           actionId: action.actionId,
           notification: action.notification,
         });
-        this.handleNotificationTap(action.notification);
+        this.foregroundNotifications.navigateFromPush(action.notification);
       },
     );
 
@@ -327,51 +329,4 @@ export class PushNotificationService {
     return `${token.slice(0, 8)}…${token.slice(-6)} (len=${token.length})`;
   }
 
-  private handleNotificationTap(notification: PushNotificationSchema): void {
-    const data = (notification.data || {}) as Record<string, unknown>;
-    const action = String(data['action'] || '');
-    const bookingId = data['booking_id'] ? String(data['booking_id']) : null;
-    const role = this.auth.user()?.role;
-
-    console.info(`${LOG_PREFIX} handleNotificationTap`, { action, bookingId, role });
-
-    if (action === 'wallet_credit') {
-      void this.router.navigateByUrl('/app/wallet');
-      return;
-    }
-
-    if (action === 'friend_added' || action === 'friend_matched') {
-      void this.router.navigateByUrl('/app/discover');
-      return;
-    }
-
-    if (action === 'pending_approval' || action === 'created') {
-      if (role === 'venue') {
-        void this.router.navigateByUrl('/app/venue/bookings');
-        return;
-      }
-    }
-
-    if (action === 'open_game' && bookingId) {
-      void this.router.navigateByUrl(`/app/game/${bookingId}`);
-      return;
-    }
-
-    if (bookingId) {
-      if (role === 'venue') {
-        void this.router.navigateByUrl('/app/venue/bookings');
-        return;
-      }
-      void this.router.navigateByUrl(`/app/my-bookings/${bookingId}`);
-      return;
-    }
-
-    void this.router.navigateByUrl(
-      role === 'venue'
-        ? '/app/venue/notifications'
-        : role === 'coach'
-          ? '/app/coach/notifications'
-          : '/app/notifications',
-    );
-  }
 }

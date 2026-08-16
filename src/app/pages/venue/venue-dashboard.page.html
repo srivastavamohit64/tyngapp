@@ -87,6 +87,39 @@
           </div>
         </section>
 
+        <!-- Live Facility Status -->
+        <section *ngIf="courts.length" class="venue-card venue-card-padded">
+          <div class="venue-section-header">
+            <h3 class="venue-section-title">Live Facility Status</h3>
+            <button type="button" class="venue-see-all" (click)="go('/app/venue/facilities')">
+              Manage <ion-icon name="chevron-forward-outline"></ion-icon>
+            </button>
+          </div>
+          <p class="facility-status-hint">Tap a status to set Open, Maintenance, or Closed.</p>
+          <div class="facility-status-list">
+            <div
+              *ngFor="let court of courts"
+              class="facility-status-row"
+              [style.backgroundColor]="facilityStatusStyle(court.status).row"
+            >
+              <span class="facility-status-dot" [style.backgroundColor]="facilityStatusStyle(court.status).dot"></span>
+              <span class="facility-status-name">{{ court.name }}</span>
+              <button
+                type="button"
+                class="facility-status-badge"
+                [disabled]="statusBusyId() === court.id"
+                [style.backgroundColor]="facilityStatusStyle(court.status).badgeBg"
+                [style.color]="facilityStatusStyle(court.status).badgeColor"
+                [style.borderColor]="facilityStatusStyle(court.status).badgeBorder"
+                (click)="openFacilityStatusSheet(court)"
+              >
+                {{ statusBusyId() === court.id ? 'Saving…' : facilityStatusLabel(court.status) }}
+                <ion-icon name="chevron-down-outline"></ion-icon>
+              </button>
+            </div>
+          </div>
+        </section>
+
         <!-- Today's Bookings -->
         <section class="venue-card venue-card-padded">
           <div class="venue-section-header">
@@ -95,7 +128,7 @@
               See All <ion-icon name="chevron-forward-outline"></ion-icon>
             </button>
           </div>
-          <div *ngFor="let b of bookings" class="venue-list-row">
+          <div *ngFor="let b of bookings" class="venue-list-row" (click)="go('/app/venue/bookings/' + b.id)" style="cursor:pointer">
             <div class="venue-avatar-wrap">
               <img [src]="b.photo" [alt]="b.name" class="venue-avatar" />
               <div *ngIf="b.type === 'coach'" class="venue-coach-badge">🏋️</div>

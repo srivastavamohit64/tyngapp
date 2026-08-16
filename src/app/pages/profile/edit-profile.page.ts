@@ -3,12 +3,11 @@ import { Component, ElementRef, inject, OnInit, ViewChild } from '@angular/core'
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Capacitor } from '@capacitor/core';
-import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
-import { ActionSheetController, AlertController, IonicModule } from '@ionic/angular';
+import { ActionSheetController, IonicModule } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
-import { MediaPermissionService } from '../../core/services/media-permission.service';
-import { fetchWebPathAsImageFile, normalizeImageFile } from '../../core/utils/image-file.util';
+import { NativeMediaPickerService } from '../../core/services/native-media-picker.service';
+import { normalizeImageFile } from '../../core/utils/image-file.util';
 import { PrimaryButtonComponent } from '../../shared/components/primary-button/primary-button.component';
 import { LocationFieldComponent } from '../../shared/components/location-field/location-field.component';
 import { TextInputComponent } from '../../shared/components/text-input/text-input.component';
@@ -32,7 +31,8 @@ import { TextInputComponent } from '../../shared/components/text-input/text-inpu
             <span *ngIf="!previewUrl">{{ initials }}</span>
           </div>
           <button type="button" class="upload-btn" (click)="pickPhoto()">Change Photo</button>
-          <p class="hint">Camera, photo library, or files</p>
+          <p class="hint">Camera or photo library</p>
+          <!-- Web / fallback only — native Android uses Capacitor Camera (Samsung-safe). -->
           <input #cameraInput type="file" accept="image/*" capture="environment" hidden (change)="onFile($event)" />
           <input #libraryInput type="file" accept="image/jpeg,image/png,image/webp,image/*" hidden (change)="onFile($event)" />
         </div>
@@ -97,8 +97,7 @@ export class EditProfilePage implements OnInit {
   readonly auth = inject(AuthService);
   readonly router = inject(Router);
   private readonly actionSheetCtrl = inject(ActionSheetController);
-  private readonly alertCtrl = inject(AlertController);
-  private readonly mediaPermissions = inject(MediaPermissionService);
+  private readonly mediaPicker = inject(NativeMediaPickerService);
 
   name = '';
   phone = '';
@@ -137,7 +136,6 @@ export class EditProfilePage implements OnInit {
       buttons: [
         { text: 'Take photo', icon: 'camera-outline', handler: () => { void this.openCamera(); } },
         { text: 'Photo library', icon: 'images-outline', handler: () => { void this.openLibrary(); } },
-        { text: 'Browse files', icon: 'folder-outline', handler: () => { void this.openLibrary(); } },
         { text: 'Cancel', role: 'cancel' },
       ],
     });
@@ -145,57 +143,21 @@ export class EditProfilePage implements OnInit {
   }
 
   private async openCamera() {
-    const allowed = await this.mediaPermissions.ensureCamera();
-    if (!allowed) {
-      await this.showPermissionDenied('Camera access is required to take a profile photo. Enable it in App settings.');
+    if (Capacitor.isNativePlatform()) {
+      const file = await this.mediaPicker.takePhoto('profile-camera');
+      if (file) this.setSelectedPhoto(file);
       return;
     }
-
-    // Native camera plugin returns a stable webPath; HTML capture often yields
-    // extension-less blobs that Laravel rejects.
-    if (Capacitor.isNativePlatform()) {
-      try {
-        const photo = await Camera.getPhoto({
-          quality: 85,
-          resultType: CameraResultType.Uri,
-          source: CameraSource.Camera,
-          correctOrientation: true,
-          saveToGallery: false,
-        });
-        if (!photo.webPath) {
-          this.error = 'Camera did not return an image. Please try again.';
-          return;
-        }
-        const file = await fetchWebPathAsImageFile(photo.webPath, 'profile-camera');
-        this.setSelectedPhoto(file);
-        return;
-      } catch (error: unknown) {
-        const message = String((error as { message?: string })?.message || error || '');
-        if (/cancel/i.test(message)) return;
-        // Fall back to file input if the plugin fails.
-        console.warn('Capacitor camera failed, falling back to file input', error);
-      }
-    }
-
     this.cameraInput?.nativeElement.click();
   }
 
   private async openLibrary() {
-    const allowed = await this.mediaPermissions.ensurePhotos();
-    if (!allowed) {
-      await this.showPermissionDenied('Photo library access is required to choose a profile photo. Enable it in App settings.');
+    if (Capacitor.isNativePlatform()) {
+      const file = await this.mediaPicker.pickPhoto('profile-gallery');
+      if (file) this.setSelectedPhoto(file);
       return;
     }
     this.libraryInput?.nativeElement.click();
-  }
-
-  private async showPermissionDenied(message: string) {
-    const alert = await this.alertCtrl.create({
-      header: 'Permission needed',
-      message,
-      buttons: ['OK'],
-    });
-    await alert.present();
   }
 
   async onFile(event: Event) {

@@ -95,7 +95,7 @@
           </div>
         </div>
 
-        <div class="venue-drawer-completion" (click)="navigateTo('/app/venue/complete-profile')">
+        <div *ngIf="profileCompletion() < 100" class="venue-drawer-completion" (click)="navigateTo('/app/venue/complete-profile')">
           <div class="xp-orb1"></div>
           <div class="xp-orb2"></div>
           <div class="venue-drawer-completion-inner">
@@ -118,7 +118,7 @@
           </div>
         </div>
 
-        <div class="drawer-menu">
+        <div class="drawer-menu venue-drawer-menu">
           <button class="menu-item" *ngFor="let item of venueMenuItems()" (click)="navigateTo(item.path)">
             <div class="menu-icon"><ion-icon [name]="item.icon"></ion-icon></div>
             <div class="menu-text">
@@ -190,11 +190,11 @@
         </div>
 
         <div class="drawer-menu">
-          <button class="menu-item" (click)="navigateTo('/app/profile/edit')">
-            <div class="menu-icon"><ion-icon name="location-outline"></ion-icon></div>
+          <button class="menu-item" (click)="navigateTo('/app/friends')">
+            <div class="menu-icon"><ion-icon name="people-outline"></ion-icon></div>
             <div class="menu-text">
-              <div class="menu-label">Edit Location</div>
-              <div class="menu-desc">{{ user()?.location || 'Set your city / area' }}</div>
+              <div class="menu-label">My Friends</div>
+              <div class="menu-desc">View friends &amp; start a chat</div>
             </div>
             <ion-icon name="chevron-forward-outline" class="menu-chevron"></ion-icon>
           </button>
@@ -288,5 +288,6 @@
 </ion-menu>
 
 <ion-app id="main-content">
+  <app-in-app-notification-banner></app-in-app-notification-banner>
   <ion-router-outlet></ion-router-outlet>
 </ion-app>

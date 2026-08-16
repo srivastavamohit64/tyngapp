@@ -359,7 +359,24 @@ button:active,
   }
 }
 
-/* Google Places autocomplete dropdown above Ionic layers */
+body > .tyng-drawer-root {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 40000 !important;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex !important;
+  align-items: flex-end !important;
+  justify-content: center;
+}
+
+body > .tyng-drawer-root .tyng-drawer {
+  width: 100%;
+  max-width: 450px;
+  height: auto !important;
+  max-height: 80vh;
+  overflow: auto;
+}
+
 .pac-container {
   z-index: 100000 !important;
   border-radius: 12px;

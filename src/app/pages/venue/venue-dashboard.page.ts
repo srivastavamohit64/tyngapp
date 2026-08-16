@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { IonicModule, ViewWillEnter } from '@ionic/angular';
+import { ActionSheetController, IonicModule, ViewWillEnter } from '@ionic/angular';
 import { Subscription, firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { RealtimeService } from '../../core/services/realtime.service';
@@ -22,7 +22,9 @@ interface VenueBooking {
 }
 
 interface VenueCourt {
+  id?: string;
   name: string;
+  status?: string;
   slots: boolean[];
 }
 
@@ -49,6 +51,7 @@ export class VenueDashboardPage implements OnInit, OnDestroy, ViewWillEnter {
   private readonly venueService = inject(VenueService);
   private readonly realtime = inject(RealtimeService);
   private readonly tabBadges = inject(TabBadgeService);
+  private readonly actionSheet = inject(ActionSheetController);
 
   profileDismissed = signal(false);
   loading = signal(true);
@@ -67,7 +70,7 @@ export class VenueDashboardPage implements OnInit, OnDestroy, ViewWillEnter {
 
   readonly quickActions: VenueQuickAction[] = [
     { emoji: '⏰', label: 'Block Time Slot', sub: 'Maintenance or closure', color: '#38BDF8', path: '/app/venue/calendar' },
-    { emoji: '🎉', label: 'Create Event', sub: 'Tournament or camp', color: '#FF7A00', path: '/app/venue/calendar' },
+    { emoji: '🎉', label: 'Create Event', sub: 'Tournament or camp', color: '#FF7A00', path: '/app/venue/events/create' },
     { emoji: '🏟️', label: 'Manage Courts', sub: 'Courts & configuration', color: 'var(--app-primary)', path: '/app/venue/facilities' },
     { emoji: '🏷️', label: 'Create Offer', sub: 'Discounts & promotions', color: '#7C3AED', path: '/app/venue/analytics' },
   ];
@@ -79,6 +82,7 @@ export class VenueDashboardPage implements OnInit, OnDestroy, ViewWillEnter {
   aiTips: { emoji: string; text: string }[] = [];
   pendingActions: { label: string; sub: string; urgency: string }[] = [];
   bookingBlockMessage = signal<string | null>(null);
+  statusBusyId = signal<string | null>(null);
 
   private realtimeSub: Subscription | null = null;
   private realtimeReloadTimer: ReturnType<typeof setTimeout> | null = null;
@@ -186,7 +190,10 @@ export class VenueDashboardPage implements OnInit, OnDestroy, ViewWillEnter {
       ...b,
       photo: b.photo || DEFAULT_PHOTO,
     }));
-    this.courts = data.courts || [];
+    this.courts = (data.courts || []).map((court) => ({
+      ...court,
+      status: String(court.status || 'open').toLowerCase(),
+    }));
     this.coachSessions = (data.coachSessions || []).map((s) => ({
       ...s,
       photo: s.photo || DEFAULT_PHOTO,
@@ -204,6 +211,71 @@ export class VenueDashboardPage implements OnInit, OnDestroy, ViewWillEnter {
 
   bookedCount(court: VenueCourt): number {
     return court.slots.filter(Boolean).length;
+  }
+
+  facilityStatusLabel(status?: string): string {
+    const key = String(status || 'open').toLowerCase();
+    if (key === 'maintenance') return 'Maintenance';
+    if (key === 'closed') return 'Closed';
+    if (key === 'reserved') return 'Reserved';
+    return 'Open';
+  }
+
+  async openFacilityStatusSheet(court: VenueCourt): Promise<void> {
+    if (!court.id || this.statusBusyId()) return;
+    const current = String(court.status || 'open').toLowerCase();
+    const sheet = await this.actionSheet.create({
+      header: court.name,
+      subHeader: 'Change facility status',
+      buttons: [
+        {
+          text: current === 'open' ? 'Open ✓' : 'Open',
+          handler: () => { void this.setFacilityStatus(court, 'open'); },
+        },
+        {
+          text: current === 'maintenance' ? 'Maintenance ✓' : 'Maintenance',
+          handler: () => { void this.setFacilityStatus(court, 'maintenance'); },
+        },
+        {
+          text: current === 'closed' ? 'Closed ✓' : 'Closed',
+          handler: () => { void this.setFacilityStatus(court, 'closed'); },
+        },
+        { text: 'Cancel', role: 'cancel' },
+      ],
+    });
+    await sheet.present();
+  }
+
+  private async setFacilityStatus(court: VenueCourt, status: string): Promise<void> {
+    if (!court.id || String(court.status || '').toLowerCase() === status) return;
+    this.statusBusyId.set(String(court.id));
+    const previous = court.status;
+    this.courts = this.courts.map((item) =>
+      item.id === court.id ? { ...item, status } : item,
+    );
+    try {
+      await firstValueFrom(this.venueService.updateCourt(court.id, { status }));
+    } catch {
+      this.courts = this.courts.map((item) =>
+        item.id === court.id ? { ...item, status: previous } : item,
+      );
+    } finally {
+      this.statusBusyId.set(null);
+    }
+  }
+
+  facilityStatusStyle(status?: string): { row: string; dot: string; badgeBg: string; badgeColor: string; badgeBorder: string } {
+    const key = String(status || 'open').toLowerCase();
+    if (key === 'maintenance') {
+      return { row: '#FFF7ED', dot: '#F97316', badgeBg: '#FFEDD5', badgeColor: '#EA580C', badgeBorder: '#FDBA74' };
+    }
+    if (key === 'closed') {
+      return { row: '#FEF2F2', dot: '#DC2626', badgeBg: '#FEE2E2', badgeColor: '#DC2626', badgeBorder: '#FECACA' };
+    }
+    if (key === 'reserved') {
+      return { row: '#FFF7ED', dot: '#C2410C', badgeBg: '#FFEDD5', badgeColor: '#C2410C', badgeBorder: '#FDBA74' };
+    }
+    return { row: '#F0FDF4', dot: '#22C55E', badgeBg: '#DCFCE7', badgeColor: '#16A34A', badgeBorder: '#86EFAC' };
   }
 
   getStatusStyle(status: string) {

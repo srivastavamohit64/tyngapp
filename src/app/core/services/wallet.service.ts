@@ -10,6 +10,12 @@ export interface WalletSummary {
   currency: string;
   totalCredits: number;
   totalDebits: number;
+  tpPoints?: number;
+  tpEarned?: number;
+  tpRedeemed?: number;
+  tpExpiring?: number;
+  tpPointsPerRupee?: number;
+  tpValueInr?: number;
   updatedAt?: string | null;
 }
 
@@ -70,5 +76,13 @@ export class WalletService {
       amount,
       gateway,
     });
+  }
+
+  convertTp(points: number): Observable<ApiResponse<{
+    wallet: WalletSummary;
+    transaction: WalletTransaction | null;
+    rupees: number;
+  }>> {
+    return this.api.post('/wallet/convert-tp', { points });
   }
 }

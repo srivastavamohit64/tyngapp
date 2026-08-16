@@ -142,4 +142,44 @@ export class BookingService {
   rejectInvite(bookingId: string): Observable<ApiResponse<BookingRecord>> {
     return this.api.post<BookingRecord>('/booking/invite/reject', { booking_id: bookingId });
   }
+
+  createDispute(bookingId: string, message: string): Observable<ApiResponse<BookingRecord>> {
+    return this.api.post<BookingRecord>(`/booking/${bookingId}/disputes`, { message });
+  }
+
+  cycleAmenity(bookingId: string, key: string): Observable<ApiResponse<BookingRecord>> {
+    return this.api.post<BookingRecord>(`/booking/${bookingId}/amenities/cycle`, { key });
+  }
+
+  startSession(bookingId: string): Observable<ApiResponse<BookingRecord>> {
+    return this.api.post<BookingRecord>(`/booking/${bookingId}/session/start`, {});
+  }
+
+  endSession(bookingId: string): Observable<ApiResponse<BookingRecord>> {
+    return this.api.post<BookingRecord>(`/booking/${bookingId}/session/end`, {});
+  }
+
+  refreshCheckinQr(bookingId: string): Observable<ApiResponse<BookingRecord>> {
+    return this.api.post<BookingRecord>(`/booking/${bookingId}/session/qr`, {});
+  }
+
+  manualCheckIn(bookingId: string, userId: string): Observable<ApiResponse<BookingRecord>> {
+    return this.api.post<BookingRecord>(`/booking/${bookingId}/session/check-in`, { user_id: Number(userId) });
+  }
+
+  playerCheckIn(token: string): Observable<ApiResponse<BookingRecord>> {
+    return this.api.post<BookingRecord>('/booking/check-in', { token });
+  }
+
+  captainContinue(bookingId: string): Observable<ApiResponse<BookingRecord>> {
+    return this.api.post<BookingRecord>(`/booking/${bookingId}/captain-continue`, {});
+  }
+
+  updateRules(bookingId: string, rules: string[]): Observable<ApiResponse<BookingRecord>> {
+    return this.api.put<BookingRecord>(`/booking/${bookingId}/rules`, { rules });
+  }
+
+  rateBooking(bookingId: string, rating: number): Observable<ApiResponse<BookingRecord>> {
+    return this.api.post<BookingRecord>(`/booking/${bookingId}/rate`, { rating });
+  }
 }

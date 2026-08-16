@@ -13,7 +13,7 @@
           <div class="w-2 h-2 rounded-full bg-[var(--app-primary)] animate-pulse flex-shrink-0"></div>
           <p class="text-[12px] font-semibold text-[#6B7280] m-0">
             <strong class="text-[#111827] font-black">Today's Focus</strong>
-            &nbsp;4 Sessions · 3 Requests · <span class="text-[#22C55E] font-black">?4,250 Expected</span>
+            &nbsp;4 Sessions ï¿½ 3 Requests ï¿½ <span class="text-[#22C55E] font-black">?4,250 Expected</span>
           </p>
         </div>
       </div>
@@ -62,7 +62,7 @@
                 <p class="text-[14px] font-black text-white">Complete Your Coach Profile</p>
                 <p class="text-[11px] text-white/50 mt-0.5">You're 40% complete</p>
               </div>
-              <button (click)="coachProfileDismissed.set(true)" class="text-white/30 text-xl font-bold w-6 h-6 flex items-center justify-center bg-transparent">×</button>
+              <button (click)="coachProfileDismissed.set(true)" class="text-white/30 text-xl font-bold w-6 h-6 flex items-center justify-center bg-transparent">ï¿½</button>
             </div>
             <div class="mb-3">
               <div class="h-2 bg-white/10 rounded-full overflow-hidden">
@@ -152,7 +152,7 @@
             <div class="flex-1">
               <p class="text-[11px] font-black text-[#111827]/60 uppercase tracking-wider mb-0.5">AI Match</p>
               <p class="text-[15px] font-black text-[#111827] leading-snug">8 Beginner Badminton Players Looking for a Coach</p>
-              <p class="text-[12px] text-[#111827]/60 mt-1">2 km Away · Weekend Availability</p>
+              <p class="text-[12px] text-[#111827]/60 mt-1">2 km Away ï¿½ Weekend Availability</p>
             </div>
           </div>
           <button (click)="go('/app/coach/teams')" class="btn-orange-gradient mt-4 w-full h-10 rounded-2xl text-[13px] font-black text-white">
@@ -324,9 +324,9 @@
                 <ion-icon name="sunny" class="text-[#F59E0B] text-2xl"></ion-icon>
               </div>
               <div>
-                <p class="text-[11px] text-[#9CA3AF] font-medium">Today · Lucknow</p>
+                <p class="text-[11px] text-[#9CA3AF] font-medium">Today ï¿½ Lucknow</p>
                 <div class="flex items-baseline gap-1.5">
-                  <p class="text-[24px] font-black text-[#111827]">28°</p>
+                  <p class="text-[24px] font-black text-[#111827]">28ï¿½</p>
                   <p class="text-[13px] font-semibold text-[#6B7280]">Sunny</p>
                 </div>
               </div>
@@ -359,12 +359,26 @@
     <!-- ?????????????????????????????????????????????????? -->
     <ng-container *ngIf="auth.user()?.role !== 'coach' && auth.user()?.role !== 'venue'">
       <section class="player-home">
-        <div class="loc-row" role="button" (click)="editLocation()">
-          <ion-icon name="location" class="loc-icon"></ion-icon>
-          <span class="loc-city">{{ locationCity }}</span>
-          <ion-icon name="chevron-forward" class="loc-chevron" *ngIf="locationArea"></ion-icon>
-          <span class="loc-area" *ngIf="locationArea">{{ locationArea }}</span>
-          <span class="loc-edit">Edit</span>
+        <div class="location-banner">
+          <div class="location-banner-glow"></div>
+          <div class="location-banner-inner">
+            <div>
+              <p class="location-kicker">
+                {{ locationLoading ? 'Updating location' : 'Your Location' }}
+              </p>
+              <div class="location-line">
+                <ion-icon name="location"></ion-icon>
+                <p>{{ locationLabel }}</p>
+              </div>
+            </div>
+            <button type="button" class="location-refresh" [disabled]="locationLoading" (click)="refreshLocation()">
+              <ion-icon name="refresh" [class.spin]="locationLoading"></ion-icon>
+            </button>
+          </div>
+          <div *ngIf="locationError" class="location-error">
+            <ion-icon name="warning"></ion-icon>
+            <p>{{ locationError }}</p>
+          </div>
         </div>
 
         <div class="search-wrap">
