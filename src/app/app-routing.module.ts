@@ -124,6 +124,10 @@ const routes: Routes = [
         loadComponent: () => import('./pages/discover/discover.page').then((m) => m.DiscoverPage),
       },
       {
+        path: 'search',
+        loadComponent: () => import('./pages/player/search.page').then((m) => m.SearchPage),
+      },
+      {
         path: 'venues',
         loadComponent: () => import('./pages/events/venues.page').then((m) => m.VenuesPage),
       },

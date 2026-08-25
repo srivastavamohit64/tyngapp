@@ -1,11 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, computed, inject, signal } from '@angular/core';
-import { Capacitor } from '@capacitor/core';
-import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { IonicModule, MenuController, ViewWillEnter } from '@ionic/angular';
 import { Subscription, firstValueFrom } from 'rxjs';
-import { BookingRecord, DiscoverPlayer, HomeAd } from '../../core/models/api.model';
+import { BookingRecord, HomeAd } from '../../core/models/api.model';
 import { AdService } from '../../core/services/ad.service';
 import { AuthService } from '../../core/services/auth.service';
 import { BookingService } from '../../core/services/booking.service';
@@ -15,22 +13,9 @@ import { LocationService, UserLocation, LocationError, LocationErrorType } from 
 import {
   formatBookingDate,
   formatBookingTime,
-  sportEmoji,
 } from '../../core/utils/booking.utils';
-import { EventCardComponent } from '../../shared/components/event-card/event-card.component';
 import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
-import { SearchBarComponent } from '../../shared/components/search-bar/search-bar.component';
-import { SectionHeaderComponent } from '../../shared/components/section-header/section-header.component';
 import { EventGame } from '../../shared/models/app.models';
-
-interface SearchSuggestion {
-  id: string;
-  type: 'game' | 'player';
-  title: string;
-  subtitle: string;
-  emoji: string;
-  player?: DiscoverPlayer;
-}
 
 interface QuickSuggestion {
   id: string;
@@ -43,12 +28,8 @@ interface QuickSuggestion {
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
     IonicModule,
-    EventCardComponent,
     BrandHeaderShellComponent,
-    SearchBarComponent,
-    SectionHeaderComponent,
   ],
   styleUrls: ['./home.page.scss'],
   templateUrl: './home.page.html',
@@ -67,12 +48,6 @@ export class HomePage implements ViewWillEnter, OnDestroy {
     this.auth.user()?.role === 'coach' ? '/app/coach/notifications' : '/app/notifications'
   );
 
-  searchQuery = '';
-  searchSuggestions: SearchSuggestion[] = [];
-  searchLoading = false;
-  showSuggestions = false;
-  private searchTimer?: ReturnType<typeof setTimeout>;
-  private searchRequestId = 0;
   private nearbyRealtimeSub?: Subscription;
 
   nearbyGames: EventGame[] = [];
@@ -91,6 +66,10 @@ export class HomePage implements ViewWillEnter, OnDestroy {
   currentLocation?: UserLocation;
   locationLoading = false;
   locationError?: string;
+
+  get helloName(): string {
+    return (this.auth.user()?.name || '').trim() || 'Player';
+  }
 
   // Coach Dashboard state
   coachProfileDismissed = signal(false);
@@ -185,7 +164,7 @@ export class HomePage implements ViewWillEnter, OnDestroy {
 
   constructor() {
     const hour = new Date().getHours();
-    this.greeting = hour < 12 ? 'Good Morning ☀️' : hour < 17 ? 'Good Afternoon 🌤️' : hour < 21 ? 'Good Evening 🌇' : 'Good Night 🌙';
+    this.greeting = hour < 12 ? 'Good Morning,' : hour < 17 ? 'Good Afternoon,' : hour < 21 ? 'Good Evening,' : 'Good Night,';
     const role = this.auth.user()?.role;
     if (role === 'admin') {
       void this.router.navigateByUrl('/app/admin/dashboard', { replaceUrl: true });
@@ -363,15 +342,19 @@ export class HomePage implements ViewWillEnter, OnDestroy {
   }
 
   get locationLabel(): string {
-    const live = (this.currentLocation?.shortLabel || this.currentLocation?.address || '').trim();
-    if (live) return live;
+    const live = (this.currentLocation?.postalArea
+      || this.currentLocation?.city
+      || this.currentLocation?.shortLabel
+      || this.currentLocation?.address
+      || '').trim();
+    if (live) return this.withoutPincode(live);
 
     const saved = this.locationService.getSavedLocation();
-    const cached = (saved?.shortLabel || saved?.address || '').trim();
-    if (cached) return cached;
+    const cached = (saved?.postalArea || saved?.city || saved?.shortLabel || saved?.address || '').trim();
+    if (cached) return this.withoutPincode(cached);
 
     const profile = (this.auth.user()?.location || '').trim();
-    if (profile) return profile;
+    if (profile) return this.withoutPincode(profile);
 
     return this.locationLoading ? 'Detecting location…' : 'Set your location';
   }
@@ -393,20 +376,24 @@ export class HomePage implements ViewWillEnter, OnDestroy {
     return 'Set your location';
   }
 
-  /** PIN code from GPS, else city from profile. */
   get locationArea(): string {
-    if (this.currentLocation?.pincode) {
-      return this.currentLocation.pincode;
-    }
     if (this.currentLocation?.city && this.currentLocation.city.toLowerCase() !== this.locationCity.toLowerCase()) {
       return this.currentLocation.city;
     }
     const parts = this.shortLocationParts;
     if (parts.length < 2) return '';
-    const pin = parts.find((part) => /^\d{5,6}$/.test(part));
-    if (pin) return pin;
     const city = this.pickCityName(parts);
     return city && city.toLowerCase() !== parts[0].toLowerCase() ? city : '';
+  }
+
+  private withoutPincode(value: string): string {
+    return value
+      .replace(/\b\d{5,6}\b/g, '')
+      .replace(/\s*[>\-,/|]\s*(?=\s*[>\-,/|]|$)/g, '')
+      .replace(/\s*[>\-,/|]\s*/g, ' > ')
+      .replace(/\s{2,}/g, ' ')
+      .replace(/^[>\-,/|\s]+|[>\-,/|\s]+$/g, '')
+      .trim();
   }
 
   private get shortLocationParts(): string[] {
@@ -415,7 +402,7 @@ export class HomePage implements ViewWillEnter, OnDestroy {
       .split(/[>,\-\/|]+/)
       .map((part) => part.trim())
       .filter(Boolean)
-      .filter((part) => part.length > 0 && !/^(india|bharat)$/i.test(part));
+      .filter((part) => part.length > 0 && !/^(india|bharat)$/i.test(part) && !/^\d{5,6}$/.test(part));
   }
 
   private pickCityName(parts: string[]): string {
@@ -429,43 +416,17 @@ export class HomePage implements ViewWillEnter, OnDestroy {
     void this.router.navigateByUrl('/app/profile/edit');
   }
 
-  onSearchChange(value: string) {
-    this.searchQuery = value ?? '';
-    if (this.searchTimer) clearTimeout(this.searchTimer);
-
-    const query = this.searchQuery.trim();
-    if (query.length < 2) {
-      this.showSuggestions = false;
-      this.searchSuggestions = [];
-      this.searchLoading = false;
-      return;
-    }
-
-    this.showSuggestions = true;
-    this.searchLoading = true;
-    this.searchTimer = setTimeout(() => void this.runSearch(query), 280);
-  }
-
-  openSuggestion(item: SearchSuggestion) {
-    this.showSuggestions = false;
-    this.searchQuery = '';
-    this.searchSuggestions = [];
-
-    if (item.type === 'game') {
-      void this.router.navigateByUrl(`/app/game/${item.id}`);
-      return;
-    }
-
-    void this.router.navigateByUrl(`/app/player/${item.id}`, {
-      state: { player: item.player },
-    });
-  }
-
   async loadNearbyGames() {
     this.nearbyLoading = true;
     this.nearbyError = '';
     try {
-      const response = await firstValueFrom(this.bookingService.getNearbyGames(20));
+      const nearby = this.locationService.nearbyLocationQuery(this.auth.user()?.location);
+      const response = await firstValueFrom(
+        this.bookingService.getNearbyGames(20, {
+          matchLocation: !!nearby.query,
+          location: nearby.query || undefined,
+        }),
+      );
       if (response.success && Array.isArray(response.data)) {
         this.nearbyBookings = response.data.filter((booking) => this.isJoinableNearbyGame(booking));
         this.nearbyGames = this.nearbyBookings.map((booking) => this.mapNearbyGame(booking));
@@ -483,30 +444,6 @@ export class HomePage implements ViewWillEnter, OnDestroy {
       this.nearbyError = error?.error?.message || 'Unable to load nearby games.';
     } finally {
       this.nearbyLoading = false;
-    }
-  }
-
-  private async runSearch(query: string) {
-    const requestId = ++this.searchRequestId;
-    try {
-      const response = await firstValueFrom(this.bookingService.search(query, 8));
-      if (requestId !== this.searchRequestId) return;
-
-      if (!response.success || !response.data) {
-        this.searchSuggestions = [];
-        return;
-      }
-
-      const games = (response.data.games || []).map((booking) => this.mapGameSuggestion(booking));
-      const players = (response.data.players || []).map((player) => this.mapPlayerSuggestion(player));
-      this.searchSuggestions = [...games, ...players].slice(0, 10);
-    } catch {
-      if (requestId !== this.searchRequestId) return;
-      this.searchSuggestions = [];
-    } finally {
-      if (requestId === this.searchRequestId) {
-        this.searchLoading = false;
-      }
     }
   }
 
@@ -551,28 +488,6 @@ export class HomePage implements ViewWillEnter, OnDestroy {
       distance: booking.venue?.location || 'Nearby',
       players: `${booking.currentPlayers}/${booking.totalPlayers}`,
       status: ratio >= 0.8 ? 'almost-full' : 'filling',
-    };
-  }
-
-  private mapGameSuggestion(booking: BookingRecord): SearchSuggestion {
-    const sport = (booking.sport || 'Game').replace(/\b\w/g, (c) => c.toUpperCase());
-    return {
-      id: booking.id,
-      type: 'game',
-      title: `${sport} · ${booking.venue?.name || 'Venue'}`,
-      subtitle: `${formatBookingDate(booking.bookingDate)} · ${formatBookingTime(booking.startTime)}`,
-      emoji: sportEmoji(booking.sport),
-    };
-  }
-
-  private mapPlayerSuggestion(player: DiscoverPlayer): SearchSuggestion {
-    return {
-      id: player.id,
-      type: 'player',
-      title: player.name,
-      subtitle: `${player.city || 'Player'} · ${(player.sports || []).slice(0, 2).join(', ') || 'Sports'}`,
-      emoji: '👤',
-      player,
     };
   }
 

@@ -40,6 +40,9 @@ export interface Venue {
   rating?: number | null;
   emoji?: string | null;
   sports?: string[];
+  openTime?: string | null;
+  closeTime?: string | null;
+  slotIntervalMinutes?: number | null;
 }
 
 export interface ChatMessage {

@@ -3,6 +3,16 @@ import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { VENUE_DATA, type VenueDetail } from './venue-detail.page';
+import {
+  buildBookingSlots,
+  courtCostFromMinutes,
+  formatDurationLabel,
+  formatSlotRange,
+  normalizeSlotInterval,
+  playMinutesForSlots,
+  slotEndClock,
+  type SlotIntervalMinutes,
+} from '../../core/utils/booking.utils';
 
 interface DateItem {
   idx: number;
@@ -71,7 +81,7 @@ interface DateItem {
           <section class="section">
             <div class="section-head">
               <h3>Available slots</h3>
-              <p>{{ availableCount }} open · consecutive hours</p>
+              <p>{{ availableCount }} open · 1 hr slots · {{ slotIntervalMinutes }} min gap</p>
             </div>
 
             <div class="slot-grid">
@@ -84,7 +94,7 @@ interface DateItem {
                 [disabled]="isSlotUnavailable(slot)"
                 (click)="toggleSlot(slot)"
               >
-                <span class="slot-time">{{ formatSlotLabel(slot) }}</span>
+                <span class="slot-time">{{ slotRange(slot) }}</span>
                 <span class="slot-status" *ngIf="isSlotUnavailable(slot)">Booked</span>
                 <span class="slot-check" *ngIf="isSlotSelected(slot)">
                   <ion-icon name="checkmark"></ion-icon>
@@ -108,7 +118,7 @@ interface DateItem {
             </div>
           </section>
 
-          <section class="summary-card" *ngIf="hours > 0">
+          <section class="summary-card" *ngIf="durationMinutes > 0">
             <p class="summary-kicker">Booking summary</p>
             <div class="summary-grid">
               <div class="summary-item">
@@ -129,7 +139,7 @@ interface DateItem {
                 <ion-icon name="hourglass-outline"></ion-icon>
                 <div>
                   <span>Duration</span>
-                  <strong>{{ formatDuration(hours) }}</strong>
+                  <strong>{{ durationLabel }}</strong>
                 </div>
               </div>
               <div class="summary-item">
@@ -146,7 +156,7 @@ interface DateItem {
             </div>
             <div class="summary-costs">
               <div class="cost-row">
-                <span>Court ({{ hours }}h × ₹{{ venue.pricePerHour.toLocaleString() }})</span>
+                <span>Court ({{ durationLabel }} × ₹{{ venue.pricePerHour.toLocaleString() }}/hr)</span>
                 <strong>₹{{ totalCost.toLocaleString() }}</strong>
               </div>
               <div class="cost-row" *ngIf="rentalCost > 0">
@@ -160,9 +170,9 @@ interface DateItem {
             </div>
           </section>
 
-          <div class="duration-pill" *ngIf="hours > 0">
+          <div class="duration-pill" *ngIf="durationMinutes > 0">
             <ion-icon name="time-outline"></ion-icon>
-            <span>{{ formatDuration(hours) }} booked</span>
+            <span>{{ durationLabel }} booked</span>
             <strong>{{ startSlot }} – {{ endTime }}</strong>
           </div>
         </div>
@@ -174,11 +184,11 @@ interface DateItem {
         <button
           type="button"
           class="cta-btn"
-          [class.is-ready]="hours > 0"
-          [disabled]="hours === 0"
+          [class.is-ready]="durationMinutes > 0"
+          [disabled]="durationMinutes === 0"
           (click)="continueToSummary()"
         >
-          <ng-container *ngIf="hours > 0; else idleLabel">
+          <ng-container *ngIf="durationMinutes > 0; else idleLabel">
             <span>Continue · ₹{{ grandTotal.toLocaleString() }}</span>
             <ion-icon name="arrow-forward"></ion-icon>
           </ng-container>
@@ -186,7 +196,7 @@ interface DateItem {
             <span>Select at least one slot</span>
           </ng-template>
         </button>
-        <p class="cta-hint" *ngIf="hours > 0">Free cancellation up to 24 hours before your slot</p>
+        <p class="cta-hint" *ngIf="durationMinutes > 0">Free cancellation up to 24 hours before your slot</p>
       </div>
     </ion-footer>
   `,
@@ -475,9 +485,10 @@ interface DateItem {
       }
 
       .slot-time {
-        font-size: 13px;
+        font-size: 11px;
         font-weight: 800;
-        line-height: 1.1;
+        line-height: 1.25;
+        text-align: center;
         color: #374151;
       }
 
@@ -750,19 +761,10 @@ export class VenueBookingPage implements OnInit {
   dates: DateItem[] = [];
   selectedDateIdx = 0;
   selectedSlots: string[] = [];
+  allSlots: string[] = [];
+  slotIntervalMinutes: SlotIntervalMinutes = 15;
 
-  readonly allSlots = [
-    '6:00 AM', '7:00 AM', '8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM',
-    '12:00 PM', '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM',
-    '6:00 PM', '7:00 PM', '8:00 PM', '9:00 PM', '10:00 PM',
-  ];
-
-  readonly unavailableMock: Record<number, string[]> = {
-    0: ['8:00 AM', '9:00 AM', '2:00 PM'],
-    1: ['11:00 AM', '7:00 PM', '8:00 PM'],
-    2: ['6:00 AM', '1:00 PM'],
-    3: ['10:00 AM', '4:00 PM', '5:00 PM'],
-  };
+  readonly unavailableMock: Record<number, string[]> = {};
 
   ngOnInit() {
     this.dates = this.buildDates();
@@ -782,8 +784,19 @@ export class VenueBookingPage implements OnInit {
           this.venue = VENUE_DATA.find((v) => v.id === this.venueId) || VENUE_DATA[0];
           this.rentalItems = {};
         }
+        this.refreshSlots();
       }
     });
+  }
+
+  private refreshSlots() {
+    this.slotIntervalMinutes = normalizeSlotInterval(this.venue?.slotIntervalMinutes);
+    this.allSlots = buildBookingSlots(
+      this.venue?.openTime || '6:00 AM',
+      this.venue?.closeTime || '10:00 PM',
+      this.slotIntervalMinutes,
+    );
+    this.selectedSlots = this.selectedSlots.filter((slot) => this.allSlots.includes(slot));
   }
 
   buildDates(): DateItem[] {
@@ -824,8 +837,8 @@ export class VenueBookingPage implements OnInit {
     return this.selectedSlots.includes(slot);
   }
 
-  formatSlotLabel(slot: string): string {
-    return slot.replace(':00', '');
+  slotRange(slot: string): string {
+    return formatSlotRange(slot);
   }
 
   selectDate(idx: number) {
@@ -892,13 +905,21 @@ export class VenueBookingPage implements OnInit {
     return this.sortedSlots[0] || '';
   }
 
-  get hours(): number {
-    return this.selectedSlots.length;
+  get playMinutes(): number {
+    return playMinutesForSlots(this.selectedSlots.length);
+  }
+
+  get durationMinutes(): number {
+    return this.playMinutes;
+  }
+
+  get durationLabel(): string {
+    return formatDurationLabel(this.playMinutes);
   }
 
   get totalCost(): number {
     if (!this.venue) return 0;
-    return this.hours * this.venue.pricePerHour;
+    return courtCostFromMinutes(this.venue.pricePerHour, this.playMinutes);
   }
 
   get rentalCost(): number {
@@ -914,24 +935,8 @@ export class VenueBookingPage implements OnInit {
   }
 
   get endTime(): string {
-    if (this.hours === 0 || !this.startSlot) return '';
-    const [hm, ampm] = this.startSlot.split(' ');
-    const [h, m] = hm.split(':').map(Number);
-    let total =
-      (ampm === 'PM' && h !== 12 ? h + 12 : h === 12 && ampm === 'AM' ? 0 : h) * 60 +
-      m +
-      this.hours * 60;
-    const endH = Math.floor(total / 60) % 24;
-    const endM = total % 60;
-    const endAmpm = endH >= 12 ? 'PM' : 'AM';
-    const displayH = endH > 12 ? endH - 12 : endH === 0 ? 12 : endH;
-    return `${displayH}:${endM.toString().padStart(2, '0')} ${endAmpm}`;
-  }
-
-  formatDuration(count: number): string {
-    if (count === 0) return '';
-    if (count === 1) return '1 hour';
-    return `${count} hours`;
+    const last = this.sortedSlots[this.sortedSlots.length - 1];
+    return last ? slotEndClock(last) : '';
   }
 
   back() {
@@ -939,7 +944,7 @@ export class VenueBookingPage implements OnInit {
   }
 
   continueToSummary() {
-    if (this.hours === 0 || !this.venue) return;
+    if (this.durationMinutes === 0 || !this.venue) return;
     const bookingDate = this.resolveBookingDateIso(this.selectedDateIdx);
     this.router.navigate([`/app/venue/${this.venueId}/summary`], {
       state: {

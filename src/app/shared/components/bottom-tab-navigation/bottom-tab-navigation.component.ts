@@ -49,7 +49,13 @@ import { TabItem } from '../../models/app.models';
         padding: 0 12px;
         height: 72px;
         border-radius: 40px;
-        box-shadow: 0 -1px 0 rgba(0,0,0,0.03), 0 8px 32px rgba(0,0,0,0.11), 0 2px 8px rgba(0,0,0,0.06);
+        border: 1px solid rgba(17, 24, 39, 0.08);
+        box-shadow:
+          0 1px 0 rgba(255, 255, 255, 0.95) inset,
+          0 0 0 1px rgba(var(--app-primary-rgb), 0.12),
+          0 4px 12px rgba(17, 24, 39, 0.08),
+          0 12px 36px rgba(17, 24, 39, 0.14),
+          0 20px 48px rgba(var(--app-primary-rgb), 0.10);
         pointer-events: auto;
         max-width: 440px;
         margin: 0 auto;

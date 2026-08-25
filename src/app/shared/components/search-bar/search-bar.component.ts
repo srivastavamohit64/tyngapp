@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output, forwardRef } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, Output, ViewChild, forwardRef } from '@angular/core';
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 
@@ -18,6 +18,7 @@ import { IonicModule } from '@ionic/angular';
     <div class="search" [class.focused]="focused">
       <ion-icon name="search-outline" class="icon"></ion-icon>
       <input
+        #inputEl
         type="search"
         [placeholder]="placeholder"
         [value]="value"
@@ -71,9 +72,14 @@ import { IonicModule } from '@ionic/angular';
 export class SearchBarComponent implements ControlValueAccessor {
   @Input() placeholder = 'Search…';
   @Output() valueChange = new EventEmitter<string>();
+  @ViewChild('inputEl') private inputEl?: ElementRef<HTMLInputElement>;
 
   value = '';
   focused = false;
+
+  focus(): void {
+    this.inputEl?.nativeElement.focus();
+  }
 
   private onChange: (v: string) => void = () => undefined;
   private onTouched: () => void = () => undefined;

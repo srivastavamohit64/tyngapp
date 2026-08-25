@@ -28,6 +28,7 @@ export interface VenueDetail {
   reviews: { name: string; photo: string; rating: number; text: string; date: string }[];
   offers: { title: string; desc: string; accent: string; expires: string }[];
   autoConfirm?: boolean;
+  slotIntervalMinutes?: 15 | 30;
 }
 
 export const VENUE_DATA: VenueDetail[] = [
@@ -636,6 +637,7 @@ export class VenueDetailPage implements OnInit {
         reviewCount: Number(data.gamesPlayed || 0),
         openTime: String(data.openTime || '6:00 AM'),
         closeTime: String(data.closeTime || '10:00 PM'),
+        slotIntervalMinutes: Number(data.slotIntervalMinutes) === 30 ? 30 : 15,
         amenities,
         rentalEquipment,
         description: String(data.description || ''),

@@ -359,6 +359,10 @@
     <!-- ?????????????????????????????????????????????????? -->
     <ng-container *ngIf="auth.user()?.role !== 'coach' && auth.user()?.role !== 'venue'">
       <section class="player-home">
+        <div class="home-hello">
+          <p class="home-hello-wish">{{ greeting }}</p>
+          <h1 class="home-hello-name">{{ helloName }}</h1>
+        </div>
         <div class="location-banner">
           <div class="location-banner-glow"></div>
           <div class="location-banner-inner">
@@ -378,37 +382,6 @@
           <div *ngIf="locationError" class="location-error">
             <ion-icon name="warning"></ion-icon>
             <p>{{ locationError }}</p>
-          </div>
-        </div>
-
-        <div class="search-wrap">
-          <app-search-bar
-            class="search-block"
-            placeholder="Find players, games, venues?"
-            [(ngModel)]="searchQuery"
-            (ngModelChange)="onSearchChange($event)"
-          ></app-search-bar>
-
-          <div class="search-suggestions" *ngIf="showSuggestions">
-            <div class="suggest-loading" *ngIf="searchLoading">Searching?</div>
-            <ng-container *ngIf="!searchLoading">
-              <button
-                type="button"
-                class="suggest-item"
-                *ngFor="let item of searchSuggestions"
-                (mousedown)="openSuggestion(item)"
-              >
-                <span class="suggest-emoji">{{ item.emoji }}</span>
-                <span class="suggest-text">
-                  <strong>{{ item.title }}</strong>
-                  <small>{{ item.subtitle }}</small>
-                </span>
-                <span class="suggest-type">{{ item.type }}</span>
-              </button>
-              <div class="suggest-empty" *ngIf="searchSuggestions.length === 0">
-                No matches for ?{{ searchQuery }}?
-              </div>
-            </ng-container>
           </div>
         </div>
 
@@ -489,27 +462,24 @@
               <p class="qa-title">Book<br />Venues</p>
               <p class="qa-sub">Reserve nearby</p>
             </button>
-          </div>
-        </div>
 
-        <!-- Nearby Games -->
-        <div class="nearby">
-          <app-section-header
-            title="Nearby Games"
-            actionLabel="See all"
-            (action)="go('/app/ongoing')"
-          ></app-section-header>
-          <div class="nearby-list">
-            <div class="nearby-state" *ngIf="nearbyLoading">Loading games?</div>
-            <div class="nearby-state" *ngIf="!nearbyLoading && nearbyError">{{ nearbyError }}</div>
-            <div class="nearby-state" *ngIf="!nearbyLoading && !nearbyError && nearbyGames.length === 0">
-              No open games yet. Create one to get started.
-            </div>
-            <app-event-card
-              *ngFor="let game of nearbyGames"
-              [event]="game"
-              (open)="go('/app/game/' + game.id)"
-            ></app-event-card>
+            <button type="button" class="qa-card qa-blue" (click)="go('/app/ongoing')">
+              <div class="qa-glow qa-glow-blue"></div>
+              <div class="qa-icon qa-icon-blue">
+                <ion-icon name="location-outline"></ion-icon>
+              </div>
+              <p class="qa-title">Nearby Games</p>
+              <p class="qa-sub">-</p>
+            </button>
+
+            <button type="button" class="qa-card qa-purple" (click)="go('/app/search')">
+              <div class="qa-glow qa-glow-purple"></div>
+              <div class="qa-icon qa-icon-purple">
+                <ion-icon name="search-outline"></ion-icon>
+              </div>
+              <p class="qa-title">Search</p>
+              <p class="qa-sub">Find games &amp; players</p>
+            </button>
           </div>
         </div>
 

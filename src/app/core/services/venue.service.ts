@@ -14,8 +14,9 @@ export interface VenueCourtCard {
   rating: number;
   ratingCount: number;
   pricePerHour: number;
-  openTime: string;
-  closeTime: string;
+  openTime?: string;
+  closeTime?: string;
+  slotIntervalMinutes?: 15 | 30;
   amenities: string[];
   hasRentalGear: boolean;
   gamesPlayed: number;
@@ -171,6 +172,7 @@ export interface VenueProfileUpdatePayload {
   landmark?: string | null;
   openTime?: string | null;
   closeTime?: string | null;
+  slotIntervalMinutes?: 15 | 30;
   operatingDays?: string[];
   amenities?: string[];
   gallery?: string[];

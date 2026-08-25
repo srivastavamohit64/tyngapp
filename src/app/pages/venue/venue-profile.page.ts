@@ -2,10 +2,11 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { IonicModule, ViewWillEnter } from '@ionic/angular';
+import { IonicModule, ToastController, ViewWillEnter } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { VenueService } from '../../core/services/venue.service';
+import { normalizeSlotInterval, type SlotIntervalMinutes } from '../../core/utils/booking.utils';
 
 interface StatItem {
   label: string;
@@ -165,6 +166,36 @@ const DOC_LABELS: Record<string, string> = {
             </section>
 
             <section>
+              <p class="section-title">Booking slots</p>
+              <div class="detail-card slot-card">
+                <div class="slot-copy">
+                  <span class="detail-label">Gap between 1-hour slots</span>
+                  <span class="detail-value">e.g. 7:00–8:00, then {{ slotIntervalMinutes() === 30 ? '8:30–9:30' : '8:15–9:15' }}</span>
+                </div>
+                <div class="slot-toggle">
+                  <button
+                    type="button"
+                    class="slot-opt"
+                    [class.active]="slotIntervalMinutes() === 15"
+                    [disabled]="savingSlotInterval()"
+                    (click)="setSlotInterval(15)"
+                  >
+                    15 min
+                  </button>
+                  <button
+                    type="button"
+                    class="slot-opt"
+                    [class.active]="slotIntervalMinutes() === 30"
+                    [disabled]="savingSlotInterval()"
+                    (click)="setSlotInterval(30)"
+                  >
+                    30 min
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            <section>
               <p class="section-title">Operating hours</p>
               <div class="detail-card">
                 <div *ngFor="let schedule of operatingHours()" class="detail-row">
@@ -246,6 +277,48 @@ const DOC_LABELS: Record<string, string> = {
       font-weight: 800;
       text-align: right;
       word-break: break-word;
+    }
+
+    .slot-card {
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .slot-copy {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .slot-copy .detail-value {
+      text-align: left;
+      font-size: 12px;
+      font-weight: 700;
+      color: #6B7280;
+    }
+
+    .slot-toggle {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .slot-opt {
+      border: 1.5px solid #E5E7EB;
+      background: #F9FAFB;
+      color: #6B7280;
+      border-radius: 12px;
+      padding: 10px 0;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .slot-opt.active {
+      border-color: var(--app-primary);
+      background: rgba(var(--app-primary-rgb), 0.12);
+      color: #111827;
     }
 
     .photo-thumb {
@@ -368,9 +441,15 @@ export class VenueProfilePage implements OnInit, ViewWillEnter {
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
   private readonly venueService = inject(VenueService);
+  private readonly toastCtrl = inject(ToastController);
 
   readonly loading = signal(true);
+  readonly savingSlotInterval = signal(false);
   private readonly detail = signal<Record<string, unknown> | null>(null);
+
+  readonly slotIntervalMinutes = computed<SlotIntervalMinutes>(() =>
+    normalizeSlotInterval(this.detail()?.['slotIntervalMinutes'] as number | null),
+  );
 
   readonly venueName = computed(() => {
     const d = this.detail();
@@ -509,6 +588,40 @@ export class VenueProfilePage implements OnInit, ViewWillEnter {
 
   editProfile() {
     void this.router.navigateByUrl('/app/venue/complete-profile');
+  }
+
+  async setSlotInterval(minutes: SlotIntervalMinutes) {
+    if (this.slotIntervalMinutes() === minutes || this.savingSlotInterval()) return;
+    this.savingSlotInterval.set(true);
+    try {
+      const response = await firstValueFrom(this.venueService.updateMyProfile({ slotIntervalMinutes: minutes }));
+      if (!response.success) {
+        throw new Error(response.message || 'Unable to update slot interval.');
+      }
+      const venue = (response.data as { venue?: Record<string, unknown> } | undefined)?.venue;
+      if (venue) {
+        this.detail.set({ ...(this.detail() || {}), ...venue });
+      } else {
+        this.detail.set({ ...(this.detail() || {}), slotIntervalMinutes: minutes });
+      }
+      const toast = await this.toastCtrl.create({
+        message: `Slot gap is now ${minutes} minutes (7–8, then ${minutes === 30 ? '8:30–9:30' : '8:15–9:15'}).`,
+        duration: 1800,
+        color: 'dark',
+        position: 'bottom',
+      });
+      await toast.present();
+    } catch (error: any) {
+      const toast = await this.toastCtrl.create({
+        message: error?.error?.message || error?.message || 'Unable to update slot interval.',
+        duration: 2200,
+        color: 'danger',
+        position: 'bottom',
+      });
+      await toast.present();
+    } finally {
+      this.savingSlotInterval.set(false);
+    }
   }
 
   openUrl(url: string) {

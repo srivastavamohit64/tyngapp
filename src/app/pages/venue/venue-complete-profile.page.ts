@@ -289,6 +289,14 @@ const STEP_TITLES = [
                   <input type="time" [(ngModel)]="closeTime" class="form-input" />
                 </div>
               </div>
+              <div>
+                <p class="field-label">Gap between booking slots</p>
+                <p class="text-[11px] text-[#9CA3AF] font-semibold m-0 mb-2">Each slot is 1 hour. Default gap is 15 min (7–8, then 8:15–9:15). You can extend it to 30 min.</p>
+                <div class="chip-wrap">
+                  <button type="button" class="choice-chip" [class.active]="slotIntervalMinutes() === 15" (click)="slotIntervalMinutes.set(15)">15 min</button>
+                  <button type="button" class="choice-chip" [class.active]="slotIntervalMinutes() === 30" (click)="slotIntervalMinutes.set(30)">30 min</button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -958,6 +966,7 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
   corpDisc = '';
 
   autoConfirm = signal(true);
+  slotIntervalMinutes = signal<15 | 30>(15);
 
   equipQty = signal<Record<string, number>>({});
   equipPrices = signal<Record<string, string>>({});
@@ -983,9 +992,9 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
   constructor() {
     const user = this.auth.user();
     if (user) {
-      this.venueName = user.name || '';
-      this.bizName = user.name || '';
-      this.ownerName = user.name || '';
+      this.venueName = (user.displayName || '').trim();
+      this.bizName = (user.businessName || '').trim();
+      this.ownerName = (user.ownerName || '').trim();
       this.mobile = user.phone || '';
       this.email = user.email || '';
       this.address = user.location || '';
@@ -1420,13 +1429,12 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
 
       const data = response.data as Record<string, any>;
 
-      if (data['venueName'] || data['displayName'] || data['name']) {
-        this.venueName = String(data['venueName'] || data['displayName'] || data['name']);
-      }
-      if (data['businessName']) this.bizName = String(data['businessName']);
-      else if (data['name'] && !this.bizName) this.bizName = String(data['name']);
-
-      if (data['ownerName']) this.ownerName = String(data['ownerName']);
+      const displayName = String(data['displayName'] || data['venueName'] || '').trim();
+      const businessName = String(data['businessName'] || '').trim();
+      const ownerName = String(data['ownerName'] || '').trim();
+      if (displayName) this.venueName = displayName;
+      if (businessName) this.bizName = businessName;
+      if (ownerName) this.ownerName = ownerName;
       if (data['phone']) this.mobile = String(data['phone']).replace(/\D/g, '').slice(-10);
       if (data['email']) this.email = String(data['email']);
 
@@ -1447,6 +1455,9 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
       if (data['panNumber']) this.panNo = String(data['panNumber']);
       if (data['yearEstablished']) this.yearEst = String(data['yearEstablished']);
       if (typeof data['autoConfirm'] === 'boolean') this.autoConfirm.set(!!data['autoConfirm']);
+      if (data['slotIntervalMinutes'] != null) {
+        this.slotIntervalMinutes.set(Number(data['slotIntervalMinutes']) === 30 ? 30 : 15);
+      }
 
       if (Array.isArray(data['gallery']) && data['gallery'].length) {
         this.uploadedPhotos.set(data['gallery'].map((g: unknown) => String(g)));
@@ -1578,11 +1589,11 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
         .filter((p) => /^https?:\/\//i.test(p) || p.startsWith('/') || p.includes('storage/'));
 
       const response = await firstValueFrom(this.venueService.updateMyProfile({
-        name: this.venueName || this.ownerName || this.auth.user()?.name,
-        displayName: this.venueName || this.bizName,
-        venueName: this.venueName,
-        businessName: this.bizName,
-        ownerName: this.ownerName,
+        name: this.venueName.trim(),
+        displayName: this.venueName.trim(),
+        venueName: this.venueName.trim(),
+        businessName: this.bizName.trim(),
+        ownerName: this.ownerName.trim(),
         phone: (() => {
           const digits = this.mobile.replace(/\D/g, '').slice(-10);
           return digits.length === 10 ? digits : undefined;
@@ -1596,6 +1607,7 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
         landmark: this.landmark,
         openTime: this.toDisplayTime(this.openTime),
         closeTime: this.toDisplayTime(this.closeTime),
+        slotIntervalMinutes: this.slotIntervalMinutes(),
         operatingDays: this.opDays(),
         // Only send gallery when we have URLs — empty array was wiping uploaded photos.
         ...(galleryUrls.length ? { gallery: galleryUrls } : {}),
@@ -1663,7 +1675,7 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
       await firstValueFrom(this.auth.fetchMe());
       if (markLive) {
         await firstValueFrom(this.auth.completeOnboarding({
-          name: this.venueName || this.ownerName || 'Venue Owner',
+          name: this.venueName.trim() || 'Venue',
           sports,
           venueType: 'multi',
         }));

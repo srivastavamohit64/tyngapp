@@ -53,7 +53,94 @@ export function formatDurationLabel(durationMinutes?: number | null): string {
     const hours = durationMinutes / 60;
     return `${hours} ${hours === 1 ? 'hour' : 'hours'}`;
   }
+  if (durationMinutes > 60) {
+    const hours = Math.floor(durationMinutes / 60);
+    const minutes = durationMinutes % 60;
+    return `${hours}h ${minutes}m`;
+  }
   return `${durationMinutes} min`;
+}
+
+export type SlotIntervalMinutes = 15 | 30;
+
+export function normalizeSlotInterval(value?: number | string | null): SlotIntervalMinutes {
+  return Number(value) === 30 ? 30 : 15;
+}
+
+export function parseClockToMinutes(time: string): number | null {
+  const normalized = String(time || '').trim();
+  if (!normalized) return null;
+
+  const ampmMatch = normalized.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (ampmMatch) {
+    let hours = Number(ampmMatch[1]);
+    const minutes = Number(ampmMatch[2]);
+    const period = ampmMatch[3].toUpperCase();
+    if (period === 'PM' && hours !== 12) hours += 12;
+    if (period === 'AM' && hours === 12) hours = 0;
+    return hours * 60 + minutes;
+  }
+
+  const twentyFour = normalized.match(/^(\d{1,2}):(\d{2})$/);
+  if (twentyFour) {
+    return Number(twentyFour[1]) * 60 + Number(twentyFour[2]);
+  }
+
+  return null;
+}
+
+export function formatMinutesToClock(totalMinutes: number): string {
+  const wrapped = ((totalMinutes % (24 * 60)) + 24 * 60) % (24 * 60);
+  const hours24 = Math.floor(wrapped / 60);
+  const minutes = wrapped % 60;
+  const period = hours24 >= 12 ? 'PM' : 'AM';
+  const hours12 = hours24 % 12 === 0 ? 12 : hours24 % 12;
+  return `${hours12}:${minutes.toString().padStart(2, '0')} ${period}`;
+}
+
+/** Each bookable slot is 1 hour. `slotIntervalMinutes` is the gap after it (15 or 30). */
+export const BOOKING_SLOT_MINUTES = 60;
+
+export function slotStepMinutes(gapMinutes?: number | string | null): number {
+  return BOOKING_SLOT_MINUTES + normalizeSlotInterval(gapMinutes);
+}
+
+export function buildBookingSlots(openTime: string, closeTime: string, gapMinutes?: number | string | null): string[] {
+  const step = slotStepMinutes(gapMinutes);
+  const opening = parseClockToMinutes(openTime) ?? 6 * 60;
+  const closing = parseClockToMinutes(closeTime) ?? 22 * 60;
+  if (closing <= opening) return [];
+
+  const slots: string[] = [];
+  for (let start = opening; start + BOOKING_SLOT_MINUTES <= closing; start += step) {
+    slots.push(formatMinutesToClock(start));
+  }
+  return slots;
+}
+
+export function formatSlotRange(startClock: string, durationMinutes = BOOKING_SLOT_MINUTES): string {
+  const start = parseClockToMinutes(startClock);
+  if (start == null) return startClock;
+  return `${formatMinutesToClock(start)} – ${formatMinutesToClock(start + durationMinutes)}`;
+}
+
+export function slotEndClock(startClock: string, durationMinutes = BOOKING_SLOT_MINUTES): string {
+  const start = parseClockToMinutes(startClock);
+  if (start == null) return '';
+  return formatMinutesToClock(start + durationMinutes);
+}
+
+export function playMinutesForSlots(slotCount: number): number {
+  return Math.max(0, slotCount) * BOOKING_SLOT_MINUTES;
+}
+
+export function blockedMinutesForSlots(slotCount: number, gapMinutes?: number | string | null): number {
+  if (slotCount <= 0) return 0;
+  return playMinutesForSlots(slotCount) + (slotCount - 1) * normalizeSlotInterval(gapMinutes);
+}
+
+export function courtCostFromMinutes(pricePerHour: number, durationMinutes: number): number {
+  return Math.round(Number(pricePerHour || 0) * (Math.max(0, durationMinutes) / 60));
 }
 
 export function formatStartsIn(date?: string | null, startTime?: string | null, now = Date.now()): string | null {

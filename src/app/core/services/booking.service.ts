@@ -6,7 +6,7 @@ import {
   BookingParticipant,
   BookingRecord,
   BookingSlot,
-  DiscoverPlayer,
+  DirectorySearchResult,
   MyBookingsResponse,
 } from '../models/api.model';
 import { ApiService } from './api.service';
@@ -27,12 +27,12 @@ export class BookingService {
     return this.api.get<BookingRecord[]>(`/nearby-games?${params.toString()}`);
   }
 
-  search(query: string, limit = 8): Observable<ApiResponse<{ games: BookingRecord[]; players: DiscoverPlayer[] }>> {
+  search(query: string, limit = 8): Observable<ApiResponse<DirectorySearchResult>> {
     const params = new URLSearchParams({
       q: query,
       limit: String(limit),
     });
-    return this.api.get<{ games: BookingRecord[]; players: DiscoverPlayer[] }>(`/search?${params.toString()}`);
+    return this.api.get<DirectorySearchResult>(`/search?${params.toString()}`);
   }
 
   getBooking(id: string): Observable<ApiResponse<BookingRecord>> {
@@ -46,6 +46,7 @@ export class BookingService {
     time: string;
     team_size: string;
     duration_hours?: number;
+    duration_minutes?: number;
     price?: number;
     payment_method?: 'online' | 'at_venue' | 'wallet';
     coupon_code?: string | null;

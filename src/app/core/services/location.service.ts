@@ -16,6 +16,15 @@ export interface UserLocation {
   timestamp: number;
 }
 
+export interface NearbyLocationQuery {
+  query: string;
+  city: string;
+  postalArea: string;
+  label: string;
+  latitude: number | null;
+  longitude: number | null;
+}
+
 export interface ReverseGeocodeDetails {
   address: string;
   postalArea: string;
@@ -270,9 +279,11 @@ export class LocationService {
       this.component(withPin, 'locality') ||
       this.component(withPin, 'administrative_area_level_2');
 
-    const shortLabel = [postalArea, pincode].filter(Boolean).join(' > ')
-      || [postalArea, city].filter(Boolean).join(' > ')
-      || [city, pincode].filter(Boolean).join(' > ')
+    const shortLabel = [postalArea, city].filter((part, index, all) =>
+      Boolean(part) && all.findIndex((item) => item.toLowerCase() === part.toLowerCase()) === index,
+    ).join(' > ')
+      || postalArea
+      || city
       || address;
 
     return { address, postalArea, pincode, city, shortLabel };
@@ -384,5 +395,41 @@ export class LocationService {
       }
       return null;
     }
+  }
+
+  /**
+   * Location string used for nearby-games API — same source as the player home banner
+   * (saved GPS, then profile location).
+   */
+  nearbyLocationQuery(profileLocation?: string | null): NearbyLocationQuery {
+    const saved = this.getSavedLocation();
+    const postalArea = (saved?.postalArea || '').trim();
+    const city = (saved?.city || '').trim();
+    const shortLabel = (saved?.shortLabel || saved?.address || '').trim();
+    const profile = (profileLocation || '').trim();
+    const parts = [postalArea, city].filter((part) => part.length > 0);
+    const query = parts.join(', ') || shortLabel || profile;
+    const label = postalArea || city || shortLabel || profile;
+
+    return {
+      query,
+      city: city || this.cityFromLabel(query),
+      postalArea,
+      label,
+      latitude: typeof saved?.latitude === 'number' && saved.latitude !== 0 ? saved.latitude : null,
+      longitude: typeof saved?.longitude === 'number' && saved.longitude !== 0 ? saved.longitude : null,
+    };
+  }
+
+  private cityFromLabel(label: string): string {
+    const parts = label
+      .split(/[>,\-\/|]+/)
+      .map((part) => part.trim())
+      .filter(Boolean);
+    if (parts.length === 0) return '';
+    const stateLike =
+      /(pradesh|nadu|bengal|rashtra|delhi|goa|gujarat|rajasthan|punjab|haryana|kerala|karnataka|odisha|bihar|assam|sikkim|jharkhand|chhattisgarh|uttarakhand|himachal|telangana|andhra|madhya|west bengal)$/i;
+    const candidates = parts.filter((part) => !stateLike.test(part) && !/^(india|bharat)$/i.test(part));
+    return candidates[candidates.length - 1] || parts[parts.length - 1] || '';
   }
 }

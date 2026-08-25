@@ -7,6 +7,15 @@ import { firstValueFrom } from 'rxjs';
 import { BookingService } from '../../core/services/booking.service';
 import { WalletService } from '../../core/services/wallet.service';
 import { VENUE_DATA, type VenueDetail } from './venue-detail.page';
+import {
+  blockedMinutesForSlots,
+  courtCostFromMinutes,
+  formatDurationLabel,
+  normalizeSlotInterval,
+  playMinutesForSlots,
+  slotEndClock,
+  type SlotIntervalMinutes,
+} from '../../core/utils/booking.utils';
 
 interface AppliedCoupon {
   code: string;
@@ -51,8 +60,8 @@ interface AppliedCoupon {
             </div>
             <div class="stat-strip">
               <div>
-                <strong>{{ hours }}</strong>
-                <span>{{ hours === 1 ? 'Hour' : 'Hours' }}</span>
+                <strong>{{ durationLabel }}</strong>
+                <span>Duration</span>
               </div>
               <div>
                 <strong>₹{{ venue.pricePerHour.toLocaleString() }}</strong>
@@ -192,7 +201,7 @@ interface AppliedCoupon {
             <div class="price-row">
               <div>
                 <strong>Court booking</strong>
-                <span>{{ hours }} hr × ₹{{ venue.pricePerHour.toLocaleString() }}</span>
+                <span>{{ durationLabel }} × ₹{{ venue.pricePerHour.toLocaleString() }}/hr</span>
               </div>
               <em>₹{{ courtCost.toLocaleString() }}</em>
             </div>
@@ -610,8 +619,24 @@ export class VenueBookingSummaryPage implements OnInit {
     return 'Venue will see this booking instantly · pay on arrival';
   }
 
-  get hours(): number {
-    return this.selectedSlots.length;
+  get slotIntervalMinutes(): SlotIntervalMinutes {
+    return normalizeSlotInterval(this.venue?.slotIntervalMinutes);
+  }
+
+  get playMinutes(): number {
+    return playMinutesForSlots(this.selectedSlots.length);
+  }
+
+  get blockedMinutes(): number {
+    return blockedMinutesForSlots(this.selectedSlots.length, this.slotIntervalMinutes);
+  }
+
+  get durationMinutes(): number {
+    return this.playMinutes;
+  }
+
+  get durationLabel(): string {
+    return formatDurationLabel(this.playMinutes);
   }
 
   get startTime(): string {
@@ -619,15 +644,8 @@ export class VenueBookingSummaryPage implements OnInit {
   }
 
   get endHour(): string {
-    if (this.hours === 0 || !this.startTime) return '';
-    const [hm, ampm] = this.startTime.split(' ');
-    const [h, m] = hm.split(':').map(Number);
-    let total = (ampm === 'PM' && h !== 12 ? h + 12 : h === 12 && ampm === 'AM' ? 0 : h) * 60 + m + this.hours * 60;
-    const eh = Math.floor(total / 60) % 24;
-    const em = total % 60;
-    const eAmpm = eh >= 12 ? 'PM' : 'AM';
-    const dh = eh > 12 ? eh - 12 : eh === 0 ? 12 : eh;
-    return `${dh}:${em.toString().padStart(2, '0')} ${eAmpm}`;
+    const last = this.selectedSlots[this.selectedSlots.length - 1];
+    return last ? slotEndClock(last) : '';
   }
 
   inc(itemId: string) {
@@ -644,7 +662,7 @@ export class VenueBookingSummaryPage implements OnInit {
 
   get courtCost(): number {
     if (!this.venue) return 0;
-    return this.hours * this.venue.pricePerHour;
+    return courtCostFromMinutes(this.venue.pricePerHour, this.playMinutes);
   }
 
   get rentalCost(): number {
@@ -764,7 +782,7 @@ export class VenueBookingSummaryPage implements OnInit {
   }
 
   async confirmBooking() {
-    if (!this.venue || !this.venueId || this.hours === 0 || this.saving()) return;
+    if (!this.venue || !this.venueId || this.durationMinutes === 0 || this.saving()) return;
 
     if (this.paymentMethod === 'wallet' && (this.walletBalance() ?? 0) < this.grandTotal) {
       this.saveError.set('Insufficient wallet balance. Please top up your wallet first.');
@@ -790,7 +808,8 @@ export class VenueBookingSummaryPage implements OnInit {
           date: this.bookingDate || this.fallbackBookingDate(),
           time: this.normalizeSlotTime(this.startTime),
           team_size: '1',
-          duration_hours: this.hours,
+          duration_hours: this.selectedSlots.length,
+          duration_minutes: this.blockedMinutes,
           price: this.grandTotal,
           payment_method: this.paymentMethod,
           coupon_code: this.appliedCoupon?.code || null,

@@ -11,12 +11,13 @@ import {
   signal,
 } from '@angular/core';
 import { Router } from '@angular/router';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, ViewWillEnter } from '@ionic/angular';
 import { firstValueFrom, Subscription } from 'rxjs';
 import { BookingRecord } from '../../core/models/api.model';
 import { AuthService } from '../../core/services/auth.service';
 import { BookingService } from '../../core/services/booking.service';
 import { GoogleMapsService } from '../../core/services/google-maps.service';
+import { LocationService } from '../../core/services/location.service';
 import { RealtimeService } from '../../core/services/realtime.service';
 import {
   formatBookingDate,
@@ -89,7 +90,10 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
           <button class="og-back" (click)="back()">
             <ion-icon name="chevron-back-outline"></ion-icon>
           </button>
-          <h1 class="og-title">Ongoing Games</h1>
+          <div class="og-header-text">
+            <h1 class="og-title">Ongoing Games</h1>
+            <p class="og-location" *ngIf="locationLabel">Near {{ locationLabel }}</p>
+          </div>
           <button class="og-filter-btn">
             <ion-icon name="options-outline"></ion-icon>
           </button>
@@ -143,7 +147,9 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
         <div class="games-state" *ngIf="loading">Loading games…</div>
         <div class="games-state" *ngIf="!loading && errorMessage">{{ errorMessage }}</div>
         <div class="games-state" *ngIf="!loading && !errorMessage && filteredGames.length === 0">
-          No open games right now. Create a game to invite others.
+          {{ locationLabel
+            ? 'No open games near ' + locationLabel + '. Create a game to invite others.'
+            : 'Set your location on Home to see nearby games.' }}
         </div>
 
         <!-- Game Cards -->
@@ -264,11 +270,28 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
       font-size: 18px; cursor: pointer;
     }
 
+    .og-header-text {
+      flex: 1;
+      text-align: center;
+      min-width: 0;
+      padding: 0 8px;
+    }
+
     .og-title {
-      font-size: 18px;
-      font-weight: 800;
+      font-size: 20px;
+      font-weight: 900;
       color: #111827;
       margin: 0;
+    }
+
+    .og-location {
+      margin: 2px 0 0;
+      font-size: 11px;
+      font-weight: 600;
+      color: #6b7280;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .og-search-wrap {
@@ -686,11 +709,12 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
     }
   `]
 })
-export class OngoingGamesPage implements OnInit, AfterViewInit, OnDestroy {
+export class OngoingGamesPage implements OnInit, AfterViewInit, OnDestroy, ViewWillEnter {
   private readonly router = inject(Router);
   private readonly bookingService = inject(BookingService);
   private readonly auth = inject(AuthService);
   private readonly googleMaps = inject(GoogleMapsService);
+  private readonly locationService = inject(LocationService);
   private readonly realtime = inject(RealtimeService);
   private readonly zone = inject(NgZone);
 
@@ -701,6 +725,7 @@ export class OngoingGamesPage implements OnInit, AfterViewInit, OnDestroy {
   games: Game[] = [];
   loading = true;
   errorMessage = '';
+  locationLabel = '';
 
   private bookings: BookingRecord[] = [];
   private realtimeSub?: Subscription;
@@ -710,8 +735,11 @@ export class OngoingGamesPage implements OnInit, AfterViewInit, OnDestroy {
   private readonly lucknowCenter: google.maps.LatLngLiteral = { lat: 26.8467, lng: 80.9462 };
 
   ngOnInit() {
-    void this.loadGames();
     this.listenForRealtimeGames();
+  }
+
+  ionViewWillEnter() {
+    void this.loadGames();
   }
 
   ngAfterViewInit() {
@@ -735,6 +763,7 @@ export class OngoingGamesPage implements OnInit, AfterViewInit, OnDestroy {
           ...this.bookings.slice(index + 1),
         ];
       } else if (event.type === 'created') {
+        if (!this.bookingMatchesHomeLocation(booking)) return;
         this.bookings = [booking, ...this.bookings];
       } else {
         return;
@@ -822,22 +851,33 @@ export class OngoingGamesPage implements OnInit, AfterViewInit, OnDestroy {
   private async loadGames() {
     this.loading = true;
     this.errorMessage = '';
+    const nearby = this.locationService.nearbyLocationQuery(this.auth.user()?.location);
+    this.locationLabel = nearby.label;
+
     try {
-      const userLocation = (this.auth.user()?.location || '').trim();
       let response = await firstValueFrom(
         this.bookingService.getNearbyGames(50, {
-          matchLocation: !!userLocation,
-          location: userLocation || undefined,
+          matchLocation: !!nearby.query,
+          location: nearby.query || undefined,
         }),
       );
+
       if (
-        userLocation &&
+        nearby.query &&
+        nearby.city &&
+        nearby.query.toLowerCase() !== nearby.city.toLowerCase() &&
         response.success &&
         Array.isArray(response.data) &&
         response.data.length === 0
       ) {
-        response = await firstValueFrom(this.bookingService.getNearbyGames(50));
+        response = await firstValueFrom(
+          this.bookingService.getNearbyGames(50, {
+            matchLocation: true,
+            location: nearby.city,
+          }),
+        );
       }
+
       if (response.success && Array.isArray(response.data)) {
         this.bookings = response.data;
         this.games = response.data.map((booking) => this.mapGame(booking));
@@ -856,16 +896,38 @@ export class OngoingGamesPage implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  private bookingMatchesHomeLocation(booking: BookingRecord): boolean {
+    const nearby = this.locationService.nearbyLocationQuery(this.auth.user()?.location);
+    const haystack = [
+      booking.venue?.location,
+      booking.venue?.address,
+      booking.venue?.name,
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
+    if (!haystack) return false;
+
+    const tokens = [nearby.city, nearby.postalArea, nearby.query]
+      .filter((token): token is string => !!token && token.trim().length >= 3)
+      .map((token) => token.toLowerCase());
+
+    if (tokens.length === 0) return true;
+    return tokens.some((token) => haystack.includes(token));
+  }
+
   private async renderMiniMap() {
     const container = this.miniMapContainer?.nativeElement;
     if (!container) return;
 
     try {
       await this.googleMaps.load();
-      const userLocation = (this.auth.user()?.location || '').trim();
+      const centerLoc = this.locationService.nearbyLocationQuery(this.auth.user()?.location);
       let center = this.lucknowCenter;
-      if (userLocation) {
-        const geocoded = await this.googleMaps.geocode(userLocation, this.lucknowCenter);
+      if (centerLoc.latitude && centerLoc.longitude) {
+        center = { lat: centerLoc.latitude, lng: centerLoc.longitude };
+      } else if (centerLoc.query) {
+        const geocoded = await this.googleMaps.geocode(centerLoc.query, this.lucknowCenter);
         if (geocoded) center = geocoded;
       }
 

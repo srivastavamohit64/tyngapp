@@ -37,6 +37,9 @@ export interface AuthUser {
   personality?: string | null;
   venueType?: string | null;
   venueProfileReady?: boolean;
+  displayName?: string | null;
+  businessName?: string | null;
+  ownerName?: string | null;
   createdAt?: string | null;
   updatedAt?: string | null;
 }
@@ -46,17 +49,23 @@ export interface AuthTokenResponse {
   user: AuthUser;
 }
 
+export interface LoginPayload {
+  phone: string;
+  password: string;
+  device_token?: string;
+  device_id?: string;
+  platform?: 'android' | 'ios' | 'web';
+}
+
 export interface RegisterPayload {
   name: string;
   phone: string;
   email?: string;
   password: string;
   role: UserRole;
-}
-
-export interface LoginPayload {
-  phone: string;
-  password: string;
+  device_token?: string;
+  device_id?: string;
+  platform?: 'android' | 'ios' | 'web';
 }
 
 export interface UpdateProfilePayload {
@@ -300,6 +309,24 @@ export interface DiscoverPlayer {
   preferredSports?: string[];
   mutualFriends?: number;
   lastSeen?: string | null;
+}
+
+export interface SearchVenue {
+  id: string;
+  name: string;
+  location?: string | null;
+  city?: string | null;
+  profileImage?: string | null;
+  sports?: string[];
+  rating?: number | null;
+  price?: number | null;
+}
+
+export interface DirectorySearchResult {
+  games: BookingRecord[];
+  players: DiscoverPlayer[];
+  venues: SearchVenue[];
+  coaches: DiscoverPlayer[];
 }
 
 export interface DiscoverResponse {

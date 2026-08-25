@@ -10,6 +10,13 @@ import { DesignDataService } from '../../core/services/design-data.service';
 import { HeaderComponent } from '../../shared/components/header/header.component';
 import { PrimaryButtonComponent } from '../../shared/components/primary-button/primary-button.component';
 import { Venue } from '../../shared/models/app.models';
+import {
+  buildBookingSlots,
+  formatSlotRange,
+  normalizeSlotInterval,
+  parseClockToMinutes,
+  type SlotIntervalMinutes,
+} from '../../core/utils/booking.utils';
 
 interface VenueApi {
   id: number;
@@ -20,6 +27,9 @@ interface VenueApi {
   rating?: number | null;
   emoji?: string | null;
   sports?: string[] | null;
+  openTime?: string | null;
+  closeTime?: string | null;
+  slotIntervalMinutes?: number | null;
 }
 
 interface DateOption {
@@ -98,7 +108,7 @@ interface DateOption {
                 class="venue-row"
                 *ngFor="let venue of venues"
                 [class.selected]="selectedVenue === venue.id"
-                (click)="selectedVenue = venue.id"
+                (click)="selectVenue(venue)"
               >
                 <div class="venue-emoji">{{ venue.emoji || '🏟️' }}</div>
                 <div class="venue-info">
@@ -139,7 +149,7 @@ interface DateOption {
                 [class.active]="selectedTime === t"
                 (click)="selectTime(t)"
               >
-                {{ t }}
+                {{ slotRange(t) }}
               </button>
             </div>
           </ng-container>
@@ -183,7 +193,7 @@ interface DateOption {
             <div class="summary-card">
               <div class="sum-row"><span>Sport</span><strong>{{ sportName }}</strong></div>
               <div class="sum-row"><span>Venue</span><strong>{{ venueName }}</strong></div>
-              <div class="sum-row"><span>When</span><strong>{{ selectedDateDisplay }} · {{ selectedTime }}</strong></div>
+              <div class="sum-row"><span>When</span><strong>{{ selectedDateDisplay }} · {{ slotRange(selectedTime) }}</strong></div>
               <div class="sum-row"><span>Format</span><strong>{{ effectiveTeamSize || '—' }}</strong></div>
               <div class="sum-row"><span>Venue cost</span><strong>₹{{ venueCost | number:'1.0-0' }}</strong></div>
               <div class="sum-row"><span>Your host share (20%)</span><strong>₹{{ hostShare | number:'1.0-0' }}</strong></div>
@@ -448,12 +458,12 @@ interface DateOption {
       }
 
       .chip {
-        padding: 10px 16px;
+        padding: 10px 12px;
         border-radius: 12px;
         background: #fff;
         border: 1.5px solid #e5e7eb;
         color: #6b7280;
-        font-size: 14px;
+        font-size: 12px;
         font-weight: 600;
         min-height: unset;
         transition: transform 180ms ease, background 180ms ease, border-color 180ms ease, color 180ms ease;
@@ -559,7 +569,7 @@ export class CreateGamePage implements OnInit {
 
   openingTime = '06:00';
   closingTime = '20:00';
-  slotIntervalMinutes = 60;
+  slotIntervalMinutes: SlotIntervalMinutes = 15;
 
   dateOptions: DateOption[] = [];
   timeSlots: string[] = [];
@@ -669,6 +679,9 @@ export class CreateGamePage implements OnInit {
           rating: venue.rating ?? null,
           emoji: venue.emoji ?? '🏟️',
           sports: venue.sports ?? [],
+          openTime: venue.openTime ?? undefined,
+          closeTime: venue.closeTime ?? undefined,
+          slotIntervalMinutes: venue.slotIntervalMinutes ?? 15,
         }));
       }
     } catch (e) {
@@ -717,16 +730,26 @@ export class CreateGamePage implements OnInit {
     this.selectedTime = slot;
   }
 
-  private generateSlots(option: DateOption) {
-    const openingMinutes = this.timeToMinutes(this.openingTime);
-    const closingMinutes = this.timeToMinutes(this.closingTime);
-    const now = new Date();
-    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  slotRange(slot: string): string {
+    return formatSlotRange(slot);
+  }
 
-    let slots = this.buildTimeSlots(openingMinutes, closingMinutes, this.slotIntervalMinutes);
+  selectVenue(venue: Venue) {
+    this.selectedVenue = venue.id;
+    this.openingTime = venue.openTime || '6:00 AM';
+    this.closingTime = venue.closeTime || '10:00 PM';
+    this.slotIntervalMinutes = normalizeSlotInterval(venue.slotIntervalMinutes);
+    const option = this.dateOptions.find((d) => d.key === this.selectedDateKey) || this.dateOptions[0];
+    if (option) this.generateSlots(option);
+  }
+
+  private generateSlots(option: DateOption) {
+    const now = new Date();
+    let slots = buildBookingSlots(this.openingTime, this.closingTime, this.slotIntervalMinutes);
 
     if (option.isToday) {
-      slots = slots.filter((slot) => this.timeToMinutes(slot, true) >= nowMinutes);
+      const nowMinutes = now.getHours() * 60 + now.getMinutes();
+      slots = slots.filter((slot) => (parseClockToMinutes(slot) ?? 0) >= nowMinutes);
       if (slots.length === 0) {
         const tomorrow = this.dateOptions[1];
         if (tomorrow) {
@@ -738,40 +761,6 @@ export class CreateGamePage implements OnInit {
 
     this.timeSlots = slots;
     this.selectedTime = slots[0] ?? '';
-  }
-
-  private buildTimeSlots(openingMinutes: number, closingMinutes: number, intervalMinutes: number) {
-    const slots: string[] = [];
-    for (let minutes = openingMinutes; minutes <= closingMinutes; minutes += intervalMinutes) {
-      slots.push(this.formatTime(minutes));
-    }
-    return slots;
-  }
-
-  private formatTime(totalMinutes: number): string {
-    const hours24 = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
-    const period = hours24 >= 12 ? 'PM' : 'AM';
-    const hours12 = hours24 % 12 === 0 ? 12 : hours24 % 12;
-    return `${hours12}:${minutes.toString().padStart(2, '0')} ${period}`;
-  }
-
-  private timeToMinutes(time: string, isDisplay = false): number {
-    const normalized = time.trim();
-    const hasPeriod = normalized.includes('AM') || normalized.includes('PM');
-
-    if (!isDisplay && !hasPeriod) {
-      const [hourStr, minuteStr] = normalized.split(':');
-      return parseInt(hourStr, 10) * 60 + parseInt(minuteStr, 10);
-    }
-
-    const [timePart, period] = normalized.split(' ');
-    const [hourStr, minuteStr] = timePart.split(':');
-    let hours = parseInt(hourStr, 10);
-    const minutes = parseInt(minuteStr, 10);
-    if (period === 'PM' && hours !== 12) hours += 12;
-    if (period === 'AM' && hours === 12) hours = 0;
-    return hours * 60 + minutes;
   }
 
   private formatWeekday(date: Date): string {

@@ -15,8 +15,6 @@ import { HeaderComponent } from '../header/header.component';
     <app-header
       *ngIf="showBrand"
       [variant]="headerVariant"
-      [venueName]="venueDisplayName"
-      [venueGreeting]="venueGreetingText"
       [notificationRoute]="resolvedNotificationRoute"
       [homeRoute]="resolvedHomeRoute"
       (menuClick)="openMenu()"
@@ -33,17 +31,6 @@ export class BrandHeaderShellComponent {
 
   get headerVariant(): 'brand' | 'venue' {
     return this.auth.user()?.role === 'venue' ? 'venue' : 'brand';
-  }
-
-  get venueDisplayName(): string {
-    return this.auth.user()?.name?.trim() || 'Phoenix Arena';
-  }
-
-  get venueGreetingText(): string {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Good Morning,';
-    if (hour < 17) return 'Good Afternoon,';
-    return 'Good Evening,';
   }
 
   get resolvedNotificationRoute(): string {

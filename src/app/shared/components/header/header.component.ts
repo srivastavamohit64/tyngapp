@@ -46,19 +46,13 @@ export type AppHeaderVariant = 'brand' | 'page' | 'venue';
 
         <!-- Brand wordmark (absolutely centered) -->
         <button
-          *ngIf="variant === 'brand'"
+          *ngIf="variant === 'brand' || variant === 'venue'"
           type="button"
           class="brand"
           (click)="goHome()"
         >
           tyng<span class="dot">.</span>
         </button>
-
-        <!-- Venue: greeting + venue name -->
-        <div *ngIf="variant === 'venue'" class="venue-title-block">
-          <p class="venue-greeting">{{ venueGreeting }}</p>
-          <p class="venue-name">{{ venueName }}</p>
-        </div>
 
         <!-- Page title (absolutely centered) -->
         <div *ngIf="variant === 'page'" class="title-block">
@@ -252,32 +246,6 @@ export type AppHeaderVariant = 'brand' | 'page' | 'venue';
         justify-content: flex-end;
         min-width: 40px;
       }
-
-      .venue-title-block {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-        text-align: center;
-        z-index: 1;
-        pointer-events: none;
-      }
-
-      .venue-greeting {
-        margin: 0;
-        font-size: 12px;
-        font-weight: 500;
-        color: #9ca3af;
-        line-height: 1.2;
-      }
-
-      .venue-name {
-        margin: 0;
-        font-size: 15px;
-        font-weight: 900;
-        color: #111827;
-        line-height: 1.2;
-      }
     `,
   ],
 })
@@ -293,8 +261,6 @@ export class HeaderComponent {
   @Input() hasNotification = true;
   @Input() notificationRoute = '/app/notifications';
   @Input() homeRoute = '/app/home';
-  @Input() venueName = 'Phoenix Arena';
-  @Input() venueGreeting = '';
   /** When true, end slot has projected content (avoids double spacer). */
   @Input() hasProjectedEnd = false;
 

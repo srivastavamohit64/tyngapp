@@ -6,7 +6,7 @@
           <ion-icon name="location-outline"></ion-icon>
           <div>
             <div class="caption muted">Location</div>
-            <div>Lucknow <ion-icon name="chevron-forward-outline"></ion-icon></div>
+            <div> <ion-icon name="chevron-forward-outline"></ion-icon></div>
           </div>
         </div>
         <button class="bell btn-plain">
@@ -14,7 +14,7 @@
           <span></span>
         </button>
       </div>
-      <ion-searchbar placeholder="Find players, games, venues"></ion-searchbar>
+      <!-- <ion-searchbar placeholder="Find players, games, venues"></ion-searchbar> -->
     </section>
 
     <section class="content-pad">
@@ -58,7 +58,16 @@
           <div class="icon-box orange"><ion-icon name="business-outline"></ion-icon></div>
           <span>Book Venue</span>
         </button>
-      </div>
+        <button class="card" (click)="go('/app/player/venues')">
+          <div class="icon-box orange"><ion-icon name="business-outline"></ion-icon></div>
+          <span>Nearby Games</span>
+        </button>
+
+        <button class="card" (click)="go('/app/player/venues')">
+          <div class="icon-box orange"><ion-icon name="business-outline"></ion-icon></div>
+          <span>Search</span>
+        </button>
+      </div>  
 
       <div class="section-header games-title">
         <h3>Nearby Games</h3>

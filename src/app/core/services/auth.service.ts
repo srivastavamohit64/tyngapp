@@ -1,3 +1,4 @@
+import { Capacitor } from '@capacitor/core';
 import { Injectable, Injector, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, catchError, map, of, tap, throwError } from 'rxjs';
@@ -13,6 +14,7 @@ import {
 } from '../models/api.model';
 import { ApiService } from './api.service';
 import { PushNotificationService } from './push-notification.service';
+import { RealtimeService } from './realtime.service';
 import { TabBadgeService } from './tab-badge.service';
 import { ThemeService } from './theme.service';
 import { resolveMediaUrl } from '../utils/media-url.util';
@@ -30,14 +32,14 @@ export class AuthService {
   readonly sessionReady = signal(false);
 
   register(payload: RegisterPayload): Observable<AuthUser> {
-    return this.api.post<AuthTokenResponse>('/register', payload).pipe(
+    return this.api.post<AuthTokenResponse>('/register', this.withDeviceFields(payload)).pipe(
       map((res) => this.persistAuth(res.data!)),
       catchError((err) => throwError(() => this.extractError(err))),
     );
   }
 
   login(payload: LoginPayload): Observable<AuthUser> {
-    return this.api.post<AuthTokenResponse>('/login', payload).pipe(
+    return this.api.post<AuthTokenResponse>('/login', this.withDeviceFields(payload)).pipe(
       map((res) => this.persistAuth(res.data!)),
       catchError((err) => throwError(() => this.extractError(err))),
     );
@@ -232,6 +234,7 @@ export class AuthService {
       void this.injector.get(PushNotificationService).syncIfAuthenticated();
       this.injector.get(TabBadgeService).start();
       void this.injector.get(ThemeService).refreshFromApi(true);
+      void this.injector.get(RealtimeService).listenUserBookings(String(data.user.id));
     });
     return data.user;
   }
@@ -283,9 +286,33 @@ export class AuthService {
   }
 
   clearSession(): void {
+    try {
+      void this.injector.get(RealtimeService).listenUserBookings(null);
+    } catch {
+      // ignore
+    }
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
     this.user.set(null);
+  }
+
+  private withDeviceFields<T extends LoginPayload | RegisterPayload>(payload: T): T {
+    try {
+      const push = this.injector.get(PushNotificationService);
+      const token = push.getCurrentToken();
+      const deviceId = push.getDeviceId();
+      const platform = Capacitor.getPlatform();
+      return {
+        ...payload,
+        device_token: token || payload.device_token,
+        device_id: deviceId || payload.device_id,
+        platform: platform === 'ios' || platform === 'android' || platform === 'web'
+          ? platform
+          : payload.platform,
+      };
+    } catch {
+      return payload;
+    }
   }
 
   private extractError(err: unknown): string {

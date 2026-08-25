@@ -2,6 +2,11 @@
   <app-brand-header-shell>
     <div class="venue-page">
       <div class="venue-page-inner">
+        <section class="home-hello">
+          <p class="home-hello-wish">{{ wishText }}</p>
+          <h1 class="home-hello-name">{{ helloName }}</h1>
+        </section>
+
         <div *ngIf="loading()" class="venue-card venue-card-padded" style="margin:16px;text-align:center;color:#6b7280;font-weight:600;">
           Loading dashboard…
         </div>

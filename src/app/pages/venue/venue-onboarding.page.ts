@@ -141,16 +141,16 @@ export class VenueOnboardingPage {
   async finish() {
     try {
       await firstValueFrom(this.auth.completeOnboarding({
-        name: this.ownerName.trim() || this.venueName.trim() || 'Venue Owner',
+        name: this.venueName.trim() || 'Venue',
         location: [this.address.trim(), this.city.trim()].filter(Boolean).join(', ') || this.city.trim() || null,
         sports: this.sports,
         venueType: this.venueType,
       }));
       try {
         await firstValueFrom(this.venueService.updateMyProfile({
-          name: this.venueName.trim() || this.ownerName.trim(),
-          displayName: this.venueName.trim() || this.ownerName.trim(),
-          businessName: this.businessName.trim() || this.venueName.trim(),
+          displayName: this.venueName.trim(),
+          venueName: this.venueName.trim(),
+          businessName: this.businessName.trim() || undefined,
           ownerName: this.ownerName.trim(),
           phone: this.mobile.trim() || undefined,
           email: this.email.trim() || null,

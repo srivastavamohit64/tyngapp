@@ -4,6 +4,28 @@
   display: block;
 }
 
+.home-hello {
+  padding: 0 4px 4px;
+  text-align: left;
+}
+
+.home-hello-wish {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #9ca3af;
+  line-height: 1.2;
+}
+
+.home-hello-name {
+  margin: 2px 0 0;
+  font-size: 24px;
+  font-weight: 900;
+  color: #111827;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+}
+
 .venue-block-banner {
   margin: 0 16px 14px;
   display: flex;

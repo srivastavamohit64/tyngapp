@@ -57,13 +57,13 @@ export class PushNotificationService {
    * Register for FCM on native platforms. Safe to call multiple times;
    * re-attempts if a previous run failed before registration completed.
    */
-  async init(): Promise<void> {
+  async init(options?: { force?: boolean }): Promise<void> {
     if (!Capacitor.isNativePlatform()) {
       console.info(`${LOG_PREFIX} skip init — not a native platform (${Capacitor.getPlatform()})`);
       return;
     }
 
-    if (this.initialized) {
+    if (this.initialized && !options?.force) {
       console.info(`${LOG_PREFIX} already initialized`, {
         tokenPreview: this.previewToken(this.currentToken),
       });
@@ -114,7 +114,8 @@ export class PushNotificationService {
       return;
     }
 
-    await this.init();
+    // Re-register for every role (player, coach, venue) after login.
+    await this.init({ force: true });
 
     if (this.currentToken) {
       await this.syncToken(this.currentToken);

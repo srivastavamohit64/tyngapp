@@ -84,6 +84,19 @@ export class VenueDashboardPage implements OnInit, OnDestroy, ViewWillEnter {
   bookingBlockMessage = signal<string | null>(null);
   statusBusyId = signal<string | null>(null);
 
+  get wishText(): string {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good Morning,';
+    if (hour < 17) return 'Good Afternoon,';
+    if (hour < 21) return 'Good Evening,';
+    return 'Good Night,';
+  }
+
+  get helloName(): string {
+    const user = this.auth.user();
+    return (user?.displayName || user?.name || '').trim() || 'Venue';
+  }
+
   private realtimeSub: Subscription | null = null;
   private realtimeReloadTimer: ReturnType<typeof setTimeout> | null = null;
 

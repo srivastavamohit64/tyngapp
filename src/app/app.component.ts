@@ -141,7 +141,12 @@ export class AppComponent implements OnInit {
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
       .subscribe((event) => this.resetPageScroll(event.urlAfterRedirects));
     void this.platform.init();
-    void this.realtime.connect();
+    void this.realtime.connect().then(() => {
+      const userId = this.auth.user()?.id;
+      if (userId) {
+        void this.realtime.listenUserBookings(String(userId));
+      }
+    });
     this.foregroundNotifications.bindAppState();
     // Register FCM as soon as the native app boots (Firebase Console works without Laravel).
     // Token sync to the backend still requires an authenticated session.
@@ -177,7 +182,8 @@ export class AppComponent implements OnInit {
   }
 
   venueDisplayName(): string {
-    return this.venueMenuStats().profileName || this.user()?.name?.trim() || 'Venue';
+    const user = this.user();
+    return user?.displayName?.trim() || this.venueMenuStats().profileName || user?.name?.trim() || 'Venue';
   }
 
   venueLocation(): string {

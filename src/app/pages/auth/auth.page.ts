@@ -161,6 +161,7 @@ const HERO_IMAGE =
             </p>
           </div>
 
+          <!-- Google sign-in (temporarily hidden)
           <div class="divider">
             <span class="line"></span>
             <span class="or">or continue with</span>
@@ -178,6 +179,7 @@ const HERO_IMAGE =
               <span>Google</span>
             </button>
           </div>
+          -->
 
           <p class="bottom-msg">🏙️ Join thousands of players across your city.</p>
         </div>
