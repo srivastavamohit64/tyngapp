@@ -8,11 +8,11 @@ ion-content {
 }
 
 .page-safe {
-  padding-bottom: calc(112px + env(safe-area-inset-bottom));
+  padding-bottom: calc(112px + var(--safe-area-bottom));
 }
 
 .standalone-safe {
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: var(--safe-area-bottom);
 }
 
 .hero {

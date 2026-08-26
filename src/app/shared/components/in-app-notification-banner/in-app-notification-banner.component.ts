@@ -45,7 +45,7 @@ import { ForegroundNotificationService } from '../../../core/services/foreground
     `
       .fg-notif-host {
         position: fixed;
-        top: calc(12px + env(safe-area-inset-top, 0px));
+        top: calc(12px + var(--safe-area-top));
         left: 12px;
         right: 12px;
         z-index: 100000;

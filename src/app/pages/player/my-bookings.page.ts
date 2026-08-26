@@ -30,7 +30,7 @@ import { SegmentControlComponent, SegmentOption } from '../../shared/components/
       </ion-refresher>
 
       <app-brand-header-shell>
-        <main class="page-with-tab-bar min-h-full bg-[#FAFBFC] text-[#111827] pb-[calc(112px+env(safe-area-inset-bottom,0px))]">
+        <main class="page-with-tab-bar min-h-full bg-[#FAFBFC] text-[#111827] pb-[calc(112px+var(--safe-area-bottom))]">
           <app-page-header title="My Bookings" [hasSubContent]="true">
             <app-segment-control
               [options]="segments"

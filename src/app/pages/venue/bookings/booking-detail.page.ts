@@ -417,7 +417,7 @@ type DetailTab = 'overview' | 'players' | 'amenities' | 'live';
     .bd-page {
       min-height: 100%;
       background: #F4F6F8;
-      padding-bottom: calc(108px + env(safe-area-inset-bottom, 0px));
+      padding-bottom: calc(108px + var(--safe-area-bottom));
     }
     .bd-sticky {
       position: sticky; top: 0; z-index: 12;
@@ -430,7 +430,7 @@ type DetailTab = 'overview' | 'players' | 'amenities' | 'live';
       align-items: center;
       gap: 10px;
       padding: 10px 16px;
-      padding-top: calc(10px + env(safe-area-inset-top, 0px));
+      padding-top: calc(10px + var(--app-chrome-top-inset, var(--safe-area-top)));
       background: #fff;
     }
     .bd-header-title { text-align: center; min-width: 0; }
@@ -681,7 +681,7 @@ type DetailTab = 'overview' | 'players' | 'amenities' | 'live';
     .bd-footer {
       position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
       display: flex; gap: 10px;
-      padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+      padding: 12px 16px calc(12px + var(--safe-area-bottom));
       background: #F4F6F8;
       border-top: 1px solid #E5E7EB;
     }
@@ -699,7 +699,7 @@ type DetailTab = 'overview' | 'players' | 'amenities' | 'live';
     }
     .sheet {
       width: 100%; background: #fff; border-radius: 28px 28px 0 0;
-      padding: 12px 18px calc(18px + env(safe-area-inset-bottom, 0px));
+      padding: 12px 18px calc(18px + var(--safe-area-bottom));
       text-align: center;
     }
     .grab { width: 40px; height: 4px; border-radius: 99px; background: #E5E7EB; margin: 0 auto 14px; }
@@ -743,7 +743,7 @@ type DetailTab = 'overview' | 'players' | 'amenities' | 'live';
     .sheet-mask--complete { align-items: flex-end; }
     .sheet-complete {
       max-height: 92vh; overflow-y: auto; text-align: center;
-      padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+      padding-bottom: calc(20px + var(--safe-area-bottom));
     }
     .complete-emoji { font-size: 36px; line-height: 1; margin-bottom: 8px; }
     .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }

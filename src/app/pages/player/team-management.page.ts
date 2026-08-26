@@ -17,7 +17,7 @@ import { SocialService } from '../../core/services/social.service';
         <ion-refresher-content></ion-refresher-content>
       </ion-refresher>
 
-      <main class="safe-area-top page-with-tab-bar friends-page">
+      <main class="page-with-tab-bar friends-page">
         <header class="friends-header">
           <button type="button" class="icon-btn" (click)="back()" aria-label="Back">
             <ion-icon name="chevron-back-outline"></ion-icon>
@@ -95,7 +95,7 @@ import { SocialService } from '../../core/services/social.service';
         display: flex;
         align-items: center;
         gap: 12px;
-        padding: 16px 16px 12px;
+        padding: calc(16px + var(--app-chrome-top-inset, var(--safe-area-top))) 16px 12px;
         background: #fff;
         border-bottom: 1px solid #f1f5f9;
         position: sticky;

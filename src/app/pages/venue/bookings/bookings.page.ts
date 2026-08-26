@@ -158,7 +158,7 @@ interface BookingItem {
     .bookings-page {
       min-height: 100%;
       background: #FAFBFC;
-      padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px));
+      padding-bottom: calc(120px + var(--safe-area-bottom));
     }
 
     .page-header {

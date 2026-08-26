@@ -362,28 +362,62 @@
         <div class="home-hello">
           <p class="home-hello-wish">{{ greeting }}</p>
           <h1 class="home-hello-name">{{ helloName }}</h1>
+          <button type="button" class="home-location-trigger" (click)="openLocationPicker()">
+            <ion-icon name="location" class="home-location-pin"></ion-icon>
+            <span class="home-location-label">{{ locationLabel }}</span>
+            <ion-icon name="chevron-down" class="home-location-chevron"></ion-icon>
+          </button>
+          <p *ngIf="locationError" class="home-location-error">{{ locationError }}</p>
         </div>
-        <div class="location-banner">
-          <div class="location-banner-glow"></div>
-          <div class="location-banner-inner">
-            <div>
-              <p class="location-kicker">
-                {{ locationLoading ? 'Updating location' : 'Your Location' }}
-              </p>
-              <div class="location-line">
-                <ion-icon name="location"></ion-icon>
-                <p>{{ locationLabel }}</p>
-              </div>
+
+        <button type="button" class="home-search" (click)="go('/app/search')">
+          <ion-icon name="search-outline"></ion-icon>
+          <span>Search venues, players, coaches</span>
+        </button>
+
+        <ion-modal [isOpen]="locationPickerOpen" (didDismiss)="onLocationPickerDismiss()" [initialBreakpoint]="0.55" [breakpoints]="[0, 0.55, 0.85]">
+          <ng-template>
+            <div class="addr-sheet">
+              <div class="addr-sheet-handle"></div>
+              <h2 class="addr-sheet-title">Select location</h2>
+              <p class="addr-sheet-sub">Nearby games and bookings use this address</p>
+
+              <button type="button" class="addr-option" [class.addr-option--active]="isCurrentSelected" (click)="selectCurrentLocation()">
+                <div class="addr-option-icon">
+                  <ion-icon name="navigate-outline"></ion-icon>
+                </div>
+                <div class="addr-option-text">
+                  <p class="addr-option-label">Current location</p>
+                  <p class="addr-option-meta">{{ currentLocationMeta }}</p>
+                </div>
+                <ion-icon *ngIf="isCurrentSelected" name="checkmark-circle" class="addr-option-check"></ion-icon>
+              </button>
+
+              <p class="addr-section-label" *ngIf="savedAddresses.length">Saved addresses</p>
+              <button
+                type="button"
+                class="addr-option"
+                *ngFor="let addr of savedAddresses"
+                [class.addr-option--active]="selectedAddressId === addr.id"
+                (click)="selectSavedAddress(addr.id)"
+              >
+                <div class="addr-option-icon addr-option-icon--saved">
+                  <ion-icon name="home-outline"></ion-icon>
+                </div>
+                <div class="addr-option-text">
+                  <p class="addr-option-label">{{ addr.label }}</p>
+                  <p class="addr-option-meta">{{ addr.address }}</p>
+                </div>
+                <ion-icon *ngIf="selectedAddressId === addr.id" name="checkmark-circle" class="addr-option-check"></ion-icon>
+              </button>
+
+              <button type="button" class="addr-manage" (click)="manageAddresses()">
+                <ion-icon name="add-circle-outline"></ion-icon>
+                Manage saved addresses
+              </button>
             </div>
-            <button type="button" class="location-refresh" [disabled]="locationLoading" (click)="refreshLocation()">
-              <ion-icon name="refresh" [class.spin]="locationLoading"></ion-icon>
-            </button>
-          </div>
-          <div *ngIf="locationError" class="location-error">
-            <ion-icon name="warning"></ion-icon>
-            <p>{{ locationError }}</p>
-          </div>
-        </div>
+          </ng-template>
+        </ion-modal>
 
         <!-- Quick Suggestion: only when a game matches player location -->
         <div class="suggest-card" *ngIf="quickSuggestion">
@@ -470,15 +504,6 @@
               </div>
               <p class="qa-title">Nearby Games</p>
               <p class="qa-sub">-</p>
-            </button>
-
-            <button type="button" class="qa-card qa-purple" (click)="go('/app/search')">
-              <div class="qa-glow qa-glow-purple"></div>
-              <div class="qa-icon qa-icon-purple">
-                <ion-icon name="search-outline"></ion-icon>
-              </div>
-              <p class="qa-title">Search</p>
-              <p class="qa-sub">Find games &amp; players</p>
             </button>
           </div>
         </div>

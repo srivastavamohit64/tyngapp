@@ -50,7 +50,8 @@ import { IonicModule } from '@ionic/angular';
         z-index: 30;
         background: #ffffff;
         border-bottom: 1px solid #f3f4f6;
-        padding-top: env(safe-area-inset-top, 0px);
+        /* 0 under brand chrome via --app-chrome-top-inset */
+        padding-top: var(--app-chrome-top-inset, var(--safe-area-top));
       }
 
       .page-header-row {

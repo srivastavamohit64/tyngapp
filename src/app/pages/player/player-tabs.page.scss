@@ -1,8 +1,8 @@
 ion-tab-bar {
   --background: #111827;
   --border: 1px solid rgba(255, 255, 255, 0.1);
-  min-height: calc(78px + env(safe-area-inset-bottom));
-  padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+  min-height: calc(78px + var(--safe-area-bottom));
+  padding: 8px 8px calc(8px + var(--safe-area-bottom));
 }
 
 ion-tab-button {

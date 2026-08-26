@@ -234,7 +234,7 @@ interface DateItem {
         align-items: center;
         justify-content: space-between;
         gap: 12px;
-        padding: 10px 16px;
+        padding: calc(10px + var(--app-chrome-top-inset, var(--safe-area-top))) 16px 10px;
         background: rgba(255, 255, 255, 0.96);
         border-bottom: 1px solid #eef0f3;
         backdrop-filter: blur(8px);
@@ -707,7 +707,7 @@ interface DateItem {
       .book-cta {
         max-width: 28rem;
         margin: 0 auto;
-        padding: 12px 16px calc(18px + env(safe-area-inset-bottom, 0px));
+        padding: 12px 16px calc(18px + var(--safe-area-bottom));
       }
 
       .cta-btn {

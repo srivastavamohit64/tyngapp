@@ -8,7 +8,7 @@
   flex-direction: column;
   min-height: 100%;
   background: var(--app-background);
-  padding-top: calc(16px + var(--safe-area-top));
+  padding-top: calc(16px + var(--app-chrome-top-inset, var(--safe-area-top)));
   /* Bottom padded to clear the tab bar */
   padding-bottom: calc(var(--app-tab-bar-height) + var(--safe-area-bottom) + 24px);
   padding-left: calc(20px + var(--safe-area-left));

@@ -378,7 +378,7 @@ import {
       overflow: auto;
       background: #fff;
       border-radius: 28px 28px 0 0;
-      padding: 4px 20px calc(16px + env(safe-area-inset-bottom, 0px));
+      padding: 4px 20px calc(16px + var(--safe-area-bottom));
       position: relative;
       box-shadow: 0 -12px 40px rgba(15, 23, 42, 0.2);
     }

@@ -166,7 +166,7 @@ interface GameChatDetails {
           </button>
         </div>
 
-        <div class="border-t border-slate-100 px-3 py-2 pb-[calc(12px+env(safe-area-inset-bottom))] bg-white flex items-end gap-2">
+        <div class="border-t border-slate-100 px-3 py-2 pb-[calc(12px+var(--safe-area-bottom))] bg-white flex items-end gap-2">
           <textarea
             [(ngModel)]="newMessageText"
             rows="1"

@@ -184,7 +184,7 @@ const TYPES = [
   styles: [`
     :host { display: block; height: 100%; }
     .ce-content { --background: #fff; }
-    .ce-page { padding: 12px 18px calc(100px + env(safe-area-inset-bottom, 0px)); padding-top: calc(12px + env(safe-area-inset-top, 0px)); }
+    .ce-page { padding: 12px 18px calc(100px + var(--safe-area-bottom)); padding-top: calc(12px + var(--safe-area-top)); }
     .back { width: 36px; height: 36px; border: none; border-radius: 50%; background: #F3F4F6; }
     .stepper { display: flex; gap: 4px; margin: 12px 0; }
     .stepper i { flex: 1; height: 4px; border-radius: 99px; background: #E5E7EB; }
@@ -220,7 +220,7 @@ const TYPES = [
     .review { background: #fff; border-radius: 16px; padding: 8px 4px; }
     .review div { display: flex; justify-content: space-between; padding: 8px 4px; border-bottom: 1px solid #F3F4F6; font-size: 13px; }
     .sub { color: #6B7280; font-weight: 600; }
-    .ce-foot { position: fixed; left: 0; right: 0; bottom: 0; padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)); background: #fff; }
+    .ce-foot { position: fixed; left: 0; right: 0; bottom: 0; padding: 12px 16px calc(12px + var(--safe-area-bottom)); background: #fff; }
     .go { width: 100%; height: 52px; border: none; border-radius: 18px; background: #8cf000; color: #111827; font-weight: 900; font-size: 16px; }
   `],
 })

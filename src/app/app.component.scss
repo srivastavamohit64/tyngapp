@@ -20,7 +20,7 @@ ion-menu ion-content {
 
 /* Profile Header */
 .drawer-profile-header {
-  padding: 56px 24px 20px;
+  padding: calc(20px + var(--safe-area-top)) 24px 20px;
   background: linear-gradient(160deg, rgba(var(--app-primary-rgb),0.12) 0%, #FFFFFF 65%);
   position: relative;
 }
@@ -542,8 +542,87 @@ ion-menu ion-content {
   color: white;
 }
 
+.logout-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(17, 24, 39, 0.45);
+  backdrop-filter: blur(4px);
+}
+
+.logout-modal-card {
+  width: 100%;
+  max-width: 340px;
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 24px 20px 20px;
+  box-shadow: 0 24px 48px rgba(17, 24, 39, 0.22);
+  text-align: center;
+}
+
+.logout-modal-icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 14px;
+  border-radius: 18px;
+  background: #fef2f2;
+  color: #ef4444;
+  display: grid;
+  place-items: center;
+}
+
+.logout-modal-icon ion-icon {
+  font-size: 26px;
+}
+
+.logout-modal-title {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 900;
+  color: #111827;
+}
+
+.logout-modal-desc {
+  margin: 0 0 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+  line-height: 1.45;
+}
+
+.logout-modal-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.logout-modal-cancel,
+.logout-modal-confirm {
+  flex: 1;
+  border: none;
+  border-radius: 14px;
+  padding: 13px 12px;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.logout-modal-cancel {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.logout-modal-confirm {
+  background: #ef4444;
+  color: #ffffff;
+  box-shadow: 0 8px 18px rgba(239, 68, 68, 0.28);
+}
+
 .venue-drawer-header {
-  padding: 56px 24px 20px;
+  padding: calc(20px + var(--safe-area-top)) 24px 20px;
   background: linear-gradient(160deg, rgba(var(--app-primary-rgb), 0.1) 0%, #fff 60%);
 }
 

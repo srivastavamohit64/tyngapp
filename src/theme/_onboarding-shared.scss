@@ -22,7 +22,7 @@ $ob-orange: #ff7a00;
   z-index: 20;
   background: #fff;
   border-bottom: 1px solid #f3f4f6;
-  padding-top: env(safe-area-inset-top, 0px);
+  padding-top: var(--safe-area-top);
 }
 
 .btn-ob-green {

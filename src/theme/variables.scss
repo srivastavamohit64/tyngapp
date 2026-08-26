@@ -1,7 +1,7 @@
 /* Tyng design tokens — defaults; runtime ThemeService overrides via inline CSS vars */
 
 :root {
-  --ion-font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --ion-font-family: Lato, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 
   /* Light theme defaults (overridden by ThemeService) */
   --ion-background-color: #fafbfc;
@@ -91,11 +91,36 @@
   --app-radius-button: 16px;
   --app-radius-input: 14px;
   --app-tab-bar-height: 72px;
-  /* Prefer env(); keep var aliases used across SCSS */
-  --safe-area-top: env(safe-area-inset-top, 0px);
-  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
-  --safe-area-left: env(safe-area-inset-left, 0px);
-  --safe-area-right: env(safe-area-inset-right, 0px);
+  --app-tab-bar-outer-pad: 20px;
+  /*
+   * Capacitor SystemBars injects --safe-area-inset-* from WindowInsets
+   * (required on Android WebView < 140 where env() is wrong/0).
+   * Always prefer the injected var, then env(), then 0.
+   * NOTE: keep env() here — do not alias to --safe-area-* (circular).
+   */
+  --safe-area-top: var(--safe-area-inset-top, env(safe-area-inset-top, 0px));
+  --safe-area-bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+  --safe-area-left: var(--safe-area-inset-left, env(safe-area-inset-left, 0px));
+  --safe-area-right: var(--safe-area-inset-right, env(safe-area-inset-right, 0px));
+
+  /* Ionic reads these for ion-header / ion-footer / ion-content */
+  --ion-safe-area-top: var(--safe-area-top);
+  --ion-safe-area-bottom: var(--safe-area-bottom);
+  --ion-safe-area-left: var(--safe-area-left);
+  --ion-safe-area-right: var(--safe-area-right);
+
+  /*
+   * Inset consumed by the topmost app chrome. Brand shell sets this to 0px
+   * so nested headers/page titles do not double-pad under the status bar.
+   */
+  --app-chrome-top-inset: var(--safe-area-top);
+
+  /*
+   * Floating tab chrome offset (set by .tabs-shell when tab bar is mounted).
+   * Includes system bottom inset so fixed CTAs sit above the pill + gesture area.
+   */
+  --app-bottom-chrome-offset: 0px;
+  --app-bottom-chrome-pad: var(--safe-area-bottom);
 }
 
 .dark-mode,

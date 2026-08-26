@@ -96,7 +96,8 @@ export type AppHeaderVariant = 'brand' | 'page' | 'venue';
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         border-bottom: 1px solid #f3f4f6;
-        padding-top: env(safe-area-inset-top, 0px);
+        /* Inset as padding — keeps .app-header-inner height consistent */
+        padding-top: var(--safe-area-top);
       }
 
       .app-header-inner {
@@ -106,6 +107,7 @@ export type AppHeaderVariant = 'brand' | 'page' | 'venue';
         justify-content: space-between;
         height: 60px;
         padding: 0 20px;
+        box-sizing: border-box;
       }
 
       .hdr-btn {

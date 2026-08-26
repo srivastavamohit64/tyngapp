@@ -2,8 +2,8 @@ import { envSecrets } from './environment.generated';
 
 export const environment = {
   production: false,
-  apiUrl: 'http://127.0.0.1:8000/api',
-//  apiUrl: 'https://tyngpeople.com/api',
+  //apiUrl: 'http://127.0.0.1:8000/api',
+ apiUrl: 'https://tyngpeople.com/api',
   googleMapsApiKey: envSecrets.googleMapsApiKey,
   // Firebase Realtime Database (replaces Laravel Reverb)
   firebase: {

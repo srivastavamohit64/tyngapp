@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Capacitor } from '@capacitor/core';
+import { Capacitor, SystemBars, SystemBarsStyle } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { firstValueFrom } from 'rxjs';
 import { ApiService } from './api.service';
@@ -167,6 +167,13 @@ export class ThemeService {
     this.applyBrandColors(this.colors);
 
     if (Capacitor.isNativePlatform()) {
+      try {
+        void SystemBars.setStyle({
+          style: isDark ? SystemBarsStyle.Dark : SystemBarsStyle.Light,
+        });
+      } catch {
+        /* SystemBars may be unavailable on web builds */
+      }
       try {
         void StatusBar.setOverlaysWebView({ overlay: true });
         void StatusBar.setStyle({ style: isDark ? Style.Dark : Style.Light });

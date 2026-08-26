@@ -131,7 +131,7 @@ type EventsTab = 'home' | 'leagues' | 'rankings' | 'analytics';
   styles: [`
     :host { display: block; height: 100%; }
     .ev-content { --background: #F4F6F8; --padding-bottom: 0; }
-    .ev-page { padding: 12px 16px calc(190px + env(safe-area-inset-bottom, 0px)); padding-top: calc(12px + env(safe-area-inset-top, 0px)); }
+    .ev-page { padding: 12px 16px calc(190px + var(--safe-area-bottom)); padding-top: calc(12px + var(--safe-area-top)); }
     .ev-tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; scrollbar-width: none; }
     .ev-tab { flex: 0 0 auto; border: none; border-radius: 999px; padding: 8px 14px; background: #F3F4F6; font-weight: 800; font-size: 13px; color: #111827; }
     .ev-tab.on { background: #111827; color: #8cf000; box-shadow: inset 0 -2px 0 #8cf000; }
@@ -179,7 +179,7 @@ type EventsTab = 'home' | 'leagues' | 'rankings' | 'analytics';
     .muted { color: #9CA3AF; font-weight: 700; padding: 12px 0; }
     .ev-foot {
       position: fixed; left: 0; right: 0; z-index: 20;
-      bottom: calc(78px + env(safe-area-inset-bottom, 0px));
+      bottom: calc(78px + var(--safe-area-bottom));
       display: flex; gap: 10px; padding: 12px 16px;
       background: #fff; border-top: 1px solid #F3F4F6;
     }
@@ -191,7 +191,7 @@ type EventsTab = 'home' | 'leagues' | 'rankings' | 'analytics';
     .manage { background: #111827; color: #fff; }
     .fab {
       position: fixed;
-      right: 18px; bottom: calc(150px + env(safe-area-inset-bottom, 0px));
+      right: 18px; bottom: calc(150px + var(--safe-area-bottom));
       width: 52px; height: 52px; border: none; border-radius: 50%; background: #8cf000;
       color: #111827; font-size: 28px; font-weight: 800; z-index: 21;
       box-shadow: 0 8px 20px rgba(140,240,0,.4);

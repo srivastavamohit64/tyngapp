@@ -318,7 +318,8 @@ interface AppliedCoupon {
       .summary-header {
         position: sticky; top: 0; z-index: 20;
         display: flex; align-items: center; justify-content: space-between; gap: 12px;
-        padding: 10px 16px; background: rgba(255,255,255,.96); border-bottom: 1px solid #eef0f3;
+        padding: calc(10px + var(--app-chrome-top-inset, var(--safe-area-top))) 16px 10px;
+        background: rgba(255,255,255,.96); border-bottom: 1px solid #eef0f3;
       }
       .summary-header-copy { text-align: center; min-width: 0; }
       .summary-header-copy h1 { margin: 0; font-size: 15px; font-weight: 900; }
@@ -465,7 +466,7 @@ interface AppliedCoupon {
       .summary-footer { background: #fff; box-shadow: 0 -8px 28px rgba(17,24,39,.08); }
       .summary-cta {
         max-width: 28rem; margin: 0 auto;
-        padding: 12px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+        padding: 12px 16px calc(16px + var(--safe-area-bottom));
       }
       .cta-top { display: flex; align-items: center; gap: 12px; }
       .cta-top > div span { display: block; font-size: 11px; font-weight: 700; color: #9ca3af; }
@@ -489,7 +490,7 @@ interface AppliedCoupon {
         position: fixed; left: 0; right: 0; bottom: 0; z-index: 41;
         max-width: 28rem; margin: 0 auto;
         background: #fff; border-radius: 24px 24px 0 0;
-        padding: 12px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+        padding: 12px 20px calc(20px + var(--safe-area-bottom));
         box-shadow: 0 -12px 40px rgba(17, 24, 39, 0.18);
       }
       .sheet-handle {

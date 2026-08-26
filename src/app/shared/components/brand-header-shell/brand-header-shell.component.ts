@@ -11,6 +11,17 @@ import { HeaderComponent } from '../header/header.component';
   selector: 'app-brand-header-shell',
   standalone: true,
   imports: [CommonModule, IonicModule, HeaderComponent],
+  host: {
+    '[class.has-brand-chrome]': 'showBrand',
+    class: 'brand-header-shell',
+  },
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
   template: `
     <app-header
       *ngIf="showBrand"

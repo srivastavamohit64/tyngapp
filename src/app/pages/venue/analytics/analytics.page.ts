@@ -110,14 +110,14 @@ interface PeakHour {
     .analytics-page {
       background: #FAFBFC;
       min-height: 100%;
-      padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px));
+      padding-bottom: calc(112px + var(--safe-area-bottom));
     }
 
     .sticky-header {
       position: sticky;
       top: 0;
       z-index: 30;
-      padding-top: env(safe-area-inset-top, 0px);
+      padding-top: var(--app-chrome-top-inset, var(--safe-area-top));
       box-shadow: 0 2px 10px rgba(0,0,0,0.02);
     }
   `]

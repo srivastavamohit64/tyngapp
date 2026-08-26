@@ -1,7 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { IonicModule, MenuController, ViewWillEnter } from '@ionic/angular';
+import { IonicModule, MenuController, Platform, ViewWillEnter, ViewWillLeave } from '@ionic/angular';
+import { PluginListenerHandle } from '@capacitor/core';
+import { App } from '@capacitor/app';
 import { Subscription, firstValueFrom } from 'rxjs';
 import { BookingRecord, HomeAd } from '../../core/models/api.model';
 import { AdService } from '../../core/services/ad.service';
@@ -10,6 +12,11 @@ import { BookingService } from '../../core/services/booking.service';
 import { DesignDataService } from '../../core/services/design-data.service';
 import { RealtimeService } from '../../core/services/realtime.service';
 import { LocationService, UserLocation, LocationError, LocationErrorType } from '../../core/services/location.service';
+import {
+  CURRENT_LOCATION_ID,
+  SavedAddress,
+  SavedAddressesService,
+} from '../../core/services/saved-addresses.service';
 import {
   formatBookingDate,
   formatBookingTime,
@@ -34,7 +41,7 @@ interface QuickSuggestion {
   styleUrls: ['./home.page.scss'],
   templateUrl: './home.page.html',
 })
-export class HomePage implements ViewWillEnter, OnDestroy {
+export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
   readonly data = inject(DesignDataService);
   readonly auth = inject(AuthService);
   private readonly bookingService = inject(BookingService);
@@ -43,12 +50,19 @@ export class HomePage implements ViewWillEnter, OnDestroy {
   private readonly router = inject(Router);
   private readonly menu = inject(MenuController);
   private readonly locationService = inject(LocationService);
+  private readonly savedAddressesService = inject(SavedAddressesService);
+  private readonly platform = inject(Platform);
 
   readonly notificationRoute = computed(() =>
     this.auth.user()?.role === 'coach' ? '/app/coach/notifications' : '/app/notifications'
   );
 
   private nearbyRealtimeSub?: Subscription;
+  private resumeSub?: Subscription;
+  private appStateHandle?: PluginListenerHandle;
+  private homeVisible = false;
+  private gpsBootstrapInFlight?: Promise<void>;
+  private lastGpsBootstrapAt = 0;
 
   nearbyGames: EventGame[] = [];
   nearbyBookings: BookingRecord[] = [];
@@ -66,9 +80,26 @@ export class HomePage implements ViewWillEnter, OnDestroy {
   currentLocation?: UserLocation;
   locationLoading = false;
   locationError?: string;
+  locationPickerOpen = false;
+  savedAddresses: SavedAddress[] = [];
+  selectedAddressId = CURRENT_LOCATION_ID;
+  private pendingManageAddresses = false;
 
   get helloName(): string {
     return (this.auth.user()?.name || '').trim() || 'Player';
+  }
+
+  get isCurrentSelected(): boolean {
+    return this.selectedAddressId === CURRENT_LOCATION_ID;
+  }
+
+  get currentLocationMeta(): string {
+    const live = (this.currentLocation?.shortLabel
+      || this.currentLocation?.address
+      || this.currentLocation?.postalArea
+      || '').trim();
+    if (live) return this.withoutPincode(live);
+    return this.locationLoading ? 'Detecting…' : 'Use device GPS';
   }
 
   // Coach Dashboard state
@@ -171,30 +202,76 @@ export class HomePage implements ViewWillEnter, OnDestroy {
     } else if (role === 'venue') {
       void this.router.navigateByUrl(this.auth.venueHomePath(), { replaceUrl: true });
     }
+
+    this.resumeSub = this.platform.resume.subscribe(() => {
+      if (this.homeVisible) {
+        void this.resetToGpsOnOpen();
+      }
+    });
+    void App.addListener('appStateChange', ({ isActive }) => {
+      if (isActive && this.homeVisible) {
+        void this.resetToGpsOnOpen();
+      }
+    }).then((handle) => {
+      this.appStateHandle = handle;
+    });
   }
 
   ionViewWillEnter() {
     const role = this.auth.user()?.role;
-    if (role === 'player' || !role) {
-      void this.loadNearbyGames();
+    this.homeVisible = role === 'player' || !role;
+    if (this.homeVisible) {
       void this.loadHomeAds();
-      void this.loadCurrentLocation();
+      void this.resetToGpsOnOpen();
       this.listenForNearbyGames();
     }
   }
 
+  ionViewWillLeave() {
+    this.homeVisible = false;
+  }
+
   ngOnDestroy() {
+    this.homeVisible = false;
     this.nearbyRealtimeSub?.unsubscribe();
+    this.resumeSub?.unsubscribe();
+    void this.appStateHandle?.remove();
     this.stopAdSlider();
   }
 
-  async loadCurrentLocation() {
+  /** Open / reopen: force current GPS selection, then refresh nearby data. */
+  private async resetToGpsOnOpen() {
+    const now = Date.now();
+    // Avoid duplicate GPS hits when both ionViewWillEnter and app resume fire together.
+    if (this.gpsBootstrapInFlight) {
+      return this.gpsBootstrapInFlight;
+    }
+    if (now - this.lastGpsBootstrapAt < 2500) {
+      return;
+    }
+
+    this.gpsBootstrapInFlight = (async () => {
+      this.savedAddressesService.select(CURRENT_LOCATION_ID);
+      this.refreshAddressState();
+      await this.loadCurrentLocation({ forceGps: true });
+      await this.loadNearbyGames();
+      this.lastGpsBootstrapAt = Date.now();
+    })().finally(() => {
+      this.gpsBootstrapInFlight = undefined;
+    });
+
+    return this.gpsBootstrapInFlight;
+  }
+
+  async loadCurrentLocation(options?: { forceGps?: boolean }) {
     this.seedSavedLocation();
     this.locationLoading = true;
     this.locationError = undefined;
 
     try {
-      const location = await this.locationService.getLocationWithFallback();
+      const location = options?.forceGps
+        ? await this.fetchFreshGpsOrFallback()
+        : await this.locationService.getLocationWithFallback();
       if (location) {
         this.currentLocation = await this.enrichLocation(location);
         await this.syncProfileLocation(this.currentLocation);
@@ -208,6 +285,19 @@ export class HomePage implements ViewWillEnter, OnDestroy {
       }
     } finally {
       this.locationLoading = false;
+    }
+  }
+
+  /** Prefer a fresh device GPS fix; fall back to last known / profile if denied. */
+  private async fetchFreshGpsOrFallback() {
+    try {
+      const location = await this.locationService.getCurrentLocationWithAddress();
+      this.locationService.saveLocation(location);
+      return location;
+    } catch (error) {
+      const fallback = await this.locationService.getLocationWithFallback();
+      if (fallback) return fallback;
+      throw error;
     }
   }
 
@@ -269,7 +359,10 @@ export class HomePage implements ViewWillEnter, OnDestroy {
   }
 
   async refreshLocation() {
-    await this.loadCurrentLocation();
+    this.savedAddressesService.select(CURRENT_LOCATION_ID);
+    this.refreshAddressState();
+    await this.loadCurrentLocation({ forceGps: true });
+    await this.loadNearbyGames();
   }
 
   async openAppSettings() {
@@ -342,19 +435,12 @@ export class HomePage implements ViewWillEnter, OnDestroy {
   }
 
   get locationLabel(): string {
-    const live = (this.currentLocation?.postalArea
-      || this.currentLocation?.city
-      || this.currentLocation?.shortLabel
-      || this.currentLocation?.address
-      || '').trim();
-    if (live) return this.withoutPincode(live);
-
-    const saved = this.locationService.getSavedLocation();
-    const cached = (saved?.postalArea || saved?.city || saved?.shortLabel || saved?.address || '').trim();
-    if (cached) return this.withoutPincode(cached);
-
-    const profile = (this.auth.user()?.location || '').trim();
-    if (profile) return this.withoutPincode(profile);
+    const active = this.savedAddressesService.resolveActive(
+      this.currentLocation || this.locationService.getSavedLocation(),
+      this.auth.user()?.location,
+    );
+    const label = (active.label || '').trim();
+    if (label) return this.withoutPincode(label);
 
     return this.locationLoading ? 'Detecting location…' : 'Set your location';
   }
@@ -414,6 +500,47 @@ export class HomePage implements ViewWillEnter, OnDestroy {
 
   editLocation() {
     void this.router.navigateByUrl('/app/profile/edit');
+  }
+
+  openLocationPicker() {
+    this.refreshAddressState();
+    this.locationPickerOpen = true;
+  }
+
+  closeLocationPicker() {
+    this.locationPickerOpen = false;
+  }
+
+  onLocationPickerDismiss() {
+    this.locationPickerOpen = false;
+    if (this.pendingManageAddresses) {
+      this.pendingManageAddresses = false;
+      void this.router.navigateByUrl('/app/profile/edit');
+    }
+  }
+
+  selectCurrentLocation() {
+    this.savedAddressesService.select(CURRENT_LOCATION_ID);
+    this.refreshAddressState();
+    this.closeLocationPicker();
+    void this.loadCurrentLocation({ forceGps: true }).then(() => this.loadNearbyGames());
+  }
+
+  selectSavedAddress(id: string) {
+    this.savedAddressesService.select(id);
+    this.refreshAddressState();
+    this.closeLocationPicker();
+    void this.loadNearbyGames();
+  }
+
+  manageAddresses() {
+    this.pendingManageAddresses = true;
+    this.locationPickerOpen = false;
+  }
+
+  private refreshAddressState() {
+    this.savedAddresses = this.savedAddressesService.list();
+    this.selectedAddressId = this.savedAddressesService.selectedId();
   }
 
   async loadNearbyGames() {

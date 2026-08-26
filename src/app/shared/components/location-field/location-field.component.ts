@@ -15,13 +15,26 @@ import {
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { GoogleMapsService } from '../../../core/services/google-maps.service';
+import {
+  LocationError,
+  LocationErrorType,
+  LocationService,
+} from '../../../core/services/location.service';
+import {
+  NativeGoogleMapComponent,
+  NativeMapCoordinate,
+} from '../native-google-map/native-google-map.component';
 
-const DEFAULT_CENTER = { lat: 26.8467, lng: 80.9462 };
+const DEFAULT_CENTER: NativeMapCoordinate = { lat: 26.8467, lng: 80.9462 };
+/** Wait this long for GPS before showing a fallback center, then pan if GPS arrives. */
+const GPS_OPEN_WAIT_MS = 3000;
+
+type GpsRead = { center: NativeMapCoordinate } | { error: unknown };
 
 @Component({
   selector: 'app-location-field',
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule],
+  imports: [CommonModule, FormsModule, IonicModule, NativeGoogleMapComponent],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -81,12 +94,45 @@ const DEFAULT_CENTER = { lat: 26.8467, lng: 80.9462 };
           </ion-toolbar>
         </ion-header>
         <ion-content class="map-modal-content">
-          <div #mapContainer class="map-container"></div>
+          <div class="map-stage">
+            <app-native-google-map
+              *ngIf="mapMounted"
+              #pickerMap
+              mode="picker"
+              [center]="pickerCenter"
+              [zoom]="pickerZoom"
+              (centerIdle)="onCenterIdle($event)"
+              (mapReady)="onMapReady()"
+              (mapError)="onMapError($event)"
+            ></app-native-google-map>
+
+            <button
+              *ngIf="mapMounted"
+              type="button"
+              class="locate-btn"
+              [disabled]="locating"
+              (click)="goToCurrentLocation()"
+              aria-label="Use current location"
+            >
+              <ion-icon [name]="locating ? 'hourglass-outline' : 'locate-outline'"></ion-icon>
+            </button>
+
+            <div *ngIf="!mapMounted && mapLoading" class="map-overlay">
+              <p>{{ locating ? 'Finding your location...' : 'Loading map...' }}</p>
+            </div>
+          </div>
+
           <div class="map-footer">
+            <p *ngIf="mapHint" class="map-hint">{{ mapHint }}</p>
             <p *ngIf="mapAddress" class="map-address">{{ mapAddress }}</p>
-            <p *ngIf="mapLoading" class="map-status">Loading map...</p>
+            <p *ngIf="addressLoading" class="map-status">Updating address...</p>
             <p *ngIf="mapError" class="map-error">{{ mapError }}</p>
-            <button type="button" class="confirm-btn" [disabled]="!mapAddress || mapLoading" (click)="confirmMap()">
+            <button
+              type="button"
+              class="confirm-btn"
+              [disabled]="!canConfirm"
+              (click)="confirmMap()"
+            >
               Use this location
             </button>
           </div>
@@ -229,10 +275,52 @@ const DEFAULT_CENTER = { lat: 26.8467, lng: 80.9462 };
         --background: #fafbfc;
       }
 
-      .map-container {
+      .map-stage {
+        position: relative;
         width: 100%;
         height: 55vh;
         min-height: 280px;
+        background: #e8eef5;
+      }
+
+      .map-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #e8eef5;
+        color: #6b7280;
+        font-size: 14px;
+        font-weight: 600;
+        z-index: 2;
+      }
+
+      .locate-btn {
+        position: absolute;
+        right: 14px;
+        bottom: 14px;
+        z-index: 5;
+        width: 44px;
+        height: 44px;
+        border: none;
+        border-radius: 50%;
+        background: #ffffff;
+        color: #111827;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 14px rgba(17, 24, 39, 0.18);
+        cursor: pointer;
+      }
+
+      .locate-btn:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+
+      .locate-btn ion-icon {
+        font-size: 22px;
       }
 
       .map-footer {
@@ -250,6 +338,7 @@ const DEFAULT_CENTER = { lat: 26.8467, lng: 80.9462 };
         line-height: 1.4;
       }
 
+      .map-hint,
       .map-status {
         margin: 0;
         font-size: 13px;
@@ -284,10 +373,11 @@ const DEFAULT_CENTER = { lat: 26.8467, lng: 80.9462 };
 })
 export class LocationFieldComponent implements ControlValueAccessor, AfterViewInit, OnDestroy {
   private readonly googleMaps = inject(GoogleMapsService);
+  private readonly locationService = inject(LocationService);
   private readonly cdr = inject(ChangeDetectorRef);
 
   @ViewChild('inputEl') inputEl?: ElementRef<HTMLInputElement>;
-  @ViewChild('mapContainer') mapContainer?: ElementRef<HTMLDivElement>;
+  @ViewChild('pickerMap') pickerMap?: NativeGoogleMapComponent;
 
   @Input() label = 'Location';
   @Input() placeholder = 'City e.g. Lucknow';
@@ -301,20 +391,29 @@ export class LocationFieldComponent implements ControlValueAccessor, AfterViewIn
   mapsAvailable = this.googleMaps.isConfigured();
   mapsChecked = true;
   mapOpen = false;
+  mapMounted = false;
   mapLoading = false;
+  addressLoading = false;
+  locating = false;
   mapError = '';
+  mapHint = '';
   mapAddress = '';
+  pickerCenter: NativeMapCoordinate = DEFAULT_CENTER;
+  pickerZoom = 15;
 
   private autocomplete?: google.maps.places.Autocomplete;
   private autocompleteListener?: google.maps.MapsEventListener;
-  private map?: google.maps.Map;
-  private marker?: google.maps.Marker;
-  private geocoder?: google.maps.Geocoder;
-  private mapClickListener?: google.maps.MapsEventListener;
-  private markerDragListener?: google.maps.MapsEventListener;
+  private pendingCenter: NativeMapCoordinate | null = null;
+  private geocodedCenter: NativeMapCoordinate | null = null;
+  private geocodeSeq = 0;
+  private openSeq = 0;
 
   private onChange: (v: string) => void = () => undefined;
   private onTouched: () => void = () => undefined;
+
+  get canConfirm(): boolean {
+    return !!this.mapAddress && !this.mapLoading && !this.addressLoading && !!this.pendingCenter;
+  }
 
   async ngAfterViewInit() {
     if (!this.mapsAvailable) {
@@ -335,8 +434,8 @@ export class LocationFieldComponent implements ControlValueAccessor, AfterViewIn
 
   ngOnDestroy() {
     this.autocompleteListener?.remove();
-    this.mapClickListener?.remove();
-    this.markerDragListener?.remove();
+    this.openSeq += 1;
+    this.geocodeSeq += 1;
   }
 
   writeValue(value: string): void {
@@ -371,22 +470,278 @@ export class LocationFieldComponent implements ControlValueAccessor, AfterViewIn
 
   openMap() {
     this.mapError = '';
+    this.mapHint = '';
     this.mapAddress = this.value;
+    this.pendingCenter = null;
+    this.geocodedCenter = null;
+    this.mapMounted = false;
+    this.mapLoading = true;
+    this.addressLoading = false;
+    this.locating = true;
     this.mapOpen = true;
-    setTimeout(() => void this.initMap(), 150);
+    const seq = ++this.openSeq;
+    const gpsTask = this.readGpsCenter();
+    setTimeout(() => void this.preparePicker(seq, gpsTask), 80);
   }
 
   closeMap() {
     this.mapOpen = false;
+    this.mapMounted = false;
     this.mapLoading = false;
+    this.addressLoading = false;
+    this.locating = false;
     this.mapError = '';
+    this.mapHint = '';
+    this.pendingCenter = null;
+    this.geocodedCenter = null;
+    this.openSeq += 1;
+    this.geocodeSeq += 1;
   }
 
-  confirmMap() {
-    if (this.mapAddress) {
-      this.setValue(this.mapAddress);
+  async confirmMap() {
+    // Always read live map center at confirm time (not an outdated GPS/saved point).
+    const center = (await this.pickerMap?.getCenter()) || this.pendingCenter;
+    if (!center) {
+      this.mapError = 'Could not read map location. Please try again.';
+      return;
     }
+
+    this.pendingCenter = center;
+
+    const addressMatchesCenter =
+      !!this.mapAddress &&
+      !!this.geocodedCenter &&
+      this.sameCoordinate(this.geocodedCenter, center);
+
+    if (!addressMatchesCenter) {
+      this.addressLoading = true;
+      this.cdr.markForCheck();
+      try {
+        this.mapAddress = await this.locationService.reverseGeocode(center.lat, center.lng);
+        this.geocodedCenter = center;
+      } catch {
+        this.mapError = 'Could not resolve address for this point.';
+        this.addressLoading = false;
+        this.cdr.markForCheck();
+        return;
+      }
+      this.addressLoading = false;
+    }
+
+    this.setValue(this.mapAddress);
     this.closeMap();
+  }
+
+  onMapReady() {
+    this.mapLoading = false;
+    this.cdr.markForCheck();
+  }
+
+  onMapError(message: string) {
+    this.mapLoading = false;
+    this.mapError = message || 'Unable to load map.';
+    this.cdr.markForCheck();
+  }
+
+  onCenterIdle(center: NativeMapCoordinate) {
+    this.pendingCenter = center;
+    void this.reverseGeocodeCenter(center);
+  }
+
+  async goToCurrentLocation() {
+    if (this.locating) {
+      return;
+    }
+
+    this.locating = true;
+    this.mapError = '';
+    this.mapHint = '';
+
+    try {
+      const position = await this.locationService.getCurrentPosition();
+      const next: NativeMapCoordinate = {
+        lat: position.coords.latitude,
+        lng: position.coords.longitude,
+      };
+      this.pickerCenter = next;
+      this.pickerZoom = 16;
+      await this.pickerMap?.animateTo(next, 16);
+      // idle → reverse geocode; do not auto-save profile location
+    } catch (error) {
+      this.mapHint = this.permissionMessage(error);
+    } finally {
+      this.locating = false;
+      this.cdr.markForCheck();
+    }
+  }
+
+  private async preparePicker(seq: number, gpsTask: Promise<GpsRead>) {
+    const fallbackTask = this.resolveFallbackCenter();
+
+    try {
+      const quick = await Promise.race([
+        gpsTask.then((result) => ({ kind: 'gps' as const, result })),
+        new Promise<{ kind: 'wait' }>((resolve) =>
+          setTimeout(() => resolve({ kind: 'wait' }), GPS_OPEN_WAIT_MS),
+        ),
+      ]);
+
+      if (seq !== this.openSeq) {
+        return;
+      }
+
+      if (quick.kind === 'gps' && 'center' in quick.result) {
+        this.applyPickerCenter(quick.result.center, 16, '');
+        this.locating = false;
+        this.mountPicker();
+        return;
+      }
+
+      const fallback = await fallbackTask;
+      if (seq !== this.openSeq) {
+        return;
+      }
+
+      if (quick.kind === 'gps' && !('center' in quick.result)) {
+        this.applyPickerCenter(
+          fallback.center,
+          fallback.zoom,
+          this.permissionMessage(quick.result.error),
+        );
+        this.locating = false;
+        this.mountPicker();
+        return;
+      }
+
+      this.applyPickerCenter(fallback.center, fallback.zoom, '');
+      this.locating = true;
+      this.mountPicker();
+
+      const gps = await gpsTask;
+      if (seq !== this.openSeq) {
+        return;
+      }
+
+      this.locating = false;
+      if ('center' in gps) {
+        this.pickerCenter = gps.center;
+        this.pickerZoom = 16;
+        this.mapHint = '';
+        await this.pickerMap?.animateTo(gps.center, 16);
+      } else {
+        this.mapHint = this.permissionMessage(gps.error);
+      }
+    } catch (e) {
+      if (seq !== this.openSeq) {
+        return;
+      }
+      this.applyPickerCenter(DEFAULT_CENTER, 13, '');
+      this.mapError = String(e);
+      this.locating = false;
+      this.mountPicker();
+    }
+    this.cdr.markForCheck();
+  }
+
+  private async readGpsCenter(): Promise<GpsRead> {
+    try {
+      const position = await this.locationService.getCurrentPosition();
+      return {
+        center: {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        },
+      };
+    } catch (error) {
+      return { error };
+    }
+  }
+
+  private async resolveFallbackCenter(): Promise<{
+    center: NativeMapCoordinate;
+    zoom: number;
+  }> {
+    const existing = this.value.trim();
+    if (existing) {
+      try {
+        const geocoded = await this.googleMaps.geocode(existing, DEFAULT_CENTER);
+        if (geocoded) {
+          return { center: geocoded, zoom: 15 };
+        }
+      } catch {
+        // Fall through to saved / default.
+      }
+    }
+
+    const saved = this.locationService.getSavedLocation();
+    if (saved && Number.isFinite(saved.latitude) && Number.isFinite(saved.longitude)) {
+      return {
+        center: { lat: saved.latitude, lng: saved.longitude },
+        zoom: 14,
+      };
+    }
+
+    return { center: DEFAULT_CENTER, zoom: 13 };
+  }
+
+  private applyPickerCenter(center: NativeMapCoordinate, zoom: number, hint: string) {
+    this.pickerCenter = center;
+    this.pickerZoom = zoom;
+    this.pendingCenter = center;
+    this.mapHint = hint;
+  }
+
+  private mountPicker() {
+    this.mapMounted = true;
+    this.mapLoading = false;
+    this.cdr.markForCheck();
+  }
+
+  private async reverseGeocodeCenter(center: NativeMapCoordinate) {
+    const seq = ++this.geocodeSeq;
+    this.addressLoading = true;
+    this.mapError = '';
+    this.cdr.markForCheck();
+
+    try {
+      const address = await this.locationService.reverseGeocode(center.lat, center.lng);
+      if (seq !== this.geocodeSeq) {
+        return;
+      }
+      this.mapAddress = address;
+      this.geocodedCenter = center;
+    } catch {
+      if (seq !== this.geocodeSeq) {
+        return;
+      }
+      this.mapError = 'Could not resolve address for this point.';
+    } finally {
+      if (seq === this.geocodeSeq) {
+        this.addressLoading = false;
+        this.cdr.markForCheck();
+      }
+    }
+  }
+
+  private sameCoordinate(a: NativeMapCoordinate, b: NativeMapCoordinate): boolean {
+    return Math.abs(a.lat - b.lat) < 1e-6 && Math.abs(a.lng - b.lng) < 1e-6;
+  }
+
+  private permissionMessage(error: unknown): string {
+    if (error instanceof LocationError) {
+      switch (error.type) {
+        case LocationErrorType.PERMISSION_DENIED:
+        case LocationErrorType.PERMISSION_PERMANENTLY_DENIED:
+          return 'Location permission denied. Move the map to choose a place, or enable location access.';
+        case LocationErrorType.GPS_DISABLED:
+          return 'GPS is turned off. Move the map to choose a place, or enable location services.';
+        case LocationErrorType.TIMEOUT:
+          return 'Could not get your current location in time. Move the map to choose a place.';
+        default:
+          return 'Current location unavailable. Move the map to choose a place.';
+      }
+    }
+    return 'Current location unavailable. Move the map to choose a place.';
   }
 
   private setValue(next: string) {
@@ -411,103 +766,6 @@ export class LocationFieldComponent implements ControlValueAccessor, AfterViewIn
       const address = place?.formatted_address || place?.name || '';
       if (address) {
         this.setValue(address);
-      }
-    });
-  }
-
-  private async initMap() {
-    const container = this.mapContainer?.nativeElement;
-    if (!container) {
-      return;
-    }
-
-    this.mapLoading = true;
-    this.mapError = '';
-
-    try {
-      await this.googleMaps.load();
-      this.geocoder = new google.maps.Geocoder();
-
-      const center = await this.resolveInitialCenter();
-
-      this.map = new google.maps.Map(container, {
-        center,
-        zoom: 13,
-        mapTypeControl: false,
-        streetViewControl: false,
-        fullscreenControl: false,
-      });
-
-      this.marker = new google.maps.Marker({
-        map: this.map,
-        position: center,
-        draggable: true,
-      });
-
-      this.mapClickListener = this.map.addListener('click', (event: google.maps.MapMouseEvent) => {
-        if (!event.latLng || !this.marker) {
-          return;
-        }
-        this.marker.setPosition(event.latLng);
-        void this.reverseGeocode(event.latLng);
-      });
-
-      this.markerDragListener = this.marker.addListener('dragend', () => {
-        const position = this.marker?.getPosition();
-        if (position) {
-          void this.reverseGeocode(position);
-        }
-      });
-
-      void this.reverseGeocode(center);
-    } catch (e) {
-      this.mapError = String(e);
-    } finally {
-      this.mapLoading = false;
-    }
-  }
-
-  private async resolveInitialCenter(): Promise<google.maps.LatLngLiteral> {
-    if (this.value.trim()) {
-      const geocoded = await this.geocodeAddress(this.value.trim());
-      if (geocoded) {
-        return geocoded;
-      }
-    }
-
-    return DEFAULT_CENTER;
-  }
-
-  private geocodeAddress(address: string): Promise<google.maps.LatLngLiteral | null> {
-    return new Promise((resolve) => {
-      if (!this.geocoder) {
-        this.geocoder = new google.maps.Geocoder();
-      }
-
-      this.geocoder.geocode({ address, componentRestrictions: { country: 'IN' } }, (results, status) => {
-        if (status === 'OK' && results?.[0]?.geometry?.location) {
-          const loc = results[0].geometry.location;
-          resolve({ lat: loc.lat(), lng: loc.lng() });
-        } else {
-          resolve(null);
-        }
-      });
-    });
-  }
-
-  private reverseGeocode(latLng: google.maps.LatLng | google.maps.LatLngLiteral) {
-    if (!this.geocoder) {
-      this.geocoder = new google.maps.Geocoder();
-    }
-
-    this.mapLoading = true;
-    this.geocoder.geocode({ location: latLng }, (results, status) => {
-      this.mapLoading = false;
-      if (status === 'OK' && results?.[0]?.formatted_address) {
-        this.mapAddress = results[0].formatted_address;
-        this.mapError = '';
-      } else {
-        this.mapError = 'Could not resolve address for this point.';
       }
     });
   }

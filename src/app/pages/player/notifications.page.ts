@@ -212,7 +212,7 @@ const FILTERS: { id: FilterId; label: string; emoji: string }[] = [
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 56px 20px 16px;
+        padding: calc(16px + var(--app-chrome-top-inset, var(--safe-area-top))) 20px 16px;
         background: #ffffff;
         border-bottom: 1px solid #f3f4f6;
       }

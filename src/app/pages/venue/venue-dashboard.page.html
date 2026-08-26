@@ -133,80 +133,100 @@
               See All <ion-icon name="chevron-forward-outline"></ion-icon>
             </button>
           </div>
-          <div *ngFor="let b of bookings" class="venue-list-row" (click)="go('/app/venue/bookings/' + b.id)" style="cursor:pointer">
-            <div class="venue-avatar-wrap">
-              <img [src]="b.photo" [alt]="b.name" class="venue-avatar" />
-              <div *ngIf="b.type === 'coach'" class="venue-coach-badge">🏋️</div>
+          <ng-container *ngIf="bookings.length; else noBookings">
+            <div *ngFor="let b of bookings" class="venue-list-row" (click)="go('/app/venue/bookings/' + b.id)" style="cursor:pointer">
+              <div class="venue-avatar-wrap">
+                <img [src]="b.photo" [alt]="b.name" class="venue-avatar" />
+                <div *ngIf="b.type === 'coach'" class="venue-coach-badge">🏋️</div>
+              </div>
+              <div class="venue-list-body">
+                <p class="venue-list-name">{{ b.name }}</p>
+                <p class="venue-list-meta">{{ b.sport }} · {{ b.court }} · {{ b.time }}</p>
+              </div>
+              <div class="venue-list-end">
+                <p class="venue-list-amount">{{ b.amount }}</p>
+                <span class="venue-status-pill"
+                  [style.backgroundColor]="getStatusStyle(b.status).bg"
+                  [style.color]="getStatusStyle(b.status).color">{{ b.status }}</span>
+              </div>
             </div>
-            <div class="venue-list-body">
-              <p class="venue-list-name">{{ b.name }}</p>
-              <p class="venue-list-meta">{{ b.sport }} · {{ b.court }} · {{ b.time }}</p>
-            </div>
-            <div class="venue-list-end">
-              <p class="venue-list-amount">{{ b.amount }}</p>
-              <span class="venue-status-pill"
-                [style.backgroundColor]="getStatusStyle(b.status).bg"
-                [style.color]="getStatusStyle(b.status).color">{{ b.status }}</span>
-            </div>
-          </div>
+          </ng-container>
+          <ng-template #noBookings>
+            <p class="venue-empty-msg">No bookings available for today</p>
+          </ng-template>
         </section>
 
         <!-- Court Occupancy -->
         <section class="venue-card venue-card-padded">
           <h3 class="venue-section-title">Court Occupancy</h3>
-          <div *ngFor="let court of courts" class="venue-heatmap-row">
-            <div class="venue-heatmap-header">
-              <span class="venue-heatmap-name">{{ court.name }}</span>
-              <span class="venue-heatmap-count">{{ bookedCount(court) }}/{{ court.slots.length }} booked</span>
+          <ng-container *ngIf="courts.length; else noCourts">
+            <div *ngFor="let court of courts" class="venue-heatmap-row">
+              <div class="venue-heatmap-header">
+                <span class="venue-heatmap-name">{{ court.name }}</span>
+                <span class="venue-heatmap-count">{{ bookedCount(court) }}/{{ court.slots.length }} booked</span>
+              </div>
+              <div class="venue-heatmap-slots">
+                <div *ngFor="let booked of court.slots"
+                  class="venue-slot"
+                  [class.venue-slot--booked]="booked"
+                  [class.venue-slot--free]="!booked"></div>
+              </div>
+              <div class="venue-slot-labels">
+                <span>6AM</span><span>12PM</span><span>6PM</span><span>9PM</span>
+              </div>
             </div>
-            <div class="venue-heatmap-slots">
-              <div *ngFor="let booked of court.slots"
-                class="venue-slot"
-                [class.venue-slot--booked]="booked"
-                [class.venue-slot--free]="!booked"></div>
+            <div class="venue-legend">
+              <div class="venue-legend-item">
+                <div class="venue-legend-swatch" style="background: var(--app-primary)"></div>
+                <span>Booked</span>
+              </div>
+              <div class="venue-legend-item">
+                <div class="venue-legend-swatch" style="background: #f3f4f6"></div>
+                <span>Available</span>
+              </div>
             </div>
-            <div class="venue-slot-labels">
-              <span>6AM</span><span>12PM</span><span>6PM</span><span>9PM</span>
-            </div>
-          </div>
-          <div class="venue-legend">
-            <div class="venue-legend-item">
-              <div class="venue-legend-swatch" style="background: var(--app-primary)"></div>
-              <span>Booked</span>
-            </div>
-            <div class="venue-legend-item">
-              <div class="venue-legend-swatch" style="background: #f3f4f6"></div>
-              <span>Available</span>
-            </div>
-          </div>
+          </ng-container>
+          <ng-template #noCourts>
+            <p class="venue-empty-msg">No court occupancy data available</p>
+          </ng-template>
         </section>
 
         <!-- Upcoming Coach Sessions -->
         <section class="venue-card venue-card-padded">
           <h3 class="venue-section-title">Upcoming Coach Sessions</h3>
-          <div *ngFor="let s of coachSessions" class="venue-list-row">
-            <img [src]="s.photo" [alt]="s.name" class="venue-avatar venue-avatar--sm" />
-            <div class="venue-list-body">
-              <p class="venue-list-name">{{ s.name }}</p>
-              <p class="venue-list-meta">{{ s.sport }} · {{ s.court }} · {{ s.students }} students</p>
+          <ng-container *ngIf="coachSessions.length; else noCoachSessions">
+            <div *ngFor="let s of coachSessions" class="venue-list-row">
+              <img [src]="s.photo" [alt]="s.name" class="venue-avatar venue-avatar--sm" />
+              <div class="venue-list-body">
+                <p class="venue-list-name">{{ s.name }}</p>
+                <p class="venue-list-meta">{{ s.sport }} · {{ s.court }} · {{ s.students }} students</p>
+              </div>
+              <div class="venue-list-end">
+                <p class="venue-list-amount">{{ s.time }}</p>
+                <span class="venue-coach-pill">Coach</span>
+              </div>
             </div>
-            <div class="venue-list-end">
-              <p class="venue-list-amount">{{ s.time }}</p>
-              <span class="venue-coach-pill">Coach</span>
-            </div>
-          </div>
+          </ng-container>
+          <ng-template #noCoachSessions>
+            <p class="venue-empty-msg">No upcoming coach sessions available</p>
+          </ng-template>
         </section>
 
         <!-- Recent Activity -->
         <section class="venue-card venue-card-padded">
           <h3 class="venue-section-title">Recent Activity</h3>
-          <div *ngFor="let act of activities" class="venue-activity-row">
-            <div class="venue-activity-icon" [style.backgroundColor]="act.bg">{{ act.emoji }}</div>
-            <div>
-              <p class="venue-activity-text">{{ act.text }}</p>
-              <p class="venue-activity-time">{{ act.time }}</p>
+          <ng-container *ngIf="activities.length; else noActivity">
+            <div *ngFor="let act of activities" class="venue-activity-row">
+              <div class="venue-activity-icon" [style.backgroundColor]="act.bg">{{ act.emoji }}</div>
+              <div>
+                <p class="venue-activity-text">{{ act.text }}</p>
+                <p class="venue-activity-time">{{ act.time }}</p>
+              </div>
             </div>
-          </div>
+          </ng-container>
+          <ng-template #noActivity>
+            <p class="venue-empty-msg">No recent activity available</p>
+          </ng-template>
         </section>
 
         <!-- AI Insights -->
@@ -217,14 +237,19 @@
             <span>TYNG AI Insights</span>
             <span class="venue-ai-badge">AI</span>
           </div>
-          <div *ngFor="let tip of aiTips" class="venue-ai-tip">
-            <span>{{ tip.emoji }}</span>
-            <p>{{ tip.text }}</p>
-          </div>
-          <button type="button" class="venue-btn-orange" (click)="go('/app/venue/analytics')">View Recommendations →</button>
+          <ng-container *ngIf="aiTips.length; else noAiTips">
+            <div *ngFor="let tip of aiTips" class="venue-ai-tip">
+              <span>{{ tip.emoji }}</span>
+              <p>{{ tip.text }}</p>
+            </div>
+            <button type="button" class="venue-btn-orange" (click)="go('/app/venue/analytics')">View Recommendations →</button>
+          </ng-container>
+          <ng-template #noAiTips>
+            <p class="venue-empty-msg venue-empty-msg--on-ai">No insights available right now</p>
+          </ng-template>
         </section>
 
-        <!-- Weather -->
+        <!-- Weather: temperature placeholder; location from GPS -->
         <section class="venue-card venue-card-padded">
           <div class="venue-weather-row">
             <div class="venue-weather-left">
@@ -232,10 +257,10 @@
                 <ion-icon name="sunny"></ion-icon>
               </div>
               <div>
-                <p class="venue-weather-place">Today · Lucknow</p>
+                <p class="venue-weather-place">Today · {{ weatherLocation }}</p>
                 <div class="venue-weather-temp">
-                  <strong>28°</strong>
-                  <span>Sunny</span>
+                  <strong>{{ weatherTemp }}°</strong>
+                  <span>{{ weatherCondition }}</span>
                 </div>
               </div>
             </div>
@@ -249,14 +274,19 @@
         <!-- Pending Actions -->
         <section class="venue-card venue-card-padded">
           <h3 class="venue-section-title">Pending Actions</h3>
-          <div *ngFor="let task of pendingActions" class="venue-pending-row">
-            <div class="venue-urgency-dot" [style.backgroundColor]="getUrgencyColor(task.urgency)"></div>
-            <div class="venue-pending-body">
-              <p class="venue-pending-title">{{ task.label }}</p>
-              <p class="venue-pending-sub">{{ task.sub }}</p>
+          <ng-container *ngIf="pendingActions.length; else noPending">
+            <div *ngFor="let task of pendingActions" class="venue-pending-row">
+              <div class="venue-urgency-dot" [style.backgroundColor]="getUrgencyColor(task.urgency)"></div>
+              <div class="venue-pending-body">
+                <p class="venue-pending-title">{{ task.label }}</p>
+                <p class="venue-pending-sub">{{ task.sub }}</p>
+              </div>
+              <button type="button" class="venue-act-btn" (click)="go('/app/venue/bookings')">Act</button>
             </div>
-            <button type="button" class="venue-act-btn" (click)="go('/app/venue/bookings')">Act</button>
-          </div>
+          </ng-container>
+          <ng-template #noPending>
+            <p class="venue-empty-msg">No pending tasks available</p>
+          </ng-template>
         </section>
 
         </ng-container>

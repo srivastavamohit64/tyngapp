@@ -213,14 +213,14 @@ const DOC_LABELS: Record<string, string> = {
     .venue-profile-page {
       background: #FAFBFC;
       min-height: 100%;
-      padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px));
+      padding-bottom: calc(112px + var(--safe-area-bottom));
     }
 
     .sticky-header {
       position: sticky;
       top: 0;
       z-index: 30;
-      padding-top: env(safe-area-inset-top, 0px);
+      padding-top: var(--app-chrome-top-inset, var(--safe-area-top));
       box-shadow: 0 2px 10px rgba(0,0,0,0.02);
     }
 
@@ -587,7 +587,10 @@ export class VenueProfilePage implements OnInit, ViewWillEnter {
   }
 
   editProfile() {
-    void this.router.navigateByUrl('/app/venue/complete-profile');
+    const ready = this.auth.user()?.venueProfileReady === true;
+    void this.router.navigateByUrl(
+      ready ? '/app/venue/complete-profile' : '/app/venue/complete-profile?resume=1',
+    );
   }
 
   async setSlotInterval(minutes: SlotIntervalMinutes) {

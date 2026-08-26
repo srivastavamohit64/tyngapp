@@ -145,7 +145,7 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
         overflow-x: hidden;
         background: #FAFBFC;
         color: #111827;
-        padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+        padding-bottom: calc(28px + var(--safe-area-bottom));
       }
       .wallet-body {
         display: flex;

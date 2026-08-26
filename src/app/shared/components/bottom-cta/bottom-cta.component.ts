@@ -40,11 +40,14 @@ import { IonicModule } from '@ionic/angular';
         position: fixed;
         left: 0;
         right: 0;
-        /* Sit above floating tab bar: pill 72 + outer pad 20 + safe area */
-        bottom: calc(var(--app-tab-bar-height, 72px) + 20px + env(safe-area-inset-bottom, 0px));
+        /*
+         * --app-bottom-chrome-offset is set by .tabs-shell when the tab bar
+         * is mounted (includes system bottom inset). Otherwise pad locally.
+         */
+        bottom: var(--app-bottom-chrome-offset, 0px);
         z-index: 30;
         background: #ffffff;
-        padding: 16px 20px;
+        padding: 16px 20px calc(16px + var(--app-bottom-chrome-pad, var(--safe-area-bottom)));
         box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.09);
         border-top: 1px solid #f3f4f6;
         max-width: 440px;

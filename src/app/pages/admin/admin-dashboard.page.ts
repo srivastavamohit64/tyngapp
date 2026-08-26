@@ -74,12 +74,12 @@ import { IonicModule } from '@ionic/angular';
       .page {
         min-height: 100%;
         background: #fafbfc;
-        padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px));
+        padding-bottom: calc(112px + var(--safe-area-bottom));
       }
 
       .hero {
         background: linear-gradient(180deg, rgba(var(--app-primary-rgb), 0.2), transparent);
-        padding: calc(24px + env(safe-area-inset-top, 0px)) 24px 32px;
+        padding: calc(24px + var(--safe-area-top)) 24px 32px;
       }
 
       .hero-top {

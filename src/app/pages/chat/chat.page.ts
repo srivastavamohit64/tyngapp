@@ -53,7 +53,7 @@ import { ChatBubbleComponent } from '../../shared/components/chat-bubble/chat-bu
         display: flex;
         align-items: center;
         gap: 12px;
-        padding: calc(12px + env(safe-area-inset-top, 0px)) 16px 12px;
+        padding: calc(12px + var(--safe-area-top)) 16px 12px;
         background: #fff;
         border-bottom: 1px solid #e5e7eb;
       }
@@ -94,7 +94,7 @@ import { ChatBubbleComponent } from '../../shared/components/chat-bubble/chat-bu
       .input-bar {
         display: flex;
         gap: 8px;
-        padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+        padding: 12px 16px calc(12px + var(--safe-area-bottom));
         background: #fff;
         border-top: 1px solid #e5e7eb;
       }

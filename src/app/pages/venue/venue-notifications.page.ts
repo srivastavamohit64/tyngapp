@@ -58,14 +58,14 @@ import { AppNotification, NotificationFeedService } from '../../core/services/no
       .venue-notifications {
         min-height: 100%;
         background: #fafbfc;
-        padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+        padding-bottom: calc(24px + var(--safe-area-bottom));
       }
       .venue-notifications-header {
         display: flex;
         align-items: center;
         gap: 12px;
         padding: 12px 20px;
-        padding-top: calc(12px + env(safe-area-inset-top, 0px));
+        padding-top: calc(12px + var(--app-chrome-top-inset, var(--safe-area-top)));
         background: #fff;
         border-bottom: 1px solid #f3f4f6;
         position: sticky;

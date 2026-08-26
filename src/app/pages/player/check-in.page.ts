@@ -46,7 +46,7 @@ type BarcodeDetectorLike = {
     </ion-content>
   `,
   styles: [`
-    .ci-page { padding: 16px 18px calc(24px + env(safe-area-inset-bottom, 0px)); }
+    .ci-page { padding: calc(16px + var(--safe-area-top)) 18px calc(24px + var(--safe-area-bottom)); }
     header { display: flex; align-items: center; gap: 8px; }
     h1 { margin: 0; font-size: 20px; font-weight: 900; }
     .back { border: none; background: #F3F4F6; width: 36px; height: 36px; border-radius: 50%; }

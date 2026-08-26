@@ -1,7 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
 import { Geolocation, Position, PermissionStatus } from '@capacitor/geolocation';
 import { GoogleMapsService } from './google-maps.service';
+import { SavedAddressesService } from './saved-addresses.service';
 
 const LOCATION_STORAGE_KEY = 'tyng_user_location';
 
@@ -71,6 +72,7 @@ export class LocationService {
   private geocoder?: google.maps.Geocoder;
   private lastPermissionRequestTime = 0;
   private readonly PERMISSION_REQUEST_COOLDOWN = 5000; // 5 seconds
+  private readonly savedAddresses = inject(SavedAddressesService);
 
   constructor(private googleMapsService: GoogleMapsService) {}
 
@@ -398,26 +400,18 @@ export class LocationService {
   }
 
   /**
-   * Location string used for nearby-games API — same source as the player home banner
-   * (saved GPS, then profile location).
+   * Location string used for nearby-games API — selected saved address, else
+   * current GPS snapshot, else profile location.
    */
   nearbyLocationQuery(profileLocation?: string | null): NearbyLocationQuery {
-    const saved = this.getSavedLocation();
-    const postalArea = (saved?.postalArea || '').trim();
-    const city = (saved?.city || '').trim();
-    const shortLabel = (saved?.shortLabel || saved?.address || '').trim();
-    const profile = (profileLocation || '').trim();
-    const parts = [postalArea, city].filter((part) => part.length > 0);
-    const query = parts.join(', ') || shortLabel || profile;
-    const label = postalArea || city || shortLabel || profile;
-
+    const active = this.savedAddresses.resolveActive(this.getSavedLocation(), profileLocation);
     return {
-      query,
-      city: city || this.cityFromLabel(query),
-      postalArea,
-      label,
-      latitude: typeof saved?.latitude === 'number' && saved.latitude !== 0 ? saved.latitude : null,
-      longitude: typeof saved?.longitude === 'number' && saved.longitude !== 0 ? saved.longitude : null,
+      query: active.query,
+      city: active.city || this.cityFromLabel(active.query),
+      postalArea: active.postalArea,
+      label: active.label,
+      latitude: active.latitude,
+      longitude: active.longitude,
     };
   }
 

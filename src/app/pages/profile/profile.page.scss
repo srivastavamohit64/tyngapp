@@ -6,7 +6,7 @@
   min-height: 100%;
   background: #fafbfc;
   color: #111827;
-  padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(112px + var(--safe-area-bottom));
 }
 
 .header-actions {

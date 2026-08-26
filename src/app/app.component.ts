@@ -78,7 +78,6 @@ export class AppComponent implements OnInit {
     { label: 'Personal Stats', sub: 'Health & fitness info', path: '/app/stats', icon: 'pulse-outline' },
     { label: 'My Schedule', sub: 'Sessions & calendar', path: '/app/coach/schedule', icon: 'calendar-outline', badge: '3' },
     { label: 'Wallet', sub: 'Balance, top-up & history', path: '/app/wallet', icon: 'wallet-outline' },
-    { label: 'Chat', sub: 'Students & community', path: '/app/coach/chat', icon: 'chatbubbles-outline', badge: '7' },
     { label: 'Book Venue', sub: 'Discover & reserve venues', path: '/app/coach/book-venue', icon: 'location-outline' },
     { label: 'My Students', sub: 'Manage your students', path: '/app/coach/students', icon: 'people-outline' },
     { label: 'Earnings', sub: 'Revenue & payouts', path: '/app/coach/earnings', icon: 'cash-outline' },
@@ -89,9 +88,6 @@ export class AppComponent implements OnInit {
   readonly venueMenuItems = computed<VenueMenuItem[]>(() => {
     const m = this.venueMenuStats();
     const earnings = `₹${Number(m.monthEarnings || 0).toLocaleString('en-IN')} this month`;
-    const bookingsSub = m.todayBookings > 0
-      ? `${m.todayBookings} today`
-      : `${m.upcomingBookings} upcoming`;
     const facilitiesSub = m.courtsCount > 0
       ? `${m.courtsCount} court${m.courtsCount === 1 ? '' : 's'}`
       : 'Courts & equipment';
@@ -102,20 +98,6 @@ export class AppComponent implements OnInit {
       { label: 'Facilities & Amenities', sub: facilitiesSub, path: '/app/venue/facilities', icon: 'cube-outline' },
       { label: 'Wallet', sub: 'Balance, top-up & history', path: '/app/wallet', icon: 'wallet-outline' },
       { label: 'Earnings', sub: earnings, path: '/app/venue/earnings', icon: 'cash-outline' },
-      {
-        label: 'Bookings',
-        sub: bookingsSub,
-        path: '/app/venue/bookings',
-        icon: 'calendar-outline',
-        badge: m.pendingBookings > 0 ? String(m.pendingBookings) : undefined,
-      },
-      {
-        label: 'Chat',
-        sub: 'Messages & enquiries',
-        path: '/app/chat',
-        icon: 'chatbubbles-outline',
-        badge: m.unreadChat > 0 ? String(m.unreadChat) : undefined,
-      },
       { label: 'Coaches', sub: 'Partner coaches', path: '/app/venue/facilities', icon: 'people-outline' },
       { label: 'Events', sub: 'Create & manage events', path: '/app/venue/events', icon: 'sparkles-outline' },
       { label: 'Analytics', sub: 'Occupancy & insights', path: '/app/venue/analytics', icon: 'bar-chart-outline' },
@@ -235,7 +217,24 @@ export class AppComponent implements OnInit {
   async navigateTo(path: string) {
     this.showLogoutConfirm = false;
     await this.menu.close();
-    void this.router.navigateByUrl(path);
+    const target = this.resolveVenueNavPath(path);
+    void this.router.navigateByUrl(target);
+  }
+
+  /** Incomplete venue profiles open the wizard at the first missing step. */
+  private resolveVenueNavPath(path: string): string {
+    if (this.auth.user()?.role !== 'venue') return path;
+    const bare = (path || '').split('?')[0];
+    const incomplete = this.profileCompletion() < 100;
+    if (!incomplete) return path;
+
+    if (
+      bare === '/app/venue/complete-profile'
+      || bare === '/app/venue/profile'
+    ) {
+      return '/app/venue/complete-profile?resume=1';
+    }
+    return path;
   }
 
   private resetPageScroll(url: string): void {
@@ -299,6 +298,22 @@ export class AppComponent implements OnInit {
     } catch {
       // Keep previous menu stats if dashboard fails.
     }
+  }
+
+  async requestLogout() {
+    await this.menu.close();
+    this.showLogoutConfirm = true;
+  }
+
+  cancelLogout() {
+    this.showLogoutConfirm = false;
+  }
+
+  get logoutConfirmMessage(): string {
+    const role = this.auth.user()?.role;
+    if (role === 'venue') return 'Your venue profile will be preserved.';
+    if (role === 'coach') return 'Your sessions and profile data will be preserved.';
+    return 'You can sign back in anytime with the same account.';
   }
 
   async logout() {

@@ -355,7 +355,7 @@ type PeriodKey = 'today' | 'week' | 'month' | 'year';
       .earnings-page {
         background: #fafbfc;
         min-height: 100%;
-        padding-bottom: calc(var(--app-tab-bar-height, 72px) + 88px + env(safe-area-inset-bottom, 0px));
+        padding-bottom: calc(var(--app-tab-bar-height, 72px) + 88px + var(--safe-area-bottom));
       }
 
       .sticky-header {
@@ -364,7 +364,7 @@ type PeriodKey = 'today' | 'week' | 'month' | 'year';
         z-index: 30;
         background: #fff;
         border-bottom: 1px solid #f3f4f6;
-        padding: calc(8px + env(safe-area-inset-top, 0px)) 16px 12px;
+        padding: calc(8px + var(--app-chrome-top-inset, var(--safe-area-top))) 16px 12px;
       }
 
       .header-row {
@@ -467,7 +467,7 @@ type PeriodKey = 'today' | 'week' | 'month' | 'year';
         position: fixed;
         left: 0;
         right: 0;
-        bottom: calc(var(--app-tab-bar-height, 72px) + 12px + env(safe-area-inset-bottom, 0px));
+        bottom: calc(var(--app-tab-bar-height, 72px) + 12px + var(--safe-area-bottom));
         z-index: 25;
         background: #fff;
         padding: 12px 20px;

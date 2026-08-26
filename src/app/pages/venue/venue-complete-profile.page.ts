@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, signal, inject, ElementRef, ViewChild } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Capacitor } from '@capacitor/core';
 import { ActionSheetController, AlertController, IonicModule, ViewWillEnter } from '@ionic/angular';
@@ -55,11 +55,12 @@ const FACILITY_SPORTS = [
   { id: 'swimming', label: 'Swimming', emoji: '🏊', photo: 'https://images.unsplash.com/photo-1519315901367-f34ff9154487?w=300&h=200&fit=crop&auto=format' },
 ];
 
-const TOTAL_STEPS = 7;
+const TOTAL_STEPS = 8;
 
 const STEP_TITLES = [
   'Business details',
-  'Location & hours',
+  'Location',
+  'Hours',
   'Facilities',
   'Pricing & booking',
   'Equipment',
@@ -118,9 +119,15 @@ const STEP_TITLES = [
             <div class="w-10 h-10" aria-hidden="true"></div>
           </div>
 
-          <!-- Progress dots indicator -->
+          <!-- Progress dots indicator (tap to jump) -->
           <div class="flex items-center justify-center gap-0.5 pb-4 pt-2">
-            <div *ngFor="let s of stepNumbers" class="flex items-center">
+            <button
+              type="button"
+              *ngFor="let s of stepNumbers"
+              class="flex items-center border-none bg-transparent p-0"
+              (click)="jumpToStep(s)"
+              [attr.aria-label]="'Go to step ' + s"
+            >
               <div class="h-1.5 rounded-full transition-all duration-200"
                 [style.width]="step() === s ? '16px' : '6px'"
                 [style.backgroundColor]="step() > s ? '#FF7A00' : step() === s ? 'var(--app-primary)' : '#E5E7EB'">
@@ -128,7 +135,7 @@ const STEP_TITLES = [
               <div *ngIf="s < totalSteps" class="w-1 h-px mx-0.5"
                 [style.backgroundColor]="step() > s ? '#FF7A00' : '#E5E7EB'">
               </div>
-            </div>
+            </button>
           </div>
         </div>
 
@@ -194,11 +201,11 @@ const STEP_TITLES = [
             </div>
           </div>
 
-          <!-- STEP 2: VENUE INFORMATION -->
+          <!-- STEP 2: LOCATION -->
           <div *ngIf="step() === 2" class="space-y-5">
             <div>
-              <h2 class="text-[20px] font-black text-[#111827] m-0">Venue Information</h2>
-              <p class="text-[13px] text-[#9CA3AF] m-0 mt-0.5">Location and operating hours</p>
+              <h2 class="text-[20px] font-black text-[#111827] m-0">Location</h2>
+              <p class="text-[13px] text-[#9CA3AF] m-0 mt-0.5">Where players will find your venue</p>
             </div>
             <div class="bg-white rounded-[24px] p-5 space-y-4 border border-[#F3F4F6] shadow-sm">
               <div class="complete-profile-address-field-wrap">
@@ -269,6 +276,16 @@ const STEP_TITLES = [
                 <p class="field-label">Landmark <span class="optional">Optional</span></p>
                 <input [(ngModel)]="landmark" placeholder="Near landmark" class="form-input" />
               </div>
+            </div>
+          </div>
+
+          <!-- STEP 3: HOURS -->
+          <div *ngIf="step() === 3" class="space-y-5">
+            <div>
+              <h2 class="text-[20px] font-black text-[#111827] m-0">Hours &amp; slots</h2>
+              <p class="text-[13px] text-[#9CA3AF] m-0 mt-0.5">Operating days, timings and booking gaps</p>
+            </div>
+            <div class="bg-white rounded-[24px] p-5 space-y-4 border border-[#F3F4F6] shadow-sm">
               <div>
                 <p class="field-label">Operating Days</p>
                 <div class="day-wrap">
@@ -300,8 +317,8 @@ const STEP_TITLES = [
             </div>
           </div>
 
-          <!-- STEP 3: FACILITIES -->
-          <div *ngIf="step() === 3" class="space-y-5">
+          <!-- STEP 4: FACILITIES -->
+          <div *ngIf="step() === 4" class="space-y-5">
             <div>
               <h2 class="text-[20px] font-black text-[#111827] m-0">Facilities</h2>
               <p class="text-[13px] text-[#9CA3AF] m-0 mt-0.5">
@@ -382,8 +399,8 @@ const STEP_TITLES = [
             </div>
           </div>
 
-          <!-- STEP 4: PRICING + BOOKING SETTINGS -->
-          <div *ngIf="step() === 4" class="space-y-5">
+          <!-- STEP 5: PRICING + BOOKING SETTINGS -->
+          <div *ngIf="step() === 5" class="space-y-5">
             <div>
               <h2 class="text-[20px] font-black text-[#111827] m-0">Pricing & Booking</h2>
               <p class="text-[13px] text-[#9CA3AF] m-0 mt-0.5">Each turf or court has its own hourly rate</p>
@@ -456,8 +473,8 @@ const STEP_TITLES = [
             </div>
           </div>
 
-          <!-- STEP 5: EQUIPMENT (admin catalog) -->
-          <div *ngIf="step() === 5" class="space-y-5">
+          <!-- STEP 6: EQUIPMENT (admin catalog) -->
+          <div *ngIf="step() === 6" class="space-y-5">
             <div>
               <h2 class="text-[20px] font-black text-[#111827] m-0">Sports Equipment</h2>
               <p class="text-[13px] text-[#9CA3AF] m-0 mt-0.5">Choose rentals from the admin catalog and set quantities</p>
@@ -496,8 +513,8 @@ const STEP_TITLES = [
             </div>
           </div>
 
-          <!-- STEP 6: GALLERY -->
-          <div *ngIf="step() === 6" class="space-y-5">
+          <!-- STEP 7: GALLERY -->
+          <div *ngIf="step() === 7" class="space-y-5">
             <div>
               <h2 class="text-[20px] font-black text-[#111827] m-0">Venue Photos</h2>
               <p class="text-[13px] text-[#9CA3AF] m-0 mt-0.5">Add photos from camera, gallery, or files</p>
@@ -523,8 +540,8 @@ const STEP_TITLES = [
             <input #galleryLibraryInput type="file" accept="image/*" multiple hidden (change)="onGalleryFilesSelected($event)" />
           </div>
 
-          <!-- STEP 7: VERIFICATION -->
-          <div *ngIf="step() === 7" class="space-y-5">
+          <!-- STEP 8: VERIFICATION -->
+          <div *ngIf="step() === 8" class="space-y-5">
             <div>
               <h2 class="text-[20px] font-black text-[#111827] m-0">Documents & Verification</h2>
               <p class="text-[13px] text-[#9CA3AF] m-0 mt-0.5">Upload all required documents, then go live</p>
@@ -596,7 +613,7 @@ const STEP_TITLES = [
             [style.color]="canProceed() && !saving() ? '#111827' : '#C4C9D4'"
             [style.boxShadow]="canProceed() && !saving() ? '0 4px 18px rgba(var(--app-primary-rgb),0.38)' : 'none'"
             [style.opacity]="canProceed() && !saving() ? '1' : '0.6'">
-            {{ saving() ? 'Saving…' : (step() === totalSteps ? 'Save & Go Live' : 'Continue →') }}
+            {{ saving() ? 'Saving…' : (step() === totalSteps ? 'Save & Go Live' : 'Save & Continue →') }}
           </button>
         </div>
       </div>
@@ -609,19 +626,19 @@ const STEP_TITLES = [
     }
 
     .complete-profile-page {
-      padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px));
+      padding-bottom: calc(120px + var(--safe-area-bottom));
     }
 
     .success-screen {
-      padding-top: env(safe-area-inset-top, 0px);
-      padding-bottom: calc(48px + env(safe-area-inset-bottom, 0px));
+      padding-top: var(--safe-area-top);
+      padding-bottom: calc(48px + var(--safe-area-bottom));
     }
 
     .sticky-header {
       position: sticky;
       top: 0;
       z-index: 30;
-      padding-top: env(safe-area-inset-top, 0px);
+      padding-top: var(--app-chrome-top-inset, var(--safe-area-top));
       box-shadow: 0 2px 10px rgba(0,0,0,0.02);
     }
 
@@ -905,6 +922,7 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
   @ViewChild('galleryLibraryInput') galleryLibraryInput?: ElementRef<HTMLInputElement>;
 
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly auth = inject(AuthService);
   private readonly venueService = inject(VenueService);
   private readonly sanitizer = inject(DomSanitizer);
@@ -1016,6 +1034,7 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
     if (this.isSuccess()) {
       this.isSuccess.set(false);
     }
+    this.applyResumeStep();
   }
 
   onLocationFieldsChanged() {
@@ -1037,7 +1056,10 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
   }
 
   canProceed(): boolean {
-    const s = this.step();
+    return this.canProceedFor(this.step());
+  }
+
+  canProceedFor(s: number): boolean {
     if (s === 1) {
       return (
         this.bizName.trim() !== '' &&
@@ -1049,16 +1071,19 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
     }
     if (s === 2) {
       const pin = String(this.pincode ?? '').replace(/\D/g, '');
-      return this.address.trim() !== '' && this.city.trim() !== '' && pin.length === 6;
+      return this.address.trim() !== '' && this.city.trim() !== '' && pin.length === 6 && !!this.stateVal();
     }
     if (s === 3) {
-      return this.facilities().length > 0;
+      return this.opDays().length > 0 && !!this.openTime && !!this.closeTime;
     }
     if (s === 4) {
+      return this.facilities().length > 0;
+    }
+    if (s === 5) {
       const list = this.facilities();
       return list.length > 0 && list.every((f) => String(f.hourlyPrice ?? '').trim() !== '');
     }
-    if (s === 7) {
+    if (s === 8) {
       return this.allRequiredDocsUploaded();
     }
     return true;
@@ -1385,11 +1410,56 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
 
   handleNext() {
     this.saveError.set('');
-    if (this.step() < this.totalSteps) {
-      this.step.update((s) => Math.min(s + 1, this.totalSteps));
+    if (!this.canProceed()) {
+      void this.showStepAlert('Please complete the required fields on this step before continuing.');
       return;
     }
-    this.finish();
+    if (this.step() >= this.totalSteps) {
+      this.finish();
+      return;
+    }
+    void this.persistProfile(false).then((result) => {
+      if (!result.ok) return;
+      this.step.update((s) => Math.min(s + 1, this.totalSteps));
+    });
+  }
+
+  async jumpToStep(target: number) {
+    if (target === this.step()) return;
+    if (target < 1 || target > this.totalSteps) return;
+
+    for (let s = 1; s < target; s++) {
+      if (!this.isStepComplete(s)) {
+        await this.showStepAlert(
+          `Complete “${this.stepTitles[s - 1]}” before opening “${this.stepTitles[target - 1]}”.`,
+        );
+        return;
+      }
+    }
+
+    this.saveError.set('');
+    this.step.set(target);
+  }
+
+  /** Local completeness for navigation gates (does not call API). */
+  isStepComplete(s: number): boolean {
+    return this.canProceedFor(s);
+  }
+
+  firstIncompleteStep(): number {
+    for (let s = 1; s <= this.totalSteps; s++) {
+      if (!this.isStepComplete(s)) return s;
+    }
+    return 1;
+  }
+
+  private async showStepAlert(message: string) {
+    const alert = await this.alertCtrl.create({
+      header: 'Complete previous step',
+      message,
+      buttons: ['OK'],
+    });
+    await alert.present();
   }
 
   handleBack() {
@@ -1516,6 +1586,20 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
       }
     } catch {
       // Keep local defaults if profile fetch fails.
+    } finally {
+      this.applyResumeStep();
+    }
+  }
+
+  private applyResumeStep() {
+    const params = this.route.snapshot.queryParamMap;
+    const stepParam = Number(params.get('step') || '');
+    if (Number.isFinite(stepParam) && stepParam >= 1 && stepParam <= this.totalSteps) {
+      this.step.set(stepParam);
+      return;
+    }
+    if (params.get('resume') === '1' || params.get('resume') === 'true') {
+      this.step.set(this.firstIncompleteStep());
     }
   }
 
@@ -1568,7 +1652,8 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
         };
       });
 
-      if (!courts.length) {
+      // Only invent a placeholder court on final go-live — never during Save & Continue.
+      if (!courts.length && markLive) {
         courts.push({
           name: `${this.venueName || 'Main'} Court 1`,
           sport: sports[0] || 'football',
@@ -1639,7 +1724,7 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
         autoConfirm: this.autoConfirm(),
         sports,
         venueType: 'multi',
-        courts,
+        ...(courts.length ? { courts } : {}),
       }));
 
       if (!response.success) {

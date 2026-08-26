@@ -1,5 +1,9 @@
 @import "tailwindcss";
 @import "./theme/variables.scss";
+@import "@fontsource/lato/latin-300.css";
+@import "@fontsource/lato/latin-400.css";
+@import "@fontsource/lato/latin-700.css";
+@import "@fontsource/lato/latin-900.css";
 
 @theme {
   --color-background: var(--app-background);
@@ -33,7 +37,7 @@ body,
 ion-app {
   background: var(--app-background);
   color: var(--app-foreground);
-  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: Lato, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -178,8 +182,11 @@ ion-content {
 
 /* ============================================================
    SAFE AREA HELPERS — Android notch / punch-hole / gesture &
-   3-button nav + iOS home indicator (env(safe-area-inset-*)).
+   3-button nav + iOS home indicator.
+   Use var(--safe-area-*) only (aliases Capacitor --safe-area-inset-*
+   with env() fallback). Never hardcode status/nav bar heights.
    ============================================================ */
+
 .safe-area-top {
   padding-top: var(--safe-area-top);
 }
@@ -205,51 +212,77 @@ ion-content {
 .page-with-tab-bar,
 .page-shell,
 .has-tab-bar {
-  padding-bottom: calc(72px + 20px + 24px + var(--safe-area-bottom)) !important;
+  padding-bottom: calc(
+    var(--app-tab-bar-height, 72px) + var(--app-tab-bar-outer-pad, 20px) + 24px + var(--safe-area-bottom)
+  ) !important;
 }
 
 ion-content.has-tabs {
-  --padding-bottom: calc(72px + 20px + 24px + env(safe-area-inset-bottom, 0px));
+  --padding-bottom: calc(
+    var(--app-tab-bar-height, 72px) + var(--app-tab-bar-outer-pad, 20px) + 24px + var(--safe-area-bottom)
+  );
 }
 
-/* Sticky headers clear status bar / notch / punch-hole camera.
-   Note: .page-header / .cal-header under brand shell already sit below
-   .app-header (which has its own safe-area) — do not pad those again. */
+/*
+ * PRIMARY top chrome — status-bar / cutout inset as padding only.
+ * Nested headers under brand shell inherit --app-chrome-top-inset: 0.
+ */
+.app-header {
+  padding-top: var(--safe-area-top);
+  background-clip: padding-box;
+}
+
+.page-header,
 ion-content .sticky-header,
 ion-content .venue-sticky-header,
 ion-content .venue-notifications-header,
-.app-header {
-  padding-top: max(0px, env(safe-area-inset-top, 0px));
+ion-content .chat-header,
+ion-content .cal-header,
+ion-content .summary-header,
+ion-content .book-header,
+ion-content .og-header,
+ion-content .notif-header,
+ion-content .sp-header,
+ion-content .friends-header,
+ion-content .stats-header,
+ion-content .bd-header,
+ion-content .fac-header,
+ion-content .ce-header {
+  padding-top: var(--app-chrome-top-inset, var(--safe-area-top));
+  background-clip: padding-box;
 }
 
-/* Ensure sticky headers keep a solid backdrop under the cutout */
-ion-content .sticky-header,
-ion-content .venue-sticky-header,
-ion-content .venue-notifications-header {
-  background-clip: padding-box;
+/* Brand top bar already consumed the status inset */
+app-brand-header-shell.has-brand-chrome {
+  --app-chrome-top-inset: 0px;
 }
 
 /* Fixed / sticky bottom action bars clear Android nav / gesture bar */
 ion-content .venue-safe-footer,
 ion-content .fixed.bottom-0,
 ion-content .fixed-bottom-bar,
-.fixed-bottom-bar {
-  padding-bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px)) !important;
-  padding-left: max(1.25rem, env(safe-area-inset-left, 0px));
-  padding-right: max(1.25rem, env(safe-area-inset-right, 0px));
+.fixed-bottom-bar,
+.app-bottom-action {
+  bottom: var(--app-bottom-chrome-offset, 0px);
+  padding-bottom: calc(1.25rem + var(--app-bottom-chrome-pad, var(--safe-area-bottom))) !important;
+  padding-left: max(1.25rem, var(--safe-area-left));
+  padding-right: max(1.25rem, var(--safe-area-right));
 }
 
-/* When floating tab bar is visible, lift CTAs above it + nav inset */
+/* When floating tab bar is visible, lift CTAs above it (offset already includes nav inset) */
 ion-content.has-tabs .venue-safe-footer,
 ion-content.has-tabs .fixed.bottom-0,
-ion-content.has-tabs .fixed-bottom-bar {
-  bottom: calc(var(--app-tab-bar-height, 72px) + 20px + env(safe-area-inset-bottom, 0px)) !important;
+ion-content.has-tabs .fixed-bottom-bar,
+ion-content.has-tabs .app-bottom-action {
+  bottom: calc(
+    var(--app-tab-bar-height, 72px) + var(--app-tab-bar-outer-pad, 20px) + var(--safe-area-bottom)
+  ) !important;
   padding-bottom: 1rem !important;
 }
 
 /* ion-footer used on book/summary flows */
 ion-footer {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-bottom: var(--safe-area-bottom);
 }
 
 /* Standalone pages (no tabs): still respect gesture nav */
@@ -375,6 +408,7 @@ body > .tyng-drawer-root .tyng-drawer {
   height: auto !important;
   max-height: 80vh;
   overflow: auto;
+  padding-bottom: var(--safe-area-bottom);
 }
 
 .pac-container {
@@ -382,5 +416,5 @@ body > .tyng-drawer-root .tyng-drawer {
   border-radius: 12px;
   border: 1px solid #e5e7eb;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: Lato, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }

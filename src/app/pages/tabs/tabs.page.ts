@@ -26,6 +26,17 @@ import { TabItem } from '../../shared/models/app.models';
       .tabs-shell {
         min-height: 100%;
         background: #fafbfc;
+        /* Default: no tab chrome; system bottom inset applied by CTAs themselves */
+        --app-bottom-chrome-offset: 0px;
+        --app-bottom-chrome-pad: var(--safe-area-bottom);
+      }
+
+      /* Tab bar mounted → lift fixed CTAs above pill; nav inset lives in the offset */
+      .tabs-shell:has(app-bottom-tab-navigation) {
+        --app-bottom-chrome-offset: calc(
+          var(--app-tab-bar-height, 72px) + var(--app-tab-bar-outer-pad, 20px) + var(--safe-area-bottom)
+        );
+        --app-bottom-chrome-pad: 0px;
       }
     `,
   ],

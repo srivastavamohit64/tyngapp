@@ -18,7 +18,7 @@
   z-index: 100;
   background: var(--app-card);
   border-bottom: 1px solid var(--app-border);
-  padding-top: calc(16px + var(--safe-area-top));
+  padding-top: calc(16px + var(--app-chrome-top-inset, var(--safe-area-top)));
   padding-left: calc(20px + var(--safe-area-left));
   padding-right: calc(20px + var(--safe-area-right));
   padding-bottom: 0;

@@ -257,7 +257,7 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 52px 20px 16px;
+      padding: calc(16px + var(--app-chrome-top-inset, var(--safe-area-top))) 20px 16px;
       background: #FFFFFF;
     }
 

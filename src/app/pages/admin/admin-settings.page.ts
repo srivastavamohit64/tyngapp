@@ -29,7 +29,7 @@ import { AuthService } from '../../core/services/auth.service';
   `,
   styles: [
     `
-      .page { min-height: 100%; background: #fafbfc; padding: calc(16px + env(safe-area-inset-top,0px)) 20px calc(112px + env(safe-area-inset-bottom,0px)); }
+      .page { min-height: 100%; background: #fafbfc; padding: calc(16px + var(--safe-area-top)) 20px calc(112px + var(--safe-area-bottom)); }
       .header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
       .back { width: 40px; height: 40px; min-height: unset; border-radius: 12px; background: #f3f4f6; display: grid; place-items: center; font-size: 20px; color: #111827; }
       h1 { margin: 0; font-size: 22px; font-weight: 700; color: #111827; }

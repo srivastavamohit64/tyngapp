@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { ActionSheetController, IonicModule, ViewWillEnter } from '@ionic/angular';
 import { Subscription, firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
+import { LocationService } from '../../core/services/location.service';
 import { RealtimeService } from '../../core/services/realtime.service';
 import { TabBadgeService } from '../../core/services/tab-badge.service';
 import { VenueDashboardData, VenueService } from '../../core/services/venue.service';
@@ -49,6 +50,7 @@ export class VenueDashboardPage implements OnInit, OnDestroy, ViewWillEnter {
   private readonly router = inject(Router);
   readonly auth = inject(AuthService);
   private readonly venueService = inject(VenueService);
+  private readonly locationService = inject(LocationService);
   private readonly realtime = inject(RealtimeService);
   private readonly tabBadges = inject(TabBadgeService);
   private readonly actionSheet = inject(ActionSheetController);
@@ -56,6 +58,11 @@ export class VenueDashboardPage implements OnInit, OnDestroy, ViewWillEnter {
   profileDismissed = signal(false);
   loading = signal(true);
   errorMessage = signal('');
+
+  /** Weather card: temp stays placeholder; place comes from GPS. */
+  weatherLocation = 'Detecting…';
+  readonly weatherTemp = '-';
+  readonly weatherCondition = '—';
 
   pulseMetrics = [
     { emoji: '🏟️', label: "Today's Bookings", value: '0', accent: 'var(--app-primary)' },
@@ -115,6 +122,7 @@ export class VenueDashboardPage implements OnInit, OnDestroy, ViewWillEnter {
     // Do not hard-redirect on venueProfileReady=false — older APIs still
     // flag optional Amenities/Verification. Dashboard shows a completion card instead.
     await this.loadDashboard();
+    void this.loadWeatherLocation();
     void this.bindRealtime();
   }
 
@@ -122,6 +130,7 @@ export class VenueDashboardPage implements OnInit, OnDestroy, ViewWillEnter {
     if (this.auth.user()?.role === 'venue') {
       void this.loadDashboard(true);
       void this.tabBadges.refresh();
+      void this.loadWeatherLocation();
     }
   }
 
@@ -131,6 +140,20 @@ export class VenueDashboardPage implements OnInit, OnDestroy, ViewWillEnter {
     if (this.realtimeReloadTimer) {
       clearTimeout(this.realtimeReloadTimer);
       this.realtimeReloadTimer = null;
+    }
+  }
+
+  private async loadWeatherLocation() {
+    try {
+      const location = await this.locationService.getCurrentLocationWithAddress();
+      this.weatherLocation =
+        (location.city || location.postalArea || location.shortLabel || '').trim() || 'Your location';
+      this.locationService.saveLocation(location);
+    } catch {
+      const saved = this.locationService.getSavedLocation();
+      const profile = (this.auth.user()?.location || '').split(/[>,\-\/|]+/)[0]?.trim();
+      this.weatherLocation =
+        (saved?.city || saved?.postalArea || saved?.shortLabel || profile || '').trim() || 'Your location';
     }
   }
 
@@ -321,6 +344,6 @@ export class VenueDashboardPage implements OnInit, OnDestroy, ViewWillEnter {
     if (this.completionPercent >= 100) {
       return '/app/venue/profile';
     }
-    return '/app/venue/complete-profile';
+    return '/app/venue/complete-profile?resume=1';
   }
 }

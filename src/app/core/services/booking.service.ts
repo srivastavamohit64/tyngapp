@@ -29,9 +29,10 @@ export class BookingService {
 
   search(query: string, limit = 8): Observable<ApiResponse<DirectorySearchResult>> {
     const params = new URLSearchParams({
-      q: query,
       limit: String(limit),
     });
+    const q = (query || '').trim();
+    if (q) params.set('q', q);
     return this.api.get<DirectorySearchResult>(`/search?${params.toString()}`);
   }
 

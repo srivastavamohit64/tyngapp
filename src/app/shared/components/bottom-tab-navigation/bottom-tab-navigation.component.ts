@@ -37,7 +37,7 @@ import { TabItem } from '../../models/app.models';
         left: 0;
         right: 0;
         z-index: 100;
-        padding: 0 20px calc(20px + env(safe-area-inset-bottom, 0px)) 20px;
+        padding: 0 20px calc(var(--app-tab-bar-outer-pad, 20px) + var(--safe-area-bottom)) 20px;
         pointer-events: none;
       }
 

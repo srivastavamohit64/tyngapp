@@ -32,7 +32,7 @@ import { PlayerBookingCardComponent } from '../../shared/components/player-booki
       </ion-refresher>
 
       <app-brand-header-shell [showBrand]="false">
-        <main class="min-h-full bg-[#FAFBFC] text-[#111827] pb-[calc(96px+env(safe-area-inset-bottom,0px))]">
+        <main class="min-h-full bg-[#FAFBFC] text-[#111827] pb-[calc(96px+var(--safe-area-bottom))]">
           <app-page-header title="My Bookings" [showBack]="true" (back)="goBack()"></app-page-header>
 
           <div class="px-4 py-4 space-y-4" *ngIf="loading">

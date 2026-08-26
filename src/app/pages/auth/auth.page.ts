@@ -191,7 +191,7 @@ const HERO_IMAGE =
       .login-shell {
         min-height: 100%;
         background: #fafbfc;
-        padding-bottom: env(safe-area-inset-bottom, 0px);
+        padding-bottom: var(--safe-area-bottom);
       }
 
       .hero {
@@ -226,7 +226,7 @@ const HERO_IMAGE =
 
       .hero-tags {
         position: absolute;
-        top: calc(32px + env(safe-area-inset-top, 0px));
+        top: calc(32px + var(--safe-area-top));
         left: 20px;
         display: flex;
         gap: 8px;
@@ -263,7 +263,7 @@ const HERO_IMAGE =
         z-index: 10;
         background: #fafbfc;
         border-radius: 36px 36px 0 0;
-        padding: 32px 0 calc(48px + env(safe-area-inset-bottom, 0px));
+        padding: 32px 0 calc(48px + var(--safe-area-bottom));
       }
 
       .form-header {

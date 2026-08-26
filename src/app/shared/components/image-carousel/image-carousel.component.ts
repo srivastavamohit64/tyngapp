@@ -95,7 +95,7 @@ import { IonicModule } from '@ionic/angular';
 
       .carousel-btn {
         position: absolute;
-        top: calc(12px + env(safe-area-inset-top, 0px));
+        top: calc(12px + var(--safe-area-top));
         z-index: 10;
         width: 40px;
         height: 40px;
@@ -136,7 +136,7 @@ import { IonicModule } from '@ionic/angular';
 
       .carousel-counter {
         position: absolute;
-        top: calc(18px + env(safe-area-inset-top, 0px));
+        top: calc(18px + var(--safe-area-top));
         right: 68px;
         z-index: 10;
         background: rgba(0, 0, 0, 0.5);

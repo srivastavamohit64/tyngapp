@@ -76,7 +76,7 @@ import { sportEmoji } from '../../core/utils/booking.utils';
       .page {
         min-height: 100%;
         background: #fafbfc;
-        padding: calc(12px + env(safe-area-inset-top)) 20px 32px;
+        padding: calc(12px + var(--safe-area-top)) 20px 32px;
       }
       .hdr {
         display: flex;

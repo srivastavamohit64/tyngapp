@@ -47,7 +47,7 @@ import { IonicModule } from '@ionic/angular';
         justify-content: space-between;
         min-height: 100%;
         background: #ffffff;
-        padding: calc(env(safe-area-inset-top, 0px) + 28px) 24px 0;
+        padding: calc(var(--safe-area-top) + 28px) 24px 0;
       }
 
       .welcome-body {
@@ -122,7 +122,7 @@ import { IonicModule } from '@ionic/angular';
       }
 
       .cta-wrap {
-        padding: 16px 0 calc(24px + env(safe-area-inset-bottom, 0px));
+        padding: 16px 0 calc(24px + var(--safe-area-bottom));
         animation: fadeUp 0.5s 0.8s ease both;
         width: 100%;
         flex-shrink: 0;

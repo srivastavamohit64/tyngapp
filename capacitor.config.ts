@@ -8,10 +8,22 @@ const config: CapacitorConfig = {
     androidScheme: 'https',
   },
   plugins: {
+    // Capacitor 8.4+: injects --safe-area-inset-* from native WindowInsets
+    SystemBars: {
+      insetsHandling: 'css',
+      // LIGHT = dark icons/text — correct for the app's light surfaces
+      style: 'LIGHT',
+      hidden: false,
+    },
     StatusBar: {
       overlaysWebView: true,
-      style: 'DARK',
-      backgroundColor: '#2212CC',
+      style: 'LIGHT',
+      backgroundColor: '#00000000',
+    },
+    Keyboard: {
+      // iOS: resize body. Android: resizeOnFullScreen keeps CTAs above IME under edge-to-edge.
+      resize: 'body',
+      resizeOnFullScreen: true,
     },
     SplashScreen: {
       launchShowDuration: 2500,

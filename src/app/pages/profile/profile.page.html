@@ -1,6 +1,6 @@
 <ion-content fullscreen [class.has-tabs]="auth.user()?.role !== 'coach'">
   <!-- COACH PROFILE -->
-  <main *ngIf="auth.user()?.role === 'coach'" class="min-h-full bg-[#FAFBFC] text-slate-800 select-none">
+  <main *ngIf="auth.user()?.role === 'coach'" class="safe-area-top min-h-full bg-[#FAFBFC] text-slate-800 select-none">
     <section class="coach-profile-hero px-6 pt-6 pb-8 bg-gradient-to-b from-[var(--app-primary)]/20 to-transparent">
       <div class="flex items-center justify-between mb-6">
         <h2 class="text-[22px] font-black text-[#111827] m-0">Profile</h2>

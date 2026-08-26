@@ -229,7 +229,7 @@ const COACH_CHATS: CoachChatItem[] = [
   styles: [`
     .coach-chat-page { --background: #FAFBFC; }
     .chat-shell { min-height: 100%; display: flex; flex-direction: column; background: #FAFBFC; }
-    .chat-header { position: sticky; top: 0; z-index: 30; background: #fff; border-bottom: 1px solid #F3F4F6; padding-top: env(safe-area-inset-top, 0px); }
+    .chat-header { position: sticky; top: 0; z-index: 30; background: #fff; border-bottom: 1px solid #F3F4F6; padding-top: var(--app-chrome-top-inset, var(--safe-area-top)); }
     .chat-header-row { display: flex; align-items: center; justify-content: space-between; padding: 20px 20px 12px; }
     .chat-header-left { display: flex; align-items: center; gap: 12px; }
     .title-wrap { display: flex; align-items: center; gap: 8px; }
