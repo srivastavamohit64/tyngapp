@@ -9,6 +9,7 @@ import { BookingService } from '../../core/services/booking.service';
 import { DesignDataService } from '../../core/services/design-data.service';
 import { HeaderComponent } from '../../shared/components/header/header.component';
 import { PrimaryButtonComponent } from '../../shared/components/primary-button/primary-button.component';
+import { SkeletonListComponent } from '../../shared/components/skeleton';
 import { Venue } from '../../shared/models/app.models';
 import {
   buildBookingSlots,
@@ -43,7 +44,7 @@ interface DateOption {
 @Component({
   selector: 'app-create-game',
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule, HeaderComponent, PrimaryButtonComponent],
+  imports: [CommonModule, FormsModule, IonicModule, HeaderComponent, PrimaryButtonComponent, SkeletonListComponent],
   template: `
     <ion-content fullscreen>
       <div class="create-page page-safe-bottom">
@@ -101,7 +102,7 @@ interface DateOption {
             <h3>Choose Venue</h3>
             <p class="muted">Select a venue for your match</p>
             <div class="list">
-              <div class="muted" *ngIf="venuesLoading">Loading venues...</div>
+              <app-skeleton-list *ngIf="venuesLoading && venues.length === 0" [count]="4"></app-skeleton-list>
               <div class="muted" *ngIf="!venuesLoading && venues.length === 0">No venues available.</div>
               <button
                 type="button"

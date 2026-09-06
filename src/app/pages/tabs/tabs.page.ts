@@ -66,6 +66,11 @@ export class TabsPage {
     const user = this.auth.user();
     if (!path) return true;
 
+    // Venue main chrome only after full approval (account + documents).
+    if (user?.role === 'venue' && !this.auth.canAccessVenueApp(user)) {
+      return false;
+    }
+
     // Hide on workflow / form pages (Figma AppLayout)
     if (path.startsWith('/app/game/create')) return false;
     if (path === '/app/wallet' || path.startsWith('/app/wallet/')) return false;

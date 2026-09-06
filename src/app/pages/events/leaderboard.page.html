@@ -76,6 +76,16 @@
       </div>
     </section>
 
+    <section class="px-5 mb-4" *ngIf="me()">
+      <div class="player-card" style="border:1px solid var(--app-primary)">
+        <div class="rank-number">#{{ me()?.rank || '—' }}</div>
+        <div class="player-info">
+          <div class="name-row"><h3>You · {{ me()?.name }}</h3></div>
+          <div class="stats-row"><span>{{ me()?.xp | number }} XP</span></div>
+        </div>
+      </div>
+    </section>
+
     <!-- Leaderboard List (Rank #4+) -->
     <section class="px-5 space-y-3 pb-4">
       <article 
@@ -107,8 +117,8 @@
               <span>{{ player.gamesPlayed }} games</span>
             </div>
             <div class="stat-item">
-              <ion-icon name="trending-up-outline"></ion-icon>
-              <span>{{ player.winRate }}% wins</span>
+              <ion-icon name="flash-outline"></ion-icon>
+              <span>Level {{ player.badge }}</span>
             </div>
           </div>
         </div>

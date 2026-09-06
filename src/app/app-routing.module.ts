@@ -54,6 +54,12 @@ const routes: Routes = [
     loadComponent: () => import('./pages/venue/venue-onboarding.page').then((m) => m.VenueOnboardingPage),
   },
   {
+    path: 'venue-pending-approval',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/venue/venue-pending-approval.page').then((m) => m.VenuePendingApprovalPage),
+  },
+  {
     path: 'app/onboarding',
     loadComponent: () => import('./pages/onboarding/onboarding.page').then((m) => m.OnboardingPage),
   },
@@ -105,6 +111,7 @@ const routes: Routes = [
   {
     path: 'app',
     canActivate: [authGuard],
+    canActivateChild: [authGuard],
     loadComponent: () => import('./pages/tabs/tabs.page').then((m) => m.TabsPage),
     children: [
       {
@@ -253,6 +260,10 @@ const routes: Routes = [
         loadComponent: () => import('./pages/player/notifications.page').then((m) => m.NotificationsPage),
       },
       {
+        path: 'xp/history',
+        loadComponent: () => import('./pages/player/xp-history.page').then((m) => m.XpHistoryPage),
+      },
+      {
         path: 'stats',
         loadComponent: () => import('./pages/player/stats.page').then((m) => m.StatsPage),
       },
@@ -361,6 +372,11 @@ const routes: Routes = [
       {
         path: 'admin/settings',
         loadComponent: () => import('./pages/admin/admin-settings.page').then((m) => m.AdminSettingsPage),
+      },
+      {
+        path: 'admin/xp-rules',
+        canActivate: [authGuard],
+        loadComponent: () => import('./pages/admin/admin-xp-rules.page').then((m) => m.AdminXpRulesPage),
       },
       {
         path: '',

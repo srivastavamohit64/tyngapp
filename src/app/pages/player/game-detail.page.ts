@@ -13,6 +13,7 @@ import {
   gameChatMemberIds,
   sportEmoji,
 } from '../../core/utils/booking.utils';
+import { PageSkeletonComponent } from '../../shared/components/skeleton';
 
 interface GameData {
   id: string;
@@ -89,14 +90,11 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
 @Component({
   selector: 'app-game-detail',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, PageSkeletonComponent],
   template: `
     <ion-content [fullscreen]="true">
       <div class="gd-page" *ngIf="loading">
-        <div class="state-wrap">
-          <ion-spinner name="crescent"></ion-spinner>
-          <p>Loading game…</p>
-        </div>
+        <app-page-skeleton variant="detail" label="Loading game"></app-page-skeleton>
       </div>
 
       <div class="gd-page" *ngIf="!loading && errorMessage">

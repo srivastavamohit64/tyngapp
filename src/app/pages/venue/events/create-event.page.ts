@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
-import { VenueEventService } from '../../../core/services/venue-event.service';
+import { SponsorOption, VenueEventService } from '../../../core/services/venue-event.service';
 import { VenueService } from '../../../core/services/venue.service';
 
 const STEPS = [
@@ -149,17 +149,20 @@ const TYPES = [
           </div>
 
           <div *ngSwitchCase="6" class="form">
-            <p class="sub">Add sponsors to display on the event page and attract corporate partners.</p>
+            <p class="sub">Choose sponsors approved by TYNG admin. Selected sponsors will appear only on this event page.</p>
             <div class="sponsor" *ngFor="let s of draft.sponsors; let i = index">
-              <div class="av">{{ (s.name || 'S').charAt(0) }}</div>
+              <img *ngIf="s.imageUrl" [src]="s.imageUrl" [alt]="s.name" class="sponsor-img" />
+              <div class="av" *ngIf="!s.imageUrl">{{ (s.name || 'S').charAt(0) }}</div>
               <div><strong>{{ s.name }}</strong><p>{{ s.package || 'Sponsor' }}</p></div>
               <button type="button" class="x" (click)="removeSponsor(i)">×</button>
             </div>
-            <div class="add-box">
-              <input [(ngModel)]="sponsorName" placeholder="Sponsor name" />
-              <input [(ngModel)]="sponsorPkg" placeholder="Banner + Booth" />
-              <button type="button" class="add" (click)="addSponsor()">+ Add Sponsor</button>
-            </div>
+            <div class="catalog-empty" *ngIf="!sponsors.length">No active sponsors are available yet. Ask an admin to add one.</div>
+            <button type="button" class="sponsor-option" *ngFor="let sponsor of sponsors" [class.selected]="hasSponsor(sponsor.id)" (click)="toggleSponsor(sponsor)">
+              <img *ngIf="sponsor.imageUrl" [src]="sponsor.imageUrl" [alt]="sponsor.name" class="sponsor-img" />
+              <div class="av" *ngIf="!sponsor.imageUrl">{{ sponsor.name.charAt(0) }}</div>
+              <span><strong>{{ sponsor.name }}</strong><small>{{ sponsor.package || 'Sponsor' }}</small></span>
+              <ion-icon [name]="hasSponsor(sponsor.id) ? 'checkmark-circle' : 'add-circle-outline'"></ion-icon>
+            </button>
           </div>
 
           <div *ngSwitchCase="7" class="form">
@@ -212,7 +215,9 @@ const TYPES = [
     .hint { background: #FEF9C3; border-radius: 14px; padding: 10px 12px; font-size: 12px; font-weight: 700; color: #854D0E; }
     .auto { display: flex; gap: 8px; background: #ECFCCB; border-radius: 14px; padding: 12px; margin-top: 12px; text-align: left; }
     .auto p { margin: 4px 0 0; font-size: 12px; color: #3F6212; }
-    .sponsor { display: flex; gap: 10px; align-items: center; background: #fff; border-radius: 14px; padding: 10px; box-shadow: 0 2px 10px rgba(17,24,39,.05); margin-bottom: 8px; }
+    .sponsor, .sponsor-option { display: flex; gap: 10px; align-items: center; background: #fff; border-radius: 14px; padding: 10px; box-shadow: 0 2px 10px rgba(17,24,39,.05); margin-bottom: 8px; }
+    .sponsor-option { width: 100%; border: 1px solid #E5E7EB; text-align: left; } .sponsor-option.selected { border-color: #8cf000; background: #f7ffe9; } .sponsor-option > span { flex: 1; } .sponsor-option small { display:block; color:#9CA3AF; margin-top:2px; } .sponsor-option ion-icon { font-size: 22px; color: #65a30d; }
+    .sponsor-img { width: 54px; height: 36px; object-fit: contain; border-radius: 8px; background: #F3F4F6; flex-shrink: 0; } .catalog-empty { color:#9CA3AF; font-size:13px; padding:12px 0; }
     .av { width: 40px; height: 40px; border-radius: 50%; background: #E5E7EB; display: grid; place-items: center; font-weight: 900; }
     .x { border: none; width: 28px; height: 28px; border-radius: 50%; background: #F3F4F6; }
     .add-box { display: flex; flex-direction: column; gap: 8px; border: 1.5px dashed #93C5FD; border-radius: 14px; padding: 12px; }
@@ -250,8 +255,7 @@ export class VenueCreateEventPage implements OnInit {
     { id: 'coaching', label: '🎓 Coaching' },
     { id: 'vouchers', label: '🎁 Vouchers' },
   ];
-  sponsorName = '';
-  sponsorPkg = 'Sponsor - Banner + Booth';
+  sponsors: SponsorOption[] = [];
 
   draft: {
     type: string;
@@ -282,7 +286,8 @@ export class VenueCreateEventPage implements OnInit {
     prizePool: number;
     cashPrize: number;
     awardTypes: string[];
-    sponsors: Array<{ name: string; package: string }>;
+    sponsorIds: number[];
+    sponsors: Array<{ id?: number; name: string; package: string; imageUrl?: string; linkUrl?: string }>;
   } = {
     type: 'community_game',
     name: '',
@@ -312,6 +317,7 @@ export class VenueCreateEventPage implements OnInit {
     prizePool: 10000,
     cashPrize: 6000,
     awardTypes: [],
+    sponsorIds: [],
     sponsors: [],
   };
 
@@ -319,6 +325,7 @@ export class VenueCreateEventPage implements OnInit {
     const type = this.route.snapshot.queryParamMap.get('type');
     if (type) this.draft.type = type;
     void this.loadCourts();
+    this.eventsApi.sponsors().subscribe({ next: (res) => { this.sponsors = res.data ?? []; } });
   }
 
   cta(): string {
@@ -391,15 +398,32 @@ export class VenueCreateEventPage implements OnInit {
       : [...this.draft.awardTypes, id];
   }
 
-  addSponsor(): void {
-    const name = this.sponsorName.trim();
-    if (!name) return;
-    this.draft.sponsors = [...this.draft.sponsors, { name, package: this.sponsorPkg || 'Sponsor' }];
-    this.sponsorName = '';
+  hasSponsor(id: number): boolean {
+    return this.draft.sponsorIds.includes(id);
+  }
+
+  toggleSponsor(sponsor: SponsorOption): void {
+    if (this.hasSponsor(sponsor.id)) {
+      this.draft.sponsorIds = this.draft.sponsorIds.filter((id) => id !== sponsor.id);
+      this.draft.sponsors = this.draft.sponsors.filter((row) => row.id !== sponsor.id);
+      return;
+    }
+    this.draft.sponsorIds = [...this.draft.sponsorIds, sponsor.id];
+    this.draft.sponsors = [...this.draft.sponsors, {
+      id: sponsor.id,
+      name: sponsor.name,
+      package: sponsor.package || 'Sponsor',
+      imageUrl: sponsor.imageUrl,
+      linkUrl: sponsor.linkUrl || undefined,
+    }];
   }
 
   removeSponsor(i: number): void {
+    const removed = this.draft.sponsors[i];
     this.draft.sponsors = this.draft.sponsors.filter((_, idx) => idx !== i);
+    if (removed?.id) {
+      this.draft.sponsorIds = this.draft.sponsorIds.filter((id) => id !== removed.id);
+    }
   }
 
   pickCover(): void {

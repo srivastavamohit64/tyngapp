@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { IonicModule, MenuController } from '@ionic/angular';
+import { XpLeaderboard, XpService } from '../../core/services/xp.service';
 import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 import { SportTab, SportTabsComponent } from '../../shared/components/sport-tabs/sport-tabs.component';
 
@@ -22,9 +23,12 @@ interface LeaderboardPlayer {
   styleUrls: ['./leaderboard.page.scss'],
   templateUrl: './leaderboard.page.html',
 })
-export class LeaderboardPage {
+export class LeaderboardPage implements OnInit {
   private readonly menu = inject(MenuController);
+  private readonly xp = inject(XpService);
   selectedSport = 'all';
+  selectedPeriod: 'all_time' | 'week' | 'month' | 'season' = 'all_time';
+  readonly me = signal<XpLeaderboard['me'] | null>(null);
 
   async openMenu() {
     await this.menu.open();
@@ -37,91 +41,14 @@ export class LeaderboardPage {
     label: s.charAt(0).toUpperCase() + s.slice(1),
   }));
 
-  readonly leaderboard: LeaderboardPlayer[] = [
-    {
-      rank: 1,
-      name: 'Amit Kumar',
-      avatar: '🏀',
-      points: 9850,
-      gamesPlayed: 203,
-      winRate: 72,
-      badge: 'Champion',
-      sport: 'basketball',
-    },
-    {
-      rank: 2,
-      name: 'Rahul Sharma',
-      avatar: '🏏',
-      points: 8450,
-      gamesPlayed: 127,
-      winRate: 68,
-      badge: 'Pro',
-      sport: 'cricket',
-    },
-    {
-      rank: 3,
-      name: 'Priya Singh',
-      avatar: '⚽',
-      points: 7920,
-      gamesPlayed: 145,
-      winRate: 65,
-      badge: 'Elite',
-      sport: 'football',
-    },
-    {
-      rank: 4,
-      name: 'Sneha Verma',
-      avatar: '🏸',
-      points: 7450,
-      gamesPlayed: 112,
-      winRate: 71,
-      badge: 'Expert',
-      sport: 'badminton',
-    },
-    {
-      rank: 5,
-      name: 'Vikram Patel',
-      avatar: '⚡',
-      points: 7100,
-      gamesPlayed: 98,
-      winRate: 69,
-      badge: 'Expert',
-      sport: 'cricket',
-    },
-    {
-      rank: 6,
-      name: 'Anjali Gupta',
-      avatar: '🎯',
-      points: 6850,
-      gamesPlayed: 89,
-      winRate: 64,
-      badge: 'Advanced',
-      sport: 'football',
-    },
-    {
-      rank: 7,
-      name: 'Karan Mehta',
-      avatar: '🏆',
-      points: 6500,
-      gamesPlayed: 76,
-      winRate: 67,
-      badge: 'Advanced',
-      sport: 'badminton',
-    },
-  ];
+  leaderboard: LeaderboardPlayer[] = [];
+
+  ngOnInit(): void {
+    this.reload();
+  }
 
   get filteredLeaderboard(): LeaderboardPlayer[] {
-    if (this.selectedSport === 'all') {
-      return this.leaderboard;
-    }
-    const filtered = this.leaderboard.filter((player) => player.sport === this.selectedSport);
-    // Recalculate rank positions dynamically based on filtered points
-    return filtered
-      .sort((a, b) => b.points - a.points)
-      .map((player, idx) => ({
-        ...player,
-        rank: idx + 1,
-      }));
+    return this.leaderboard;
   }
 
   get topThree(): LeaderboardPlayer[] {
@@ -134,5 +61,27 @@ export class LeaderboardPage {
 
   selectSport(sport: string) {
     this.selectedSport = sport;
+    this.reload();
+  }
+
+  private reload(): void {
+    this.xp.leaderboard(this.selectedPeriod, this.selectedSport).subscribe((board) => {
+      if (!board) {
+        this.leaderboard = [];
+        this.me.set(null);
+        return;
+      }
+      this.me.set(board.me);
+      this.leaderboard = board.items.map((row) => ({
+        rank: row.rank,
+        name: row.name,
+        avatar: '⚡',
+        points: row.xp,
+        gamesPlayed: row.gamesPlayed,
+        winRate: 0,
+        badge: row.levelTitle || `L${row.level}`,
+        sport: this.selectedSport,
+      }));
+    });
   }
 }

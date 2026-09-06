@@ -9,6 +9,11 @@ import { RealtimeService } from '../../core/services/realtime.service';
 import { TabBadgeService } from '../../core/services/tab-badge.service';
 import { VenueDashboardData, VenueService } from '../../core/services/venue.service';
 import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
+import { PageSkeletonComponent } from '../../shared/components/skeleton';
+import {
+  VenueDocRow,
+  VenueRequiredDocsModalComponent,
+} from './venue-required-docs-modal.component';
 
 interface VenueBooking {
   id: string | number;
@@ -42,7 +47,7 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
 @Component({
   selector: 'app-venue-dashboard',
   standalone: true,
-  imports: [CommonModule, IonicModule, BrandHeaderShellComponent],
+  imports: [CommonModule, IonicModule, BrandHeaderShellComponent, PageSkeletonComponent, VenueRequiredDocsModalComponent],
   templateUrl: './venue-dashboard.page.html',
   styleUrl: './venue-dashboard.page.scss',
 })
@@ -58,6 +63,8 @@ export class VenueDashboardPage implements OnInit, OnDestroy, ViewWillEnter {
   profileDismissed = signal(false);
   loading = signal(true);
   errorMessage = signal('');
+  /** True after first successful dashboard payload — used to skip skeleton on refresh. */
+  readonly hasDashboard = signal(false);
 
   /** Weather card: temp stays placeholder; place comes from GPS. */
   weatherLocation = 'Detecting…';
@@ -90,6 +97,9 @@ export class VenueDashboardPage implements OnInit, OnDestroy, ViewWillEnter {
   pendingActions: { label: string; sub: string; urgency: string }[] = [];
   bookingBlockMessage = signal<string | null>(null);
   statusBusyId = signal<string | null>(null);
+  readonly docsModalOpen = signal(false);
+  readonly docsRows = signal<VenueDocRow[]>([]);
+  readonly checkingAccess = signal(true);
 
   get wishText(): string {
     const hour = new Date().getHours();
@@ -119,6 +129,9 @@ export class VenueDashboardPage implements OnInit, OnDestroy, ViewWillEnter {
       // Keep cached user if /me fails.
     }
 
+    const gated = await this.enforceDocumentGate();
+    if (gated) return;
+
     // Do not hard-redirect on venueProfileReady=false — older APIs still
     // flag optional Amenities/Verification. Dashboard shows a completion card instead.
     await this.loadDashboard();
@@ -128,10 +141,72 @@ export class VenueDashboardPage implements OnInit, OnDestroy, ViewWillEnter {
 
   ionViewWillEnter(): void {
     if (this.auth.user()?.role === 'venue') {
-      void this.loadDashboard(true);
-      void this.tabBadges.refresh();
-      void this.loadWeatherLocation();
+      void this.onEnter();
     }
+  }
+
+  private async onEnter(): Promise<void> {
+    try {
+      await firstValueFrom(this.auth.fetchMe());
+    } catch {
+      // ignore
+    }
+    const gated = await this.enforceDocumentGate();
+    if (gated) return;
+    void this.loadDashboard(true);
+    void this.tabBadges.refresh();
+    void this.loadWeatherLocation();
+  }
+
+  /** Returns true when dashboard load should be skipped. */
+  private async enforceDocumentGate(): Promise<boolean> {
+    this.checkingAccess.set(true);
+    const user = this.auth.user();
+    try {
+      if (this.auth.isVenueDocumentsPending(user) || this.auth.isVenueAccountBlocked(user)) {
+        void this.router.navigateByUrl('/venue-pending-approval', { replaceUrl: true });
+        return true;
+      }
+
+      if (this.auth.needsVenueDocuments(user)) {
+        await this.loadRequiredDocs();
+        this.docsModalOpen.set(true);
+        this.loading.set(false);
+        return true;
+      }
+
+      this.docsModalOpen.set(false);
+      return false;
+    } finally {
+      this.checkingAccess.set(false);
+    }
+  }
+
+  private async loadRequiredDocs(): Promise<void> {
+    try {
+      const res = await firstValueFrom(this.venueService.getMyProfile());
+      const data = (res.data || {}) as Record<string, unknown>;
+      const rows = Array.isArray(data['documentStatuses'])
+        ? (data['documentStatuses'] as VenueDocRow[])
+        : [];
+      this.docsRows.set(rows);
+    } catch {
+      this.docsRows.set([]);
+    }
+  }
+
+  onDocsRefreshed(rows: VenueDocRow[]): void {
+    this.docsRows.set(rows);
+  }
+
+  async onDocsSubmitted(): Promise<void> {
+    this.docsModalOpen.set(false);
+    try {
+      await firstValueFrom(this.auth.fetchMe());
+    } catch {
+      // ignore
+    }
+    void this.router.navigateByUrl('/venue-pending-approval', { replaceUrl: true });
   }
 
   ngOnDestroy(): void {
@@ -158,7 +233,8 @@ export class VenueDashboardPage implements OnInit, OnDestroy, ViewWillEnter {
   }
 
   async loadDashboard(silent = false) {
-    if (!silent) this.loading.set(true);
+    const showSkeleton = !silent && !this.hasDashboard();
+    if (showSkeleton) this.loading.set(true);
     this.errorMessage.set('');
     try {
       const response = await firstValueFrom(this.venueService.getDashboard());
@@ -167,6 +243,7 @@ export class VenueDashboardPage implements OnInit, OnDestroy, ViewWillEnter {
         return;
       }
       this.applyDashboard(response.data);
+      this.hasDashboard.set(true);
 
       if (!response.data.completion?.ready) {
         // Soft gate: keep dashboard visible but force completion card open.

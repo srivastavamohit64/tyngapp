@@ -3,6 +3,7 @@ import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IonicModule, NavController, ToastController, ViewWillEnter, ViewWillLeave } from '@ionic/angular';
+import { PageSkeletonComponent } from '../../shared/components/skeleton';
 import { Subscription, firstValueFrom } from 'rxjs';
 import { BookingRecord } from '../../core/models/api.model';
 import { AuthService } from '../../core/services/auth.service';
@@ -28,7 +29,7 @@ interface GameChatDetails {
 @Component({
   selector: 'app-chat-room',
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule],
+  imports: [CommonModule, FormsModule, IonicModule, PageSkeletonComponent],
   template: `
     <ion-content fullscreen>
       <main class="safe-area-top flex flex-col min-h-full bg-white text-slate-800 select-none">
@@ -104,8 +105,8 @@ interface GameChatDetails {
           </button>
         </div>
 
-        <div *ngIf="loading" class="flex-1 grid place-items-center text-sm text-slate-400 font-semibold">
-          Loading messages…
+        <div *ngIf="loading && messages.length === 0" class="flex-1 px-4 pt-4">
+          <app-page-skeleton variant="chat" label="Loading messages"></app-page-skeleton>
         </div>
 
         <div *ngIf="!loading && errorMessage" class="flex-1 grid place-items-center px-6 text-center">

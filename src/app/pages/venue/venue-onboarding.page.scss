@@ -751,6 +751,12 @@
   gap: 6px;
 }
 
+.field-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
 .field-label {
   font-size: 11px;
   font-weight: 900;

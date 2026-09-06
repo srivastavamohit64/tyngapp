@@ -131,7 +131,7 @@
             </span>
             <span class="meta-pill meta-pill--soft">
               <ion-icon name="star"></ion-icon>
-              4.8 Rating
+              {{ ratingLabel() }} Rating
             </span>
           </div>
         </div>
@@ -140,7 +140,7 @@
           <div class="progress-head">
             <div class="progress-title">
               <ion-icon name="flash"></ion-icon>
-              <span>Level {{ level() }} Progress</span>
+              <span>Level {{ level() }} · {{ levelTitle() }}</span>
             </div>
             <span class="progress-xp">{{ xpLabel() }}</span>
           </div>
@@ -150,20 +150,20 @@
           <p class="progress-hint">{{ xpProgress() }}% to the next level</p>
         </div>
 
-        <div class="streak-card">
+        <div class="streak-card" *ngIf="xp()?.season as season">
           <div class="streak-icon">
-            <ion-icon name="flame"></ion-icon>
+            <ion-icon name="flash"></ion-icon>
           </div>
           <div>
-            <strong>Current Streak</strong>
-            <p>3 weekends in a row</p>
+            <strong>{{ season.name }}</strong>
+            <p>Season XP {{ xp()?.seasonXp || 0 | number }} · Rank {{ xp()?.seasonRank || '—' }}</p>
           </div>
         </div>
 
         <div class="section">
           <h3>Stats</h3>
           <div class="stats-grid">
-            <div class="stat-card" *ngFor="let stat of stats">
+            <div class="stat-card" *ngFor="let stat of stats()">
               <ion-icon [name]="stat.icon"></ion-icon>
               <strong>{{ stat.value }}</strong>
               <span>{{ stat.label }}</span>
@@ -171,34 +171,48 @@
           </div>
         </div>
 
-        <div class="section">
-          <h3>Badges</h3>
-          <div class="badges-grid">
-            <div class="badge-card" *ngFor="let badge of badges">
-              <div class="badge-icon">
-                <ion-icon [name]="badge.icon"></ion-icon>
+        <div class="section" *ngIf="xp()?.dna as dna">
+          <h3>XP DNA</h3>
+          <div class="stats-grid">
+            <div class="stat-card"><strong>{{ dna.play }}%</strong><span>Play</span></div>
+            <div class="stat-card"><strong>{{ dna.reliability }}%</strong><span>Reliability</span></div>
+            <div class="stat-card"><strong>{{ dna.sportsmanship }}%</strong><span>Sportsmanship</span></div>
+            <div class="stat-card"><strong>{{ dna.community }}%</strong><span>Community</span></div>
+          </div>
+        </div>
+
+        <div class="section" *ngIf="challenges().length">
+          <h3>Weekly challenges</h3>
+          <div class="match-list">
+            <div class="match-row" *ngFor="let challenge of challenges()">
+              <div>
+                <strong>{{ challenge.name }}</strong>
+                <p>{{ challenge.current }}/{{ challenge.threshold }} · +{{ challenge.rewardXp }} XP</p>
               </div>
-              <span>{{ badge.name }}</span>
+              <span class="result" [class.won]="challenge.completed">{{ challenge.completed ? 'Done' : 'Open' }}</span>
             </div>
           </div>
         </div>
 
         <div class="section">
-          <div class="section-head">
-            <h3>Recent Matches</h3>
-          </div>
-          <div class="match-list">
-            <div class="match-row" *ngFor="let match of recentMatches">
-              <div>
-                <strong>{{ match.sport }}</strong>
-                <p>{{ match.date }} · {{ match.score }}</p>
+          <h3>Badges</h3>
+          <div class="badges-grid" *ngIf="badges().length; else noBadges">
+            <div class="badge-card" *ngFor="let badge of badges()" [class.earned]="badge.earned">
+              <div class="badge-icon">
+                <ion-icon name="ribbon-outline"></ion-icon>
               </div>
-              <span class="result" [class.won]="match.result === 'Won'" [class.lost]="match.result === 'Lost'">
-                {{ match.result }}
-              </span>
+              <span>{{ badge.name }}</span>
             </div>
           </div>
+          <ng-template #noBadges>
+            <p class="progress-hint">Play verified games to unlock badges.</p>
+          </ng-template>
         </div>
+
+        <button type="button" class="logout-btn" style="margin-bottom:0" (click)="openXpHistory()">
+          <ion-icon name="list-outline"></ion-icon>
+          XP history
+        </button>
 
         <button type="button" class="logout-btn" (click)="logout()">
           <ion-icon name="log-out-outline"></ion-icon>

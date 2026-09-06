@@ -546,7 +546,7 @@ export class AuthPage implements OnInit {
 
   readonly roles = [
     { id: 'player' as UserRole, name: 'Player', icon: 'people-outline' },
-    { id: 'coach' as UserRole, name: 'Coach', icon: 'trophy-outline' },
+    // { id: 'coach' as UserRole, name: 'Coach', icon: 'trophy-outline' },
     { id: 'venue' as UserRole, name: 'Venue Owner', icon: 'business-outline' },
   ];
 
@@ -623,7 +623,6 @@ export class AuthPage implements OnInit {
   private syncModeFromRoute() {
     const tree = this.router.parseUrl(this.router.url);
     const modeParam = tree.queryParams['mode'];
-    // /auth and /login → login by default; only explicit mode=signup shows register
     this.mode = modeParam === 'signup' ? 'signup' : 'login';
   }
 }

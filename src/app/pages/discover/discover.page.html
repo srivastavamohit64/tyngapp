@@ -116,9 +116,8 @@
         </div>
 
         <ng-template #noPlayers>
-          <div *ngIf="loading" class="loading-state">
-            <ion-spinner name="crescent"></ion-spinner>
-            <p>Loading players...</p>
+          <div *ngIf="loading" class="loading-state px-2">
+            <app-page-skeleton variant="profile" label="Loading players"></app-page-skeleton>
           </div>
 
           <div *ngIf="!loading" class="state-card">

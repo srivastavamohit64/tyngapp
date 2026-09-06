@@ -5,6 +5,7 @@ import { AlertController, IonicModule, RefresherCustomEvent, ToastController, Vi
 import { Subscription, firstValueFrom } from 'rxjs';
 import { BookingParticipant, BookingRecord, FriendItem } from '../../core/models/api.model';
 import { BookingService } from '../../core/services/booking.service';
+import { XpBookingSummary, XpService } from '../../core/services/xp.service';
 import { ChatService } from '../../core/services/chat.service';
 import { AuthService } from '../../core/services/auth.service';
 import { SocialService } from '../../core/services/social.service';
@@ -20,11 +21,12 @@ import {
 import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { PlayerBookingCardComponent } from '../../shared/components/player-booking-card/player-booking-card.component';
+import { PageSkeletonComponent } from '../../shared/components/skeleton';
 
 @Component({
   selector: 'app-booking-detail',
   standalone: true,
-  imports: [CommonModule, IonicModule, BrandHeaderShellComponent, PageHeaderComponent, TitleCasePipe, PlayerBookingCardComponent],
+  imports: [CommonModule, IonicModule, BrandHeaderShellComponent, PageHeaderComponent, TitleCasePipe, PlayerBookingCardComponent, PageSkeletonComponent],
   template: `
     <ion-content fullscreen>
       <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
@@ -35,12 +37,11 @@ import { PlayerBookingCardComponent } from '../../shared/components/player-booki
         <main class="min-h-full bg-[#FAFBFC] text-[#111827] pb-[calc(96px+var(--safe-area-bottom))]">
           <app-page-header title="My Bookings" [showBack]="true" (back)="goBack()"></app-page-header>
 
-          <div class="px-4 py-4 space-y-4" *ngIf="loading">
-            <div class="skeleton-card"></div>
-            <div class="skeleton-card small"></div>
+          <div class="px-4 py-2" *ngIf="loading && !booking">
+            <app-page-skeleton variant="detail" label="Loading booking"></app-page-skeleton>
           </div>
 
-          <div class="px-4 py-4" *ngIf="!loading && errorMessage">
+          <div class="px-4 py-4" *ngIf="!loading && errorMessage && !booking">
             <div class="state-card">
               <div class="state-icon">⚠️</div>
               <h3>Couldn’t load booking</h3>
@@ -49,7 +50,7 @@ import { PlayerBookingCardComponent } from '../../shared/components/player-booki
             </div>
           </div>
 
-          <ng-container *ngIf="!loading && booking">
+          <ng-container *ngIf="booking">
             <div class="px-4 py-4 space-y-4">
               <app-player-booking-card
                 [booking]="booking"
@@ -60,6 +61,19 @@ import { PlayerBookingCardComponent } from '../../shared/components/player-booki
                 (updated)="booking = $event"
                 (bookAgain)="bookAgain($event)"
               ></app-player-booking-card>
+
+              <div class="detail-card" *ngIf="xpSummary">
+                <h3>{{ xpSummary.levelUp ? 'Level up' : 'XP earned' }}</h3>
+                <div class="detail-row" *ngFor="let line of xpSummary.transactions">
+                  <span>{{ line.label }}</span>
+                  <strong>{{ line.xpAmount > 0 ? '+' : '' }}{{ line.xpAmount }} XP</strong>
+                </div>
+                <div class="detail-row">
+                  <span>Total</span>
+                  <strong>{{ xpSummary.earnedXp > 0 ? '+' : '' }}{{ xpSummary.earnedXp }} XP</strong>
+                </div>
+                <p class="empty-copy">Lifetime {{ xpSummary.currentXp | number }} XP · Level {{ xpSummary.currentLevel }} {{ xpSummary.levelTitle }}</p>
+              </div>
 
               <div class="detail-card" *ngIf="booking.session?.status === 'live' || booking.session?.status === 'ended'">
                 <h3>Attendance</h3>
@@ -314,23 +328,6 @@ import { PlayerBookingCardComponent } from '../../shared/components/player-booki
         background: #111827;
         color: #fff;
       }
-
-      .skeleton-card {
-        height: 220px;
-        border-radius: 24px;
-        background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 37%, #f3f4f6 63%);
-        background-size: 400% 100%;
-        animation: shimmer 1.4s ease infinite;
-      }
-
-      .skeleton-card.small {
-        height: 160px;
-      }
-
-      @keyframes shimmer {
-        0% { background-position: 100% 0; }
-        100% { background-position: 0 0; }
-      }
     `,
   ],
 })
@@ -344,8 +341,10 @@ export class BookingDetailPage implements OnInit, OnDestroy, ViewWillEnter {
   private readonly social = inject(SocialService);
   private readonly toastCtrl = inject(ToastController);
   private readonly alertCtrl = inject(AlertController);
+  private readonly xpApi = inject(XpService);
 
   booking: BookingRecord | null = null;
+  xpSummary: XpBookingSummary | null = null;
   loading = true;
   actionLoading = false;
   openingChat = false;
@@ -452,6 +451,15 @@ export class BookingDetailPage implements OnInit, OnDestroy, ViewWillEnter {
       const response = await firstValueFrom(this.bookingService.getBooking(this.bookingId));
       if (response.success && response.data) {
         this.booking = response.data;
+        this.xpSummary = null;
+        if (['completed', 'expired'].includes(String(response.data.bookingStatus || '').toLowerCase())
+          && (response.data.isHost || response.data.isJoined)) {
+          try {
+            this.xpSummary = await firstValueFrom(this.xpApi.bookingSummary(response.data.id));
+          } catch {
+            this.xpSummary = null;
+          }
+        }
       } else {
         this.errorMessage = response.message || 'Failed to load booking details.';
       }

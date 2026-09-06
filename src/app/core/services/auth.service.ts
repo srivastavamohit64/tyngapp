@@ -61,31 +61,30 @@ export class AuthService {
       return of(undefined);
     }
 
-    return new Observable<void>((subscriber) => {
+    // Capture device fields, then start server cleanup while auth token is still present.
+    let deviceToken: string | undefined;
+    let deviceId: string | undefined;
+    try {
       const push = this.injector.get(PushNotificationService);
-      const deviceToken = push.getCurrentToken();
-      const deviceId = push.getDeviceId();
+      deviceToken = push.getCurrentToken() || undefined;
+      deviceId = push.getDeviceId() || undefined;
+      // Starts DELETE /device-token immediately (do not await).
+      void push.unregister().catch(() => undefined);
+    } catch {
+      // ignore
+    }
 
-      void push.unregister().finally(() => {
-        this.api.post<null>('/logout', {
-          device_token: deviceToken || undefined,
-          device_id: deviceId || undefined,
-        }).pipe(
-          tap(() => clear()),
-          catchError(() => {
-            clear();
-            return of(undefined);
-          }),
-          map(() => undefined),
-        ).subscribe({
-          next: () => {
-            subscriber.next();
-            subscriber.complete();
-          },
-          error: (err) => subscriber.error(err),
-        });
-      });
-    });
+    // Fire logout API without waiting for response.
+    this.api.post<null>('/logout', {
+      device_token: deviceToken,
+      device_id: deviceId,
+    }).pipe(
+      catchError(() => of(undefined)),
+    ).subscribe();
+
+    // Instant UX: clear local session + navigate right away.
+    clear();
+    return of(undefined);
   }
 
   fetchMe(): Observable<AuthUser> {
@@ -217,10 +216,75 @@ export class AuthService {
     void this.router.navigateByUrl('/app/home');
   }
 
-  venueHomePath(_user: AuthUser | null = this.user()): string {
-    // Prefer dashboard; completion card handles incomplete profiles.
-    // Older APIs still mark ready=false for optional Amenities/Verification.
-    return '/app/venue/dashboard';
+  /**
+   * Single source for venue post-auth / post-onboarding routing.
+   * Main app (dashboard) only when backend canAccessApp is true.
+   */
+  venueHomePath(user: AuthUser | null = this.user()): string {
+    if (user?.role !== 'venue') {
+      return '/app/home';
+    }
+
+    if (!user.isOnboarded) {
+      return '/venue-onboarding';
+    }
+
+    // Fully approved → main app only.
+    if (this.canAccessVenueApp(user)) {
+      return '/app/venue/dashboard';
+    }
+
+    // Account approved but docs missing/rejected → dashboard hosts mandatory upload modal.
+    if (this.needsVenueDocuments(user)) {
+      return '/app/venue/dashboard';
+    }
+
+    // Declined / incomplete profile → allow finishing profile then resubmit.
+    if (user.accountStatus === 'declined' || user.accountStatus === 'incomplete') {
+      return '/app/venue/complete-profile';
+    }
+
+    // Account pending or documents pending review.
+    return '/venue-pending-approval';
+  }
+
+  /** Account pending or declined — cannot use the main app. */
+  isVenueAccountBlocked(user: AuthUser | null = this.user()): boolean {
+    return user?.role === 'venue' && (user.accountStatus === 'pending' || user.accountStatus === 'declined');
+  }
+
+  /** Account approved but required docs are under admin review. */
+  isVenueDocumentsPending(user: AuthUser | null = this.user()): boolean {
+    return user?.role === 'venue'
+      && user.accountStatus === 'approved'
+      && user.documentsStatus === 'pending';
+  }
+
+  /** Account approved but required docs missing or rejected — login OK, must upload. */
+  needsVenueDocuments(user: AuthUser | null = this.user()): boolean {
+    return user?.role === 'venue'
+      && user.accountStatus === 'approved'
+      && (user.documentsStatus === 'not_submitted' || user.documentsStatus === 'rejected');
+  }
+
+  isVenueAwaitingApproval(user: AuthUser | null = this.user()): boolean {
+    return this.isVenueAccountBlocked(user) || this.isVenueDocumentsPending(user);
+  }
+
+  /** True only when account + required documents are both approved (backend canAccessApp). */
+  canAccessVenueApp(user: AuthUser | null = this.user()): boolean {
+    if (user?.role !== 'venue') return true;
+    if (typeof user.canAccessApp === 'boolean') return user.canAccessApp;
+    return user.accountStatus === 'approved' && user.documentsStatus === 'approved';
+  }
+
+  /** Restricted activation surfaces allowed when not fully approved. */
+  isVenueActivationUrl(url: string): boolean {
+    return url.includes('venue-pending-approval')
+      || url.includes('venue-onboarding')
+      || url.includes('/venue/complete-profile')
+      || url.includes('/venue/dashboard')
+      || url.includes('/venue/profile');
   }
 
   hydrateUser(user: AuthUser): void {

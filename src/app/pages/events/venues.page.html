@@ -85,9 +85,8 @@
           Showing nearby courts outside {{ city() }} as well.
         </p>
 
-        <div class="state-card" *ngIf="loading()">
-          <ion-spinner name="crescent"></ion-spinner>
-          <p>Finding courts near you…</p>
+        <div class="px-1 pt-2" *ngIf="loading() && filteredCourts().length === 0">
+          <app-page-skeleton variant="cards" [count]="4" label="Finding courts"></app-page-skeleton>
         </div>
 
         <div class="state-card error" *ngIf="!loading() && errorMessage()">

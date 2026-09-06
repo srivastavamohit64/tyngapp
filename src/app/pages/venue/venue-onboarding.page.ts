@@ -7,6 +7,7 @@ import { IonicModule } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { VenueService } from '../../core/services/venue.service';
+import { ReverseGeocodeDetails } from '../../core/services/location.service';
 import { LocationFieldComponent } from '../../shared/components/location-field/location-field.component';
 
 interface VenueTypeOption {
@@ -84,6 +85,8 @@ export class VenueOnboardingPage {
   mobile = '';
   email = '';
   city = '';
+  state = '';
+  pincode = '';
   address = '';
   sports: string[] = [];
 
@@ -93,6 +96,12 @@ export class VenueOnboardingPage {
     if (this.step === 3) return !!this.venueName.trim() && !!this.ownerName.trim() && this.mobile.replace(/\D/g, '').length >= 10;
     if (this.step === 4) return this.sports.length > 0;
     return false;
+  }
+
+  onLocationDetails(details: ReverseGeocodeDetails) {
+    if (details.city) this.city = details.city;
+    if (details.state) this.state = details.state;
+    if (details.pincode) this.pincode = details.pincode.replace(/\D/g, '').slice(0, 6);
   }
 
   back() {
@@ -156,6 +165,8 @@ export class VenueOnboardingPage {
           email: this.email.trim() || null,
           location: [this.address.trim(), this.city.trim()].filter(Boolean).join(', ') || null,
           city: this.city.trim() || null,
+          state: this.state.trim() || null,
+          pincode: this.pincode.replace(/\D/g, '').slice(0, 6) || null,
           address: this.address.trim() || null,
           sports: this.sports,
           venueType: this.venueType,
@@ -165,10 +176,22 @@ export class VenueOnboardingPage {
       } catch {
         // Profile details can be completed later.
       }
-      await firstValueFrom(this.auth.fetchMe());
+
+      // Onboarding ≠ approval. Submit account for admin review, then refresh status.
+      try {
+        const submit = await firstValueFrom(this.venueService.submitForApproval());
+        if (submit.data?.user) {
+          this.auth.hydrateUser(submit.data.user as any);
+        } else {
+          await firstValueFrom(this.auth.fetchMe());
+        }
+      } catch {
+        await firstValueFrom(this.auth.fetchMe());
+      }
     } catch {
-      // Continue navigation if API sync fails
+      // Still route from latest known status if sync fails.
     }
+
     void this.router.navigateByUrl(this.auth.venueHomePath(), { replaceUrl: true });
   }
 }

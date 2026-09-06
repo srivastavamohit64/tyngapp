@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { IonicModule, ToastController, ViewWillEnter } from '@ionic/angular';
+import { IonicModule, AlertController, ToastController, ViewWillEnter } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { VenueService } from '../../core/services/venue.service';
@@ -31,11 +31,18 @@ interface VerDocPreview {
   url: string;
   isImage: boolean;
   isPdf: boolean;
+  locked: boolean;
+  editAllowed: boolean;
+  pendingEdit: boolean;
+  status: string;
+  rejectionReason: string | null;
+  required: boolean;
 }
 
 const DOC_LABELS: Record<string, string> = {
   biz: 'Business Registration',
   gst: 'GST Certificate',
+  aadhaar: 'Aadhaar Card',
   pan: 'PAN Card',
   cheque: 'Cancelled Cheque',
   bank: 'Bank Details',
@@ -57,14 +64,54 @@ const DOC_LABELS: Record<string, string> = {
             <ion-icon name="chevron-back-outline" class="text-xl text-[#111827]"></ion-icon>
           </button>
           <p class="text-[17px] font-black text-[#111827] m-0">Venue Profile</p>
-          <button type="button" (click)="editProfile()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none" aria-label="Edit profile">
-            <ion-icon name="create-outline" class="text-xl text-[#111827]"></ion-icon>
+          <button type="button" (click)="editProfile()" class="edit-icon-btn" aria-label="Edit profile">
+            <ion-icon name="create-outline"></ion-icon>
           </button>
         </div>
 
-        <div *ngIf="loading()" class="px-6 py-10 text-center text-[#9CA3AF] font-semibold">Loading profile…</div>
+        <div *ngIf="showSkeleton()" class="venue-profile-skel" aria-busy="true" aria-label="Loading profile">
+          <div class="profile-hero bg-gradient-to-b from-[var(--app-primary)]/10 to-transparent px-6 pt-6 pb-8 flex flex-col items-center text-center">
+            <ion-skeleton-text animated class="skel-avatar"></ion-skeleton-text>
+            <ion-skeleton-text animated class="skel-name"></ion-skeleton-text>
+            <ion-skeleton-text animated class="skel-location"></ion-skeleton-text>
+            <ion-skeleton-text animated class="skel-rating-pill"></ion-skeleton-text>
+          </div>
 
-        <ng-container *ngIf="!loading()">
+          <div class="px-5 space-y-6">
+            <section *ngFor="let section of skeletonSections">
+              <ion-skeleton-text animated class="skel-section-title"></ion-skeleton-text>
+              <div class="detail-card">
+                <div class="detail-row skel-detail-row" *ngFor="let row of section.rows">
+                  <ion-skeleton-text animated class="skel-label"></ion-skeleton-text>
+                  <ion-skeleton-text animated class="skel-value"></ion-skeleton-text>
+                </div>
+              </div>
+            </section>
+
+            <section>
+              <ion-skeleton-text animated class="skel-section-title"></ion-skeleton-text>
+              <div class="grid grid-cols-3 gap-3">
+                <div class="bg-white p-4 rounded-2xl border border-slate-50 text-center shadow-sm" *ngFor="let i of [1,2,3]">
+                  <ion-skeleton-text animated class="skel-stat-icon"></ion-skeleton-text>
+                  <ion-skeleton-text animated class="skel-stat-value"></ion-skeleton-text>
+                  <ion-skeleton-text animated class="skel-stat-label"></ion-skeleton-text>
+                </div>
+              </div>
+            </section>
+
+            <section>
+              <ion-skeleton-text animated class="skel-section-title"></ion-skeleton-text>
+              <div class="detail-card">
+                <div class="detail-row skel-detail-row" *ngFor="let i of [1,2,3]">
+                  <ion-skeleton-text animated class="skel-label"></ion-skeleton-text>
+                  <ion-skeleton-text animated class="skel-value"></ion-skeleton-text>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+
+        <ng-container *ngIf="hasProfile()">
           <div class="profile-hero bg-gradient-to-b from-[var(--app-primary)]/10 to-transparent px-6 pt-6 pb-8 flex flex-col items-center text-center">
             <div class="w-24 h-24 rounded-full bg-gradient-to-br from-[var(--app-primary)] to-[var(--app-primary-to)] flex items-center justify-center text-5xl mb-4 shadow-sm border border-white overflow-hidden">
               <img *ngIf="avatarUrl(); else venueEmoji" [src]="avatarUrl()!" [alt]="venueName()" class="w-full h-full object-cover" />
@@ -81,10 +128,6 @@ const DOC_LABELS: Record<string, string> = {
                 {{ rating() }} <span class="text-[#9CA3AF]">({{ reviewCount() }} reviews)</span>
               </span>
             </div>
-            <button type="button" class="edit-cta mt-4" (click)="editProfile()">
-              <ion-icon name="create-outline"></ion-icon>
-              Edit profile details
-            </button>
           </div>
 
           <div class="px-5 space-y-6">
@@ -124,20 +167,41 @@ const DOC_LABELS: Record<string, string> = {
 
             <section *ngIf="verificationDocs().length">
               <p class="section-title">Verification documents</p>
+              <p class="text-[12px] text-[#9CA3AF] font-bold m-0 mb-3">
+                Required documents must be approved by admin. Locked files need edit permission to replace.
+              </p>
               <div class="space-y-3">
                 <div *ngFor="let doc of verificationDocs()" class="doc-card">
-                  <div class="doc-preview" (click)="openUrl(doc.url)">
-                    <img *ngIf="doc.isImage" [src]="doc.url" [alt]="doc.label" />
-                    <div *ngIf="!doc.isImage" class="doc-file-fallback">
+                  <div class="doc-preview" (click)="doc.url && openUrl(doc.url)">
+                    <img *ngIf="doc.isImage && doc.url" [src]="doc.url" [alt]="doc.label" />
+                    <div *ngIf="!doc.isImage || !doc.url" class="doc-file-fallback">
                       <ion-icon [name]="doc.isPdf ? 'document-text-outline' : 'document-outline'"></ion-icon>
-                      <span>{{ doc.isPdf ? 'PDF' : 'FILE' }}</span>
+                      <span>{{ doc.url ? (doc.isPdf ? 'PDF' : 'FILE') : 'MISSING' }}</span>
                     </div>
                   </div>
                   <div class="doc-meta">
-                    <strong>{{ doc.label }}</strong>
-                    <p>{{ doc.name }}</p>
-                    <button type="button" class="doc-open" (click)="openUrl(doc.url)">
+                    <strong>{{ doc.label }}{{ doc.required ? ' *' : '' }}</strong>
+                    <p>{{ doc.name || 'Not uploaded' }}</p>
+                    <p class="text-[11px] font-bold m-0 mt-1"
+                      [style.color]="doc.status === 'approved' ? '#166534' : doc.status === 'rejected' ? '#B91C1C' : doc.status === 'pending' ? '#B45309' : '#6B7280'">
+                      Status: {{ doc.status === 'not_submitted' ? 'Missing' : (doc.status | titlecase) }}
+                    </p>
+                    <p *ngIf="doc.rejectionReason" class="text-[11px] font-bold text-[#B91C1C] m-0 mt-1">
+                      Reason: {{ doc.rejectionReason }}
+                    </p>
+                    <p *ngIf="doc.locked" class="text-[11px] font-bold text-[#92400E] m-0 mt-1">Locked</p>
+                    <p *ngIf="doc.editAllowed" class="text-[11px] font-bold text-[#166534] m-0 mt-1">Edit allowed — open Edit Profile to re-upload</p>
+                    <p *ngIf="doc.pendingEdit" class="text-[11px] font-bold text-[#F59E0B] m-0 mt-1">Edit request pending</p>
+                    <button *ngIf="doc.url" type="button" class="doc-open" (click)="openUrl(doc.url)">
                       Preview / Open
+                    </button>
+                    <button
+                      *ngIf="doc.locked && !doc.pendingEdit"
+                      type="button"
+                      class="doc-open"
+                      (click)="requestDocEdit(doc.id)"
+                    >
+                      Request edit
                     </button>
                   </div>
                 </div>
@@ -224,17 +288,22 @@ const DOC_LABELS: Record<string, string> = {
       box-shadow: 0 2px 10px rgba(0,0,0,0.02);
     }
 
-    .edit-cta {
-      display: inline-flex;
+    .edit-icon-btn {
+      width: 40px;
+      height: 40px;
+      display: flex;
       align-items: center;
-      gap: 6px;
+      justify-content: center;
       border: none;
+      border-radius: 12px;
       background: #111827;
       color: #fff;
-      font-size: 13px;
-      font-weight: 800;
-      border-radius: 999px;
-      padding: 10px 16px;
+      padding: 0;
+    }
+
+    .edit-icon-btn ion-icon {
+      font-size: 20px;
+      color: #fff;
     }
 
     .section-title {
@@ -277,6 +346,105 @@ const DOC_LABELS: Record<string, string> = {
       font-weight: 800;
       text-align: right;
       word-break: break-word;
+    }
+
+    .venue-profile-skel ion-skeleton-text {
+      display: block;
+      margin: 0;
+      --border-radius: 6px;
+      --background: #d1d5db;
+      --background-rgb: 209, 213, 219;
+      background: #d1d5db;
+    }
+
+    .venue-profile-skel .profile-hero {
+      gap: 14px;
+    }
+
+    .venue-profile-skel .skel-avatar {
+      width: 96px;
+      height: 96px;
+      border-radius: 999px;
+      margin: 0 0 2px;
+      --border-radius: 999px;
+    }
+
+    .venue-profile-skel .skel-name {
+      width: 200px;
+      max-width: 72%;
+      height: 20px;
+      border-radius: 6px;
+      margin: 0;
+    }
+
+    .venue-profile-skel .skel-location {
+      width: 220px;
+      max-width: 78%;
+      height: 12px;
+      border-radius: 5px;
+      margin: 0;
+    }
+
+    .venue-profile-skel .skel-rating-pill {
+      width: 148px;
+      height: 36px;
+      border-radius: 999px;
+      margin: 2px 0 0;
+      --border-radius: 999px;
+    }
+
+    .venue-profile-skel .skel-section-title {
+      width: 118px;
+      height: 10px;
+      border-radius: 4px;
+      margin: 0 0 12px;
+    }
+
+    .skel-detail-row {
+      align-items: center;
+      gap: 20px;
+      min-height: 0;
+      padding: 11px 0;
+    }
+
+    .venue-profile-skel .skel-label {
+      width: 96px;
+      max-width: 38%;
+      height: 10px;
+      border-radius: 4px;
+      flex-shrink: 0;
+      margin: 0;
+    }
+
+    .venue-profile-skel .skel-value {
+      width: 108px;
+      max-width: 44%;
+      height: 11px;
+      border-radius: 4px;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    .venue-profile-skel .skel-stat-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 12px;
+      margin: 0 auto 10px;
+      --border-radius: 12px;
+    }
+
+    .venue-profile-skel .skel-stat-value {
+      width: 40px;
+      height: 15px;
+      border-radius: 5px;
+      margin: 0 auto 8px;
+    }
+
+    .venue-profile-skel .skel-stat-label {
+      width: 54px;
+      height: 8px;
+      border-radius: 4px;
+      margin: 0 auto;
     }
 
     .slot-card {
@@ -442,10 +610,20 @@ export class VenueProfilePage implements OnInit, ViewWillEnter {
   private readonly auth = inject(AuthService);
   private readonly venueService = inject(VenueService);
   private readonly toastCtrl = inject(ToastController);
+  private readonly alertCtrl = inject(AlertController);
 
   readonly loading = signal(true);
   readonly savingSlotInterval = signal(false);
+  readonly skeletonSections = [
+    { rows: [1, 2, 3, 4, 5, 6, 7] },
+    { rows: [1, 2, 3, 4, 5] },
+  ];
   private readonly detail = signal<Record<string, unknown> | null>(null);
+  private readonly editableDocuments = signal<string[]>([]);
+  private readonly pendingEditDocIds = signal<string[]>([]);
+
+  readonly showSkeleton = computed(() => this.loading() && !this.detail());
+  readonly hasProfile = computed(() => !!this.detail());
 
   readonly slotIntervalMinutes = computed<SlotIntervalMinutes>(() =>
     normalizeSlotInterval(this.detail()?.['slotIntervalMinutes'] as number | null),
@@ -476,7 +654,42 @@ export class VenueProfilePage implements OnInit, ViewWillEnter {
   });
 
   readonly verificationDocs = computed<VerDocPreview[]>(() => {
-    const raw = this.detail()?.['verificationDocuments'];
+    const d = this.detail();
+    const editable = new Set(this.editableDocuments());
+    const pending = new Set(this.pendingEditDocIds());
+    const statuses = Array.isArray(d?.['documentStatuses'])
+      ? (d!['documentStatuses'] as Array<Record<string, unknown>>)
+      : null;
+
+    if (statuses?.length) {
+      return statuses
+        .filter((row) => row['required'] || row['url'])
+        .map((row) => {
+          const id = String(row['id'] || '');
+          const url = String(row['url'] || '');
+          const name = String(row['name'] || id || '—');
+          const isImage = /\.(jpe?g|png|webp|gif)(\?|$)/i.test(url) || /\.(jpe?g|png|webp|gif)(\?|$)/i.test(name);
+          const isPdf = /\.pdf(\?|$)/i.test(url) || /\.pdf(\?|$)/i.test(name);
+          const editAllowed = editable.has(id) || String(row['status'] || '') === 'rejected';
+          const locked = !!url && !editAllowed && String(row['status'] || '') !== 'rejected';
+          return {
+            id,
+            label: String(row['label'] || DOC_LABELS[id] || this.titleCase(id)),
+            name,
+            url,
+            isImage,
+            isPdf,
+            locked,
+            editAllowed,
+            pendingEdit: pending.has(id),
+            status: String(row['status'] || 'not_submitted'),
+            rejectionReason: row['rejectionReason'] ? String(row['rejectionReason']) : null,
+            required: !!row['required'],
+          };
+        });
+    }
+
+    const raw = d?.['verificationDocuments'];
     if (!raw || typeof raw !== 'object') return [];
 
     return Object.entries(raw as Record<string, Record<string, unknown>>)
@@ -486,6 +699,8 @@ export class VenueProfilePage implements OnInit, ViewWillEnter {
         const mime = String(doc?.['mime'] || '').toLowerCase();
         const isImage = mime.startsWith('image/') || /\.(jpe?g|png|webp|gif)(\?|$)/i.test(url) || /\.(jpe?g|png|webp|gif)(\?|$)/i.test(name);
         const isPdf = mime.includes('pdf') || /\.pdf(\?|$)/i.test(url) || /\.pdf(\?|$)/i.test(name);
+        const editAllowed = editable.has(id);
+        const locked = !!url && !editAllowed;
         return {
           id,
           label: DOC_LABELS[id] || this.titleCase(id),
@@ -493,6 +708,12 @@ export class VenueProfilePage implements OnInit, ViewWillEnter {
           url,
           isImage,
           isPdf,
+          locked,
+          editAllowed,
+          pendingEdit: pending.has(id),
+          status: String(doc?.['status'] || (url ? 'pending' : 'not_submitted')),
+          rejectionReason: doc?.['rejectionReason'] ? String(doc['rejectionReason']) : null,
+          required: false,
         };
       })
       .filter((doc) => !!doc.url);
@@ -558,27 +779,92 @@ export class VenueProfilePage implements OnInit, ViewWillEnter {
   }
 
   ionViewWillEnter() {
-    void this.load();
+    // Refresh quietly when profile is already on screen — no skeleton flash.
+    if (this.detail()) {
+      void this.load();
+    }
   }
 
   private async load() {
-    this.loading.set(true);
+    const initial = !this.detail();
+    if (initial) {
+      this.loading.set(true);
+    }
     try {
-      const [profileRes] = await Promise.all([
+      const [profileRes, editRes] = await Promise.all([
         firstValueFrom(this.venueService.getMyProfile()),
+        firstValueFrom(this.venueService.getDocumentEditRequests()).catch(() => null),
         firstValueFrom(this.auth.fetchMe()).catch(() => null),
       ]);
       if (profileRes.success && profileRes.data) {
-        this.detail.set(profileRes.data as Record<string, unknown>);
+        const data = profileRes.data as Record<string, unknown>;
+        this.detail.set(data);
+        if (Array.isArray(data['editableDocuments'])) {
+          this.editableDocuments.set((data['editableDocuments'] as unknown[]).map(String));
+        }
+      }
+      if (editRes?.success && editRes.data) {
+        this.pendingEditDocIds.set(
+          (editRes.data.requests || [])
+            .filter((r) => r.status === 'pending')
+            .map((r) => String(r.docId)),
+        );
+        if (Array.isArray(editRes.data.editableDocuments)) {
+          this.editableDocuments.set(editRes.data.editableDocuments.map(String));
+        }
       }
     } catch {
-      this.detail.set({
-        name: this.auth.user()?.name,
-        location: this.auth.user()?.location,
-        profileImage: this.auth.user()?.profileImage,
-      });
+      if (!this.detail()) {
+        this.detail.set({
+          name: this.auth.user()?.name,
+          location: this.auth.user()?.location,
+          profileImage: this.auth.user()?.profileImage,
+        });
+      }
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  async requestDocEdit(docId: string) {
+    const alert = await this.alertCtrl.create({
+      header: 'Request document edit',
+      message: 'Tell admin why you need to replace this document.',
+      inputs: [{ name: 'reason', type: 'textarea', placeholder: 'Reason (optional)' }],
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        {
+          text: 'Submit',
+          handler: (data) => {
+            void this.submitDocEdit(docId, String(data?.reason || '').trim());
+          },
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  private async submitDocEdit(docId: string, reason: string) {
+    try {
+      const res = await firstValueFrom(this.venueService.requestDocumentEdit(docId, reason || undefined));
+      const toast = await this.toastCtrl.create({
+        message: res.success ? 'Edit request sent to admin.' : (res.message || 'Request failed.'),
+        duration: 2000,
+        color: res.success ? 'dark' : 'danger',
+        position: 'bottom',
+      });
+      await toast.present();
+      if (res.success) {
+        this.pendingEditDocIds.update((ids) => (ids.includes(docId) ? ids : [...ids, docId]));
+      }
+    } catch (error: any) {
+      const toast = await this.toastCtrl.create({
+        message: error?.error?.message || 'Unable to submit edit request.',
+        duration: 2200,
+        color: 'danger',
+        position: 'bottom',
+      });
+      await toast.present();
     }
   }
 

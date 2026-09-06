@@ -7,13 +7,14 @@ import { Subscription, firstValueFrom } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { RealtimeService } from '../../../core/services/realtime.service';
 import { VenueEarningsData, VenueService } from '../../../core/services/venue.service';
+import { PageSkeletonComponent } from '../../../shared/components/skeleton';
 
 type PeriodKey = 'today' | 'week' | 'month' | 'year';
 
 @Component({
   selector: 'app-venue-earnings-page',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule],
+  imports: [CommonModule, IonicModule, FormsModule, PageSkeletonComponent],
   template: `
     <ion-content [fullscreen]="true" class="has-tabs">
       <div class="earnings-page text-left">
@@ -47,21 +48,18 @@ type PeriodKey = 'today' | 'week' | 'month' | 'year';
           </div>
         </div>
 
-        <!-- Skeleton -->
-        <div class="px-5 pt-4 space-y-4" *ngIf="loading()">
-          <div class="skeleton hero"></div>
-          <div class="skeleton card"></div>
-          <div class="skeleton card short"></div>
+        <div class="px-5 pt-2" *ngIf="loading() && !data()">
+          <app-page-skeleton variant="wallet" label="Loading earnings"></app-page-skeleton>
         </div>
 
-        <div class="px-5 pt-4 space-y-5" *ngIf="!loading() && errorMessage()">
+        <div class="px-5 pt-4 space-y-5" *ngIf="!loading() && errorMessage() && !data()">
           <div class="state-card">
             <p>{{ errorMessage() }}</p>
             <button type="button" (click)="reload()">Retry</button>
           </div>
         </div>
 
-        <div class="px-5 pt-4 space-y-5" *ngIf="!loading() && data()">
+        <div class="px-5 pt-4 space-y-5" *ngIf="data()">
           <!-- Summary hero -->
           <div
             class="rounded-[24px] p-6 relative overflow-hidden text-left"
@@ -315,7 +313,7 @@ type PeriodKey = 'today' | 'week' | 'month' | 'year';
         </div>
       </div>
 
-      <div class="action-footer" *ngIf="!loading() && data()">
+      <div class="action-footer" *ngIf="data()">
         <div class="flex gap-3 max-w-md mx-auto">
           <button type="button" class="flex-1 h-12 rounded-2xl text-[13px] font-black text-[#6B7280] bg-[#F3F4F6] border-none flex items-center justify-center gap-1.5">
             <ion-icon name="download-outline" class="text-base"></ion-icon>Monthly Report
@@ -475,22 +473,6 @@ type PeriodKey = 'today' | 'week' | 'month' | 'year';
         box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.09);
       }
 
-      .skeleton {
-        border-radius: 24px;
-        background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 37%, #f3f4f6 63%);
-        background-size: 400% 100%;
-        animation: shimmer 1.4s ease infinite;
-      }
-      .skeleton.hero {
-        height: 220px;
-      }
-      .skeleton.card {
-        height: 180px;
-      }
-      .skeleton.card.short {
-        height: 120px;
-      }
-
       .state-card,
       .empty-note {
         background: #fff;
@@ -511,15 +493,6 @@ type PeriodKey = 'today' | 'week' | 'month' | 'year';
         height: 40px;
         padding: 0 16px;
         font-weight: 800;
-      }
-
-      @keyframes shimmer {
-        0% {
-          background-position: 100% 0;
-        }
-        100% {
-          background-position: 0 0;
-        }
       }
     `,
   ],

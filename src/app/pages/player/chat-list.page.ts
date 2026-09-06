@@ -9,11 +9,12 @@ import { TabBadgeService } from '../../core/services/tab-badge.service';
 import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 import { FilterChip, FilterChipsComponent } from '../../shared/components/filter-chips/filter-chips.component';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { SkeletonListComponent } from '../../shared/components/skeleton';
 
 @Component({
   selector: 'app-chat-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule, BrandHeaderShellComponent, PageHeaderComponent, FilterChipsComponent],
+  imports: [CommonModule, FormsModule, IonicModule, BrandHeaderShellComponent, PageHeaderComponent, FilterChipsComponent, SkeletonListComponent],
   template: `
     <ion-content fullscreen class="has-tabs">
       <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
@@ -53,8 +54,8 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
         </app-page-header>
 
         <div class="flex-1 bg-white">
-          <div *ngIf="loading" class="px-4 py-8 text-center text-sm text-slate-400 font-semibold">
-            Loading chats…
+          <div *ngIf="loading && threads().length === 0" class="px-4 pt-4">
+            <app-skeleton-list [count]="6"></app-skeleton-list>
           </div>
 
           <div *ngIf="!loading && errorMessage" class="state-wrap">
@@ -62,7 +63,7 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
             <button type="button" class="cta-btn cta-btn--dark" (click)="startInbox()">Retry</button>
           </div>
 
-          <ng-container *ngIf="!loading && !errorMessage">
+          <ng-container *ngIf="(!loading || threads().length > 0) && !errorMessage">
             <div *ngIf="pinnedChats().length" class="pinned-block">
               <p class="section-label pinned-label">📌 PINNED</p>
               <div

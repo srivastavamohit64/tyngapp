@@ -31,6 +31,7 @@ export interface ReverseGeocodeDetails {
   postalArea: string;
   pincode: string;
   city: string;
+  state: string;
   shortLabel: string;
 }
 
@@ -280,6 +281,7 @@ export class LocationService {
     const city =
       this.component(withPin, 'locality') ||
       this.component(withPin, 'administrative_area_level_2');
+    const state = this.component(withPin, 'administrative_area_level_1');
 
     const shortLabel = [postalArea, city].filter((part, index, all) =>
       Boolean(part) && all.findIndex((item) => item.toLowerCase() === part.toLowerCase()) === index,
@@ -288,7 +290,7 @@ export class LocationService {
       || city
       || address;
 
-    return { address, postalArea, pincode, city, shortLabel };
+    return { address, postalArea, pincode, city, state, shortLabel };
   }
 
   private component(result: google.maps.GeocoderResult, type: string): string {

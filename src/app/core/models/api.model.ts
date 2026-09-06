@@ -19,8 +19,11 @@ export interface AuthUser {
   gender?: string | null;
   location?: string | null;
   level?: number;
+  levelTitle?: string | null;
   tpPoints?: number;
   currentXp?: number;
+  seasonXp?: number;
+  reliabilityScore?: number;
   nextLevelXp?: number;
   xpProgressPct?: number;
   xpToNextLevel?: number;
@@ -37,6 +40,11 @@ export interface AuthUser {
   personality?: string | null;
   venueType?: string | null;
   venueProfileReady?: boolean;
+  accountStatus?: 'incomplete' | 'pending' | 'approved' | 'declined' | null;
+  accountRejectionReason?: string | null;
+  documentsStatus?: 'not_submitted' | 'pending' | 'approved' | 'rejected' | null;
+  canAccessApp?: boolean | null;
+  isVerified?: boolean | null;
   displayName?: string | null;
   businessName?: string | null;
   ownerName?: string | null;

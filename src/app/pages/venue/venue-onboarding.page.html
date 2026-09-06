@@ -108,10 +108,23 @@
             <div class="field-input"><ion-icon name="location-outline"></ion-icon>
               <input type="text" [(ngModel)]="city" placeholder="e.g. Lucknow" /></div>
           </div>
+          <div class="field-row-2">
+            <div class="field-group">
+              <label class="field-label">State</label>
+              <div class="field-input"><ion-icon name="map-outline"></ion-icon>
+                <input type="text" [(ngModel)]="state" placeholder="e.g. Uttar Pradesh" /></div>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Pincode</label>
+              <div class="field-input"><ion-icon name="pin-outline"></ion-icon>
+                <input type="text" [(ngModel)]="pincode" maxlength="6" inputmode="numeric" placeholder="e.g. 226001" /></div>
+            </div>
+          </div>
           <app-location-field
             label="Venue Address"
             placeholder="Full address with landmark"
             [(ngModel)]="address"
+            (detailsChange)="onLocationDetails($event)"
           ></app-location-field>
         </div>
         <div *ngIf="showMapPreview()" class="map-preview">

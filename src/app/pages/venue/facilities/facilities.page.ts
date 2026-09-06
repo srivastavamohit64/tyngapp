@@ -9,6 +9,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { NativeMediaPickerService } from '../../../core/services/native-media-picker.service';
 import { VenueService } from '../../../core/services/venue.service';
 import { normalizeImageFile } from '../../../core/utils/image-file.util';
+import { PageSkeletonComponent } from '../../../shared/components/skeleton';
 
 interface MaintFacility {
   id: string;
@@ -57,7 +58,7 @@ const STATUS_OPTIONS: StatusOption[] = [
 @Component({
   selector: 'app-venue-facilities-page',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule],
+  imports: [CommonModule, IonicModule, FormsModule, PageSkeletonComponent],
   template: `
     <ion-content [fullscreen]="true" class="has-tabs">
       <div class="fac-page" [class.has-save]="hasChanges() || saved()">
@@ -97,7 +98,7 @@ const STATUS_OPTIONS: StatusOption[] = [
         </div>
 
         <div class="fac-body">
-          <p *ngIf="loading()" class="fac-muted">Loading facilities…</p>
+          <app-page-skeleton *ngIf="loading() && facilityList().length === 0" variant="cards" [count]="4" label="Loading facilities"></app-page-skeleton>
 
           <div *ngIf="saveError()" class="fac-alert fac-alert--error">{{ saveError() }}</div>
           <div *ngIf="saved()" class="fac-alert fac-alert--ok">Facility saved.</div>

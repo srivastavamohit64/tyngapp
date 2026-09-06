@@ -38,6 +38,18 @@ export class GoogleMapsService {
     return this.loadPromise;
   }
 
+  /**
+   * Shared defaults for every Google Map in the app:
+   * VECTOR rendering + clean roadmap basemap.
+   */
+  baseMapOptions(overrides: google.maps.MapOptions = {}): google.maps.MapOptions {
+    return {
+      renderingType: google.maps.RenderingType.VECTOR,
+      mapTypeId: 'roadmap',
+      ...overrides,
+    };
+  }
+
   async geocode(address: string, bias?: google.maps.LatLngLiteral): Promise<google.maps.LatLngLiteral | null> {
     const query = address.trim();
     if (!query) return null;

@@ -19,6 +19,7 @@ import {
   LocationError,
   LocationErrorType,
   LocationService,
+  ReverseGeocodeDetails,
 } from '../../../core/services/location.service';
 import {
   NativeGoogleMapComponent,
@@ -251,7 +252,7 @@ type GpsRead = { center: NativeMapCoordinate } | { error: unknown };
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        align-self: flex-start;
+        align-self: flex-end;
         border: none;
         background: transparent;
         padding: 0;
@@ -384,6 +385,7 @@ export class LocationFieldComponent implements ControlValueAccessor, AfterViewIn
   @Input() disabled = false;
 
   @Output() valueChange = new EventEmitter<string>();
+  @Output() detailsChange = new EventEmitter<ReverseGeocodeDetails>();
 
   value = '';
   focused = false;
@@ -398,6 +400,7 @@ export class LocationFieldComponent implements ControlValueAccessor, AfterViewIn
   mapError = '';
   mapHint = '';
   mapAddress = '';
+  private mapDetails: ReverseGeocodeDetails | null = null;
   pickerCenter: NativeMapCoordinate = DEFAULT_CENTER;
   pickerZoom = 15;
 
@@ -511,13 +514,16 @@ export class LocationFieldComponent implements ControlValueAccessor, AfterViewIn
     const addressMatchesCenter =
       !!this.mapAddress &&
       !!this.geocodedCenter &&
-      this.sameCoordinate(this.geocodedCenter, center);
+      this.sameCoordinate(this.geocodedCenter, center) &&
+      !!this.mapDetails;
 
     if (!addressMatchesCenter) {
       this.addressLoading = true;
       this.cdr.markForCheck();
       try {
-        this.mapAddress = await this.locationService.reverseGeocode(center.lat, center.lng);
+        const details = await this.locationService.reverseGeocodeDetails(center.lat, center.lng);
+        this.mapAddress = details.address;
+        this.mapDetails = details;
         this.geocodedCenter = center;
       } catch {
         this.mapError = 'Could not resolve address for this point.';
@@ -529,6 +535,9 @@ export class LocationFieldComponent implements ControlValueAccessor, AfterViewIn
     }
 
     this.setValue(this.mapAddress);
+    if (this.mapDetails) {
+      this.detailsChange.emit(this.mapDetails);
+    }
     this.closeMap();
   }
 
@@ -704,11 +713,12 @@ export class LocationFieldComponent implements ControlValueAccessor, AfterViewIn
     this.cdr.markForCheck();
 
     try {
-      const address = await this.locationService.reverseGeocode(center.lat, center.lng);
+      const details = await this.locationService.reverseGeocodeDetails(center.lat, center.lng);
       if (seq !== this.geocodeSeq) {
         return;
       }
-      this.mapAddress = address;
+      this.mapAddress = details.address;
+      this.mapDetails = details;
       this.geocodedCenter = center;
     } catch {
       if (seq !== this.geocodeSeq) {
@@ -758,15 +768,42 @@ export class LocationFieldComponent implements ControlValueAccessor, AfterViewIn
 
     this.autocomplete = new google.maps.places.Autocomplete(input, {
       componentRestrictions: { country: 'in' },
-      fields: ['formatted_address', 'name', 'geometry'],
+      fields: ['formatted_address', 'name', 'geometry', 'address_components'],
     });
 
     this.autocompleteListener = this.autocomplete.addListener('place_changed', () => {
       const place = this.autocomplete?.getPlace();
       const address = place?.formatted_address || place?.name || '';
-      if (address) {
-        this.setValue(address);
+      if (!address) return;
+
+      this.setValue(address);
+      const details = this.detailsFromPlace(place);
+      if (details) {
+        this.mapDetails = details;
+        this.detailsChange.emit(details);
       }
     });
+  }
+
+  private detailsFromPlace(place?: google.maps.places.PlaceResult | null): ReverseGeocodeDetails | null {
+    if (!place?.address_components?.length) return null;
+    const get = (type: string) =>
+      place.address_components?.find((c) => c.types.includes(type))?.long_name?.trim() || '';
+    const city = get('locality') || get('administrative_area_level_2');
+    const state = get('administrative_area_level_1');
+    const pincode = get('postal_code');
+    const postalArea =
+      get('sublocality_level_1') ||
+      get('sublocality') ||
+      get('neighborhood') ||
+      get('administrative_area_level_3') ||
+      city;
+    const address = place.formatted_address || place.name || '';
+    const shortLabel = [postalArea, city]
+      .filter((part, index, all) =>
+        Boolean(part) && all.findIndex((item) => item.toLowerCase() === part.toLowerCase()) === index,
+      )
+      .join(' > ') || address;
+    return { address, postalArea, pincode, city, state, shortLabel };
   }
 }

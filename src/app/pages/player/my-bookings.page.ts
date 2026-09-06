@@ -11,6 +11,7 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { PlayerBookingCardComponent } from '../../shared/components/player-booking-card/player-booking-card.component';
 import { SegmentControlComponent, SegmentOption } from '../../shared/components/segment-control/segment-control.component';
+import { SkeletonListComponent } from '../../shared/components/skeleton';
 
 @Component({
   selector: 'app-my-bookings',
@@ -22,6 +23,7 @@ import { SegmentControlComponent, SegmentOption } from '../../shared/components/
     PageHeaderComponent,
     SegmentControlComponent,
     PlayerBookingCardComponent,
+    SkeletonListComponent,
   ],
   template: `
     <ion-content fullscreen class="has-tabs">
@@ -40,8 +42,8 @@ import { SegmentControlComponent, SegmentOption } from '../../shared/components/
           </app-page-header>
 
           <div class="px-4 pt-4 space-y-4">
-            <ng-container *ngIf="loading">
-              <div *ngFor="let item of [1, 2]" class="skeleton-card"></div>
+            <ng-container *ngIf="loading && currentBookings.length === 0">
+              <app-skeleton-list [count]="3"></app-skeleton-list>
             </ng-container>
 
             <ng-container *ngIf="!loading && errorMessage && currentBookings.length === 0">
@@ -116,19 +118,6 @@ import { SegmentControlComponent, SegmentOption } from '../../shared/components/
         color: #fff;
         font-size: 12px;
         font-weight: 800;
-      }
-
-      .skeleton-card {
-        height: 280px;
-        border-radius: 24px;
-        background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 37%, #f3f4f6 63%);
-        background-size: 400% 100%;
-        animation: shimmer 1.4s ease infinite;
-      }
-
-      @keyframes shimmer {
-        0% { background-position: 100% 0; }
-        100% { background-position: 0 0; }
       }
     `,
   ],

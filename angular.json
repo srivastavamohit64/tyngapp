@@ -31,7 +31,14 @@
                 "output": "./svg"
               }
             ],
-            "styles": ["src/global.scss", "src/theme/variables.scss"],
+            "styles": [
+              "node_modules/@fontsource/lato/latin-300.css",
+              "node_modules/@fontsource/lato/latin-400.css",
+              "node_modules/@fontsource/lato/latin-700.css",
+              "node_modules/@fontsource/lato/latin-900.css",
+              "src/global.scss",
+              "src/theme/variables.scss"
+            ],
             "scripts": []
           },
           "configurations": {
@@ -111,7 +118,14 @@
                 "output": "./svg"
               }
             ],
-            "styles": ["src/global.scss", "src/theme/variables.scss"],
+            "styles": [
+              "node_modules/@fontsource/lato/latin-300.css",
+              "node_modules/@fontsource/lato/latin-400.css",
+              "node_modules/@fontsource/lato/latin-700.css",
+              "node_modules/@fontsource/lato/latin-900.css",
+              "src/global.scss",
+              "src/theme/variables.scss"
+            ],
             "scripts": []
           },
           "configurations": {

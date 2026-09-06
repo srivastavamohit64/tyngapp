@@ -25,7 +25,15 @@ export interface VenueEventRecord {
   status: string;
   grossRevenue: number;
   estimatedProfit: number;
-  sponsors?: Array<{ name: string; package?: string }>;
+  sponsors?: Array<{ id?: number; name: string; package?: string; imageUrl?: string; linkUrl?: string }>;
+}
+
+export interface SponsorOption {
+  id: number;
+  name: string;
+  package?: string | null;
+  imageUrl: string;
+  linkUrl?: string | null;
 }
 
 export interface VenueEventsDashboard {
@@ -56,6 +64,10 @@ export class VenueEventService {
 
   dashboard(): Observable<ApiResponse<VenueEventsDashboard>> {
     return this.api.get<VenueEventsDashboard>('/venue/events');
+  }
+
+  sponsors(): Observable<ApiResponse<SponsorOption[]>> {
+    return this.api.get<SponsorOption[]>('/venue/sponsors');
   }
 
   publish(payload: VenueEventDraft): Observable<ApiResponse<VenueEventRecord>> {

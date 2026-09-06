@@ -131,3 +131,132 @@
   background: rgba(255, 255, 255, 0.35);
   color: #374151;
 }
+
+.dash-error-card {
+  margin: 0 0 14px;
+  text-align: center;
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.dash-error-card p {
+  margin: 0 0 12px;
+}
+
+.dash-retry-btn {
+  height: 40px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 12px;
+  background: #111827;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.dash-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-bottom: 8px;
+}
+
+.dash-skel-hero {
+  border-radius: 24px;
+  padding: 18px 16px;
+  background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+}
+
+.dash-skel-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.dash-skel-metric {
+  height: 78px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.08);
+  animation: dash-skel-pulse 1.2s ease-in-out infinite;
+}
+
+.dash-skel-bar {
+  margin-top: 10px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  animation: dash-skel-pulse 1.2s ease-in-out infinite;
+}
+
+.dash-skel-section {
+  padding: 0 2px;
+}
+
+.dash-skel-quick {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.dash-skel-quick-card {
+  height: 96px;
+  border-radius: 18px;
+  background: #eef0f3;
+  animation: dash-skel-pulse 1.2s ease-in-out infinite;
+}
+
+.dash-skel-card {
+  border-radius: 22px;
+  padding: 16px;
+  background: #fff;
+  border: 1px solid #eef0f3;
+  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.04);
+}
+
+.dash-skel-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.dash-skel-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  flex-shrink: 0;
+  background: #eef0f3;
+  animation: dash-skel-pulse 1.2s ease-in-out infinite;
+}
+
+.dash-skel-row-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.dash-skel-line {
+  height: 12px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  animation: dash-skel-pulse 1.2s ease-in-out infinite;
+}
+
+.dash-skel-hero .dash-skel-line {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.dash-skel-line.w-16 { width: 16%; }
+.dash-skel-line.w-28 { width: 28%; }
+.dash-skel-line.w-32 { width: 32%; }
+.dash-skel-line.w-40 { width: 40%; }
+.dash-skel-line.w-44 { width: 44%; }
+.dash-skel-line.w-full { width: 100%; }
+.dash-skel-line.mt-2 { margin-top: 8px; }
+.dash-skel-line.mt-3 { margin-top: 12px; }
+.dash-skel-line.mb-3 { margin-bottom: 12px; }
+
+@keyframes dash-skel-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}

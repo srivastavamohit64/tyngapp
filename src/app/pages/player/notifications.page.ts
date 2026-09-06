@@ -7,6 +7,7 @@ import {
   NotificationFeedService,
   NotificationCategory,
 } from '../../core/services/notification-feed.service';
+import { SkeletonListComponent } from '../../shared/components/skeleton';
 
 type FilterId = 'all' | 'games' | 'friends' | 'messages' | 'venues' | 'events' | 'rewards';
 type Notif = AppNotification;
@@ -24,7 +25,7 @@ const FILTERS: { id: FilterId; label: string; emoji: string }[] = [
 @Component({
   selector: 'app-notifications',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, SkeletonListComponent],
   template: `
     <ion-content [fullscreen]="true">
       <main class="notifications-page">
@@ -58,10 +59,12 @@ const FILTERS: { id: FilterId; label: string; emoji: string }[] = [
           <button class="clear-btn" (click)="markAllRead()">Mark all read</button>
         </div>
 
-        <div class="loading-bar" *ngIf="loading()">Loading notifications…</div>
+        <div class="px-4 pt-2" *ngIf="loading() && filteredNotifs().length === 0">
+          <app-skeleton-list [count]="6"></app-skeleton-list>
+        </div>
         <div class="error-bar" *ngIf="error()">{{ error() }}</div>
 
-        <div class="notif-content">
+        <div class="notif-content" *ngIf="!loading() || filteredNotifs().length > 0">
           <ng-container *ngIf="todayNotifs().length > 0">
             <div class="group-label">Today</div>
             <div class="notif-list">

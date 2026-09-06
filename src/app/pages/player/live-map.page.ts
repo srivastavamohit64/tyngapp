@@ -85,7 +85,7 @@ const SPORT_COLORS: Record<string, string> = {
           <div class="map-surface">
             <div #mapContainer class="google-map" aria-label="Live sports locations nearby"></div>
             <div class="map-state" *ngIf="mapLoading || dataLoading">
-              <ion-spinner name="crescent"></ion-spinner>
+              <ion-skeleton-text animated style="width: 48%; height: 12px; border-radius: 999px; margin: 0;"></ion-skeleton-text>
               <span>{{ mapLoading ? 'Loading map…' : 'Finding nearby games…' }}</span>
             </div>
             <div class="map-state map-error" *ngIf="mapError">
@@ -378,7 +378,7 @@ export class LiveMapPage implements AfterViewInit, OnDestroy {
       }
 
       this.clearGoogleMarkers();
-      this.map = new google.maps.Map(container, {
+      this.map = new google.maps.Map(container, this.googleMaps.baseMapOptions({
         center: this.mapCenter,
         zoom: 12,
         mapTypeId: this.mapType,
@@ -387,7 +387,7 @@ export class LiveMapPage implements AfterViewInit, OnDestroy {
         fullscreenControl: false,
         clickableIcons: false,
         gestureHandling: 'greedy',
-      });
+      }));
     } catch (error) {
       console.error('Failed to load Google Maps', error);
       this.mapError = 'Check the Google Maps API key and make sure Maps JavaScript API is enabled.';

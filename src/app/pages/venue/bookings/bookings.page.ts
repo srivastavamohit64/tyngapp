@@ -10,6 +10,7 @@ import { BookingService } from '../../../core/services/booking.service';
 import { RealtimeService } from '../../../core/services/realtime.service';
 import { TabBadgeService } from '../../../core/services/tab-badge.service';
 import { BrandHeaderShellComponent } from '../../../shared/components/brand-header-shell/brand-header-shell.component';
+import { SkeletonListComponent } from '../../../shared/components/skeleton';
 import { formatBookingDate, formatBookingTimeRange } from '../../../core/utils/booking.utils';
 
 interface BookingItem {
@@ -35,7 +36,7 @@ interface BookingItem {
 @Component({
   selector: 'app-venue-bookings-page',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule, BrandHeaderShellComponent],
+  imports: [CommonModule, IonicModule, FormsModule, BrandHeaderShellComponent, SkeletonListComponent],
   template: `
     <ion-content [fullscreen]="true" class="has-tabs">
       <app-brand-header-shell>
@@ -70,7 +71,9 @@ interface BookingItem {
         </header>
 
         <main class="page-body">
-          <p *ngIf="loading()" class="status">Loading bookings…</p>
+          <div *ngIf="loading() && filteredBookings().length === 0" class="skel-wrap">
+            <app-skeleton-list [count]="4"></app-skeleton-list>
+          </div>
           <div *ngIf="!loading() && errorMessage()" class="error-box">{{ errorMessage() }}</div>
 
           <article class="booking-card" *ngFor="let booking of filteredBookings()" (click)="openBooking(booking.id)">

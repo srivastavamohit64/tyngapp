@@ -24,12 +24,14 @@ export const guestGuard: CanActivateFn = () => {
         ]);
       }
 
+      if (user.role === 'venue') {
+        return router.createUrlTree([auth.venueHomePath(user)]);
+      }
+
       return router.createUrlTree([
         user.role === 'coach'
           ? '/app/coach/dashboard'
-          : user.role === 'venue'
-            ? auth.venueHomePath(user)
-            : '/app/home',
+          : '/app/home',
       ]);
     }),
   );

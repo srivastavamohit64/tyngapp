@@ -3,11 +3,12 @@ import { Component, OnInit, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { AppNotification, NotificationFeedService } from '../../core/services/notification-feed.service';
+import { SkeletonListComponent } from '../../shared/components/skeleton';
 
 @Component({
   selector: 'app-venue-notifications',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, SkeletonListComponent],
   template: `
     <ion-content [fullscreen]="true">
       <div class="venue-notifications">
@@ -27,10 +28,12 @@ import { AppNotification, NotificationFeedService } from '../../core/services/no
           </button>
         </header>
 
-        <div class="loading" *ngIf="loading()">Loading…</div>
+        <div class="px-4 pt-3" *ngIf="loading() && notifications().length === 0">
+          <app-skeleton-list [count]="6"></app-skeleton-list>
+        </div>
         <div class="error" *ngIf="error()">{{ error() }}</div>
 
-        <div class="venue-notifications-list" *ngIf="!loading()">
+        <div class="venue-notifications-list" *ngIf="!loading() || notifications().length > 0">
           <article
             *ngFor="let n of notifications()"
             class="notif-card"

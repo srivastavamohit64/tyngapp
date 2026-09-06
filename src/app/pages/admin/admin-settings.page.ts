@@ -47,6 +47,7 @@ export class AdminSettingsPage {
 
   readonly items = [
     { label: 'Toggle Theme', desc: 'Switch light / dark mode', icon: 'moon-outline', action: () => this.theme.toggleTheme() },
+    { label: 'XP Rules', desc: 'Manage player XP rewards and limits', icon: 'flash-outline', action: () => this.router.navigateByUrl('/app/admin/xp-rules') },
     { label: 'Platform Fees', desc: 'Commission & pricing rules', icon: 'cash-outline', action: () => undefined },
     { label: 'Notifications', desc: 'System alerts & emails', icon: 'notifications-outline', action: () => undefined },
     { label: 'Log Out', desc: 'Sign out of admin panel', icon: 'log-out-outline', action: () => { this.auth.logout(); void this.router.navigateByUrl('/welcome'); } },

@@ -6,11 +6,12 @@ import { firstValueFrom } from 'rxjs';
 import { FriendItem } from '../../core/models/api.model';
 import { ChatService } from '../../core/services/chat.service';
 import { SocialService } from '../../core/services/social.service';
+import { SkeletonListComponent } from '../../shared/components/skeleton';
 
 @Component({
   selector: 'app-team-management',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, SkeletonListComponent],
   template: `
     <ion-content fullscreen class="has-tabs">
       <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
@@ -31,16 +32,16 @@ import { SocialService } from '../../core/services/social.service';
           </button>
         </header>
 
-        <div *ngIf="loading" class="state-block">
-          <div class="skeleton" *ngFor="let row of [1, 2, 3, 4]"></div>
+        <div *ngIf="loading && friends.length === 0" class="state-block">
+          <app-skeleton-list [count]="5"></app-skeleton-list>
         </div>
 
-        <div *ngIf="!loading && errorMessage" class="state-block state-block--center">
+        <div *ngIf="!loading && errorMessage && friends.length === 0" class="state-block state-block--center">
           <p class="error-text">{{ errorMessage }}</p>
           <button type="button" class="btn-primary" (click)="loadFriends()">Retry</button>
         </div>
 
-        <div *ngIf="!loading && !errorMessage && friends.length" class="friends-list">
+        <div *ngIf="friends.length" class="friends-list">
           <article *ngFor="let friend of friends; let last = last" class="friend-row" [class.friend-row--last]="last">
             <div class="avatar" [class.avatar--online]="friend.online">
               <img *ngIf="friend.profileImage" [src]="friend.profileImage" [alt]="friend.name" />
@@ -288,24 +289,6 @@ import { SocialService } from '../../core/services/social.service';
       .state-block--center {
         text-align: center;
         padding-top: 48px;
-      }
-
-      .skeleton {
-        height: 72px;
-        border-radius: 16px;
-        background: #f1f5f9;
-        margin-bottom: 12px;
-        animation: pulse 1.2s ease-in-out infinite;
-      }
-
-      @keyframes pulse {
-        0%,
-        100% {
-          opacity: 1;
-        }
-        50% {
-          opacity: 0.55;
-        }
       }
 
       .error-text {

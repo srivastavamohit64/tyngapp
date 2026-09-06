@@ -496,15 +496,6 @@
               <p class="qa-title">Book<br />Venues</p>
               <p class="qa-sub">Reserve nearby</p>
             </button>
-
-            <button type="button" class="qa-card qa-blue" (click)="go('/app/ongoing')">
-              <div class="qa-glow qa-glow-blue"></div>
-              <div class="qa-icon qa-icon-blue">
-                <ion-icon name="location-outline"></ion-icon>
-              </div>
-              <p class="qa-title">Nearby Games</p>
-              <p class="qa-sub">-</p>
-            </button>
           </div>
         </div>
 
@@ -512,7 +503,6 @@
         <section class="home-ads" *ngIf="adsLoading || homeAds.length > 0" aria-label="Promotions">
           <div class="home-ads-frame home-ads-loading" *ngIf="adsLoading">
             <div class="home-ads-skeleton" aria-hidden="true"></div>
-            <ion-spinner name="crescent" color="medium" class="home-ads-spinner"></ion-spinner>
           </div>
 
           <ng-container *ngIf="!adsLoading && homeAds.length > 0">

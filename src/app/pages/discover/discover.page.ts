@@ -8,6 +8,7 @@ import { DiscoverPlayer } from '../../core/models/api.model';
 import { SocialService } from '../../core/services/social.service';
 import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { PageSkeletonComponent } from '../../shared/components/skeleton';
 import { PrimaryButtonComponent } from '../../shared/components/primary-button/primary-button.component';
 
 interface PlayerSportBadge {
@@ -48,6 +49,7 @@ interface DiscoverPlayerCard {
     BrandHeaderShellComponent,
     PageHeaderComponent,
     PrimaryButtonComponent,
+    PageSkeletonComponent,
   ],
   styleUrls: ['./discover.page.scss'],
   templateUrl: './discover.page.html',

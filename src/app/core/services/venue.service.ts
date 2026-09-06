@@ -275,11 +275,81 @@ export class VenueService {
   uploadDocument(docId: string, file: File): Observable<ApiResponse<{
     document: { id: string; name: string; url: string; mime?: string; uploadedAt?: string };
     verificationDocuments: Record<string, { id: string; name: string; url: string; mime?: string; uploadedAt?: string }>;
+    editableDocuments?: string[];
   }>> {
     const form = new FormData();
     form.append('docId', docId);
     form.append('document', file);
     return this.api.postForm('/venue/documents', form);
+  }
+
+  submitForApproval(): Observable<ApiResponse<{
+    accountStatus: string;
+    submittedForApprovalAt?: string | null;
+    user?: AuthUser;
+  }>> {
+    return this.api.post('/venue/submit-for-approval', {});
+  }
+
+  submitDocuments(): Observable<ApiResponse<{
+    documentsStatus: string;
+    documentsSubmittedAt?: string | null;
+    user?: AuthUser;
+  }>> {
+    return this.api.post('/venue/submit-documents', {});
+  }
+
+  getDocumentEditRequests(): Observable<ApiResponse<{
+    requests: Array<{
+      id: number;
+      docId: string;
+      docLabel?: string;
+      status: string;
+      reason?: string | null;
+      adminNote?: string | null;
+      createdAt?: string;
+      reviewedAt?: string | null;
+    }>;
+    editableDocuments: string[];
+    requiredDocuments: Array<{ id: string; label: string; required: boolean }>;
+  }>> {
+    return this.api.get('/venue/document-edit-requests');
+  }
+
+  requestDocumentEdit(
+    docIdOrIds: string | string[],
+    reason?: string,
+  ): Observable<ApiResponse<{
+    request: {
+      id: number;
+      docId: string;
+      docLabel?: string;
+      status: string;
+      reason?: string | null;
+      createdAt?: string;
+    };
+    requests?: Array<{
+      id: number;
+      docId: string;
+      docLabel?: string;
+      status: string;
+      reason?: string | null;
+      createdAt?: string;
+    }>;
+    skipped?: Array<{ docId: string; message: string }>;
+  }>> {
+    const ids = (Array.isArray(docIdOrIds) ? docIdOrIds : [docIdOrIds])
+      .map((id) => String(id || '').trim())
+      .filter(Boolean);
+    const payload: Record<string, unknown> = {
+      reason: reason || null,
+    };
+    if (ids.length === 1) {
+      payload['docId'] = ids[0];
+    } else {
+      payload['docIds'] = ids;
+    }
+    return this.api.post('/venue/document-edit-requests', payload);
   }
 
   createCourt(payload: VenueProfileUpdatePayload['courts'] extends (infer C)[] | undefined ? C : never): Observable<ApiResponse<VenueCourtCard>> {

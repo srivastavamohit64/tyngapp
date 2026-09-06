@@ -6,15 +6,23 @@ import { firstValueFrom } from 'rxjs';
 import { DiscoverPlayer } from '../../core/models/api.model';
 import { SocialService } from '../../core/services/social.service';
 import { sportEmoji } from '../../core/utils/booking.utils';
+import { PageSkeletonComponent } from '../../shared/components/skeleton';
 
 @Component({
   selector: 'app-player-view',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, PageSkeletonComponent],
   template: `
     <ion-content fullscreen>
       <div class="page" *ngIf="loading">
-        <div class="state">Loading player…</div>
+        <header class="hdr">
+          <button type="button" class="back" (click)="back()"><ion-icon name="chevron-back"></ion-icon></button>
+          <h1>Player</h1>
+          <span class="spacer"></span>
+        </header>
+        <div class="px-4">
+          <app-page-skeleton variant="profile" label="Loading player"></app-page-skeleton>
+        </div>
       </div>
 
       <div class="page" *ngIf="!loading && error">

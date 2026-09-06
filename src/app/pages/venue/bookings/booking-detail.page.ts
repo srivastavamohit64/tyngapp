@@ -15,13 +15,14 @@ import {
   gameChatMemberIds,
   sportEmoji,
 } from '../../../core/utils/booking.utils';
+import { PageSkeletonComponent } from '../../../shared/components/skeleton';
 
 type DetailTab = 'overview' | 'players' | 'amenities' | 'live';
 
 @Component({
   selector: 'app-venue-booking-detail',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, PageSkeletonComponent],
   template: `
     <ion-content [fullscreen]="true" class="bd-content">
       <div class="bd-page">
@@ -38,7 +39,7 @@ type DetailTab = 'overview' | 'players' | 'amenities' | 'live';
             <ion-icon name="ellipsis-horizontal"></ion-icon>
           </button>
         </header>
-          <div class="bd-tabs" *ngIf="!loading() && booking()">
+          <div class="bd-tabs" *ngIf="booking()">
             <div class="bd-tabs-scroll">
               <button type="button" class="bd-tab" [class.bd-tab--active]="tab() === 'overview'" (click)="tab.set('overview')">Overview</button>
               <button type="button" class="bd-tab" [class.bd-tab--active]="tab() === 'players'" (click)="tab.set('players')">
@@ -52,13 +53,15 @@ type DetailTab = 'overview' | 'players' | 'amenities' | 'live';
           </div>
         </div>
 
-        <div *ngIf="loading()" class="bd-state">Loading booking…</div>
-        <div *ngIf="!loading() && errorMessage()" class="bd-state bd-state--error">
+        <div *ngIf="loading() && !booking()" class="px-4 pt-3">
+          <app-page-skeleton variant="detail" label="Loading booking"></app-page-skeleton>
+        </div>
+        <div *ngIf="!loading() && errorMessage() && !booking()" class="bd-state bd-state--error">
           <p>{{ errorMessage() }}</p>
           <button type="button" class="btn btn--primary" (click)="load()">Retry</button>
         </div>
 
-        <ng-container *ngIf="!loading() && booking() as b">
+        <ng-container *ngIf="booking() as b">
           <div class="bd-body">
             <section class="bd-hero" *ngIf="tab() !== 'players'">
               <div class="bd-hero-top">

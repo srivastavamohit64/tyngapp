@@ -7,14 +7,14 @@
           <h1 class="home-hello-name">{{ helloName }}</h1>
         </section>
 
-        <div *ngIf="loading()" class="venue-card venue-card-padded" style="margin:16px;text-align:center;color:#6b7280;font-weight:600;">
-          Loading dashboard…
-        </div>
-        <div *ngIf="!loading() && errorMessage()" class="venue-card venue-card-padded" style="margin:16px;text-align:center;color:#dc2626;font-weight:600;">
-          {{ errorMessage() }}
+        <app-page-skeleton *ngIf="(loading() || checkingAccess()) && !hasDashboard() && !docsModalOpen()" variant="dashboard" label="Checking account status"></app-page-skeleton>
+
+        <div *ngIf="!loading() && !checkingAccess() && errorMessage() && !hasDashboard() && !docsModalOpen()" class="venue-card venue-card-padded dash-error-card">
+          <p>{{ errorMessage() }}</p>
+          <button type="button" class="dash-retry-btn" (click)="loadDashboard()">Retry</button>
         </div>
 
-        <ng-container *ngIf="!loading() && !errorMessage()">
+        <ng-container *ngIf="hasDashboard()">
 
         <section *ngIf="bookingBlockMessage()" class="venue-block-banner">
           <ion-icon name="warning-outline"></ion-icon>
@@ -293,4 +293,11 @@
       </div>
     </div>
   </app-brand-header-shell>
+
+  <app-venue-required-docs-modal
+    [open]="docsModalOpen()"
+    [documents]="docsRows()"
+    (refreshed)="onDocsRefreshed($event)"
+    (submitted)="onDocsSubmitted()"
+  ></app-venue-required-docs-modal>
 </ion-content>

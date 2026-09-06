@@ -96,7 +96,7 @@ export class AppComponent implements OnInit {
     return [
       { label: 'Venue Profile', sub: profileSub, path: '/app/venue/profile', icon: 'business-outline' },
       { label: 'Facilities & Amenities', sub: facilitiesSub, path: '/app/venue/facilities', icon: 'cube-outline' },
-      { label: 'Wallet', sub: 'Balance, top-up & history', path: '/app/wallet', icon: 'wallet-outline' },
+      { label: 'Wallet', sub: 'Balance & top-up', path: '/app/wallet', icon: 'wallet-outline' },
       { label: 'Earnings', sub: earnings, path: '/app/venue/earnings', icon: 'cash-outline' },
       { label: 'Coaches', sub: 'Partner coaches', path: '/app/venue/facilities', icon: 'people-outline' },
       { label: 'Events', sub: 'Create & manage events', path: '/app/venue/events', icon: 'sparkles-outline' },
@@ -169,7 +169,64 @@ export class AppComponent implements OnInit {
   }
 
   venueLocation(): string {
-    return this.user()?.location?.trim() || 'Add location';
+    const raw = this.user()?.location?.trim() || '';
+    if (!raw) return 'Add location';
+    return this.shortVenueAddress(raw);
+  }
+
+  /** Area + city + pincode only (drops plus-codes, state, country, duplicates). */
+  private shortVenueAddress(raw: string): string {
+    const parts = raw
+      .split(',')
+      .map((part) => part.trim())
+      .filter(Boolean);
+
+    const seen = new Set<string>();
+    const unique = parts.filter((part) => {
+      const key = part.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    let pincode = '';
+    for (const part of unique) {
+      const match = part.match(/\b(\d{6})\b/);
+      if (match) {
+        pincode = match[1];
+        break;
+      }
+    }
+
+    const states = new Set([
+      'andhra pradesh', 'arunachal pradesh', 'assam', 'bihar', 'chhattisgarh', 'goa', 'gujarat',
+      'haryana', 'himachal pradesh', 'jharkhand', 'karnataka', 'kerala', 'madhya pradesh',
+      'maharashtra', 'manipur', 'meghalaya', 'mizoram', 'nagaland', 'odisha', 'punjab',
+      'rajasthan', 'sikkim', 'tamil nadu', 'telangana', 'tripura', 'uttar pradesh',
+      'uttarakhand', 'west bengal', 'delhi', 'nct of delhi', 'other',
+    ]);
+
+    const meaningful = unique
+      .map((part) => part.replace(/\b\d{6}\b/g, '').replace(/\s+/g, ' ').trim())
+      .filter((part) => {
+        if (!part) return false;
+        if (/^[A-Z0-9]{2,}\+[A-Z0-9]+$/i.test(part)) return false;
+        if (/^india$/i.test(part)) return false;
+        if (states.has(part.toLowerCase())) return false;
+        return true;
+      });
+
+    const area = meaningful[0] || '';
+    const city = meaningful.length > 1 ? meaningful[meaningful.length - 1] : '';
+    const bits: string[] = [];
+    if (area) bits.push(area);
+    if (city && city.toLowerCase() !== area.toLowerCase()) bits.push(city);
+
+    let result = bits.join(', ');
+    if (pincode) {
+      result = result ? `${result} ${pincode}` : pincode;
+    }
+    return result || 'Add location';
   }
 
   profileCompletion(): number {

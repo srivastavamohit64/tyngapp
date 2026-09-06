@@ -7,6 +7,7 @@ import { firstValueFrom } from 'rxjs';
 import { VenueCourtCard, VenueService } from '../../core/services/venue.service';
 import { AuthService } from '../../core/services/auth.service';
 import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
+import { PageSkeletonComponent } from '../../shared/components/skeleton';
 
 export interface Court {
   id: string;
@@ -35,7 +36,7 @@ const KNOWN_CITIES = ['Lucknow', 'Delhi', 'Mumbai', 'Bangalore', 'Hyderabad', 'C
 @Component({
   selector: 'app-venues-page',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule, BrandHeaderShellComponent],
+  imports: [CommonModule, IonicModule, FormsModule, BrandHeaderShellComponent, PageSkeletonComponent],
   styleUrls: ['./venues.page.scss'],
   templateUrl: './venues.page.html',
 })

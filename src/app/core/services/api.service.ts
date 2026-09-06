@@ -21,6 +21,10 @@ export class ApiService {
     return this.http.put<ApiResponse<T>>(this.url(path), body ?? {});
   }
 
+  patch<T>(path: string, body?: unknown): Observable<ApiResponse<T>> {
+    return this.http.patch<ApiResponse<T>>(this.url(path), body ?? {});
+  }
+
   /**
    * Multipart profile/file updates.
    * PHP ignores uploaded files on real PUT, and Android WebViews often abort

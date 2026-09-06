@@ -5,13 +5,14 @@ import { IonicModule } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 import { VenueEventRecord, VenueEventService, VenueEventsDashboard } from '../../../core/services/venue-event.service';
 import { sportEmoji } from '../../../core/utils/booking.utils';
+import { PageSkeletonComponent } from '../../../shared/components/skeleton';
 
 type EventsTab = 'home' | 'leagues' | 'rankings' | 'analytics';
 
 @Component({
   selector: 'app-venue-events-hub',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, PageSkeletonComponent],
   template: `
     <ion-content [fullscreen]="true" class="ev-content">
       <div class="ev-page">
@@ -19,9 +20,9 @@ type EventsTab = 'home' | 'leagues' | 'rankings' | 'analytics';
           <button type="button" *ngFor="let t of tabs" class="ev-tab" [class.on]="tab() === t.id" (click)="tab.set(t.id)">{{ t.label }}</button>
         </div>
 
-        <div *ngIf="loading()" class="muted">Loading events…</div>
+        <app-page-skeleton *ngIf="loading() && !data()" variant="dashboard" label="Loading events"></app-page-skeleton>
 
-        <ng-container *ngIf="!loading() && tab() === 'home'">
+        <ng-container *ngIf="data() && tab() === 'home'">
           <section class="hero">
             <div class="hero-top">
               <div>
@@ -48,7 +49,7 @@ type EventsTab = 'home' | 'leagues' | 'rankings' | 'analytics';
           </div>
         </ng-container>
 
-        <ng-container *ngIf="!loading() && tab() === 'leagues'">
+        <ng-container *ngIf="data() && tab() === 'leagues'">
           <div class="sec-head">
             <h2>Recurring Leagues</h2>
             <button type="button" class="mini-create" (click)="create('competition')">+ New League</button>
@@ -76,7 +77,7 @@ type EventsTab = 'home' | 'leagues' | 'rankings' | 'analytics';
           <button type="button" class="dashed" (click)="create('competition')">+ Create New League</button>
         </ng-container>
 
-        <ng-container *ngIf="!loading() && tab() === 'rankings'">
+        <ng-container *ngIf="data() && tab() === 'rankings'">
           <h2 class="page-h">Rankings</h2>
           <div *ngIf="!events().length" class="muted">Publish a competition to see rankings.</div>
           <div class="rank" *ngFor="let e of events(); let i = index">
@@ -89,7 +90,7 @@ type EventsTab = 'home' | 'leagues' | 'rankings' | 'analytics';
           </div>
         </ng-container>
 
-        <ng-container *ngIf="!loading() && tab() === 'analytics'">
+        <ng-container *ngIf="data() && tab() === 'analytics'">
           <h2 class="page-h">Event Analytics</h2>
           <div class="kpi">
             <div class="kpi-card" *ngFor="let k of kpis()">

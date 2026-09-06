@@ -5,6 +5,7 @@ import { IonicModule } from '@ionic/angular';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { firstValueFrom } from 'rxjs';
 import { VenueService } from '../../core/services/venue.service';
+import { PageSkeletonComponent } from '../../shared/components/skeleton';
 
 export interface VenueDetail {
   id: number;
@@ -157,27 +158,10 @@ export const VENUE_DATA: VenueDetail[] = [
 @Component({
   selector: 'app-venue-detail',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, PageSkeletonComponent],
   template: `
     <ion-content fullscreen>
-      <!-- Loading skeleton -->
       <div class="min-h-screen bg-[#FAFBFC] venue-detail-page" *ngIf="loading">
-        <div class="skeleton-hero"></div>
-        <div class="px-5 pt-5 pb-4 bg-white border-b border-[#F3F4F6]">
-          <div class="flex items-start justify-between mb-3">
-            <div class="flex-1 min-w-0 space-y-2">
-              <div class="skeleton-line w-48 h-6"></div>
-              <div class="skeleton-line w-28 h-4"></div>
-            </div>
-            <div class="skeleton-line w-16 h-7"></div>
-          </div>
-          <div class="skeleton-line w-40 h-4 mt-3"></div>
-          <div class="skeleton-line w-52 h-4 mt-3"></div>
-        </div>
-        <div class="px-5 pt-4 space-y-4">
-          <div class="skeleton-card"></div>
-          <div class="skeleton-card small"></div>
-        </div>
         <button
           type="button"
           (click)="back()"
@@ -185,6 +169,7 @@ export const VENUE_DATA: VenueDetail[] = [
         >
           <ion-icon name="chevron-back" class="text-white text-lg"></ion-icon>
         </button>
+        <app-page-skeleton variant="detail" label="Loading venue"></app-page-skeleton>
       </div>
 
       <div class="min-h-screen bg-[#FAFBFC] venue-detail-page text-[#111827] text-left" *ngIf="!loading && venue">
@@ -512,42 +497,11 @@ export const VENUE_DATA: VenueDetail[] = [
         box-sizing: border-box;
       }
 
-      .skeleton-hero {
-        height: 300px;
-        background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 37%, #e5e7eb 63%);
-        background-size: 400% 100%;
-        animation: shimmer 1.4s ease infinite;
-      }
-
       .skeleton-back {
         position: fixed;
-        top: 48px;
+        top: calc(12px + var(--app-chrome-top-inset, var(--safe-area-top)));
         left: 16px;
         z-index: 20;
-      }
-
-      .skeleton-line {
-        border-radius: 8px;
-        background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 37%, #f3f4f6 63%);
-        background-size: 400% 100%;
-        animation: shimmer 1.4s ease infinite;
-      }
-
-      .skeleton-card {
-        height: 220px;
-        border-radius: 24px;
-        background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 37%, #f3f4f6 63%);
-        background-size: 400% 100%;
-        animation: shimmer 1.4s ease infinite;
-      }
-
-      .skeleton-card.small {
-        height: 160px;
-      }
-
-      @keyframes shimmer {
-        0% { background-position: 100% 0; }
-        100% { background-position: 0 0; }
       }
     `
   ]

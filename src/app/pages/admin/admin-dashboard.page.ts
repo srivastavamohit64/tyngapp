@@ -285,6 +285,7 @@ export class AdminDashboardPage {
     { label: 'Manage Venues', icon: 'business-outline', path: '/app/admin/venues' },
     { label: 'Resolve Disputes', icon: 'alert-circle-outline', path: '/app/admin/disputes' },
     { label: 'View Revenue', icon: 'cash-outline', path: '/app/admin/revenue' },
+    { label: 'Manage XP Rules', icon: 'flash-outline', path: '/app/admin/xp-rules' },
   ];
 
   readonly alerts = [

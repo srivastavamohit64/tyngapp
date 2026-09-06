@@ -8,6 +8,7 @@ import {
   NotificationFeedService,
   NotificationCategory,
 } from '../../core/services/notification-feed.service';
+import { SkeletonListComponent } from '../../shared/components/skeleton';
 
 type CoachNotif = AppNotification & {
   secondaryAction?: { label: string; style: 'red' };
@@ -26,7 +27,7 @@ const FILTERS = [
 @Component({
   selector: 'app-coach-notifications',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule],
+  imports: [CommonModule, IonicModule, FormsModule, SkeletonListComponent],
   template: `
     <ion-content [fullscreen]="true">
       <div class="notifications-page pb-32">
@@ -73,7 +74,9 @@ const FILTERS = [
 
         <!-- Notification Feed List -->
         <div class="px-4 pt-4 text-left">
-          <div *ngIf="loading()" class="py-6 text-center text-[12px] font-semibold text-[#6B7280]">Loading…</div>
+          <div *ngIf="loading() && filteredNotifs().length === 0">
+            <app-skeleton-list [count]="6"></app-skeleton-list>
+          </div>
           <div *ngIf="filteredNotifs().length === 0 && !loading()" class="py-20 flex flex-col items-center text-center px-8">
             <div class="text-6xl mb-3">🏆</div>
             <h3 class="text-[20px] font-black text-[#111827] mb-1">You're all caught up!</h3>

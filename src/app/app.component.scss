@@ -622,7 +622,7 @@ ion-menu ion-content {
 }
 
 .venue-drawer-header {
-  padding: calc(20px + var(--safe-area-top)) 24px 20px;
+  padding: calc(48px + var(--safe-area-top, env(safe-area-inset-top, 0px))) 24px 20px;
   background: linear-gradient(160deg, rgba(var(--app-primary-rgb), 0.1) 0%, #fff 60%);
 }
 
@@ -667,6 +667,11 @@ ion-menu ion-content {
   margin: 2px 0 0;
   font-size: 12px;
   color: #9ca3af;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .venue-drawer-completion {

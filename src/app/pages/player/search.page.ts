@@ -9,6 +9,7 @@ import { BookingService } from '../../core/services/booking.service';
 import { SocialService } from '../../core/services/social.service';
 import { VenueService } from '../../core/services/venue.service';
 import { resolveMediaUrl } from '../../core/utils/media-url.util';
+import { SkeletonListComponent } from '../../shared/components/skeleton';
 
 type SearchTab = 'all' | 'venues' | 'players' | 'coaches';
 type ResultKind = 'venue' | 'player' | 'coach';
@@ -26,7 +27,7 @@ interface SearchRow {
 @Component({
   selector: 'app-search-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule],
+  imports: [CommonModule, FormsModule, IonicModule, SkeletonListComponent],
   template: `
     <ion-content [fullscreen]="true" class="has-tabs">
       <div class="search-page">
@@ -66,7 +67,9 @@ interface SearchRow {
         </div>
 
         <div class="sp-body">
-          <p class="sp-hint" *ngIf="loading">Finding people &amp; venues…</p>
+          <div *ngIf="loading && visibleRows.length === 0" class="sp-skel">
+            <app-skeleton-list [count]="6"></app-skeleton-list>
+          </div>
 
           <div class="sp-empty" *ngIf="!loading && visibleRows.length === 0">
             <div class="sp-empty-icon">🔍</div>
@@ -78,7 +81,7 @@ interface SearchRow {
             </p>
           </div>
 
-          <div class="sp-list" *ngIf="!loading && visibleRows.length">
+          <div class="sp-list" *ngIf="visibleRows.length">
             <button
               type="button"
               class="sp-row"
@@ -213,6 +216,8 @@ interface SearchRow {
     }
 
     .sp-body { padding: 0 16px; }
+
+    .sp-skel { padding-top: 8px; }
 
     .sp-hint {
       margin: 18px 4px 0;

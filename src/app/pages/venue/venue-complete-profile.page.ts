@@ -12,6 +12,8 @@ import { NativeMediaPickerService } from '../../core/services/native-media-picke
 import { VenueService, SportsEquipmentItem } from '../../core/services/venue.service';
 import { normalizeImageFile } from '../../core/utils/image-file.util';
 import { LocationFieldComponent } from '../../shared/components/location-field/location-field.component';
+import { ReverseGeocodeDetails } from '../../core/services/location.service';
+import { SkeletonListComponent } from '../../shared/components/skeleton';
 import { sportEmoji } from '../../core/utils/booking.utils';
 
 interface MaintFacility {
@@ -35,10 +37,11 @@ const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const STATES = ['Uttar Pradesh', 'Delhi', 'Maharashtra', 'Karnataka', 'Tamil Nadu', 'Gujarat', 'Rajasthan', 'Other'];
 
 const VERIFICATION_DOCS = [
-  { id: 'biz', label: 'Business Registration', required: true },
   { id: 'gst', label: 'GST Certificate', required: true },
-  { id: 'pan', label: 'PAN Card', required: true },
-  { id: 'cheque', label: 'Cancelled Cheque', required: true },
+  { id: 'aadhaar', label: 'Aadhaar Card', required: true },
+  { id: 'biz', label: 'Business Registration', required: false },
+  { id: 'pan', label: 'PAN Card', required: false },
+  { id: 'cheque', label: 'Cancelled Cheque', required: false },
   { id: 'bank', label: 'Bank Details', required: false },
   { id: 'id', label: 'Owner Government ID', required: false },
   { id: 'licence', label: 'Venue Licence', required: false },
@@ -71,20 +74,28 @@ const STEP_TITLES = [
 @Component({
   selector: 'app-venue-complete-profile',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule, LocationFieldComponent],
+  imports: [CommonModule, IonicModule, FormsModule, LocationFieldComponent, SkeletonListComponent],
   template: `
     <ion-content [fullscreen]="true">
       <!-- SUCCESS SCREEN -->
       <div *ngIf="isSuccess()" class="success-screen flex flex-col items-center justify-center px-6 text-center pb-12">
         <div class="w-28 h-28 rounded-full bg-[var(--app-primary)] flex items-center justify-center mx-auto mb-5 shadow-lg"
           style="box-shadow: 0 8px 36px rgba(var(--app-primary-rgb),0.45);">
-          <ion-icon name="checkmark-outline" class="text-5xl text-[#111827] font-black"></ion-icon>
+          <ion-icon [name]="submittedForApproval() ? 'time-outline' : 'checkmark-outline'" class="text-5xl text-[#111827] font-black"></ion-icon>
         </div>
-        <h1 class="text-[28px] font-black text-[#111827] mb-2 m-0 leading-none">Your Venue is Live! 🎉</h1>
-        <p class="text-[14px] text-[#9CA3AF] mb-6 font-bold">Phoenix Arena is now active on TYNG.</p>
+        <h1 class="text-[28px] font-black text-[#111827] mb-2 m-0 leading-none">
+          {{ submittedForApproval() ? 'Submitted for Approval' : 'Your Venue is Live! 🎉' }}
+        </h1>
+        <p class="text-[14px] text-[#9CA3AF] mb-6 font-bold">
+          {{ submittedForApproval()
+            ? 'Admin will review your venue account. After approval, you will submit required documents separately.'
+            : 'Your venue is now active on TYNG.' }}
+        </p>
 
         <div class="w-full max-w-sm bg-white rounded-[24px] p-5 mb-6 text-left border border-[#F3F4F6] shadow-sm">
-          <div *ngFor="let item of ['Venue Published', 'Search Listing Active', 'Online Booking Enabled', 'Payments Activated', 'QR Entry Enabled', 'Analytics Started']"
+          <div *ngFor="let item of (submittedForApproval()
+            ? ['Profile submitted', 'Waiting for account approval', 'Documents come after approval']
+            : ['Venue Published', 'Search Listing Active', 'Online Booking Enabled', 'Payments Activated', 'QR Entry Enabled', 'Analytics Started'])"
             class="flex items-center gap-3 py-2.5 border-b border-[#F9FAFB] last:border-0">
             <div class="w-5 h-5 rounded-full bg-[var(--app-primary)] flex items-center justify-center flex-shrink-0">
               <ion-icon name="checkmark-outline" class="text-xs text-[#111827] font-black"></ion-icon>
@@ -95,7 +106,7 @@ const STEP_TITLES = [
 
         <div class="w-full max-w-sm space-y-3">
           <button (click)="goDashboard()" class="w-full h-14 rounded-[24px] text-[16px] font-black text-white border-none shadow-md btn-orange-gradient">
-            Go to Dashboard
+            {{ submittedForApproval() ? 'View approval status' : 'Go to Dashboard' }}
           </button>
         </div>
       </div>
@@ -214,6 +225,7 @@ const STEP_TITLES = [
                   placeholder="Street address"
                   [(ngModel)]="address"
                   (ngModelChange)="onLocationFieldsChanged()"
+                  (detailsChange)="onLocationDetails($event)"
                 ></app-location-field>
               </div>
               <div class="grid grid-cols-2 gap-3">
@@ -331,14 +343,19 @@ const STEP_TITLES = [
                 <p class="field-label" style="margin:0">Added facilities ({{ facilities().length }})</p>
                 <p class="text-[11px] font-bold text-[#9CA3AF] m-0">Tap trash to remove</p>
               </div>
-              <div *ngFor="let f of facilities(); let idx = index" class="bg-white rounded-[22px] overflow-hidden border border-[#F3F4F6] shadow-sm text-left">
+              <div *ngFor="let f of facilities(); trackBy: trackFacility" class="bg-white rounded-[22px] overflow-hidden border border-[#F3F4F6] shadow-sm text-left">
                 <div class="relative h-[100px] bg-slate-200">
                   <img [src]="f.photo" class="w-full h-full object-cover" [alt]="f.name" />
-                  <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                  <button type="button" class="remove-facility" (click)="removeFacility(idx)" aria-label="Remove facility">
-                    <ion-icon name="trash-outline"></ion-icon>
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none"></div>
+                  <button
+                    type="button"
+                    class="remove-facility"
+                    (click)="removeFacility(f.id, $event)"
+                    aria-label="Remove facility"
+                  >
+                    <ion-icon name="trash-outline" aria-hidden="true"></ion-icon>
                   </button>
-                  <span class="absolute top-2.5 right-12 text-[9px] font-black px-2 py-0.5 rounded-full uppercase"
+                  <span class="absolute top-2.5 right-12 z-[1] text-[9px] font-black px-2 py-0.5 rounded-full uppercase pointer-events-none"
                     [style.backgroundColor]="f.status === 'Open' ? '#F0FDF4' : '#FEF2F2'"
                     [style.color]="f.status === 'Open' ? '#16A34A' : '#DC2626'">
                     {{ f.status }}
@@ -479,8 +496,8 @@ const STEP_TITLES = [
               <h2 class="text-[20px] font-black text-[#111827] m-0">Sports Equipment</h2>
               <p class="text-[13px] text-[#9CA3AF] m-0 mt-0.5">Choose rentals from the admin catalog and set quantities</p>
             </div>
-            <div *ngIf="equipmentLoading()" class="empty-facilities">
-              <p class="text-[13px] font-bold text-[#9CA3AF] m-0">Loading equipment…</p>
+            <div *ngIf="equipmentLoading() && equipmentList().length === 0">
+              <app-skeleton-list [count]="4"></app-skeleton-list>
             </div>
             <div *ngIf="!equipmentLoading() && equipmentList().length === 0" class="empty-facilities">
               <p class="text-[15px] font-black text-[#111827] m-0">No equipment yet</p>
@@ -544,15 +561,19 @@ const STEP_TITLES = [
           <div *ngIf="step() === 8" class="space-y-5">
             <div>
               <h2 class="text-[20px] font-black text-[#111827] m-0">Documents & Verification</h2>
-              <p class="text-[13px] text-[#9CA3AF] m-0 mt-0.5">Upload all required documents, then go live</p>
+              <p class="text-[13px] text-[#9CA3AF] m-0 mt-0.5">
+                Optional for now. After account approval you must submit required documents to activate your venue.
+              </p>
             </div>
             <div class="space-y-3">
-              <label
-                *ngFor="let doc of verDocs"
-                class="doc-row w-full flex items-center gap-3 px-4 py-4 rounded-[20px] transition-all text-left border cursor-pointer"
+              <div
+                *ngFor="let doc of verDocs()"
+                class="doc-row w-full flex items-center gap-3 px-4 py-4 rounded-[20px] transition-all text-left border"
                 [class.doc-row--uploaded]="isDocUploaded(doc.id)"
+                [class.doc-row--editable]="isEditAllowed(doc.id)"
                 [class.opacity-60]="docUploading() === doc.id"
-                (click)="prepareDocumentPick($event)"
+                [class.cursor-pointer]="canPickDocument(doc.id)"
+                [class.cursor-default]="!canPickDocument(doc.id)"
               >
                 <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
                   [style.backgroundColor]="isDocUploaded(doc.id) ? 'var(--app-primary)' : '#F3F4F6'">
@@ -564,40 +585,59 @@ const STEP_TITLES = [
                     <p class="text-[13px] font-black text-[#111827] m-0">
                       {{ doc.label }}<span *ngIf="doc.required" class="text-[#EF4444] ml-0.5">*</span>
                     </p>
-                    <span *ngIf="isDocUploaded(doc.id)" class="uploaded-badge">Uploaded</span>
+                    <span *ngIf="isEditAllowed(doc.id)" class="uploaded-badge" style="background:#DCFCE7;color:#166534;">Edit allowed</span>
+                    <span *ngIf="isDocUploaded(doc.id) && !isDocLocked(doc.id) && !isEditAllowed(doc.id)" class="uploaded-badge">Uploaded</span>
+                    <span *ngIf="isDocLocked(doc.id) && !isEditAllowed(doc.id)" class="uploaded-badge" style="background:#FEF3C7;color:#92400E;">Locked</span>
                   </div>
                   <p class="text-[11px] m-0 mt-0.5 font-bold"
-                    [style.color]="isDocUploaded(doc.id) ? '#16A34A' : '#9CA3AF'">
+                    [style.color]="isEditAllowed(doc.id) ? '#16A34A' : (isDocUploaded(doc.id) ? '#16A34A' : '#9CA3AF')">
                     {{ docUploading() === doc.id
                       ? 'Uploading…'
-                      : (isDocUploaded(doc.id) ? ('✓ ' + (docFileName(doc.id) || 'Uploaded successfully')) : 'Tap to upload PDF/Image') }}
+                      : (isEditAllowed(doc.id)
+                        ? 'Admin approved — tap cloud to upload a new file'
+                        : (isDocLocked(doc.id)
+                          ? 'Locked after upload — use Request Edit Document below'
+                          : (isDocUploaded(doc.id) ? ('✓ ' + (docFileName(doc.id) || 'Uploaded successfully')) : 'Tap cloud to upload PDF/Image'))) }}
                   </p>
                   <button
                     *ngIf="docPreviewUrl(doc.id) as previewUrl"
                     type="button"
                     class="doc-preview-btn"
-                    (click)="$event.preventDefault(); $event.stopPropagation(); openDocumentPreview(previewUrl)"
+                    (click)="openDocumentPreview(previewUrl)"
                   >
                     Preview document
                   </button>
+                  <p *ngIf="hasPendingEditRequest(doc.id) && !isEditAllowed(doc.id)" class="text-[11px] font-bold text-[#F59E0B] m-0 mt-1">
+                    Edit request pending with admin
+                  </p>
                 </div>
-                <ion-icon
-                  name="cloud-upload-outline"
-                  class="flex-shrink-0 text-xl"
-                  [class.cloud-active]="isDocUploaded(doc.id)"
-                  [class.cloud-idle]="!isDocUploaded(doc.id)"
-                ></ion-icon>
+
+                <button
+                  *ngIf="canPickDocument(doc.id)"
+                  type="button"
+                  class="doc-upload-icon-btn"
+                  [disabled]="docUploading() !== null"
+                  [attr.aria-label]="'Upload ' + doc.label"
+                  (click)="triggerDocumentUpload(doc.id, $event)"
+                >
+                  <ion-icon name="cloud-upload-outline"></ion-icon>
+                </button>
+                <div *ngIf="!canPickDocument(doc.id)" class="doc-lock-icon" aria-hidden="true">
+                  <ion-icon name="lock-closed-outline"></ion-icon>
+                </div>
+
                 <input
                   type="file"
                   accept="image/*,application/pdf,.pdf"
                   hidden
-                  [disabled]="docUploading() !== null"
+                  [attr.data-doc-id]="doc.id"
+                  [disabled]="docUploading() !== null || !canPickDocument(doc.id)"
                   (change)="onDocumentSelected(doc.id, $event)"
                 />
-              </label>
+              </div>
             </div>
-            <p *ngIf="!allRequiredDocsUploaded()" class="text-[12px] font-bold text-[#9CA3AF] m-0 text-center">
-              Upload every required document (*) to enable Save & Go Live
+            <p class="text-[12px] font-bold text-[#9CA3AF] m-0 text-center">
+              You can submit for account approval without documents. Required docs will be requested after approval.
             </p>
           </div>
         </div>
@@ -606,15 +646,71 @@ const STEP_TITLES = [
       <!-- STICKY ACTION BUTTON BAR -->
       <div *ngIf="!isSuccess()" class="venue-safe-footer fixed bottom-0 left-0 right-0 z-30 bg-white px-5 pt-3"
         style="box-shadow: 0 -4px 24px rgba(0,0,0,0.09); border-top: 1px solid #F3F4F6;">
-        <div class="flex gap-3 max-w-md mx-auto">
+        <div class="flex flex-col gap-2.5 max-w-md mx-auto">
+          <button
+            *ngIf="step() === 8 && requestableLockedDocs().length > 0"
+            type="button"
+            class="request-edit-doc-btn"
+            [disabled]="submittingDocEdit()"
+            (click)="openDocEditSheet()"
+          >
+            <ion-icon name="create-outline" aria-hidden="true"></ion-icon>
+            Request Edit Document
+          </button>
           <button (click)="handleNext()" [disabled]="!canProceed() || saving()"
             class="w-full h-13 rounded-[24px] text-[15px] font-black border-none text-[#111827] transition-all"
             [style.background]="canProceed() && !saving() ? 'linear-gradient(135deg,var(--app-primary),var(--app-primary-to))' : '#F3F4F6'"
             [style.color]="canProceed() && !saving() ? '#111827' : '#C4C9D4'"
             [style.boxShadow]="canProceed() && !saving() ? '0 4px 18px rgba(var(--app-primary-rgb),0.38)' : 'none'"
             [style.opacity]="canProceed() && !saving() ? '1' : '0.6'">
-            {{ saving() ? 'Saving…' : (step() === totalSteps ? 'Save & Go Live' : 'Save & Continue →') }}
+            {{ saving() ? 'Saving…' : (step() === totalSteps ? 'Save & Submit for Approval' : 'Save & Continue →') }}
           </button>
+        </div>
+      </div>
+
+      <!-- Multi-document edit request sheet -->
+      <div *ngIf="showDocEditSheet()" class="doc-edit-backdrop" (click)="closeDocEditSheet()">
+        <div class="doc-edit-sheet" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="doc-edit-title">
+          <div class="doc-edit-handle" aria-hidden="true"></div>
+          <h3 id="doc-edit-title" class="doc-edit-title">Request edit document</h3>
+          <p class="doc-edit-sub">Select one or more locked documents. Admin will review these in Document Requests.</p>
+
+          <div class="doc-edit-list">
+            <label
+              *ngFor="let doc of requestableLockedDocs()"
+              class="doc-edit-option"
+              [class.selected]="isDocSelectedForEdit(doc.id)"
+            >
+              <input
+                type="checkbox"
+                class="doc-edit-check"
+                [checked]="isDocSelectedForEdit(doc.id)"
+                (change)="toggleDocEditSelection(doc.id)"
+              />
+              <span class="doc-edit-option-label">{{ doc.label }}</span>
+            </label>
+          </div>
+
+          <p class="field-label" style="margin-top:14px">Reason</p>
+          <textarea
+            class="doc-edit-reason"
+            rows="3"
+            maxlength="1000"
+            [(ngModel)]="docEditReason"
+            placeholder="Tell admin why you need to replace these documents (optional)"
+          ></textarea>
+
+          <div class="doc-edit-actions">
+            <button type="button" class="doc-edit-cancel" [disabled]="submittingDocEdit()" (click)="closeDocEditSheet()">Cancel</button>
+            <button
+              type="button"
+              class="doc-edit-submit"
+              [disabled]="selectedDocEditIds().length === 0 || submittingDocEdit()"
+              (click)="submitSelectedDocEditRequests()"
+            >
+              {{ submittingDocEdit() ? 'Submitting…' : 'Submit request' }}
+            </button>
+          </div>
         </div>
       </div>
     </ion-content>
@@ -626,7 +722,7 @@ const STEP_TITLES = [
     }
 
     .complete-profile-page {
-      padding-bottom: calc(120px + var(--safe-area-bottom));
+      padding-bottom: calc(160px + var(--safe-area-bottom));
     }
 
     .success-screen {
@@ -839,8 +935,9 @@ const STEP_TITLES = [
       position: absolute;
       top: 10px;
       right: 10px;
-      width: 30px;
-      height: 30px;
+      z-index: 5;
+      width: 36px;
+      height: 36px;
       border-radius: 999px;
       border: none;
       background: rgba(0,0,0,0.55);
@@ -849,6 +946,14 @@ const STEP_TITLES = [
       align-items: center;
       justify-content: center;
       padding: 0;
+      pointer-events: auto;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .remove-facility ion-icon {
+      pointer-events: none;
+      font-size: 18px;
     }
 
     .equip-price-input {
@@ -899,6 +1004,212 @@ const STEP_TITLES = [
       padding: 0;
     }
 
+    .doc-row--editable {
+      border-color: var(--app-primary);
+      background: rgba(var(--app-primary-rgb), 0.08);
+    }
+
+    .doc-upload-icon-btn {
+      flex-shrink: 0;
+      width: 40px;
+      height: 40px;
+      border: none;
+      border-radius: 12px;
+      background: rgba(var(--app-primary-rgb), 0.18);
+      color: #111827;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+
+    .doc-upload-icon-btn ion-icon {
+      font-size: 22px;
+      pointer-events: none;
+    }
+
+    .doc-upload-icon-btn:disabled {
+      opacity: 0.5;
+    }
+
+    .doc-lock-icon {
+      flex-shrink: 0;
+      width: 40px;
+      height: 40px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--app-primary);
+    }
+
+    .doc-lock-icon ion-icon {
+      font-size: 22px;
+    }
+
+    .request-edit-doc-btn {
+      width: 100%;
+      min-height: 52px;
+      border-radius: 24px;
+      border: none;
+      background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to));
+      color: #111827;
+      font-size: 15px;
+      font-weight: 900;
+      padding: 12px 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 18px rgba(var(--app-primary-rgb), 0.38);
+    }
+
+    .request-edit-doc-btn ion-icon {
+      font-size: 20px;
+      pointer-events: none;
+    }
+
+    .request-edit-doc-btn:disabled {
+      background: #F3F4F6;
+      color: #C4C9D4;
+      box-shadow: none;
+      opacity: 1;
+    }
+
+    .doc-edit-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      background: rgba(17, 24, 39, 0.45);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 0;
+    }
+
+    .doc-edit-sheet {
+      width: 100%;
+      max-width: 480px;
+      max-height: min(78vh, 640px);
+      overflow: auto;
+      background: #fff;
+      border-radius: 24px 24px 0 0;
+      padding: 10px 20px calc(18px + var(--safe-area-bottom));
+      box-shadow: 0 -8px 32px rgba(0,0,0,0.18);
+    }
+
+    .doc-edit-handle {
+      width: 40px;
+      height: 4px;
+      border-radius: 999px;
+      background: #E5E7EB;
+      margin: 4px auto 14px;
+    }
+
+    .doc-edit-title {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 900;
+      color: #111827;
+    }
+
+    .doc-edit-sub {
+      margin: 6px 0 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #9CA3AF;
+      line-height: 1.4;
+    }
+
+    .doc-edit-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 240px;
+      overflow: auto;
+    }
+
+    .doc-edit-option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1.5px solid #E5E7EB;
+      background: #F9FAFB;
+    }
+
+    .doc-edit-option.selected {
+      border-color: var(--app-primary);
+      background: rgba(var(--app-primary-rgb), 0.1);
+    }
+
+    .doc-edit-check {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--app-primary);
+      flex-shrink: 0;
+    }
+
+    .doc-edit-option-label {
+      font-size: 13px;
+      font-weight: 800;
+      color: #111827;
+    }
+
+    .doc-edit-reason {
+      width: 100%;
+      min-height: 84px;
+      border: 1.5px solid #E5E7EB;
+      border-radius: 14px;
+      background: #F3F4F6;
+      padding: 12px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #111827;
+      resize: vertical;
+      outline: none;
+    }
+
+    .doc-edit-reason:focus {
+      border-color: var(--app-primary);
+      background: #fff;
+    }
+
+    .doc-edit-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .doc-edit-cancel,
+    .doc-edit-submit {
+      flex: 1;
+      min-height: 48px;
+      border-radius: 16px;
+      border: none;
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .doc-edit-cancel {
+      background: #F3F4F6;
+      color: #6B7280;
+    }
+
+    .doc-edit-submit {
+      background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to));
+      color: #111827;
+    }
+
+    .doc-edit-submit:disabled {
+      background: #F3F4F6;
+      color: #C4C9D4;
+    }
+
+    .venue-safe-footer {
+      padding-bottom: calc(12px + var(--safe-area-bottom));
+    }
+
     .cloud-idle {
       color: #C4C9D4;
     }
@@ -938,11 +1249,12 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
   readonly ownershipTypes = OWNERSHIP_TYPES;
   readonly days = DAYS;
   readonly states = STATES;
-  readonly verDocs = VERIFICATION_DOCS;
+  verDocs = signal(VERIFICATION_DOCS);
   readonly facilitySports = FACILITY_SPORTS;
 
   step = signal(1);
   isSuccess = signal(false);
+  submittedForApproval = signal(false);
   saving = signal(false);
   saveError = signal('');
   mapEmbedUrl = signal<SafeResourceUrl | null>(null);
@@ -993,6 +1305,13 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
 
   uploadedDocs = signal<Record<string, { name: string; url?: string }>>({});
   docUploading = signal<string | null>(null);
+  editableDocuments = signal<string[]>([]);
+  accountStatus = signal<string>('incomplete');
+  pendingEditDocIds = signal<string[]>([]);
+  showDocEditSheet = signal(false);
+  selectedDocEditIds = signal<string[]>([]);
+  submittingDocEdit = signal(false);
+  docEditReason = '';
 
   get externalMapsUrl(): string {
     const query = [this.address, this.city].filter(Boolean).join(', ');
@@ -1035,11 +1354,59 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
       this.isSuccess.set(false);
     }
     this.applyResumeStep();
+    // Admin may have approved document edit requests while this page stayed cached.
+    void this.refreshDocumentEditState();
+  }
+
+  /** Pull latest editable/pending document flags from API (no full profile rewrite). */
+  private async refreshDocumentEditState(): Promise<void> {
+    try {
+      const [profileRes, editRes] = await Promise.all([
+        firstValueFrom(this.venueService.getMyProfile()).catch(() => null),
+        firstValueFrom(this.venueService.getDocumentEditRequests()).catch(() => null),
+      ]);
+
+      if (profileRes?.success && profileRes.data) {
+        const data = profileRes.data as Record<string, unknown>;
+        if (data['verificationDocuments']) {
+          this.applyVerificationDocuments(data['verificationDocuments']);
+        }
+        if (Array.isArray(data['editableDocuments'])) {
+          this.editableDocuments.set(data['editableDocuments'].map((id: unknown) => String(id)));
+        }
+      }
+
+      if (editRes?.success && editRes.data) {
+        const pending = (editRes.data.requests || [])
+          .filter((r) => String(r.status).toLowerCase() === 'pending')
+          .map((r) => String(r.docId));
+        // Never keep a doc in "pending" if admin already granted edit access.
+        const editable = new Set(
+          (editRes.data.editableDocuments || this.editableDocuments()).map(String),
+        );
+        this.pendingEditDocIds.set(pending.filter((id) => !editable.has(id)));
+        if (Array.isArray(editRes.data.editableDocuments)) {
+          this.editableDocuments.set(editRes.data.editableDocuments.map(String));
+        }
+      }
+    } catch {
+      // Keep existing local flags if refresh fails.
+    }
   }
 
   onLocationFieldsChanged() {
     if (this.mapRefreshTimer) clearTimeout(this.mapRefreshTimer);
     this.mapRefreshTimer = setTimeout(() => this.refreshMapPreview(), 450);
+  }
+
+  onLocationDetails(details: ReverseGeocodeDetails) {
+    if (details.city) this.city = details.city;
+    if (details.pincode) this.pincode = details.pincode.replace(/\D/g, '').slice(0, 6);
+    if (details.state) {
+      const match = STATES.find((s) => s.toLowerCase() === details.state.toLowerCase());
+      this.stateVal.set(match || details.state);
+    }
+    this.onLocationFieldsChanged();
   }
 
   private refreshMapPreview() {
@@ -1084,7 +1451,8 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
       return list.length > 0 && list.every((f) => String(f.hourlyPrice ?? '').trim() !== '');
     }
     if (s === 8) {
-      return this.allRequiredDocsUploaded();
+      // Documents are a separate post-approval flow — do not block account submit.
+      return true;
     }
     return true;
   }
@@ -1124,8 +1492,14 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
     this.suggestFacilityName();
   }
 
-  removeFacility(index: number) {
-    this.facilities.update((list) => list.filter((_, i) => i !== index));
+  trackFacility(_index: number, facility: MaintFacility): string {
+    return facility.id;
+  }
+
+  removeFacility(id: string, event?: Event) {
+    event?.preventDefault();
+    event?.stopPropagation();
+    this.facilities.update((list) => list.filter((item) => item.id !== id));
     this.suggestFacilityName();
   }
 
@@ -1279,27 +1653,147 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
     this.uploadedPhotos.update((list) => list.filter((_, i) => i !== index));
   }
 
-  async prepareDocumentPick(event: Event): Promise<void> {
-    if (!Capacitor.isNativePlatform()) return;
-    // Request gallery/storage access before the system file chooser (Samsung WebViews
-    // often return empty results without a prior runtime grant).
-    const target = event.target as HTMLElement | null;
-    if (target?.closest?.('.doc-preview-btn')) return;
-
+  async triggerDocumentUpload(docId: string, event: Event): Promise<void> {
     event.preventDefault();
     event.stopPropagation();
-
-    const allowed = await this.mediaPermissions.ensurePhotos();
-    if (!allowed) {
-      await this.showMediaPermissionDenied(
-        'Files / Photos access is required to upload documents. Enable it in App settings.',
-      );
+    if (!this.canPickDocument(docId)) {
+      this.saveError.set('This document is locked. Request edit permission from admin.');
       return;
     }
 
-    const label = event.currentTarget as HTMLElement | null;
-    const input = label?.querySelector('input[type="file"]') as HTMLInputElement | null;
+    const row = (event.currentTarget as HTMLElement | null)?.closest?.('.doc-row') as HTMLElement | null;
+    if (!row) return;
+
+    if (Capacitor.isNativePlatform()) {
+      const allowed = await this.mediaPermissions.ensurePhotos();
+      if (!allowed) {
+        await this.showMediaPermissionDenied(
+          'Files / Photos access is required to upload documents. Enable it in App settings.',
+        );
+        return;
+      }
+    }
+
+    const input = row.querySelector('input[type="file"]') as HTMLInputElement | null;
     input?.click();
+  }
+
+  isEditAllowed(docId: string): boolean {
+    return this.editableDocuments().includes(docId);
+  }
+
+  isDocLocked(docId: string): boolean {
+    if (!this.isDocUploaded(docId)) return false;
+    return !this.isEditAllowed(docId);
+  }
+
+  canPickDocument(docId: string): boolean {
+    if (this.docUploading() !== null) return false;
+    if (!this.isDocUploaded(docId)) return true;
+    return !this.isDocLocked(docId);
+  }
+
+  hasPendingEditRequest(docId: string): boolean {
+    if (this.isEditAllowed(docId)) return false;
+    return this.pendingEditDocIds().includes(docId);
+  }
+
+  requestableLockedDocs(): Array<{ id: string; label: string; required: boolean }> {
+    return this.verDocs().filter(
+      (doc) => this.isDocLocked(doc.id) && !this.hasPendingEditRequest(doc.id),
+    );
+  }
+
+  openDocEditSheet(): void {
+    const available = this.requestableLockedDocs().map((d) => d.id);
+    if (!available.length) {
+      void this.alertCtrl.create({
+        header: 'No locked documents',
+        message: 'There are no locked documents available to request for edit.',
+        buttons: ['OK'],
+      }).then((a) => a.present());
+      return;
+    }
+    this.selectedDocEditIds.set([]);
+    this.docEditReason = '';
+    this.showDocEditSheet.set(true);
+  }
+
+  closeDocEditSheet(): void {
+    if (this.submittingDocEdit()) return;
+    this.showDocEditSheet.set(false);
+    this.selectedDocEditIds.set([]);
+    this.docEditReason = '';
+  }
+
+  isDocSelectedForEdit(docId: string): boolean {
+    return this.selectedDocEditIds().includes(docId);
+  }
+
+  toggleDocEditSelection(docId: string): void {
+    this.selectedDocEditIds.update((ids) =>
+      ids.includes(docId) ? ids.filter((id) => id !== docId) : [...ids, docId],
+    );
+  }
+
+  async submitSelectedDocEditRequests(): Promise<void> {
+    const ids = this.selectedDocEditIds();
+    if (!ids.length || this.submittingDocEdit()) return;
+
+    this.submittingDocEdit.set(true);
+    this.saveError.set('');
+    try {
+      const reason = this.docEditReason.trim();
+      const response = await firstValueFrom(
+        this.venueService.requestDocumentEdit(ids, reason || undefined),
+      );
+      if (!response.success) {
+        const msg = response.message || 'Unable to submit edit request.';
+        this.saveError.set(msg);
+        const fail = await this.alertCtrl.create({
+          header: 'Request failed',
+          message: msg,
+          buttons: ['OK'],
+        });
+        await fail.present();
+        return;
+      }
+
+      const createdIds = (response.data?.requests || [])
+        .map((r) => String(r.docId))
+        .filter(Boolean);
+      const fallbackIds = createdIds.length ? createdIds : ids;
+      this.pendingEditDocIds.update((pending) => {
+        const next = new Set(pending);
+        fallbackIds.forEach((id) => next.add(id));
+        return Array.from(next);
+      });
+
+      this.showDocEditSheet.set(false);
+      this.selectedDocEditIds.set([]);
+      this.docEditReason = '';
+
+      const count = fallbackIds.length;
+      const ok = await this.alertCtrl.create({
+        header: 'Request sent',
+        message: count === 1
+          ? 'Admin will review your document edit request in Document Requests.'
+          : `${count} document edit requests were sent. Admin will review them in Document Requests.`,
+        buttons: ['OK'],
+      });
+      await ok.present();
+    } catch (error: any) {
+      const msg = error?.error?.message || 'Unable to submit edit request.';
+      this.saveError.set(msg);
+      const fail = await this.alertCtrl.create({
+        header: 'Request failed',
+        message: msg,
+        buttons: ['OK'],
+      });
+      await fail.present();
+    } finally {
+      this.submittingDocEdit.set(false);
+    }
   }
 
   async onDocumentSelected(docId: string, event: Event) {
@@ -1307,6 +1801,10 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
     const file = input.files?.[0];
     input.value = '';
     if (!file) return;
+    if (!this.canPickDocument(docId)) {
+      this.saveError.set('This document is locked. Request edit permission from admin.');
+      return;
+    }
 
     this.docUploading.set(docId);
     this.saveError.set('');
@@ -1319,6 +1817,7 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
       const payload = response.data as {
         document?: { id?: string; name?: string; url?: string };
         verificationDocuments?: Record<string, { name?: string; url?: string }>;
+        editableDocuments?: string[];
       };
       if (payload.verificationDocuments && typeof payload.verificationDocuments === 'object') {
         this.applyVerificationDocuments(payload.verificationDocuments);
@@ -1330,6 +1829,11 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
             url: payload.document?.url ? String(payload.document.url) : undefined,
           },
         }));
+      }
+      if (Array.isArray(payload.editableDocuments)) {
+        this.editableDocuments.set(payload.editableDocuments.map(String));
+      } else {
+        this.editableDocuments.update((ids) => ids.filter((id) => id !== docId));
       }
     } catch (error: any) {
       this.saveError.set(error?.error?.message || 'Unable to upload document.');
@@ -1383,7 +1887,7 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
   }
 
   allRequiredDocsUploaded(): boolean {
-    return this.verDocs
+    return this.verDocs()
       .filter((doc) => doc.required)
       .every((doc) => this.isDocUploaded(doc.id));
   }
@@ -1421,6 +1925,9 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
     void this.persistProfile(false).then((result) => {
       if (!result.ok) return;
       this.step.update((s) => Math.min(s + 1, this.totalSteps));
+      if (this.step() === 8) {
+        void this.refreshDocumentEditState();
+      }
     });
   }
 
@@ -1439,6 +1946,9 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
 
     this.saveError.set('');
     this.step.set(target);
+    if (target === 8) {
+      void this.refreshDocumentEditState();
+    }
   }
 
   /** Local completeness for navigation gates (does not call API). */
@@ -1472,23 +1982,47 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
   }
 
   finish() {
-    void this.persistProfile(true).then((result) => {
+    void this.persistProfile(true).then(async (result) => {
       if (!result.ok) return;
-      if (result.ready) {
-        this.isSuccess.set(true);
+      if (!result.ready) {
+        const missing = result.missing.length
+          ? `Still missing: ${result.missing.join(', ')}`
+          : 'Profile saved but not ready yet.';
+        this.saveError.set(missing);
+        this.isSuccess.set(false);
         return;
       }
-      const missing = result.missing.length
-        ? `Still missing: ${result.missing.join(', ')}`
-        : 'Profile saved but not ready for listing yet.';
-      this.saveError.set(missing);
-      this.isSuccess.set(false);
+
+      try {
+        this.saving.set(true);
+        const submit = await firstValueFrom(this.venueService.submitForApproval());
+        if (!submit.success) {
+          this.saveError.set(submit.message || 'Unable to submit for approval.');
+          return;
+        }
+        if (submit.data?.user) {
+          this.auth.hydrateUser(submit.data.user as any);
+        } else {
+          await firstValueFrom(this.auth.fetchMe());
+        }
+        this.accountStatus.set(String(submit.data?.accountStatus || 'pending'));
+        this.submittedForApproval.set(true);
+        this.isSuccess.set(true);
+      } catch (error: any) {
+        this.saveError.set(error?.error?.message || 'Unable to submit for approval.');
+      } finally {
+        this.saving.set(false);
+      }
     });
   }
 
   async goDashboard() {
     this.saveError.set('');
     this.isSuccess.set(false);
+    if (this.submittedForApproval() || this.auth.isVenueAwaitingApproval()) {
+      void this.router.navigateByUrl('/venue-pending-approval', { replaceUrl: true });
+      return;
+    }
     void this.router.navigateByUrl('/app/venue/dashboard', { replaceUrl: true });
   }
 
@@ -1535,6 +2069,47 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
 
       if (data['verificationDocuments']) {
         this.applyVerificationDocuments(data['verificationDocuments']);
+      }
+
+      if (Array.isArray(data['requiredDocuments']) && data['requiredDocuments'].length) {
+        this.verDocs.set(
+          data['requiredDocuments'].map((item: any) => ({
+            id: String(item.id),
+            label: String(item.label || item.id),
+            required: !!item.required,
+          })),
+        );
+      }
+
+      if (Array.isArray(data['editableDocuments'])) {
+        this.editableDocuments.set(data['editableDocuments'].map((id: unknown) => String(id)));
+      }
+
+      if (data['accountStatus']) {
+        this.accountStatus.set(String(data['accountStatus']));
+      }
+
+      try {
+        const editRes = await firstValueFrom(this.venueService.getDocumentEditRequests());
+        const pending = (editRes.data?.requests || [])
+          .filter((r) => String(r.status).toLowerCase() === 'pending')
+          .map((r) => String(r.docId));
+        if (Array.isArray(editRes.data?.editableDocuments)) {
+          this.editableDocuments.set(editRes.data!.editableDocuments.map(String));
+        }
+        const editable = new Set(this.editableDocuments());
+        this.pendingEditDocIds.set(pending.filter((id) => !editable.has(id)));
+        if (Array.isArray(editRes.data?.requiredDocuments) && editRes.data!.requiredDocuments.length) {
+          this.verDocs.set(
+            editRes.data!.requiredDocuments.map((item) => ({
+              id: item.id,
+              label: item.label,
+              required: !!item.required,
+            })),
+          );
+        }
+      } catch {
+        // optional enrichment
       }
 
       const rental = Array.isArray(data['rentalEquipment']) ? data['rentalEquipment'] : [];

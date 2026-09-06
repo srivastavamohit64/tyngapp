@@ -1,9 +1,5 @@
 @import "tailwindcss";
 @import "./theme/variables.scss";
-@import "@fontsource/lato/latin-300.css";
-@import "@fontsource/lato/latin-400.css";
-@import "@fontsource/lato/latin-700.css";
-@import "@fontsource/lato/latin-900.css";
 
 @theme {
   --color-background: var(--app-background);

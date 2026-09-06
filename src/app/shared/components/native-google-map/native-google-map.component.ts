@@ -306,7 +306,7 @@ export class NativeGoogleMapComponent implements AfterViewInit, OnChanges, OnDes
         return;
       }
 
-      const options: google.maps.MapOptions = {
+      const options: google.maps.MapOptions = this.googleMaps.baseMapOptions({
         center: this.center,
         zoom: this.zoom,
         mapTypeId: this.mapType === 'satellite' ? 'satellite' : 'roadmap',
@@ -320,7 +320,7 @@ export class NativeGoogleMapComponent implements AfterViewInit, OnChanges, OnDes
         streetViewControl: false,
         mapTypeControl: false,
         keyboardShortcuts: false,
-      };
+      });
 
       if (this.styled && this.mode === 'picker') {
         options.styles = PICKER_MAP_STYLES;

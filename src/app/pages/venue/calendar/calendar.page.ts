@@ -7,6 +7,7 @@ import { BookingCalendarEvent } from '../../../core/models/api.model';
 import { BookingService } from '../../../core/services/booking.service';
 import { VenueService } from '../../../core/services/venue.service';
 import { BrandHeaderShellComponent } from '../../../shared/components/brand-header-shell/brand-header-shell.component';
+import { PageSkeletonComponent } from '../../../shared/components/skeleton';
 
 interface CalendarCourt {
   name: string;
@@ -37,7 +38,7 @@ interface CalendarBookingItem {
 @Component({
   selector: 'app-venue-calendar-page',
   standalone: true,
-  imports: [CommonModule, IonicModule, BrandHeaderShellComponent],
+  imports: [CommonModule, IonicModule, BrandHeaderShellComponent, PageSkeletonComponent],
   template: `
     <ion-content [fullscreen]="true" class="has-tabs">
       <app-brand-header-shell>
@@ -86,7 +87,7 @@ interface CalendarBookingItem {
           </div>
         </section>
 
-        <section class="stats-row" *ngIf="!loading()">
+        <section class="stats-row" *ngIf="!loading() || courts().length">
           <div class="stat">
             <p class="stat__num">{{ selectedDayCount() }}</p>
             <p class="stat__label">Day Bookings</p>
@@ -119,8 +120,11 @@ interface CalendarBookingItem {
           >{{ court.name }}</button>
         </div>
 
-        <p *ngIf="loading()" class="status">Loading calendar…</p>
-        <p *ngIf="!loading() && errorMessage()" class="status error">{{ errorMessage() }}</p>
+        <app-page-skeleton *ngIf="loading() && courts().length === 0" variant="cards" [count]="4" label="Loading calendar"></app-page-skeleton>
+        <p *ngIf="!loading() && errorMessage()" class="status error">
+          {{ errorMessage() }}
+          <button type="button" class="retry-inline" (click)="loadMonth()">Retry</button>
+        </p>
 
         <section class="events">
           <div class="events-head">
@@ -366,6 +370,18 @@ interface CalendarBookingItem {
     }
 
     .status.error { color: #DC2626; }
+
+    .retry-inline {
+      margin-left: 10px;
+      border: none;
+      border-radius: 10px;
+      background: #111827;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 6px 10px;
+      cursor: pointer;
+    }
 
     .events {
       padding: 8px 16px 24px;

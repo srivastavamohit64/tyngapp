@@ -25,6 +25,7 @@ import {
   formatDurationLabel,
   sportEmoji,
 } from '../../core/utils/booking.utils';
+import { PageSkeletonComponent } from '../../shared/components/skeleton';
 
 
 interface Game {
@@ -80,7 +81,7 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
 @Component({
   selector: 'app-ongoing-games',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, PageSkeletonComponent],
   template: `
     <ion-content [fullscreen]="true">
       <div class="ongoing-page">
@@ -144,8 +145,13 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
           </button>
         </div>
 
-        <div class="games-state" *ngIf="loading">Loading games…</div>
-        <div class="games-state" *ngIf="!loading && errorMessage">{{ errorMessage }}</div>
+        <div class="px-4 pt-2" *ngIf="loading && filteredGames.length === 0">
+          <app-page-skeleton variant="cards" [count]="4" label="Loading games"></app-page-skeleton>
+        </div>
+        <div class="games-state" *ngIf="!loading && errorMessage">
+          <p>{{ errorMessage }}</p>
+          <button type="button" class="retry-btn" (click)="loadGames()">Retry</button>
+        </div>
         <div class="games-state" *ngIf="!loading && !errorMessage && filteredGames.length === 0">
           {{ locationLabel
             ? 'No open games near ' + locationLabel + '. Create a game to invite others.'
@@ -707,6 +713,18 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
       font-weight: 600;
       text-align: center;
     }
+
+    .games-state .retry-btn {
+      margin-top: 12px;
+      border: none;
+      border-radius: 12px;
+      background: #111827;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 10px 16px;
+      cursor: pointer;
+    }
   `]
 })
 export class OngoingGamesPage implements OnInit, AfterViewInit, OnDestroy, ViewWillEnter {
@@ -848,7 +866,7 @@ export class OngoingGamesPage implements OnInit, AfterViewInit, OnDestroy, ViewW
     void this.router.navigateByUrl(`/app/game/${id}`);
   }
 
-  private async loadGames() {
+  async loadGames() {
     this.loading = true;
     this.errorMessage = '';
     const nearby = this.locationService.nearbyLocationQuery(this.auth.user()?.location);
@@ -932,7 +950,7 @@ export class OngoingGamesPage implements OnInit, AfterViewInit, OnDestroy, ViewW
       }
 
       this.clearMiniMarkers();
-      this.miniMap = new google.maps.Map(container, {
+      this.miniMap = new google.maps.Map(container, this.googleMaps.baseMapOptions({
         center,
         zoom: 12,
         disableDefaultUI: true,
@@ -945,7 +963,7 @@ export class OngoingGamesPage implements OnInit, AfterViewInit, OnDestroy, ViewW
         mapTypeControl: false,
         streetViewControl: false,
         fullscreenControl: false,
-      });
+      }));
 
       const positions: google.maps.LatLngLiteral[] = [];
       for (const booking of this.bookings) {
