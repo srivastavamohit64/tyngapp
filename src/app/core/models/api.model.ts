@@ -18,6 +18,8 @@ export interface AuthUser {
   profileImage?: string | null;
   gender?: string | null;
   location?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   level?: number;
   levelTitle?: string | null;
   tpPoints?: number;
@@ -57,6 +59,53 @@ export interface AuthTokenResponse {
   user: AuthUser;
 }
 
+export interface CoachDashboardSession {
+  id: number;
+  title: string;
+  sport: string;
+  studentName?: string | null;
+  studentCount: number;
+  venueName?: string | null;
+  startTime: string;
+  endTime: string;
+  status: 'scheduled' | 'completed' | 'cancelled' | string;
+  price: number;
+}
+
+export interface CoachDashboardReview {
+  id: number;
+  name: string;
+  profileImage?: string | null;
+  rating: number;
+  comment?: string | null;
+  createdAt?: string | null;
+}
+
+export interface CoachDashboardActivity {
+  id: string;
+  type: 'session_completed' | 'session_scheduled' | 'booking_request' | 'review' | string;
+  text: string;
+  at?: string | null;
+}
+
+export interface CoachDashboard {
+  profile: AuthUser;
+  focus: { todaySessions: number; pendingRequests: number; expectedEarnings: number };
+  stats: {
+    todaySessions: number;
+    expectedEarnings: number;
+    newReviews: number;
+    bookingRequests: number;
+    students: number;
+    upcomingSessions: number;
+    completedSessions: number;
+    dailyGoalProgress: number;
+  };
+  todaySessions: CoachDashboardSession[];
+  recentReviews: CoachDashboardReview[];
+  recentActivity: CoachDashboardActivity[];
+}
+
 export interface LoginPayload {
   phone: string;
   password: string;
@@ -91,6 +140,8 @@ export interface UpdateProfilePayload {
   venueType?: string | null;
   username?: string;
   location?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export interface ChangePasswordPayload {

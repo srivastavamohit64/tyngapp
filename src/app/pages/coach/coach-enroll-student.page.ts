@@ -66,7 +66,7 @@ const MOCK_STUDENTS: StudentRecord[] = [
             <ion-icon name="calendar-outline" class="text-[var(--app-primary)] text-2xl mb-1"></ion-icon>
             Schedule Session
           </button>
-          <button (click)="go('/app/home')" class="success-action-btn shadow-sm">
+          <button (click)="go('/app/coach/dashboard')" class="success-action-btn shadow-sm">
             <ion-icon name="home-outline" class="text-[var(--app-primary)] text-2xl mb-1"></ion-icon>
             Go Home
           </button>
@@ -89,7 +89,7 @@ const MOCK_STUDENTS: StudentRecord[] = [
               <p class="text-[15px] font-black text-[#111827] m-0">Enroll Student</p>
               <p *ngIf="enrollType === 'managed'" class="text-[11px] text-[#9CA3AF] font-bold m-0">Step {{ managedStep }} of 6</p>
             </div>
-            <button (click)="go('/app/home')" class="w-10 h-10 flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
+            <button (click)="go('/app/coach/dashboard')" class="w-10 h-10 flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
               <ion-icon name="close-outline" class="text-xl text-[#111827]"></ion-icon>
             </button>
           </div>

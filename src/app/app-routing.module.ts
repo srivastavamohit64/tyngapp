@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { guestGuard } from './core/guards/guest.guard';
+import { appRoleRouteGuard } from './core/guards/app-role-route.guard';
 import { SplashPage } from './pages/splash/splash.page';
 
 const routes: Routes = [
@@ -111,7 +112,7 @@ const routes: Routes = [
   {
     path: 'app',
     canActivate: [authGuard],
-    canActivateChild: [authGuard],
+    canActivateChild: [authGuard, appRoleRouteGuard],
     loadComponent: () => import('./pages/tabs/tabs.page').then((m) => m.TabsPage),
     children: [
       {
@@ -281,7 +282,12 @@ const routes: Routes = [
       },
       {
         path: 'coach/chat',
-        loadComponent: () => import('./pages/player/chat-list.page').then((m) => m.ChatListPage),
+        loadComponent: () => import('./pages/coach/coach-chat.page').then((m) => m.CoachChatPage),
+      },
+      {
+        path: 'coach/chat/:id',
+        // Conversation rendering is shared, but its URL remains inside the Coach area.
+        loadComponent: () => import('./pages/player/chat-room.page').then((m) => m.ChatRoomPage),
       },
       {
         path: 'coach/profile',

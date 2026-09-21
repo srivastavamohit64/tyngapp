@@ -127,15 +127,15 @@ function buildDates() {
             <ion-icon name="people-outline" class="text-[var(--app-primary)] text-2xl mb-1"></ion-icon>
             Manage Students
           </button>
-          <button (click)="go('/app/chat')" class="success-action-btn shadow-sm">
+          <button (click)="go('/app/coach/chat')" class="success-action-btn shadow-sm">
             <ion-icon name="chatbubbles-outline" class="text-[var(--app-primary)] text-2xl mb-1"></ion-icon>
             Session Chat
           </button>
-          <button (click)="go('/app/schedule')" class="success-action-btn shadow-sm">
+          <button (click)="go('/app/coach/schedule')" class="success-action-btn shadow-sm">
             <ion-icon name="calendar-outline" class="text-[var(--app-primary)] text-2xl mb-1"></ion-icon>
             My Schedule
           </button>
-          <button (click)="go('/app/home')" class="success-action-btn shadow-sm">
+          <button (click)="go('/app/coach/dashboard')" class="success-action-btn shadow-sm">
             <ion-icon name="home-outline" class="text-[var(--app-primary)] text-2xl mb-1"></ion-icon>
             Go Home
           </button>
@@ -154,7 +154,7 @@ function buildDates() {
               <p class="text-[15px] font-black text-[#111827]">Create New Session</p>
               <p class="text-[11px] text-[#9CA3AF] font-bold">Step {{ step() }} of 8</p>
             </div>
-            <button (click)="go('/app/home')" class="w-10 h-10 flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
+            <button (click)="go('/app/coach/dashboard')" class="w-10 h-10 flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
               <ion-icon name="close-outline" class="text-xl text-[#111827]"></ion-icon>
             </button>
           </div>
@@ -900,7 +900,7 @@ export class CoachPlanPage {
 
   handleBack() {
     if (this.step() === 1) {
-      this.router.navigateByUrl('/app/home');
+      this.router.navigateByUrl('/app/coach/dashboard');
     } else {
       this.step.update(s => s - 1);
     }

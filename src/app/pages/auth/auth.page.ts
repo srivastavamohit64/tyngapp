@@ -546,7 +546,7 @@ export class AuthPage implements OnInit {
 
   readonly roles = [
     { id: 'player' as UserRole, name: 'Player', icon: 'people-outline' },
-    // { id: 'coach' as UserRole, name: 'Coach', icon: 'trophy-outline' },
+    { id: 'coach' as UserRole, name: 'Coach', icon: 'trophy-outline' },
     { id: 'venue' as UserRole, name: 'Venue Owner', icon: 'business-outline' },
   ];
 

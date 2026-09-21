@@ -71,16 +71,9 @@ export class TabSwitchService {
   }
 
   private aliases(route: string): string[] {
-    const extra: Record<string, string[]> = {
-      '/app/home': ['/app/coach/dashboard', '/app/venue/dashboard'],
-      '/app/coach/dashboard': ['/app/home'],
-      '/app/venue/dashboard': ['/app/home'],
-      '/app/chat': ['/app/coach/chat'],
-      '/app/coach/chat': ['/app/chat'],
-      '/app/coach/schedule': ['/app/schedule'],
-      '/app/schedule': ['/app/coach/schedule'],
-    };
-    return [route, ...(extra[route] || [])];
+    // Role-specific routes intentionally have no cross-role aliases.  Otherwise
+    // a Coach URL can activate (or navigate back toward) Player tabs.
+    return [route];
   }
 
   private normalize(url: string): string {

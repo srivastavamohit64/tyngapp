@@ -244,7 +244,7 @@ const FILTERS = [
                 <div class="flex gap-2">
                   <button class="flex-grow py-2 rounded-xl bg-[#F9FAFB] text-[12px] font-bold text-[#6B7280] border border-[#F3F4F6]">View Details</button>
                   <button class="flex-grow py-2 rounded-xl bg-[#FEF2F2] text-[12px] font-bold text-[#DC2626] border border-[#FCA5A5]">Cancel</button>
-                  <button (click)="go('/app/chat')" class="flex-grow py-2 rounded-xl text-[12px] font-bold text-[#111827] bg-[var(--app-primary)]/12 border border-[var(--app-primary)]/30 border-2">Chat</button>
+                  <button (click)="go('/app/coach/chat')" class="flex-grow py-2 rounded-xl text-[12px] font-bold text-[#111827] bg-[var(--app-primary)]/12 border border-[var(--app-primary)]/30 border-2">Chat</button>
                 </div>
               </div>
             </div>
@@ -319,7 +319,7 @@ export class CoachBookVenuePage {
   });
 
   back() {
-    this.router.navigateByUrl('/app/home');
+    this.router.navigateByUrl('/app/coach/dashboard');
   }
 
   go(path: string) {

@@ -199,7 +199,7 @@ function buildDates(): DateOption[] {
             <ion-icon name="people-outline" class="text-[var(--app-primary)] text-xl"></ion-icon>
             Manage Students
           </button>
-          <button (click)="go('/app/chat')" class="flex flex-col items-center gap-2 py-4 bg-white rounded-[20px] text-[12px] font-black text-[#111827] border border-slate-100 shadow-sm">
+          <button (click)="go('/app/coach/chat')" class="flex flex-col items-center gap-2 py-4 bg-white rounded-[20px] text-[12px] font-black text-[#111827] border border-slate-100 shadow-sm">
             <ion-icon name="chatbubble-ellipses-outline" class="text-[var(--app-primary)] text-xl"></ion-icon>
             Session Chat
           </button>
@@ -207,7 +207,7 @@ function buildDates(): DateOption[] {
             <ion-icon name="calendar-outline" class="text-[var(--app-primary)] text-xl"></ion-icon>
             View Schedule
           </button>
-          <button (click)="go('/app/home')" class="flex flex-col items-center gap-2 py-4 bg-white rounded-[20px] text-[12px] font-black text-[#111827] border border-slate-100 shadow-sm">
+          <button (click)="go('/app/coach/dashboard')" class="flex flex-col items-center gap-2 py-4 bg-white rounded-[20px] text-[12px] font-black text-[#111827] border border-slate-100 shadow-sm">
             <ion-icon name="home-outline" class="text-[var(--app-primary)] text-xl"></ion-icon>
             Home Dashboard
           </button>

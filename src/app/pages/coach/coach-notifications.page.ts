@@ -30,16 +30,16 @@ const FILTERS = [
   imports: [CommonModule, IonicModule, FormsModule, SkeletonListComponent],
   template: `
     <ion-content [fullscreen]="true">
-      <div class="notifications-page pb-32">
+      <div class="notifications-page pb-28">
         <!-- Sticky Header -->
         <div class="sticky-header bg-white border-b border-[#F3F4F6]">
-          <div class="flex items-center justify-between px-5 pt-5 pb-3">
+          <div class="notif-header flex items-center justify-between px-5 pb-3">
             <div class="flex items-center gap-3">
-              <button (click)="back()" class="w-9 h-9 flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
+              <button (click)="back()" class="w-10 h-10 flex items-center justify-center rounded-full bg-[#F3F4F6] border-none">
                 <ion-icon name="chevron-back-outline" class="text-[#111827] text-xl"></ion-icon>
               </button>
               <div class="flex items-center gap-2">
-                <h1 class="text-[24px] font-black text-[#111827] tracking-tight m-0">Notifications</h1>
+                <h1 class="text-[18px] font-extrabold text-[#111827] tracking-tight m-0">Notifications</h1>
                 <div *ngIf="totalUnread() > 0" class="min-w-[22px] h-[22px] rounded-full bg-[#FF7A00] flex items-center justify-center px-1.5">
                   <span class="text-[11px] font-black text-white">{{ totalUnread() }}</span>
                 </div>
@@ -47,12 +47,12 @@ const FILTERS = [
             </div>
 
             <div class="flex items-center gap-1.5">
-              <button *ngIf="totalUnread() > 0" (click)="markAllRead()" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#F3F4F6] text-[12px] font-bold text-[#6B7280] border-none">
+              <button *ngIf="totalUnread() > 0" (click)="markAllRead()" class="hidden min-[390px]:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#F3F4F6] text-[12px] font-bold text-[#6B7280] border-none">
                 <ion-icon name="checkmark-done-outline"></ion-icon>
                 Mark all read
               </button>
-              <button class="w-9 h-9 flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
-                <ion-icon name="options-outline" class="text-[#6B7280] text-lg"></ion-icon>
+              <button (click)="markAllRead()" [disabled]="totalUnread() === 0" class="w-10 h-10 flex items-center justify-center rounded-full bg-[#F3F4F6] border-none disabled:opacity-40">
+                <ion-icon name="checkmark-done-outline" class="text-[#6B7280] text-lg"></ion-icon>
               </button>
             </div>
           </div>
@@ -87,7 +87,7 @@ const FILTERS = [
           </div>
 
           <!-- Group timelines (Today, Yesterday, Earlier) -->
-          <div *ngFor="let group of getGroups(); let gi = index" class="mb-6">
+          <div *ngFor="let group of getGroups(); let gi = index" class="mb-5">
             <div class="flex items-center gap-3 mb-4 mt-2">
               <span class="text-[12px] font-black text-[#111827] uppercase tracking-widest">{{ group.label }}</span>
               <div class="flex-1 h-px bg-[#F3F4F6]"></div>
@@ -97,7 +97,7 @@ const FILTERS = [
             </div>
 
             <!-- List of cards -->
-            <div class="space-y-3">
+            <div class="space-y-2.5">
               <div *ngFor="let n of group.items; let ni = index" class="relative overflow-hidden rounded-[24px]">
                 <!-- Unread indicator bar -->
                 <div *ngIf="n.unread && !n.isAI && !n.isReward" class="absolute left-0 top-4 bottom-4 w-1 rounded-full bg-[var(--app-primary)] z-10" style="box-shadow: 0 0 8px rgba(var(--app-primary-rgb),0.6);"></div>
@@ -158,17 +158,17 @@ const FILTERS = [
                 </div>
 
                 <!-- Standard alerts -->
-                <div *ngIf="!n.isAI && !n.isReward && !n.isWide" class="bg-white rounded-[24px] px-4 py-4 shadow-sm border border-slate-100" [class.pl-6]="n.unread">
+                <div *ngIf="!n.isAI && !n.isReward && !n.isWide" class="bg-white rounded-[18px] px-4 py-3.5 shadow-sm border border-slate-100" [class.pl-6]="n.unread">
                   <div class="flex items-start gap-3">
                     <div class="relative flex-shrink-0">
-                      <img *ngIf="n.avatar" [src]="n.avatar" class="w-[56px] h-[56px] rounded-full object-cover" />
-                      <div *ngIf="!n.avatar" class="w-[56px] h-[56px] rounded-2xl bg-[#F3F4F6] flex items-center justify-center text-2xl">
+                      <img *ngIf="n.avatar" [src]="n.avatar" class="w-12 h-12 rounded-full object-cover" />
+                      <div *ngIf="!n.avatar" class="w-12 h-12 rounded-2xl bg-[#F3F4F6] flex items-center justify-center text-xl">
                         {{ n.emoji || '🔔' }}
                       </div>
                     </div>
                     <div class="flex-1 min-w-0">
                       <div class="flex items-start justify-between gap-1">
-                        <p class="text-[14px] font-bold text-[#111827] leading-snug flex-1 m-0">{{ n.title }}</p>
+                        <p class="text-[14px] font-semibold text-[#111827] leading-snug flex-1 m-0">{{ n.title }}</p>
                         <div *ngIf="n.unread" class="w-2.5 h-2.5 rounded-full bg-[var(--app-primary)] flex-shrink-0 mt-1"></div>
                       </div>
                       <p class="text-[12px] text-[#6B7280] mt-1 leading-relaxed m-0">{{ n.description }}</p>
@@ -204,7 +204,10 @@ const FILTERS = [
     .notifications-page {
       background: #FAFBFC;
       min-height: 100%;
+      font-family: var(--app-font-family);
     }
+
+    .notif-header { padding-top: calc(12px + var(--app-chrome-top-inset, var(--safe-area-top))); }
 
     .sticky-header {
       position: sticky;
@@ -228,6 +231,11 @@ const FILTERS = [
     .btn-orange-gradient {
       background: linear-gradient(135deg, #FF7A00, #FF9A40);
       box-shadow: 0 4px 16px rgba(255, 122, 0, 0.35);
+    }
+
+    @media (max-width: 359px) {
+      .notifications-page .px-5 { padding-left: 16px; padding-right: 16px; }
+      .notifications-page .px-4 { padding-left: 14px; padding-right: 14px; }
     }
   `]
 })
@@ -291,6 +299,10 @@ export class CoachNotificationsPage implements OnInit {
 
   async handleNotifAction(n: CoachNotif) {
     await this.markRead(n.id);
+    if (n.title.toLowerCase().includes('student request')) {
+      this.go('/app/coach/students');
+      return;
+    }
     if (n.route) {
       this.go(n.route);
       return;

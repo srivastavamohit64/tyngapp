@@ -433,7 +433,7 @@ const DOCS = [
                 <ion-icon name="call-outline" class="text-lg"></ion-icon>
                 <span class="text-[11px] font-bold">Call</span>
               </button>
-              <button (click)="go('/app/chat')" class="flex flex-col items-center gap-1.5 py-3 rounded-2xl border-none bg-[#EFF6FF] text-[#2563EB]">
+              <button (click)="go('/app/coach/chat')" class="flex flex-col items-center gap-1.5 py-3 rounded-2xl border-none bg-[#EFF6FF] text-[#2563EB]">
                 <ion-icon name="chatbubble-ellipses-outline" class="text-lg"></ion-icon>
                 <span class="text-[11px] font-bold">Chat</span>
               </button>

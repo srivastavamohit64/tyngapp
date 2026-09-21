@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
+import { CoachService } from '../../core/services/coach.service';
 
 @Component({
   selector: 'app-coach-profile-detail',
@@ -62,6 +63,9 @@ import { IonicModule } from '@ionic/angular';
 
         <!-- Booking CTA -->
         <div class="cta-box mt-8">
+          <button (click)="requestToJoin()" [disabled]="requesting || requestSent" class="w-full h-12 mb-3 rounded-full border border-[var(--app-primary)] bg-white text-[#111827] font-bold disabled:opacity-60">
+            {{ requestSent ? 'Coaching Request Sent' : requesting ? 'Sending Request…' : 'Request to Join as Student' }}
+          </button>
           <button (click)="bookSession()" class="w-full h-12 rounded-full bg-gradient-to-r from-[var(--app-primary)] to-[var(--app-primary-to)] text-[#111827] font-bold shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all">
             Book Coaching Session
           </button>
@@ -84,9 +88,12 @@ import { IonicModule } from '@ionic/angular';
 export class CoachProfileDetailPage implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly coachService = inject(CoachService);
 
   coachId: number | null = null;
   coach: any = null;
+  requesting = false;
+  requestSent = false;
 
   readonly coaches = [
     { id: 1, name: 'Coach Arvind Sharma', sport: 'Cricket', experience: '12+ Yrs Exp', rating: 4.9, avatar: '🏏', distance: '1.5 km', price: '₹800/session', bio: 'Former State level cricketer focusing on batting techniques, stamina building, and match strategy for all age groups.', specialties: ['Batting Stance', 'Spin Tactics', 'Fitness Training', 'Group Scrimmage'] },
@@ -100,7 +107,23 @@ export class CoachProfileDetailPage implements OnInit {
       const idStr = params.get('id');
       if (idStr) {
         this.coachId = +idStr;
-        this.coach = this.coaches.find(c => c.id === this.coachId) || this.coaches[0];
+        this.coachService.getCoach(this.coachId).subscribe({
+          next: (response) => {
+            const item: any = response.data;
+            this.coach = {
+              ...item,
+              avatar: '👤',
+              sport: Array.isArray(item.sports) ? item.sports.join(', ') : (item.sport || 'Multi-sport'),
+              specialties: Array.isArray(item.sports) && item.sports.length ? item.sports : ['Coaching program'],
+              experience: item.experience || 'Coach',
+              bio: item.bio || 'Coach profile information will be available soon.',
+              rating: item.rating ?? 'New',
+              price: 'Discuss with Coach',
+              distance: item.location || 'Location not set',
+            };
+          },
+          error: () => { this.coach = null; },
+        });
       }
     });
   }
@@ -113,5 +136,14 @@ export class CoachProfileDetailPage implements OnInit {
     // Navigate to a simple booking completed or summary flow
     alert('Booking request sent to ' + this.coach.name + '! They will confirm via Chat.');
     this.router.navigateByUrl('/app/chat');
+  }
+
+  requestToJoin() {
+    if (!this.coachId || this.requesting || this.requestSent) return;
+    this.requesting = true;
+    this.coachService.requestToJoin(this.coachId, { sport: this.coach?.sport, message: 'I would like to join your coaching program.' }).subscribe({
+      next: () => { this.requestSent = true; this.requesting = false; },
+      error: (error) => { this.requesting = false; alert(error?.error?.message || 'Unable to send your coaching request.'); },
+    });
   }
 }

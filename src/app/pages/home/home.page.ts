@@ -5,10 +5,11 @@ import { IonicModule, MenuController, Platform, ViewWillEnter, ViewWillLeave } f
 import { PluginListenerHandle } from '@capacitor/core';
 import { App } from '@capacitor/app';
 import { Subscription, firstValueFrom } from 'rxjs';
-import { BookingRecord, HomeAd } from '../../core/models/api.model';
+import { BookingRecord, CoachDashboard, HomeAd } from '../../core/models/api.model';
 import { AdService } from '../../core/services/ad.service';
 import { AuthService } from '../../core/services/auth.service';
 import { BookingService } from '../../core/services/booking.service';
+import { CoachService } from '../../core/services/coach.service';
 import { DesignDataService } from '../../core/services/design-data.service';
 import { RealtimeService } from '../../core/services/realtime.service';
 import { LocationService, UserLocation, LocationError, LocationErrorType } from '../../core/services/location.service';
@@ -45,6 +46,7 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
   readonly data = inject(DesignDataService);
   readonly auth = inject(AuthService);
   private readonly bookingService = inject(BookingService);
+  private readonly coachService = inject(CoachService);
   private readonly adService = inject(AdService);
   private readonly realtime = inject(RealtimeService);
   private readonly router = inject(Router);
@@ -104,13 +106,16 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
 
   // Coach Dashboard state
   coachProfileDismissed = signal(false);
-  readonly coachPulseMetrics = [
+  coachDashboardLoading = signal(false);
+  coachDashboardError = signal('');
+  coachDailyGoalProgress = 0;
+  coachPulseMetrics = [
     { icon: '📅', label: "Today's Sessions", value: '4', accent: 'var(--app-primary)' },
     { icon: '💰', label: 'Expected Earnings', value: '₹4,250', accent: '#FF7A00' },
     { icon: '⭐', label: 'New Reviews', value: '3', accent: '#F59E0B' },
     { icon: '👥', label: 'Booking Requests', value: '5', accent: '#38BDF8' },
   ];
-  readonly coachSessions = [
+  coachSessions = [
     { id: 1, sport: 'Cricket', emoji: '🏏', image: 'https://images.unsplash.com/photo-1593341646782-e0b495cff86d?w=700&h=300&fit=crop&auto=format', title: 'Elite Cricket Academy', team: 'Advanced Batch · 12 Students', venue: 'Phoenix Arena', time: '6:00 PM', type: 'Training', status: 'upcoming', startsIn: 'Starts in 45 min' },
     { id: 2, sport: 'Football', emoji: '⚽', image: 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=700&h=300&fit=crop&auto=format', title: 'Football Skills Workshop', team: 'Junior Squad · 8 Students', venue: 'K.D. Singh Stadium', time: '7:30 PM', type: 'Skills', status: 'upcoming', startsIn: 'Starts in 2h 15m' },
     { id: 3, sport: 'Badminton', emoji: '🏸', image: 'https://images.unsplash.com/photo-1722087642932-9b070e9a066e?w=700&h=300&fit=crop&auto=format', title: 'Individual Coaching', team: 'Priya Verma · 1 Student', venue: 'Sports Complex', time: '4:00 PM', type: 'One-on-One', status: 'completed', startsIn: null },
@@ -121,7 +126,7 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
     { icon: 'person-add-outline', label: 'Add Student', sub: 'Onboard a new player', color: '#38BDF8', path: '/app/coach/enroll-student' },
     { icon: 'analytics-outline', label: 'Evaluate Player', sub: 'Track progress', color: '#7C3AED', path: '/app/coach/evaluate' },
   ];
-  readonly coachActivities = [
+  coachActivities: Array<{ id: string | number; icon: string; bg: string; color: string; text: string; time: string }> = [
     { id: 1, icon: '✓', bg: '#F0FDF4', color: '#16A34A', text: 'Rahul completed Session #18', time: '20 min ago' },
     { id: 2, icon: '⭐', bg: '#FFFBEB', color: '#D97706', text: 'You received a 5-Star Review from Ananya', time: '1 hr ago' },
     { id: 3, icon: '🏆', bg: '#F5F3FF', color: '#7C3AED', text: 'Aarav won District Badminton Championship', time: '3 hrs ago' },
@@ -138,7 +143,7 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
     { id: 2, title: 'NIS Certification', sub: 'Registrations Open', image: 'https://images.unsplash.com/photo-1529699211952-734e80c4d42b?w=300&h=160&fit=crop&auto=format', tag: 'Certification' },
     { id: 3, title: 'Sports Seminar', sub: 'Next Wed · Online', image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=300&h=160&fit=crop&auto=format', tag: 'Seminar' },
   ];
-  readonly coachReviews = [
+  coachReviews = [
     { name: 'Ananya Patel', photo: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=80&h=80&fit=crop&auto=format', rating: 5, text: 'Excellent coaching session. My cricket technique improved dramatically in just 3 weeks.' },
     { name: 'Rahul Sharma', photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&auto=format', rating: 5, text: 'My batting improved significantly after just 5 sessions. Highly recommended!' },
   ];
@@ -219,6 +224,9 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
 
   ionViewWillEnter() {
     const role = this.auth.user()?.role;
+    if (role === 'coach') {
+      void this.loadCoachDashboard();
+    }
     this.homeVisible = role === 'player' || !role;
     if (this.homeVisible) {
       void this.loadHomeAds();
@@ -226,6 +234,125 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
       this.listenForNearbyGames();
     }
   }
+
+  get coachName(): string {
+    return this.auth.user()?.name?.trim() || 'Coach';
+  }
+
+  get coachProfileCompletion(): number {
+    return this.auth.user()?.profileCompletion ?? 0;
+  }
+
+  private async loadCoachDashboard(): Promise<void> {
+    this.coachDashboardLoading.set(true);
+    this.coachDashboardError.set('');
+    this.coachSessions = [];
+    this.coachReviews = [];
+    this.coachActivities = [];
+    try {
+      const response = await firstValueFrom(this.coachService.getDashboard());
+      const dashboard = response.data;
+      if (!response.success || !dashboard) {
+        throw new Error(response.message || 'Unable to load coach dashboard.');
+      }
+      this.applyCoachDashboard(dashboard);
+    } catch {
+      this.coachDashboardError.set('Unable to refresh your coach dashboard. Pull down to try again.');
+    } finally {
+      this.coachDashboardLoading.set(false);
+    }
+  }
+
+  private applyCoachDashboard(dashboard: CoachDashboard): void {
+    // This endpoint is Coach-only. Keep the session role intact even if an
+    // older API deployment returns a partial dashboard profile without `role`.
+    this.auth.hydrateUser({ ...dashboard.profile, role: 'coach' });
+    this.coachDailyGoalProgress = dashboard.stats.dailyGoalProgress;
+    this.coachPulseMetrics = [
+      { icon: 'ðŸ“…', label: "Today's Sessions", value: String(dashboard.stats.todaySessions), accent: 'var(--app-primary)' },
+      { icon: 'ðŸ’°', label: 'Expected Earnings', value: this.formatCurrency(dashboard.stats.expectedEarnings), accent: '#FF7A00' },
+      { icon: 'â­', label: 'New Reviews', value: String(dashboard.stats.newReviews), accent: '#F59E0B' },
+      { icon: 'ðŸ‘¥', label: 'Booking Requests', value: String(dashboard.stats.bookingRequests), accent: '#38BDF8' },
+    ];
+    this.coachSessions = dashboard.todaySessions.map((session) => ({
+      id: session.id,
+      sport: session.sport,
+      emoji: this.sportEmoji(session.sport),
+      image: this.sportImage(session.sport),
+      title: session.title,
+      team: session.studentName ? `${session.studentName} Â· ${session.studentCount || 1} Student` : 'Group session',
+      venue: session.venueName || 'Venue to be confirmed',
+      time: `${this.formatClock(session.startTime)} â€“ ${this.formatClock(session.endTime)}`,
+      type: session.studentCount === 1 ? 'One-on-One' : 'Training',
+      status: session.status,
+      startsIn: session.status === 'scheduled' ? this.startsIn(session.startTime) : null,
+    }));
+    this.coachReviews = dashboard.recentReviews.map((review) => ({
+      name: review.name,
+      photo: review.profileImage || 'assets/icon/favicon.png',
+      rating: review.rating,
+      text: review.comment || 'No written feedback provided.',
+    }));
+    this.coachActivities = dashboard.recentActivity.map((activity) => ({
+      id: activity.id,
+      icon: this.activityIcon(activity.type),
+      bg: this.activityColor(activity.type).bg,
+      color: this.activityColor(activity.type).color,
+      text: activity.text,
+      time: this.relativeTime(activity.at),
+    }));
+  }
+
+  coachFocus(): string {
+    const sessions = this.coachPulseMetrics[0]?.value || '0';
+    const requests = this.coachPulseMetrics[3]?.value || '0';
+    const earnings = this.coachPulseMetrics[1]?.value || '₹0';
+    return `${sessions} Sessions â€¢ ${requests} Requests â€¢ ${earnings} Expected`;
+  }
+
+  metricIcon(label: string): string {
+    return ({
+      "Today's Sessions": 'calendar-outline',
+      'Expected Earnings': 'cash-outline',
+      'New Reviews': 'star-outline',
+      'Booking Requests': 'people-outline',
+    } as Record<string, string>)[label] || 'ellipse-outline';
+  }
+
+  sessionIcon(sport: string): string {
+    return ({
+      football: 'football-outline',
+      basketball: 'basketball-outline',
+      tennis: 'tennisball-outline',
+      cricket: 'trophy-outline',
+      badminton: 'fitness-outline',
+    } as Record<string, string>)[String(sport || '').toLowerCase()] || 'trophy-outline';
+  }
+
+  activityIconName(text: string): string {
+    const value = String(text || '').toLowerCase();
+    if (value.includes('review')) return 'star-outline';
+    if (value.includes('request')) return 'people-outline';
+    if (value.includes('complete')) return 'checkmark-outline';
+    if (value.includes('session')) return 'calendar-outline';
+    return 'ellipse-outline';
+  }
+
+  private formatCurrency(value: number): string { return `₹${Math.round(Number(value || 0)).toLocaleString('en-IN')}`; }
+  private formatClock(value: string): string {
+    const [h = '0', m = '00'] = value.split(':'); const hour = Number(h); const suffix = hour >= 12 ? 'PM' : 'AM';
+    return `${hour % 12 || 12}:${m} ${suffix}`;
+  }
+  private startsIn(value: string): string {
+    const [h = 0, m = 0] = value.split(':').map(Number); const now = new Date();
+    const minutes = h * 60 + m - (now.getHours() * 60 + now.getMinutes());
+    return minutes <= 0 ? 'Starting now' : minutes < 60 ? `Starts in ${minutes} min` : `Starts in ${Math.floor(minutes / 60)}h ${minutes % 60 ? `${minutes % 60}m` : ''}`.trim();
+  }
+  private sportEmoji(sport: string): string { return ({ cricket: 'ðŸ', football: 'âš½', badminton: 'ðŸ¸', basketball: 'ðŸ€', tennis: 'ðŸŽ¾' } as Record<string, string>)[sport.toLowerCase()] || 'ðŸ†'; }
+  private sportImage(sport: string): string { return ({ cricket: 'https://images.unsplash.com/photo-1593341646782-e0b495cff86d?w=700&h=300&fit=crop&auto=format', football: 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=700&h=300&fit=crop&auto=format', badminton: 'https://images.unsplash.com/photo-1722087642932-9b070e9a066e?w=700&h=300&fit=crop&auto=format' } as Record<string, string>)[sport.toLowerCase()] || 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=700&h=300&fit=crop&auto=format'; }
+  private activityIcon(type: string): string { return ({ session_completed: 'âœ“', session_scheduled: 'ðŸ“…', booking_request: 'ðŸ‘¥', review: 'â­' } as Record<string, string>)[type] || 'â€¢'; }
+  private activityColor(type: string): { bg: string; color: string } { return ({ review: { bg: '#FFFBEB', color: '#D97706' }, booking_request: { bg: '#EFF6FF', color: '#2563EB' }, session_completed: { bg: '#F0FDF4', color: '#16A34A' }, session_scheduled: { bg: '#F5F3FF', color: '#7C3AED' } } as Record<string, { bg: string; color: string }>)[type] || { bg: '#F3F4F6', color: '#6B7280' }; }
+  private relativeTime(value?: string | null): string { if (!value) return 'Recently'; const seconds = Math.max(0, Math.floor((Date.now() - new Date(value).getTime()) / 1000)); if (seconds < 60) return 'Just now'; if (seconds < 3600) return `${Math.floor(seconds / 60)} min ago`; if (seconds < 86400) return `${Math.floor(seconds / 3600)} hr ago`; return `${Math.floor(seconds / 86400)} day${seconds >= 172800 ? 's' : ''} ago`; }
 
   ionViewWillLeave() {
     this.homeVisible = false;

@@ -106,10 +106,10 @@ export class CoachTeamsPage {
   ];
 
   goHome() {
-    this.router.navigateByUrl('/app/home');
+    this.router.navigateByUrl('/app/coach/dashboard');
   }
 
   goSchedule() {
-    this.router.navigateByUrl('/app/schedule');
+    this.router.navigateByUrl('/app/coach/schedule');
   }
 }

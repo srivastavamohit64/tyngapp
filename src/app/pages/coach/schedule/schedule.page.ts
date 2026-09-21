@@ -311,7 +311,7 @@ function buildWeek() {
 
                     <!-- Action buttons -->
                     <div class="grid grid-cols-3 gap-2">
-                      <button (click)="go('/app/chat')" class="action-card-btn">
+                      <button (click)="go('/app/coach/chat')" class="action-card-btn">
                         <ion-icon name="chatbubbles-outline"></ion-icon>Chat
                       </button>
                       <button class="action-card-btn">
@@ -415,7 +415,7 @@ export class CoachSchedulePage {
   });
 
   back() {
-    this.router.navigateByUrl('/app/home');
+    this.router.navigateByUrl('/app/coach/dashboard');
   }
 
   go(path: string) {

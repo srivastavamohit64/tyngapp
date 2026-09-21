@@ -34,7 +34,27 @@ ion-app {
   background: var(--app-background);
   color: var(--app-foreground);
   font-family: Lato, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 16px;
+  line-height: 1.45;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* One mobile typography baseline for Player, Coach, Venue and Admin views. */
+button,
+input,
+textarea,
+select,
+ion-button,
+ion-input,
+ion-textarea,
+ion-select {
+  font: inherit;
+}
+
+button,
+ion-button {
+  letter-spacing: inherit;
 }
 
 ion-content {

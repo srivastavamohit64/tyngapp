@@ -8,12 +8,12 @@
     <ng-container *ngIf="auth.user()?.role === 'coach'">
       <div class="px-5 pt-5 pb-4">
         <p class="text-[14px] text-[#9CA3AF] font-medium mb-0.5">{{ greeting }}</p>
-        <h1 class="text-[26px] font-black text-[#111827] leading-tight">Coach Arvind</h1>
+        <h1 class="text-[26px] font-black text-[#111827] leading-tight">{{ coachName }}</h1>
         <div class="mt-3 flex items-center gap-2 bg-white rounded-2xl px-4 py-3 coach-focus-bar">
           <div class="w-2 h-2 rounded-full bg-[var(--app-primary)] animate-pulse flex-shrink-0"></div>
           <p class="text-[12px] font-semibold text-[#6B7280] m-0">
             <strong class="text-[#111827] font-black">Today's Focus</strong>
-            &nbsp;4 Sessions � 3 Requests � <span class="text-[#22C55E] font-black">?4,250 Expected</span>
+            &nbsp;<span class="text-[#22C55E] font-black">{{ coachFocus() }}</span>
           </p>
         </div>
       </div>
@@ -35,7 +35,7 @@
               [style.backgroundColor]="metric.accent + '10'" [style.border]="'1.5px solid ' + metric.accent + '25'">
               <div class="absolute -bottom-3 -right-3 w-12 h-12 rounded-full opacity-20" [style.backgroundColor]="metric.accent"></div>
               <div class="relative">
-                <span class="text-xl">{{ metric.icon }}</span>
+                <ion-icon [name]="metricIcon(metric.label)" class="text-xl" [style.color]="metric.accent"></ion-icon>
                 <p class="text-[22px] font-black text-[#111827] mt-1 leading-none">{{ metric.value }}</p>
                 <p class="text-[10px] text-[#6B7280] mt-0.5 font-medium">{{ metric.label }}</p>
               </div>
@@ -44,10 +44,10 @@
           <div class="mt-4 pt-4 border-t border-[#F3F4F6]">
             <div class="flex justify-between text-[11px] mb-1.5">
               <span class="text-[#9CA3AF] font-medium">Daily Goal Progress</span>
-              <span class="text-[var(--app-primary)] font-black">62%</span>
+              <span class="text-[var(--app-primary)] font-black">{{ coachDailyGoalProgress }}%</span>
             </div>
             <div class="h-2 bg-[#F3F4F6] rounded-full overflow-hidden">
-              <div class="h-full rounded-full" style="width: 62%; background: linear-gradient(90deg, var(--app-primary), var(--app-primary-to));"></div>
+              <div class="h-full rounded-full" [style.width.%]="coachDailyGoalProgress" style="background: linear-gradient(90deg, var(--app-primary), var(--app-primary-to));"></div>
             </div>
           </div>
         </div>
@@ -60,15 +60,15 @@
             <div class="flex items-start justify-between mb-3">
               <div>
                 <p class="text-[14px] font-black text-white">Complete Your Coach Profile</p>
-                <p class="text-[11px] text-white/50 mt-0.5">You're 40% complete</p>
+                <p class="text-[11px] text-white/50 mt-0.5">You're {{ coachProfileCompletion }}% complete</p>
               </div>
               <button (click)="coachProfileDismissed.set(true)" class="text-white/30 text-xl font-bold w-6 h-6 flex items-center justify-center bg-transparent">�</button>
             </div>
             <div class="mb-3">
               <div class="h-2 bg-white/10 rounded-full overflow-hidden">
-                <div class="h-full rounded-full" style="width: 40%; background: linear-gradient(90deg, var(--app-primary), var(--app-primary-to));"></div>
+                <div class="h-full rounded-full" [style.width.%]="coachProfileCompletion" style="background: linear-gradient(90deg, var(--app-primary), var(--app-primary-to));"></div>
               </div>
-              <p class="text-[10px] text-white/30 mt-1 text-right">40 / 100</p>
+              <p class="text-[10px] text-white/30 mt-1 text-right">{{ coachProfileCompletion }} / 100</p>
             </div>
             <div class="space-y-1.5 mb-4">
               <div *ngFor="let perk of ['Verified Coach Badge', 'Higher Search Ranking', 'More Student Bookings']" class="flex items-center gap-2">
@@ -106,6 +106,9 @@
             <button (click)="go('/app/coach/schedule')" class="see-all-btn">View All <ion-icon name="chevron-forward-outline"></ion-icon></button>
           </div>
           <div class="space-y-4">
+            <div *ngIf="coachDashboardLoading()" class="section-card p-4 text-center text-[13px] text-[#6B7280]">Loading today’s sessions…</div>
+            <div *ngIf="coachDashboardError()" class="section-card p-4 text-center text-[13px] text-[#DC2626]">{{ coachDashboardError() }}</div>
+            <div *ngIf="!coachDashboardLoading() && !coachDashboardError() && coachSessions.length === 0" class="section-card p-4 text-center text-[13px] text-[#6B7280]">No coaching sessions are scheduled for today.</div>
             <div *ngFor="let session of coachSessions" class="session-card">
               <div class="relative h-[130px] overflow-hidden rounded-t-[24px] bg-slate-200">
                 <img [src]="session.image" [alt]="session.sport" class="w-full h-full object-cover" />
@@ -121,7 +124,7 @@
                 </div>
                 <div class="absolute bottom-3 left-3 right-3 flex items-end justify-between">
                   <div class="flex items-center gap-2">
-                    <span class="text-2xl">{{ session.emoji }}</span>
+                    <ion-icon [name]="sessionIcon(session.sport)" class="text-2xl text-white"></ion-icon>
                     <p class="text-white font-black text-[15px] drop-shadow-md">{{ session.title }}</p>
                   </div>
                   <p class="text-white/80 text-[13px] font-semibold">{{ session.time }}</p>
@@ -183,7 +186,7 @@
               [class.border-b]="i < coachActivities.length - 1" [style.borderBottomColor]="'#F9FAFB'">
               <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold"
                 [style.backgroundColor]="activity.bg" [style.color]="activity.color">
-                {{ activity.icon }}
+                <ion-icon [name]="activityIconName(activity.text)" class="text-base"></ion-icon>
               </div>
               <div class="flex-1 min-w-0">
                 <p class="text-[13px] font-semibold text-[#111827] leading-snug">{{ activity.text }}</p>
@@ -294,7 +297,7 @@
                 <div>
                   <p class="text-[13px] font-bold text-[#111827]">{{ rev.name }}</p>
                   <div class="flex gap-0.5">
-                    <ion-icon *ngFor="let star of [1,2,3,4,5]" name="star" class="text-[#F59E0B] text-[10px]"></ion-icon>
+                    <ion-icon *ngFor="let star of [1,2,3,4,5]" [name]="star <= rev.rating ? 'star' : 'star-outline'" class="text-[#F59E0B] text-[10px]"></ion-icon>
                   </div>
                 </div>
               </div>
@@ -339,7 +342,7 @@
         </div>
 
         <!-- Help support -->
-        <div (click)="go('/app/home')" class="section-card p-5 flex items-center gap-4 cursor-pointer hover:border-[var(--app-primary)] border border-transparent transition-all">
+        <div (click)="go('/app/coach/dashboard')" class="section-card p-5 flex items-center gap-4 cursor-pointer hover:border-[var(--app-primary)] border border-transparent transition-all">
           <div class="w-12 h-12 rounded-2xl bg-[#EFF6FF] flex items-center justify-center flex-shrink-0">
             <ion-icon name="chatbubble-ellipses-outline" class="text-[#2563EB] text-xl"></ion-icon>
           </div>

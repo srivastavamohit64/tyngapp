@@ -3,6 +3,8 @@ import { Component, signal, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
+import { CoachService } from '../../core/services/coach.service';
+import { resolveMediaUrl } from '../../core/utils/media-url.util';
 
 interface Student {
   id: number;
@@ -374,7 +376,7 @@ const ACHIEVEMENT_COLORS: Record<string, { bg: string; color: string }> = {
               <div class="flex flex-wrap gap-1.5 mb-3">
                 <span *ngFor="let f of student.upcomingSession.focus" class="text-[10px] font-bold bg-[var(--app-primary)]/12 text-[#111827] px-2 py-1 rounded-full border border-[var(--app-primary)]/25">{{ f }}</span>
               </div>
-              <button (click)="go('/app/schedule')" class="w-full h-10 rounded-xl text-[13px] font-black btn-green-gradient border-none text-[#111827] flex items-center justify-center gap-1">
+              <button (click)="go('/app/coach/schedule')" class="w-full h-10 rounded-xl text-[13px] font-black btn-green-gradient border-none text-[#111827] flex items-center justify-center gap-1">
                 View Session
               </button>
             </div>
@@ -390,11 +392,11 @@ const ACHIEVEMENT_COLORS: Record<string, { bg: string; color: string }> = {
             <ion-icon name="list-outline"></ion-icon>
             <span>Evaluate</span>
           </button>
-          <button (click)="go('/app/chat')" class="quick-action-btn" style="background-color:rgba(56,189,248,0.08);color:#38BDF8;">
+          <button (click)="go('/app/coach/chat')" class="quick-action-btn" style="background-color:rgba(56,189,248,0.08);color:#38BDF8;">
             <ion-icon name="chatbubbles-outline"></ion-icon>
             <span>Message</span>
           </button>
-          <button (click)="go('/app/schedule')" class="quick-action-btn" style="background-color:rgba(255,122,0,0.08);color:#FF7A00;">
+          <button (click)="go('/app/coach/schedule')" class="quick-action-btn" style="background-color:rgba(255,122,0,0.08);color:#FF7A00;">
             <ion-icon name="calendar-outline"></ion-icon>
             <span>Schedule</span>
           </button>
@@ -579,6 +581,7 @@ const ACHIEVEMENT_COLORS: Record<string, { bg: string; color: string }> = {
 export class CoachStudentProfilePage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly coach = inject(CoachService);
 
   student: Student | null = null;
   liked = false;
@@ -600,9 +603,22 @@ export class CoachStudentProfilePage implements OnInit {
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
       const id = Number(params.get('id'));
-      const match = STUDENTS.find(s => s.id === id) || STUDENTS[0];
-      if (match) {
-        this.student = JSON.parse(JSON.stringify(match)); // deep copy to allow modifications locally
+      this.coach.getStudent(id).subscribe({ next: (response) => {
+        const data: any = response.data;
+        const relation = data?.relationship;
+        const player = relation?.student || {};
+        const sessions = data?.sessions || [];
+        const evaluations = data?.evaluations || [];
+        const latest = evaluations[0] || {};
+        this.student = {
+          id: Number(player.id || id), name: player.name || 'Student', age: 0,
+          photo: resolveMediaUrl(player.profile_image) || '', cover: '', sport: (player.sports || ['Coaching'])[0], emoji: '👤',
+          skillLevel: 'Beginner', sessionsCompleted: sessions.length, attendance: 0,
+          trainingFocus: player.sports || [], lastSession: '', coachSince: relation?.enrolled_at || '', membershipStatus: relation?.status === 'active' ? 'Active' : 'Inactive',
+          stats: { sessions: sessions.length, hours: 0, attendance: 0, improvement: 0, streak: 0, tournamentWins: 0, personalBest: '—' },
+          evaluation: { technique: latest.rating || 5, fitness: latest.rating || 5, gameAwareness: latest.rating || 5, discipline: latest.rating || 5, teamwork: latest.rating || 5, confidence: latest.rating || 5 },
+          notes: evaluations.map((e: any) => ({ text: e.notes || e.areas_to_improve || e.strengths || 'Evaluation saved', date: e.evaluated_at || e.created_at || '' })), achievements: [], timeline: [],
+        };
         if (this.student) {
           this.evaluation = { ...this.student.evaluation };
           this.notes = [...this.student.notes];
@@ -610,7 +626,7 @@ export class CoachStudentProfilePage implements OnInit {
             .map(f => FOCUS_AREAS.find(a => f.includes(a.label))?.id ?? '')
             .filter(Boolean);
         }
-      }
+      }, error: () => { this.student = null; } });
     });
   }
 

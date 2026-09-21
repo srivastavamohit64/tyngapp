@@ -75,7 +75,7 @@ export class AppComponent implements OnInit {
 
   readonly coachMenuItems: CoachMenuItem[] = [
     { label: 'Complete Profile', sub: 'Finish your coach profile', path: '/app/coach/complete-profile', icon: 'clipboard-outline' },
-    { label: 'Personal Stats', sub: 'Health & fitness info', path: '/app/stats', icon: 'pulse-outline' },
+    { label: 'Coach Insights', sub: 'Performance & coaching analytics', path: '/app/coach/insights', icon: 'pulse-outline' },
     { label: 'My Schedule', sub: 'Sessions & calendar', path: '/app/coach/schedule', icon: 'calendar-outline', badge: '3' },
     { label: 'Wallet', sub: 'Balance, top-up & history', path: '/app/wallet', icon: 'wallet-outline' },
     { label: 'Book Venue', sub: 'Discover & reserve venues', path: '/app/coach/book-venue', icon: 'location-outline' },

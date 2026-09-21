@@ -84,7 +84,7 @@ export class TabsPage {
     if (path.startsWith('/app/venue/events/create')) return false;
     if (/^\/app\/venue\/bookings\/[^/]+$/.test(path)) return false;
     if (/^\/app\/my-bookings\/[^/]+$/.test(path)) return false;
-    if (/^\/app\/chat\/.+/.test(path)) return false;
+    if (/^\/app\/(coach\/)?chat\/.+/.test(path)) return false;
     if (path.startsWith('/app/check-in')) return false;
     // Player venue detail / book / payment summary (e.g. /app/venue/14, /app/venue/14/book)
     if (/^\/app\/venue\/\d+(\/(book|summary))?$/.test(path)) return false;
@@ -92,10 +92,9 @@ export class TabsPage {
     if (user?.role === 'coach') {
       const coachPrimary = [
         '/app/coach/dashboard',
-        '/app/home',
         '/app/coach/students',
         '/app/coach/schedule',
-        '/app/schedule',
+        '/app/coach/chat',
       ];
       return coachPrimary.some((p) => path === p || path.startsWith(p + '/'));
     }
@@ -133,7 +132,7 @@ export class TabsPage {
         {
           label: 'Chat',
           icon: 'chatbubble-outline',
-          route: '/app/chat',
+          route: '/app/coach/chat',
           badge: chatBadge > 0 ? chatBadge : null,
         },
       ];

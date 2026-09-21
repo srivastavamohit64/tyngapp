@@ -465,11 +465,14 @@ export class EditProfilePage implements OnInit {
     this.error = '';
     this.success = '';
     try {
+      const gps = this.locationService.getSavedLocation();
       const updated = await firstValueFrom(this.auth.updateProfile({
         name: this.name.trim(),
         phone: this.phone || undefined,
         email: this.email || null,
         location: this.location.trim() || null,
+        latitude: gps?.latitude ?? null,
+        longitude: gps?.longitude ?? null,
       }, this.selectedFile));
       this.selectedFile = undefined;
       this.previewUrl = updated.profileImage || this.previewUrl;

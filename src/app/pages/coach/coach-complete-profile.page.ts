@@ -864,6 +864,6 @@ export class CoachCompleteProfilePage {
   }
 
   back() {
-    this.router.navigateByUrl('/app/home');
+    this.router.navigateByUrl('/app/coach/dashboard');
   }
 }

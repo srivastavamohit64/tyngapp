@@ -170,11 +170,11 @@ export class CoachEvaluatePage {
   }
 
   goBack() {
-    this.router.navigateByUrl('/app/home');
+    this.router.navigateByUrl('/app/coach/dashboard');
   }
 
   saveEvaluation() {
     // Save locally or print if needed
-    this.router.navigateByUrl('/app/home');
+    this.router.navigateByUrl('/app/coach/dashboard');
   }
 }

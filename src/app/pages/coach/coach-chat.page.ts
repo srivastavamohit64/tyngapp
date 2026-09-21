@@ -334,6 +334,6 @@ export class CoachChatPage {
   }
 
   openChat(id: string) {
-    void this.router.navigateByUrl(`/app/chat/${id}`);
+    void this.router.navigateByUrl(`/app/coach/chat/${id}`);
   }
 }

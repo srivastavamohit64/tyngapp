@@ -145,7 +145,7 @@ const SESSIONS: CoachSession[] = [
             </div>
 
             <div class="flex gap-2.5 mt-4 pt-4 border-t border-[#F3F4F6]">
-              <button (click)="go('/app/chat')" class="action-btn">
+              <button (click)="go('/app/coach/chat')" class="action-btn">
                 <ion-icon name="chatbubbles-outline"></ion-icon>Chat
               </button>
               <button class="action-btn">
@@ -175,7 +175,7 @@ const SESSIONS: CoachSession[] = [
                   </div>
                 </div>
                 <div class="flex items-center gap-2 flex-shrink-0">
-                  <button (click)="go('/app/chat')" class="w-8 h-8 rounded-full bg-[#EFF6FF] border-none flex items-center justify-center">
+                  <button (click)="go('/app/coach/chat')" class="w-8 h-8 rounded-full bg-[#EFF6FF] border-none flex items-center justify-center">
                     <ion-icon name="chatbubble-ellipses-outline" class="text-[#2563EB] text-sm"></ion-icon>
                   </button>
                   <button (click)="toggleAttendance(s.id)" class="w-8 h-8 rounded-full border-none flex items-center justify-center transition-all"
@@ -284,7 +284,7 @@ const SESSIONS: CoachSession[] = [
       <!-- Bottom Sticky Footer Actions -->
       <div class="fixed-bottom-bar bg-white px-5 pt-4 pb-8">
         <div class="grid grid-cols-3 gap-2.5">
-          <button (click)="go('/app/chat')" class="footer-action-btn">
+          <button (click)="go('/app/coach/chat')" class="footer-action-btn">
             <ion-icon name="chatbubbles-outline"></ion-icon>Chat
           </button>
           <button class="footer-action-btn">
@@ -404,7 +404,7 @@ export class CoachSessionDetailPage implements OnInit {
   }
 
   back() {
-    this.router.navigateByUrl('/app/schedule');
+    this.router.navigateByUrl('/app/coach/schedule');
   }
 
   go(path: string) {

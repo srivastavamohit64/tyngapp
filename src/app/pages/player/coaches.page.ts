@@ -1,13 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { FilterChip, FilterChipsComponent } from '../../shared/components/filter-chips/filter-chips.component';
+import { FormsModule } from '@angular/forms';
+import { CoachService } from '../../core/services/coach.service';
 
 @Component({
   selector: 'app-coaches',
   standalone: true,
-  imports: [CommonModule, IonicModule, FilterChipsComponent],
+  imports: [CommonModule, IonicModule, FilterChipsComponent, FormsModule],
   template: `
     <ion-content fullscreen>
       <main class="safe-area-top page-with-tab-bar px-6 py-4 bg-background text-foreground">
@@ -24,7 +26,7 @@ import { FilterChip, FilterChipsComponent } from '../../shared/components/filter
         <!-- Search and Filter -->
         <div class="search-box mb-6 relative">
           <ion-icon name="search-outline" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></ion-icon>
-          <input type="text" placeholder="Search sports, specialties..." class="w-full pl-12 pr-4 h-12 rounded-xl bg-card border border-border outline-none text-sm font-medium" />
+          <input [(ngModel)]="search" (ngModelChange)="applyFilters()" type="text" placeholder="Search coaches, sports, specialties..." class="w-full pl-12 pr-4 h-12 rounded-xl bg-card border border-border outline-none text-sm font-medium" />
         </div>
 
         <!-- Sport filters -->
@@ -32,7 +34,7 @@ import { FilterChip, FilterChipsComponent } from '../../shared/components/filter
           class="mb-4"
           [chips]="sportChips"
           [value]="selectedSport"
-          (valueChange)="selectedSport = $event"
+          (valueChange)="selectedSport = $event; applyFilters()"
         ></app-filter-chips>
 
         <!-- Coaches list -->
@@ -79,28 +81,50 @@ import { FilterChip, FilterChipsComponent } from '../../shared/components/filter
     `
   ]
 })
-export class CoachesPage {
+export class CoachesPage implements OnInit {
   private readonly router = inject(Router);
+  private readonly coachService = inject(CoachService);
   selectedSport = 'All';
+  search = '';
+  loading = true;
+  error = '';
 
   readonly sports = ['All', 'Football', 'Cricket', 'Basketball', 'Tennis', 'Badminton'];
 
   readonly sportChips: FilterChip[] = this.sports.map((s) => ({ id: s, label: s }));
 
+  coaches: any[] = [];
+
+  ngOnInit(): void { this.applyFilters(); }
+
+  applyFilters(): void {
+    this.loading = true; this.error = '';
+    this.coachService.getCoaches(this.search, this.selectedSport).subscribe({
+      next: (response) => {
+        const payload: any = response.data;
+        const items = Array.isArray(payload) ? payload : (payload?.data || []);
+        this.coaches = items.map((coach: any) => ({ ...coach, sport: Array.isArray(coach.sports) ? coach.sports.join(', ') : (coach.sport || 'Multi-sport'), experience: coach.experience || 'Coach', bio: coach.bio || 'Coach profile information will be available soon.', rating: coach.rating ?? 'New', avatar: '👤', distance: coach.location || 'Location not set', price: 'View profile' }));
+        this.loading = false;
+      },
+      error: () => { this.error = 'Unable to load coaches. Please try again.'; this.loading = false; },
+    });
+  }
+
+  /* Demo data removed: Coach directory is loaded from the live API. */
+  /*
   readonly coaches = [
     { id: 1, name: 'Coach Arvind Sharma', sport: 'Cricket', experience: '12+ Yrs Exp', rating: 4.9, avatar: '🏏', distance: '1.5 km', price: '₹800/session', bio: 'Former State level cricketer focusing on batting techniques, stamina building, and match strategy for all age groups.' },
     { id: 2, name: 'Coach Rohan Das', sport: 'Football', experience: '8 Yrs Exp', rating: 4.8, avatar: '⚽', distance: '2.8 km', price: '₹1000/session', bio: 'Specialist youth football trainer with tactical certifications. Head of Elite Junior Squad programs.' },
     { id: 3, name: 'Coach Sarah Miller', sport: 'Basketball', experience: '6 Yrs Exp', rating: 4.7, avatar: '🏀', distance: '3.2 km', price: '₹1200/session', bio: 'Dedicated basketball coach specializing in shooting mechanics, dribbling skills, and court positioning workouts.' },
     { id: 4, name: 'Coach Aman Verma', sport: 'Tennis', experience: '10 Yrs Exp', rating: 4.9, avatar: '🎾', distance: '1.1 km', price: '₹1500/session', bio: 'Professional Tennis training focusing on serving techniques, baseline rallies, and reflex speeds.' }
-  ];
+  ]; */
 
   back() {
     this.router.navigateByUrl('/app/home');
   }
 
   filteredCoaches() {
-    if (this.selectedSport === 'All') return this.coaches;
-    return this.coaches.filter(c => c.sport === this.selectedSport);
+    return this.coaches;
   }
 
   viewCoach(id: number) {
