@@ -1,0 +1,17 @@
+---
+description: Work on the live TYNG server over SSH when production changes are requested
+alwaysApply: true
+---
+
+# Live server
+
+Production Laravel app is **only** at:
+
+```bash
+cd /var/www/tyng
+```
+
+SSH: `root@89.116.20.175` (host `srv1789528`).  
+Password and Windows `plink`/`pscp` commands are in workspace `AGENTS.md`.
+
+When the user asks to fix, migrate, or inspect production: SSH in, `cd /var/www/tyng`, then work there. Do not use `/var/www/html`. Do not only edit local files.

@@ -55,6 +55,7 @@ yarn-error.log
 
 # Environment secrets
 .env
+AGENTS.md
 
 # Firebase secrets (keep google-services.json for Android builds)
 /firebase/*service*.json
