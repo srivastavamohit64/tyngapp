@@ -199,13 +199,7 @@ TYNG — TODAY'S WORK SUMMARY
    - If the session has no confirmed venue location, the app explains why directions are unavailable.
    - The focused code check passed. No build or tests were run for this small interaction update.
 
-33. COACH PROFILE GALLERY - 24 September 2026
-   - Coaches can add photos, training pictures, videos and certificates to their profile, see saved previews, and remove items.
-   - The gallery can also be managed from Edit Profile and viewed on the Coach's public profile.
-   - Angular and PHP code checks passed. The website's server has not been changed.
-   - The local app currently sends its requests to the live service. The new gallery will save and display across visits after the server update and database addition are approved and applied.
-
-34. COACH PROFILE, GALLERY AND VERIFICATION DOCUMENTS - 24 September 2026
+33. COACH PROFILE, GALLERY AND VERIFICATION DOCUMENTS - 24 September 2026
    - Coaches can now upload, preview, replace and remove profile photos, training photos, videos and certificates.
    - Government ID, coaching certificate and professional profile photo uploads now work. All three are required before the verification request is shown as submitted.
    - Coach information such as coaching locations, availability, pricing, trial preferences and achievements is now saved and shown again when the app is reopened.

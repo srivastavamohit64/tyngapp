@@ -234,14 +234,6 @@
 - Directions show a clear message if the session does not yet have a confirmed venue location.
 - `git diff --check` passed. No build or tests were run for this focused interaction fix.
 
-## Completed locally: Coach profile gallery - 24 September 2026
-
-- Replaced the placeholder gallery tiles with category-based photo, training image, video, and certificate uploads, saved-item previews, item counts, and removal controls.
-- Added a Coach-owned media table and authenticated Laravel endpoints to list, upload, and delete gallery items; only the owning Coach can manage them.
-- Added saved gallery previews to Coach Edit Profile and the Player-facing Coach profile.
-- Angular template compilation and PHP syntax checks passed. The additive migration has not been applied and the backend routes have not been deployed.
-- The local Ionic development environment currently targets the live API. Live gallery upload and persistence therefore require approval to deploy the Laravel API and migration; existing unrelated Laravel work was preserved and not staged.
-
 ## Completed: Coach gallery, profile information and verification documents - 24 September 2026
 
 - Deployed the Coach gallery to the live API. Coaches can upload, preview and remove profile photos, training photos, videos and certificates from profile completion or Edit Profile.
@@ -249,4 +241,4 @@
 - Made the Coach profile-completion choices persistent: languages, locations, travel radius, formats, equipment, trial preference, travel mode, weekly availability, pricing, bio and achievements now load again after reopening the app.
 - Expanded Laravel Admin Coach Management with the complete saved profile details, gallery and secure verification-document download links. The admin Coach list now shows gallery and verification submission counts.
 - Applied the `coach_media`, `coach_profile_details` and `coach_verification_documents` migrations on the live server, cleared relevant caches, and verified the live routes and Blade templates. Angular compilation and PHP syntax checks pass with only existing Angular warnings.
-- Deployed and pushed the backend on `developer` as `e2e6732`. The app frontend changes remain ready to be pushed from the frontend repository.
+- Deployed and pushed the backend on `developer` as `e2e6732` and the Ionic frontend on `master` as `f9e2946`.
