@@ -53,6 +53,17 @@ import { ChatService } from '../../core/services/chat.service';
           <p class="text-sm text-slate-600 leading-relaxed">{{ coach.bio }}</p>
         </div>
 
+        <section class="mb-6" *ngIf="coach.gallery?.length">
+          <h3 class="text-base font-bold text-slate-900 mb-3">Coaching gallery</h3>
+          <div class="coach-gallery-grid">
+            <a *ngFor="let item of coach.gallery" [href]="item.url" target="_blank" rel="noopener" class="coach-gallery-item">
+              <img *ngIf="item.mimeType?.startsWith('image/')" [src]="item.url" [alt]="item.name || 'Coach gallery photo'" />
+              <video *ngIf="item.mimeType?.startsWith('video/')" [src]="item.url" controls playsinline (click)="$event.stopPropagation()"></video>
+              <span *ngIf="item.mimeType === 'application/pdf'" class="coach-certificate"><ion-icon name="document-text-outline"></ion-icon>View certificate</span>
+            </a>
+          </div>
+        </section>
+
         <!-- Specialties section -->
         <div class="mb-6">
           <h3 class="text-base font-bold text-slate-900 mb-3">Specialties</h3>
@@ -82,6 +93,11 @@ import { ChatService } from '../../core/services/chat.service';
       .rating ion-icon {
         color: #FF7A00;
       }
+      .coach-gallery-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+      .coach-gallery-item { display:block; overflow:hidden; min-height:120px; border-radius:16px; background:#f3f4f6; }
+      .coach-gallery-item img,.coach-gallery-item video { width:100%; height:140px; display:block; object-fit:cover; }
+      .coach-certificate { min-height:120px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; color:#2563eb; font-size:12px; font-weight:700; }
+      .coach-certificate ion-icon { font-size:28px; }
       button.bg-gradient-to-r {
         background: linear-gradient(to right, var(--app-primary), var(--app-primary-to)) !important;
       }

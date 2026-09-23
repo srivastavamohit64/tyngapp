@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
+import { CoachGalleryCategory, CoachGalleryItem, CoachProfileDetails, CoachProfileDetailsPayload, CoachService, CoachVerificationDocument, CoachVerificationDocumentType } from '../../core/services/coach.service';
 
 const LANGUAGES = ['English','Hindi','Tamil','Telugu','Kannada','Malayalam','Punjabi','Marathi','Gujarati','Bengali','Other'];
 const LOCATIONS = ['Sports Academy','Sports Club','School','Private Turf',"Player's Venue",'Home Coaching','Public Grounds','Indoor Courts'];
@@ -97,6 +98,7 @@ const ALL_SECTIONS = [
         </div>
 
         <div class="px-4 pt-4 space-y-3">
+          <p *ngIf="profileSaveError" class="mx-1 text-[12px] font-semibold text-red-600">{{ profileSaveError }}</p>
 
           <!-- 1. Languages -->
           <div class="section-box" [class.section-expanded]="expandedSection() === 'languages'" [class.section-done]="isDone('languages')">
@@ -459,16 +461,26 @@ const ALL_SECTIONS = [
             <div *ngIf="expandedSection() === 'gallery'" class="section-body">
               <p class="text-[12px] text-[#9CA3AF] mb-3 leading-relaxed">Add photos and videos of your coaching sessions.</p>
               <div class="grid grid-cols-2 gap-3 mb-4">
-                <div *ngFor="let u of [{emoji:'📸', label:'Profile Photos'}, {emoji:'🏃', label:'Training Photos'}, {emoji:'🎬', label:'Videos'}, {emoji:'📜', label:'Certificates'}]"
-                  (click)="galleryUp = true" class="gallery-upload-box">
-                  <span class="text-2xl">{{ u.emoji }}</span>
-                  <p class="text-[11px] font-semibold text-[#9CA3AF] mt-1">{{ u.label }}</p>
-                  <ion-icon name="plus-outline" class="text-[#C4C9D4] mt-1 text-sm"></ion-icon>
+                <div *ngFor="let u of galleryCategories" class="gallery-upload-box" [class.has-gallery-items]="galleryFor(u.id).length > 0">
+                  <button type="button" (click)="addGalleryItem(u.id)" [disabled]="galleryBusy" class="gallery-add-action">
+                    <span class="text-2xl">{{ u.emoji }}</span>
+                    <p class="text-[11px] font-semibold text-[#6B7280] mt-1">{{ u.label }}</p>
+                    <span class="gallery-count">{{ galleryFor(u.id).length }} saved</span>
+                    <ion-icon name="add-circle-outline" class="text-[#16A34A] mt-1 text-lg"></ion-icon>
+                  </button>
+                  <div *ngFor="let item of galleryFor(u.id)" class="gallery-preview">
+                    <img *ngIf="item.mimeType.startsWith('image/')" [src]="item.url" [alt]="item.name || u.label" />
+                    <video *ngIf="item.mimeType.startsWith('video/')" [src]="item.url" controls playsinline></video>
+                    <a *ngIf="item.mimeType === 'application/pdf'" [href]="item.url" target="_blank" rel="noopener">View certificate</a>
+                    <button type="button" (click)="removeGalleryItem(item)" [disabled]="galleryBusy" aria-label="Remove media"><ion-icon name="trash-outline"></ion-icon></button>
+                  </div>
                 </div>
               </div>
+              <input #galleryInput type="file" [accept]="galleryAccept" hidden (change)="onGalleryFile($event)" />
+              <p *ngIf="galleryError" class="text-[12px] text-red-600 mb-3">{{ galleryError }}</p>
               <div *ngIf="galleryUp" class="flex items-center gap-2 bg-[#F0FDF4] rounded-xl px-3 py-2 mb-3">
                 <ion-icon name="checkmark-circle-outline" class="text-[#22C55E]"></ion-icon>
-                <p class="text-[12px] font-semibold text-[#16A34A]">Photos uploaded successfully</p>
+                <p class="text-[12px] font-semibold text-[#16A34A]">{{ gallery.length }} gallery item(s) saved to your profile</p>
               </div>
               <button (click)="finishSection('verification')" [disabled]="!isDone('gallery')" class="next-step-btn w-full h-11">
                 Save & Next
@@ -495,21 +507,30 @@ const ALL_SECTIONS = [
             <div *ngIf="expandedSection() === 'verification'" class="section-body">
               <p class="text-[12px] text-[#9CA3AF] mb-3 leading-relaxed font-medium">Verification increases trust and improves your visibility on TYNG.</p>
               <div class="space-y-3 mb-4">
-                <div *ngFor="let doc of [{emoji:'🪪', label:'Government ID', hint:'Aadhar, PAN or Passport'}, {emoji:'📋', label:'Coaching Certificate', hint:'BWF, BCCI, FIFA etc.'}, {emoji:'📸', label:'Professional Profile Photo', hint:'Clear headshot, good lighting'}]"
-                  (click)="verifyUp = true" class="verify-upload-row">
-                  <span class="text-2xl flex-shrink-0">{{ doc.emoji }}</span>
-                  <div class="flex-1">
-                    <p class="text-[13px] font-bold text-[#111827] text-left">{{ doc.label }}</p>
-                    <p class="text-[11px] text-[#9CA3AF] text-left">{{ doc.hint }}</p>
+                <div *ngFor="let doc of verificationCategories" class="verification-document-card">
+                  <button type="button" (click)="addVerificationDocument(doc.id)" [disabled]="verificationBusy" class="verify-upload-row w-full">
+                    <span class="text-2xl flex-shrink-0">{{ doc.emoji }}</span>
+                    <div class="flex-1">
+                      <p class="text-[13px] font-bold text-[#111827] text-left">{{ doc.label }}</p>
+                      <p class="text-[11px] text-[#9CA3AF] text-left">{{ verificationFor(doc.id)?.name || doc.hint }}</p>
+                    </div>
+                    <span *ngIf="verificationFor(doc.id)" class="text-[10px] font-black text-[#2563EB]">Submitted</span>
+                    <ion-icon *ngIf="!verificationFor(doc.id)" name="cloud-upload-outline" class="text-[#C4C9D4] text-lg"></ion-icon>
+                  </button>
+                  <div *ngIf="verificationFor(doc.id) as uploaded" class="verification-preview">
+                    <img *ngIf="uploaded.mimeType.startsWith('image/') && verificationPreview(uploaded.id)" [src]="verificationPreview(uploaded.id)" [alt]="doc.label" />
+                    <button type="button" class="verification-open" (click)="openVerificationDocument(uploaded)">{{ uploaded.mimeType === 'application/pdf' ? 'View PDF' : 'Preview' }}</button>
+                    <button type="button" class="verification-remove" (click)="removeVerificationDocument(uploaded)" [disabled]="verificationBusy" aria-label="Remove document"><ion-icon name="trash-outline"></ion-icon></button>
                   </div>
-                  <ion-icon name="cloud-upload-outline" class="text-[#C4C9D4] text-lg"></ion-icon>
                 </div>
               </div>
+              <input #verificationInput type="file" [accept]="verificationAccept" hidden (change)="onVerificationFile($event)" />
+              <p *ngIf="verificationError" class="text-[12px] text-red-600 mb-3">{{ verificationError }}</p>
               <div *ngIf="verifyUp" class="flex items-center gap-2.5 bg-[#EFF6FF] rounded-[16px] px-4 py-3 mb-3">
                 <ion-icon name="shield-checkmark" class="text-[#2563EB] text-xl"></ion-icon>
                 <div>
-                  <p class="text-[12px] font-black text-[#1D4ED8] text-left">🟢 Verified Coach</p>
-                  <p class="text-[10px] text-[#6B7280] text-left">Badge Pending Approval · Usually within 48 hrs</p>
+                  <p class="text-[12px] font-black text-[#1D4ED8] text-left">Documents submitted for review</p>
+                  <p class="text-[10px] text-[#6B7280] text-left">Your Verified Coach badge is pending admin approval.</p>
                 </div>
               </div>
               <button (click)="onSubmitVerification()" [disabled]="!isDone('verification')" class="next-step-btn w-full h-11"
@@ -705,6 +726,13 @@ const ALL_SECTIONS = [
     .gallery-upload-box:hover {
       border-color: var(--app-primary);
     }
+    .gallery-upload-box.has-gallery-items { height: auto; min-height: 172px; padding: 10px; aspect-ratio: auto; align-items: stretch; justify-content: flex-start; }
+    .gallery-add-action { width: 100%; min-height: 145px; display:flex; flex-direction:column; align-items:center; justify-content:center; border:0; background:transparent; }
+    .gallery-count { font-size:10px; color:#9ca3af; margin-top:2px; }
+    .gallery-preview { position:relative; width:100%; margin-top:8px; }
+    .gallery-preview img,.gallery-preview video { display:block; width:100%; height:100px; object-fit:cover; border-radius:10px; background:#e5e7eb; }
+    .gallery-preview a { display:block; padding:16px 8px; color:#2563eb; font-size:11px; }
+    .gallery-preview button { position:absolute; right:5px; top:5px; width:28px; height:28px; border:0; border-radius:50%; background:#fff; color:#dc2626; }
 
     /* Verification Row */
     .verify-upload-row {
@@ -722,6 +750,11 @@ const ALL_SECTIONS = [
     .verify-upload-row:hover {
       border-color: var(--app-primary);
     }
+    .verification-document-card { overflow:hidden; border-radius:18px; }
+    .verification-preview { position:relative; display:flex; align-items:center; gap:8px; padding:8px 10px; background:#eff6ff; border:1px solid #bfdbfe; border-top:0; }
+    .verification-preview img { width:46px; height:40px; object-fit:cover; border-radius:8px; background:#e5e7eb; }
+    .verification-open { flex:1; min-height:34px; border:0; border-radius:9px; background:#fff; color:#2563eb; font-size:11px; font-weight:800; }
+    .verification-remove { width:34px; height:34px; border:0; border-radius:9px; background:#fff; color:#dc2626; }
 
     /* Bottom sticky bar */
     .fixed-bottom-bar {
@@ -744,9 +777,12 @@ const ALL_SECTIONS = [
     }
   `]
 })
-export class CoachCompleteProfilePage {
+export class CoachCompleteProfilePage implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly coachService = inject(CoachService);
+  @ViewChild('galleryInput') galleryInput?: ElementRef<HTMLInputElement>;
+  @ViewChild('verificationInput') verificationInput?: ElementRef<HTMLInputElement>;
 
   readonly allSections = ALL_SECTIONS;
   readonly languageOptions = LANGUAGES;
@@ -778,14 +814,176 @@ export class CoachCompleteProfilePage {
   bio = '';
   achievements: string[] = [];
   galleryUp = false;
-  verifyUp = false;
+  gallery: CoachGalleryItem[] = [];
+  galleryBusy = false;
+  galleryError = '';
+  selectedGalleryCategory: CoachGalleryCategory = 'profile_photo';
+  readonly galleryCategories: { id: CoachGalleryCategory; label: string; emoji: string }[] = [
+    { id: 'profile_photo', label: 'Profile Photos', emoji: '📸' },
+    { id: 'training_photo', label: 'Training Photos', emoji: '🏃' },
+    { id: 'video', label: 'Videos', emoji: '🎬' },
+    { id: 'certificate', label: 'Certificates', emoji: '📜' },
+  ];
+  verificationDocuments: CoachVerificationDocument[] = [];
+  verificationPreviews: Record<number, string> = {};
+  verificationBusy = false;
+  verificationError = '';
+  selectedVerificationType: CoachVerificationDocumentType = 'government_id';
+  readonly verificationCategories: { id: CoachVerificationDocumentType; label: string; hint: string; emoji: string }[] = [
+    { id: 'government_id', label: 'Government ID', hint: 'Aadhar, PAN or Passport', emoji: '🪪' },
+    { id: 'coaching_certificate', label: 'Coaching Certificate', hint: 'BWF, BCCI, FIFA etc.', emoji: '📋' },
+    { id: 'professional_profile_photo', label: 'Professional Profile Photo', hint: 'Clear headshot, good lighting', emoji: '📸' },
+  ];
+  profileSaveBusy = false;
+  profileSaveError = '';
+
+  get verifyUp(): boolean { return this.verificationCategories.every((category) => !!this.verificationFor(category.id)); }
+
+  get verificationAccept(): string {
+    return this.selectedVerificationType === 'professional_profile_photo' ? 'image/*' : 'image/*,application/pdf,.pdf';
+  }
+
+  get galleryAccept(): string {
+    return this.selectedGalleryCategory === 'video' ? 'video/*' : this.selectedGalleryCategory === 'certificate' ? 'image/*,application/pdf,.pdf' : 'image/*';
+  }
+
+  ngOnInit(): void { this.loadGallery(); this.loadVerificationDocuments(); this.loadProfileDetails(); }
+
+  galleryFor(category: CoachGalleryCategory): CoachGalleryItem[] {
+    return this.gallery.filter((item) => item.category === category);
+  }
+
+  addGalleryItem(category: CoachGalleryCategory): void {
+    if (this.galleryBusy || !this.galleryInput?.nativeElement) return;
+    this.selectedGalleryCategory = category;
+    this.galleryError = '';
+    this.galleryInput.nativeElement.value = '';
+    this.galleryInput.nativeElement.accept = this.galleryAccept;
+    this.galleryInput.nativeElement.click();
+  }
+
+  async onGalleryFile(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    this.galleryBusy = true;
+    this.galleryError = '';
+    try {
+      const response = await firstValueFrom(this.coachService.uploadCoachMedia(this.selectedGalleryCategory, file));
+      if (!response.success || !response.data) throw new Error(response.message || 'Unable to upload this item.');
+      this.gallery = [response.data, ...this.gallery];
+      this.galleryUp = this.gallery.length > 0;
+    } catch (error: any) {
+      this.galleryError = error?.error?.message || error?.message || 'Unable to upload this item. Please try again.';
+    } finally { this.galleryBusy = false; }
+  }
+
+  async removeGalleryItem(item: CoachGalleryItem): Promise<void> {
+    if (this.galleryBusy) return;
+    this.galleryBusy = true;
+    this.galleryError = '';
+    try {
+      const response = await firstValueFrom(this.coachService.deleteCoachMedia(item.id));
+      if (!response.success) throw new Error(response.message || 'Unable to remove this item.');
+      this.gallery = this.gallery.filter((media) => media.id !== item.id);
+      this.galleryUp = this.gallery.length > 0;
+    } catch (error: any) {
+      this.galleryError = error?.error?.message || error?.message || 'Unable to remove this item.';
+    } finally { this.galleryBusy = false; }
+  }
+
+  private loadGallery(): void {
+    this.coachService.getMyCoachMedia().subscribe({
+      next: (response) => { this.gallery = Array.isArray(response.data) ? response.data : []; this.galleryUp = this.gallery.length > 0; },
+      error: () => { this.galleryError = 'Saved gallery could not be loaded. Try reopening this page.'; },
+    });
+  }
+
+  verificationFor(documentType: CoachVerificationDocumentType): CoachVerificationDocument | undefined {
+    return this.verificationDocuments.find((document) => document.documentType === documentType);
+  }
+
+  verificationPreview(id: number): string { return this.verificationPreviews[id] || ''; }
+
+  addVerificationDocument(documentType: CoachVerificationDocumentType): void {
+    if (this.verificationBusy || !this.verificationInput?.nativeElement) return;
+    this.selectedVerificationType = documentType;
+    this.verificationError = '';
+    this.verificationInput.nativeElement.value = '';
+    this.verificationInput.nativeElement.accept = this.verificationAccept;
+    this.verificationInput.nativeElement.click();
+  }
+
+  async onVerificationFile(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    this.verificationBusy = true;
+    this.verificationError = '';
+    try {
+      const result = await firstValueFrom(this.coachService.uploadCoachVerificationDocument(this.selectedVerificationType, file));
+      if (!result.success || !result.data) throw new Error(result.message || 'Unable to upload this document.');
+      const uploaded = result.data;
+      const prior = this.verificationFor(uploaded.documentType);
+      if (prior) this.releaseVerificationPreview(prior.id);
+      this.verificationDocuments = [uploaded, ...this.verificationDocuments.filter((document) => document.documentType !== uploaded.documentType)];
+      await this.loadVerificationPreview(uploaded);
+    } catch (error: any) {
+      this.verificationError = error?.error?.message || error?.message || 'Unable to upload this document. Please try again.';
+    } finally { this.verificationBusy = false; }
+  }
+
+  async removeVerificationDocument(document: CoachVerificationDocument): Promise<void> {
+    if (this.verificationBusy) return;
+    this.verificationBusy = true;
+    this.verificationError = '';
+    try {
+      const result = await firstValueFrom(this.coachService.deleteCoachVerificationDocument(document.id));
+      if (!result.success) throw new Error(result.message || 'Unable to remove this document.');
+      this.releaseVerificationPreview(document.id);
+      this.verificationDocuments = this.verificationDocuments.filter((item) => item.id !== document.id);
+    } catch (error: any) {
+      this.verificationError = error?.error?.message || error?.message || 'Unable to remove this document.';
+    } finally { this.verificationBusy = false; }
+  }
+
+  openVerificationDocument(document: CoachVerificationDocument): void {
+    const preview = this.verificationPreview(document.id);
+    if (preview) window.open(preview, '_blank', 'noopener,noreferrer');
+  }
+
+  private loadVerificationDocuments(): void {
+    this.coachService.getMyCoachVerificationDocuments().subscribe({
+      next: (result) => {
+        this.verificationDocuments = Array.isArray(result.data) ? result.data : [];
+        void Promise.all(this.verificationDocuments.map((document) => this.loadVerificationPreview(document)));
+      },
+      error: () => { this.verificationError = 'Saved verification documents could not be loaded. Try reopening this page.'; },
+    });
+  }
+
+  private async loadVerificationPreview(document: CoachVerificationDocument): Promise<void> {
+    try {
+      const blob = await firstValueFrom(this.coachService.getCoachVerificationDocumentBlob(document.id));
+      this.releaseVerificationPreview(document.id);
+      this.verificationPreviews[document.id] = URL.createObjectURL(blob);
+    } catch { this.verificationError = 'A verification document preview could not be loaded.'; }
+  }
+
+  private releaseVerificationPreview(id: number): void {
+    const url = this.verificationPreviews[id];
+    if (url) URL.revokeObjectURL(url);
+    delete this.verificationPreviews[id];
+  }
 
   toggleSection(id: string) {
     this.expandedSection.update(curr => curr === id ? null : id);
   }
 
-  finishSection(next: string) {
-    this.expandedSection.set(next);
+  async finishSection(next: string): Promise<void> {
+    if (await this.saveProfileDetails()) this.expandedSection.set(next);
   }
 
   toggleLang(val: string) {
@@ -845,22 +1043,87 @@ export class CoachCompleteProfilePage {
     return Math.round((this.getCompletedCount() / this.allSections.length) * 100);
   }
 
-  onSubmitVerification() {
-    this.verifyUp = true;
+  async onSubmitVerification(): Promise<void> {
+    await this.onPublish();
   }
 
-  onPublish() {
+  async onPublish(): Promise<void> {
     if (this.getProgress() >= 100) {
-      this.showDone.set(true);
+      if (!await this.saveProfileDetails()) return;
+      try {
+        await firstValueFrom(this.auth.completeOnboarding({ name: this.auth.user()?.name || 'Coach' }));
+        this.showDone.set(true);
+      } catch (error: any) {
+        this.profileSaveError = error?.error?.message || error?.message || 'Your details were saved, but the profile could not be published.';
+      }
     } else {
       const remaining = this.allSections.find(s => !this.isDone(s));
       if (remaining) this.expandedSection.set(remaining);
     }
   }
 
+  private loadProfileDetails(): void {
+    this.coachService.getMyCoachProfileDetails().subscribe({
+      next: (result) => {
+        const details = result.data;
+        if (!result.success || !details) return;
+        this.applyProfileDetails(details);
+      },
+      error: () => { this.profileSaveError = 'Saved profile details could not be loaded. You can still update them and save again.'; },
+    });
+  }
+
+  private applyProfileDetails(details: CoachProfileDetails): void {
+    this.langs = Array.isArray(details.languages) ? details.languages : [];
+    this.locs = Array.isArray(details.coachingLocations) ? details.coachingLocations : [];
+    this.radius = details.serviceRadius || '';
+    this.sessions = Array.isArray(details.sessionTypes) ? details.sessionTypes : [];
+    this.equip = Array.isArray(details.equipment) ? details.equipment : [];
+    this.trialOn = details.trialEnabled;
+    this.trialType = details.trialType || '';
+    this.travel = details.travelMode || '';
+    this.avail = details.weeklyAvailability && typeof details.weeklyAvailability === 'object' ? details.weeklyAvailability : {};
+    this.fees = {
+      individual: String(details.feeOptions?.['individual'] ?? ''),
+      group: String(details.feeOptions?.['group'] ?? ''),
+      monthly: String(details.feeOptions?.['monthly'] ?? ''),
+    };
+    this.negotiable = !!details.feesNegotiable;
+    this.achievements = Array.isArray(details.achievements) ? details.achievements : [];
+    this.bio = details.bio || '';
+  }
+
+  private async saveProfileDetails(): Promise<boolean> {
+    if (this.profileSaveBusy) return false;
+    this.profileSaveBusy = true;
+    this.profileSaveError = '';
+    const payload: CoachProfileDetailsPayload = {
+      languages: this.langs,
+      coaching_locations: this.locs,
+      service_radius: this.radius,
+      session_types: this.sessions,
+      equipment: this.equip,
+      trial_enabled: this.trialOn,
+      trial_type: this.trialType,
+      travel_mode: this.travel,
+      weekly_availability: this.avail,
+      fee_options: this.fees,
+      fees_negotiable: this.negotiable,
+      achievements: this.achievements,
+      bio: this.bio.trim(),
+    };
+    try {
+      const result = await firstValueFrom(this.coachService.saveMyCoachProfileDetails(payload));
+      if (!result.success) throw new Error(result.message || 'Unable to save profile details.');
+      return true;
+    } catch (error: any) {
+      this.profileSaveError = error?.error?.message || error?.message || 'Unable to save profile details. Please try again.';
+      return false;
+    } finally { this.profileSaveBusy = false; }
+  }
+
   finishOnboarding() {
-    void firstValueFrom(this.auth.completeOnboarding({ name: this.auth.user()?.name || 'Coach' }))
-      .finally(() => this.router.navigateByUrl('/app/coach/dashboard'));
+    void this.router.navigateByUrl('/app/coach/dashboard');
   }
 
   back() {

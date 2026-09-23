@@ -6,6 +6,7 @@ import { Capacitor } from '@capacitor/core';
 import { ActionSheetController, IonicModule } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
+import { CoachGalleryCategory, CoachGalleryItem, CoachService } from '../../core/services/coach.service';
 import { LocationService } from '../../core/services/location.service';
 import { NativeMediaPickerService } from '../../core/services/native-media-picker.service';
 import {
@@ -43,6 +44,26 @@ const ADDRESS_TAGS = ['Home', 'Work', 'Other'] as const;
           <input #cameraInput type="file" accept="image/*" capture="environment" hidden (change)="onFile($event)" />
           <input #libraryInput type="file" accept="image/jpeg,image/png,image/webp,image/*" hidden (change)="onFile($event)" />
         </div>
+
+        <section class="coach-gallery" *ngIf="auth.user()?.role === 'coach'">
+          <div class="coach-gallery-heading"><h2>Coaching gallery</h2><p>Add, preview, or remove profile media</p></div>
+          <div class="coach-gallery-categories">
+            <button type="button" *ngFor="let category of galleryCategories" (click)="addCoachMedia(category.id)" [disabled]="galleryBusy">
+              <span>{{ category.label }}</span><small>{{ galleryFor(category.id).length }} saved</small>
+            </button>
+          </div>
+          <div class="coach-gallery-grid" *ngIf="coachGallery.length">
+            <div class="coach-gallery-item" *ngFor="let item of coachGallery">
+              <img *ngIf="item.mimeType.startsWith('image/')" [src]="item.url" [alt]="item.name || 'Coach gallery media'" />
+              <video *ngIf="item.mimeType.startsWith('video/')" [src]="item.url" controls playsinline></video>
+              <a *ngIf="item.mimeType === 'application/pdf'" [href]="item.url" target="_blank" rel="noopener">View certificate</a>
+              <button type="button" (click)="removeCoachMedia(item)" [disabled]="galleryBusy" aria-label="Remove gallery item"><ion-icon name="trash-outline"></ion-icon></button>
+              <small>{{ galleryLabel(item.category) }}</small>
+            </div>
+          </div>
+          <p *ngIf="galleryError" class="error">{{ galleryError }}</p>
+          <input #coachGalleryInput type="file" [accept]="coachGalleryAccept" hidden (change)="onCoachGalleryFile($event)" />
+        </section>
 
         <div class="fields">
           <app-text-input label="Full Name" placeholder="Your name" icon="person-outline" [(ngModel)]="name"></app-text-input>
@@ -177,6 +198,18 @@ const ADDRESS_TAGS = ['Home', 'Work', 'Other'] as const;
     .upload-btn { font-size: 13px; font-weight: 700; color: #2563eb; cursor: pointer; background: none; border: none; padding: 0; }
     .hint { margin: 0; font-size: 11px; color: #9ca3af; font-weight: 600; }
     .fields { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+    .coach-gallery { padding:16px; margin-bottom:18px; border:1px solid #edf0f2; border-radius:18px; background:#fff; }
+    .coach-gallery-heading h2 { margin:0; font-size:15px; font-weight:900; color:#111827; }
+    .coach-gallery-heading p { margin:4px 0 12px; font-size:12px; color:#9ca3af; }
+    .coach-gallery-categories { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .coach-gallery-categories button { min-height:48px; padding:8px 10px; display:flex; justify-content:space-between; align-items:center; gap:6px; background:#f9fafb; border:1px solid #edf0f2; border-radius:12px; text-align:left; font-size:11px; font-weight:800; color:#374151; }
+    .coach-gallery-categories small { color:#9ca3af; font-size:10px; white-space:nowrap; }
+    .coach-gallery-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-top:12px; }
+    .coach-gallery-item { position:relative; min-width:0; min-height:92px; overflow:hidden; border-radius:12px; background:#f3f4f6; }
+    .coach-gallery-item img,.coach-gallery-item video { width:100%; height:92px; object-fit:cover; display:block; }
+    .coach-gallery-item a { display:grid; height:92px; place-items:center; color:#2563eb; font-size:11px; }
+    .coach-gallery-item>button { position:absolute; top:5px; right:5px; border:0; border-radius:50%; width:26px; height:26px; background:#fff; color:#dc2626; }
+    .coach-gallery-item>small { position:absolute; bottom:0; left:0; right:0; padding:3px 5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#fff; background:#111827a8; font-size:9px; }
 
     .saved-block { margin: 0 0 20px; }
     .saved-head-row {
@@ -279,6 +312,7 @@ const ADDRESS_TAGS = ['Home', 'Work', 'Other'] as const;
 export class EditProfilePage implements OnInit {
   @ViewChild('cameraInput') cameraInput?: ElementRef<HTMLInputElement>;
   @ViewChild('libraryInput') libraryInput?: ElementRef<HTMLInputElement>;
+  @ViewChild('coachGalleryInput') coachGalleryInput?: ElementRef<HTMLInputElement>;
 
   readonly auth = inject(AuthService);
   readonly router = inject(Router);
@@ -286,6 +320,7 @@ export class EditProfilePage implements OnInit {
   private readonly mediaPicker = inject(NativeMediaPickerService);
   private readonly savedAddressesService = inject(SavedAddressesService);
   private readonly locationService = inject(LocationService);
+  private readonly coachService = inject(CoachService);
 
   readonly addressTags = ADDRESS_TAGS;
 
@@ -299,6 +334,18 @@ export class EditProfilePage implements OnInit {
   success = '';
   submitting = false;
   savedAddresses: SavedAddress[] = [];
+  coachGallery: CoachGalleryItem[] = [];
+  galleryBusy = false;
+  galleryError = '';
+  selectedGalleryCategory: CoachGalleryCategory = 'profile_photo';
+  readonly galleryCategories: { id: CoachGalleryCategory; label: string }[] = [
+    { id: 'profile_photo', label: 'Profile photos' }, { id: 'training_photo', label: 'Training photos' },
+    { id: 'video', label: 'Videos' }, { id: 'certificate', label: 'Certificates' },
+  ];
+
+  get coachGalleryAccept(): string {
+    return this.selectedGalleryCategory === 'video' ? 'video/*' : this.selectedGalleryCategory === 'certificate' ? 'image/*,application/pdf,.pdf' : 'image/*';
+  }
 
   addAddressOpen = false;
   newAddressTag: (typeof ADDRESS_TAGS)[number] = 'Home';
@@ -327,6 +374,53 @@ export class EditProfilePage implements OnInit {
     this.location = user.location || '';
     this.previewUrl = user.profileImage || '';
     this.reloadSaved();
+    if (user.role === 'coach') this.loadCoachGallery();
+  }
+
+  galleryFor(category: CoachGalleryCategory): CoachGalleryItem[] { return this.coachGallery.filter((item) => item.category === category); }
+  galleryLabel(category: CoachGalleryCategory): string { return this.galleryCategories.find((item) => item.id === category)?.label || 'Gallery'; }
+
+  addCoachMedia(category: CoachGalleryCategory): void {
+    if (this.galleryBusy || !this.coachGalleryInput?.nativeElement) return;
+    this.selectedGalleryCategory = category;
+    this.galleryError = '';
+    this.coachGalleryInput.nativeElement.value = '';
+    this.coachGalleryInput.nativeElement.accept = this.coachGalleryAccept;
+    this.coachGalleryInput.nativeElement.click();
+  }
+
+  async onCoachGalleryFile(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    this.galleryBusy = true;
+    this.galleryError = '';
+    try {
+      const result = await firstValueFrom(this.coachService.uploadCoachMedia(this.selectedGalleryCategory, file));
+      if (!result.success || !result.data) throw new Error(result.message || 'Unable to upload this item.');
+      this.coachGallery = [result.data, ...this.coachGallery];
+    } catch (error: any) { this.galleryError = error?.error?.message || error?.message || 'Unable to upload this item.'; }
+    finally { this.galleryBusy = false; }
+  }
+
+  async removeCoachMedia(item: CoachGalleryItem): Promise<void> {
+    if (this.galleryBusy) return;
+    this.galleryBusy = true;
+    this.galleryError = '';
+    try {
+      const result = await firstValueFrom(this.coachService.deleteCoachMedia(item.id));
+      if (!result.success) throw new Error(result.message || 'Unable to remove this item.');
+      this.coachGallery = this.coachGallery.filter((media) => media.id !== item.id);
+    } catch (error: any) { this.galleryError = error?.error?.message || error?.message || 'Unable to remove this item.'; }
+    finally { this.galleryBusy = false; }
+  }
+
+  private loadCoachGallery(): void {
+    this.coachService.getMyCoachMedia().subscribe({
+      next: (result) => { this.coachGallery = Array.isArray(result.data) ? result.data : []; },
+      error: () => { this.galleryError = 'Could not load your saved coaching gallery.'; },
+    });
   }
 
   onPhone(value: string) {

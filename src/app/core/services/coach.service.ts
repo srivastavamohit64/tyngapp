@@ -27,6 +27,48 @@ export class CoachService {
     return this.api.get(`/coaches/${id}`);
   }
 
+  getMyCoachMedia(): Observable<ApiResponse<CoachGalleryItem[]>> {
+    return this.api.get<CoachGalleryItem[]>('/coach/media');
+  }
+
+  uploadCoachMedia(category: CoachGalleryCategory, file: File): Observable<ApiResponse<CoachGalleryItem>> {
+    const form = new FormData();
+    form.append('category', category);
+    form.append('file', file, file.name);
+    return this.api.postForm<CoachGalleryItem>('/coach/media', form);
+  }
+
+  deleteCoachMedia(id: number): Observable<ApiResponse<unknown>> {
+    return this.api.delete(`/coach/media/${encodeURIComponent(id)}`);
+  }
+
+  getMyCoachProfileDetails(): Observable<ApiResponse<CoachProfileDetails>> {
+    return this.api.get<CoachProfileDetails>('/coach/profile-details');
+  }
+
+  saveMyCoachProfileDetails(details: CoachProfileDetailsPayload): Observable<ApiResponse<CoachProfileDetails>> {
+    return this.api.put<CoachProfileDetails>('/coach/profile-details', details);
+  }
+
+  getMyCoachVerificationDocuments(): Observable<ApiResponse<CoachVerificationDocument[]>> {
+    return this.api.get<CoachVerificationDocument[]>('/coach/verification-documents');
+  }
+
+  uploadCoachVerificationDocument(documentType: CoachVerificationDocumentType, file: File): Observable<ApiResponse<CoachVerificationDocument>> {
+    const form = new FormData();
+    form.append('document_type', documentType);
+    form.append('file', file, file.name);
+    return this.api.postForm<CoachVerificationDocument>('/coach/verification-documents', form);
+  }
+
+  getCoachVerificationDocumentBlob(id: number): Observable<Blob> {
+    return this.api.getBlob(`/coach/verification-documents/${encodeURIComponent(id)}/download`);
+  }
+
+  deleteCoachVerificationDocument(id: number): Observable<ApiResponse<unknown>> {
+    return this.api.delete(`/coach/verification-documents/${encodeURIComponent(id)}`);
+  }
+
   requestToJoin(coachId: number, payload: { sport?: string; goal?: string; message?: string }): Observable<ApiResponse<unknown>> {
     return this.api.post(`/coaches/${coachId}/student-requests`, payload);
   }
@@ -119,4 +161,58 @@ export class CoachService {
   createSession(payload: Record<string, unknown>): Observable<ApiResponse<any>> {
     return this.api.post('/coach/scheduling/sessions', payload);
   }
+}
+
+export type CoachGalleryCategory = 'profile_photo' | 'training_photo' | 'video' | 'certificate';
+export interface CoachGalleryItem {
+  id: number;
+  category: CoachGalleryCategory;
+  url: string;
+  name: string | null;
+  mimeType: string;
+  sizeBytes: number;
+  createdAt: string | null;
+}
+
+export type CoachVerificationDocumentType = 'government_id' | 'coaching_certificate' | 'professional_profile_photo';
+export interface CoachVerificationDocument {
+  id: number;
+  documentType: CoachVerificationDocumentType;
+  name: string | null;
+  mimeType: string;
+  sizeBytes: number;
+  status: 'submitted' | 'approved' | 'rejected';
+  createdAt: string | null;
+}
+
+export interface CoachProfileDetails {
+  languages: string[];
+  coachingLocations: string[];
+  serviceRadius: string;
+  sessionTypes: string[];
+  equipment: string[];
+  trialEnabled: boolean | null;
+  trialType: string;
+  travelMode: string;
+  weeklyAvailability: Record<string, string[]>;
+  feeOptions: Record<string, string | number>;
+  feesNegotiable: boolean;
+  achievements: string[];
+  bio: string;
+}
+
+export interface CoachProfileDetailsPayload {
+  languages: string[];
+  coaching_locations: string[];
+  service_radius: string;
+  session_types: string[];
+  equipment: string[];
+  trial_enabled: boolean | null;
+  trial_type: string;
+  travel_mode: string;
+  weekly_availability: Record<string, string[]>;
+  fee_options: Record<string, string | number>;
+  fees_negotiable: boolean;
+  achievements: string[];
+  bio: string;
 }
