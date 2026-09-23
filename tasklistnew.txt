@@ -61,6 +61,7 @@ APP-WIDE IMPROVEMENTS
 
 - Improved the appearance and consistency of cards, buttons, forms, search, filters, tabs, labels, loading screens and messages.
 - Before any live server update, the connection and correct server identity are checked first to keep changes safe and on the right system.
+- The latest Coach improvements have been saved to the shared project code repository.
 - Improved readability, spacing, colours, shadows, touch feedback and keyboard focus.
 - Added friendly fallback displays when a profile photo, venue photo or gallery image is unavailable.
 - Improved mobile-safe spacing across Player, Coach, Venue, Admin, sign-in, booking, chat and profile screens.
