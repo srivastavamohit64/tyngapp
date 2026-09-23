@@ -156,3 +156,4 @@ TYNG — TODAY'S WORK SUMMARY
    - Coaches can select a real venue facility when creating a session, instead of choosing a venue without reserving a court.
    - The venue can review and approve coaching session requests. The coach schedule now uses live information.
    - The system prevents the same court time from being used twice and keeps existing sessions visible during the transition.
+   - Venue photos now appear correctly in the Coach session planner.
