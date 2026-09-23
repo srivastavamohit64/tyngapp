@@ -2,7 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
+import { AlertController, IonicModule } from '@ionic/angular';
+import { ChatService } from '../../core/services/chat.service';
 import {
   AppNotification,
   NotificationFeedService,
@@ -47,25 +48,19 @@ const FILTERS = [
             </div>
 
             <div class="flex items-center gap-1.5">
-              <button *ngIf="totalUnread() > 0" (click)="markAllRead()" class="hidden min-[390px]:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#F3F4F6] text-[12px] font-bold text-[#6B7280] border-none">
-                <ion-icon name="checkmark-done-outline"></ion-icon>
-                Mark all read
-              </button>
-              <button (click)="markAllRead()" [disabled]="totalUnread() === 0" class="w-10 h-10 flex items-center justify-center rounded-full bg-[#F3F4F6] border-none disabled:opacity-40">
+              <button type="button" aria-label="Mark all notifications as read" title="Mark all as read" (click)="markAllRead()" [disabled]="totalUnread() === 0" class="header-action">
                 <ion-icon name="checkmark-done-outline" class="text-[#6B7280] text-lg"></ion-icon>
               </button>
             </div>
           </div>
 
           <!-- Filter horizontal chips scroll -->
-          <div class="flex gap-2 px-5 pb-4 overflow-x-auto no-scrollbar">
-            <button *ngFor="let f of filters" (click)="setFilter(f.id)" class="flex items-center gap-1.5 px-3.5 py-2 rounded-full whitespace-nowrap flex-shrink-0 text-[12px] font-bold transition-all border-none"
-              [style.backgroundColor]="activeFilter() === f.id ? 'var(--app-primary)' : '#F3F4F6'"
-              [style.color]="activeFilter() === f.id ? '#111827' : '#6B7280'">
-              <span>{{ f.emoji }}</span>
-              {{ f.label }}
-              <span *ngIf="unreadCount(f.id) > 0" class="min-w-[16px] h-[16px] rounded-full text-[9px] font-black flex items-center justify-center px-1"
-                [style.backgroundColor]="activeFilter() === f.id ? '#111827' : '#FF7A00'" style="color:white;">
+          <div class="filter-grid" role="tablist" aria-label="Filter notifications">
+            <button *ngFor="let f of filters" type="button" role="tab" [attr.aria-selected]="activeFilter() === f.id" (click)="setFilter(f.id)" class="filter-chip"
+              [class.filter-chip-active]="activeFilter() === f.id">
+              <ion-icon [name]="filterIcon(f.id)"></ion-icon>
+              <span class="filter-label">{{ f.label }}</span>
+              <span *ngIf="unreadCount(f.id) > 0" class="filter-count">
                 {{ unreadCount(f.id) }}
               </span>
             </button>
@@ -73,7 +68,7 @@ const FILTERS = [
         </div>
 
         <!-- Notification Feed List -->
-        <div class="px-4 pt-4 text-left">
+        <div class="notification-feed text-left">
           <div *ngIf="loading() && filteredNotifs().length === 0">
             <app-skeleton-list [count]="6"></app-skeleton-list>
           </div>
@@ -158,7 +153,7 @@ const FILTERS = [
                 </div>
 
                 <!-- Standard alerts -->
-                <div *ngIf="!n.isAI && !n.isReward && !n.isWide" class="bg-white rounded-[18px] px-4 py-3.5 shadow-sm border border-slate-100" [class.pl-6]="n.unread">
+                <div *ngIf="!n.isAI && !n.isReward && !n.isWide" class="notification-card" [class.unread]="n.unread">
                   <div class="flex items-start gap-3">
                     <div class="relative flex-shrink-0">
                       <img *ngIf="n.avatar" [src]="n.avatar" class="w-12 h-12 rounded-full object-cover" />
@@ -166,7 +161,7 @@ const FILTERS = [
                         {{ n.emoji || '🔔' }}
                       </div>
                     </div>
-                    <div class="flex-1 min-w-0">
+                    <div class="flex-1 min-w-0 notification-copy">
                       <div class="flex items-start justify-between gap-1">
                         <p class="text-[14px] font-semibold text-[#111827] leading-snug flex-1 m-0">{{ n.title }}</p>
                         <div *ngIf="n.unread" class="w-2.5 h-2.5 rounded-full bg-[var(--app-primary)] flex-shrink-0 mt-1"></div>
@@ -176,7 +171,7 @@ const FILTERS = [
                     </div>
                   </div>
                   <!-- Actions inside standard card -->
-                  <div *ngIf="n.primaryAction || n.secondaryAction" class="flex gap-2 mt-3 pl-[68px]">
+                  <div *ngIf="n.primaryAction || n.secondaryAction" class="notification-actions">
                     <button *ngIf="n.secondaryAction" (click)="deleteNotif(n.id)" class="flex-grow h-9 rounded-xl text-[12px] font-bold text-[#EF4444] bg-[#FEF2F2] border border-[#FCA5A5]">
                       {{ n.secondaryAction.label }}
                     </button>
@@ -202,46 +197,174 @@ const FILTERS = [
   `,
   styles: [`
     .notifications-page {
+      width: 100%;
+      max-width: 100%;
       background: #FAFBFC;
       min-height: 100%;
       font-family: var(--app-font-family);
+      overflow-x: hidden;
+      box-sizing: border-box;
     }
 
-    .notif-header { padding-top: calc(12px + var(--app-chrome-top-inset, var(--safe-area-top))); }
+    .notif-header {
+      min-height: 62px;
+      padding-top: calc(10px + var(--app-chrome-top-inset, var(--safe-area-top)));
+      padding-left: max(16px, var(--safe-area-left, 0px));
+      padding-right: max(16px, var(--safe-area-right, 0px));
+      box-sizing: border-box;
+    }
 
     .sticky-header {
       position: sticky;
       top: 0;
       z-index: 30;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+      background: rgba(255,255,255,.97);
+      box-shadow: 0 5px 18px rgba(20,32,50,.06);
+      backdrop-filter: blur(12px);
     }
 
-    .no-scrollbar {
-      scrollbar-width: none;
-      &::-webkit-scrollbar {
-        display: none;
-      }
+    .header-action {
+      width: 42px;
+      height: 42px;
+      flex: 0 0 42px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #edf0f4;
+      border-radius: 14px;
+      background: #f7f8fa;
+      transition: background .15s ease, transform .15s ease;
+    }
+
+    .header-action:not(:disabled):active { transform: scale(.96); }
+    .header-action:disabled { opacity: .45; }
+
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      padding: 0 16px 13px;
+      max-width: 760px;
+      margin: 0 auto;
+      box-sizing: border-box;
+    }
+
+    .filter-chip {
+      min-width: 0;
+      min-height: 38px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 0 9px;
+      border: 1px solid #e9edf2;
+      border-radius: 13px;
+      color: #667386;
+      background: #f7f8fa;
+      font: inherit;
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1;
+      white-space: nowrap;
+      transition: color .15s ease, background .15s ease, border-color .15s ease, box-shadow .15s ease;
+    }
+
+    .filter-chip ion-icon {
+      flex: 0 0 auto;
+      font-size: 15px;
+      color: #8a95a5;
+    }
+
+    .filter-chip-active {
+      border-color: rgba(var(--app-primary-rgb), .7);
+      color: #17321f;
+      background: linear-gradient(135deg, rgba(var(--app-primary-rgb), .2), rgba(var(--app-primary-rgb), .09));
+      box-shadow: 0 3px 9px rgba(var(--app-primary-rgb), .12);
+    }
+
+    .filter-chip-active ion-icon { color: #25824c; }
+
+    .filter-label {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .filter-count {
+      min-width: 17px;
+      height: 17px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 4px;
+      border-radius: 999px;
+      color: #fff;
+      background: #778396;
+      font-size: 9px;
+      font-weight: 800;
+    }
+
+    .filter-chip-active .filter-count { color: #fff; background: #1f6f40; }
+
+    .notification-feed {
+      width: 100%;
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 14px 14px 0;
+      box-sizing: border-box;
+    }
+
+    .notification-card {
+      padding: 14px;
+      border: 1px solid #e9edf2;
+      border-radius: 20px;
+      background: #fff;
+      box-shadow: 0 5px 16px rgba(30, 41, 59, .045);
+    }
+
+    .notification-card.unread { border-color: rgba(var(--app-primary-rgb), .45); }
+    .notification-copy { min-width: 0; overflow-wrap: anywhere; }
+    .notification-actions { display: flex; gap: 8px; margin-top: 12px; padding-left: 60px; }
+    .notification-actions button { min-width: 0; min-height: 40px; border-radius: 12px; font-size: 12px; }
+
+    @media (max-width: 350px) {
+      .filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; padding-right: 12px; padding-left: 12px; }
+      .notif-header { gap: 8px; }
+      .notif-header h1 { font-size: 17px; }
+      .notification-feed { padding-right: 10px; padding-left: 10px; }
+      .notification-actions { padding-left: 0; }
+    }
+
+    @media (min-width: 600px) {
+      .filter-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .notification-feed { padding-right: 20px; padding-left: 20px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .filter-chip, .header-action { transition: none; }
     }
 
     .btn-green-gradient {
       background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to));
-      box-shadow: 0 4px 16px rgba(var(--app-primary-rgb),0.30);
+      box-shadow: 0 4px 16px rgba(var(--app-primary-rgb),0.22);
     }
 
     .btn-orange-gradient {
       background: linear-gradient(135deg, #FF7A00, #FF9A40);
-      box-shadow: 0 4px 16px rgba(255, 122, 0, 0.35);
+      box-shadow: 0 4px 16px rgba(255, 122, 0, 0.25);
     }
 
     @media (max-width: 359px) {
-      .notifications-page .px-5 { padding-left: 16px; padding-right: 16px; }
-      .notifications-page .px-4 { padding-left: 14px; padding-right: 14px; }
+      .notifications-page .px-5 { padding-left: 12px; padding-right: 12px; }
+      .notifications-page .px-4 { padding-left: 10px; padding-right: 10px; }
     }
   `]
 })
 export class CoachNotificationsPage implements OnInit {
   private readonly router = inject(Router);
   private readonly feed = inject(NotificationFeedService);
+  private readonly chat = inject(ChatService);
+  private readonly alertCtrl = inject(AlertController);
 
   readonly items = this.feed.items;
   readonly loading = this.feed.loading;
@@ -270,6 +393,13 @@ export class CoachNotificationsPage implements OnInit {
     const list = this.items();
     if (cat === 'all') return list.filter((n) => n.unread).length;
     return list.filter((n) => n.category === cat && n.unread).length;
+  }
+
+  filterIcon(id: string): string {
+    return ({
+      all: 'notifications-outline', messages: 'chatbubble-ellipses-outline', bookings: 'calendar-outline',
+      students: 'school-outline', venues: 'business-outline', achievements: 'ribbon-outline', payments: 'wallet-outline',
+    } as Record<string, string>)[id] || 'notifications-outline';
   }
 
   getGroups() {
@@ -301,6 +431,25 @@ export class CoachNotificationsPage implements OnInit {
     await this.markRead(n.id);
     if (n.title.toLowerCase().includes('student request')) {
       this.go('/app/coach/students');
+      return;
+    }
+    if (n.title.toLowerCase().includes('booking request') || n.data?.bookingRequestId) {
+      const playerId = n.data?.playerId;
+      if (playerId) {
+        const thread = await this.chat.openPrivate(playerId);
+        if (thread.success && thread.data?.id) {
+          this.go(`/app/coach/chat/${encodeURIComponent(thread.data.id)}`);
+          return;
+        }
+        const alert = await this.alertCtrl.create({
+          header: 'Chat unavailable',
+          message: thread.message || 'This booking request chat could not be opened. Please try again.',
+          buttons: ['OK'],
+        });
+        await alert.present();
+        return;
+      }
+      this.go(n.route && n.route !== '/app/coach/notifications' ? n.route : '/app/coach/dashboard');
       return;
     }
     if (n.route) {

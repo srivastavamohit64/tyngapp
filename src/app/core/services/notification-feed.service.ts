@@ -45,6 +45,7 @@ export interface AppNotification {
   action?: string | null;
   data?: {
     bookingId?: string | null;
+    bookingRequestId?: string | null;
     walletTransactionId?: string | null;
     playerId?: string | null;
     sport?: string | null;

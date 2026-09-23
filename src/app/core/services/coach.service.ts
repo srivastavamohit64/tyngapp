@@ -31,6 +31,10 @@ export class CoachService {
     return this.api.post(`/coaches/${coachId}/student-requests`, payload);
   }
 
+  requestCoachingBooking(coachId: number, payload: { sport?: string; message: string }): Observable<ApiResponse<any>> {
+    return this.api.post(`/coaches/${coachId}/booking-requests`, payload);
+  }
+
   getMyCoachStudentRequests(): Observable<ApiResponse<any>> {
     return this.api.get('/player/coach-student-requests');
   }
@@ -55,7 +59,12 @@ export class CoachService {
     return this.api.patch(`/coach/students/${id}`, payload);
   }
 
-  saveStudentEvaluation(id: number, payload: { rating: number; skill_ratings: Record<string, number> }): Observable<ApiResponse<any>> {
+  getEvaluations(studentId?: number): Observable<ApiResponse<any>> {
+    const query = studentId ? `?student_id=${encodeURIComponent(studentId)}` : '';
+    return this.api.get(`/coach/evaluations${query}`);
+  }
+
+  saveStudentEvaluation(id: number, payload: { rating: number; skill_ratings: Record<string, number>; strengths?: string; areas_to_improve?: string; session_id?: number }): Observable<ApiResponse<any>> {
     return this.api.post(`/coach/students/${id}/evaluations`, payload);
   }
 
@@ -69,6 +78,10 @@ export class CoachService {
 
   getCoachSessions(): Observable<ApiResponse<any>> {
     return this.api.get('/coach/sessions');
+  }
+
+  getCoachBookingRequests(status: 'pending' | 'accepted' | 'declined' | 'all' = 'pending'): Observable<ApiResponse<any>> {
+    return this.api.get(`/coach/booking-requests?status=${encodeURIComponent(status)}`);
   }
 
   getSessionBatches(): Observable<ApiResponse<any[]>> {

@@ -343,6 +343,10 @@ const routes: Routes = [
         loadComponent: () => import('./pages/coach/coach-insights.page').then((m) => m.CoachInsightsPage),
       },
       {
+        path: 'coach/booking-requests',
+        loadComponent: () => import('./pages/coach/coach-booking-requests.page').then((m) => m.CoachBookingRequestsPage),
+      },
+      {
         path: 'coach/students',
         loadComponent: () => import('./pages/coach/coach-students.page').then((m) => m.CoachStudentsPage),
       },

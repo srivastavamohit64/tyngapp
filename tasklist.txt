@@ -1,3 +1,23 @@
+TYNG — WORK COMPLETED (PLAIN-LANGUAGE SUMMARY)
+
+Writing rule: Whenever work is finished, add a short note here explaining in everyday words what changed and how it helps players, coaches, or administrators. Write for someone who does not work in software. Avoid programming terms, internal names, and tool names. Describe what the person can now do.
+
+RECENT IMPROVEMENTS — 23 SEPTEMBER 2026
+
+- Coaches can write player evaluations, rate key skills, and save helpful feedback. Administrators can review player evaluation history and search for a player or coach.
+- The coach booking request now starts a chat with the coach and includes the request as the first message, so both people can continue the conversation in one place.
+- The coach home screen now shows sessions, requests, and expected earnings in a clear, easy-to-read summary that wraps neatly on small phones.
+- The coach dashboard cards now have clearer spacing, softer colors, and easier-to-read player profile progress.
+- The Coach Pulse card now has clearer text and better-spaced number tiles, making daily progress easier to read on narrow phones.
+- Coaches can tap the dashboard figures to open their schedules, earnings, updates, or session requests. Session requests now show the player's name, sport, message, and a button to start a chat.
+- The earnings page now shows completed session earnings for each time period and the coach's actual wallet balance, with a clear list of recent completed sessions.
+- The coach dashboard's milestone, weather, and help cards now match the supplied phone screenshot more closely, with correct symbols and compact spacing.
+- Coaches can open a booking request from its notification. Student requests open the student review area, and the notification filters are easier to use on small screens.
+- Administration pages are easier to use on phones. Content and evaluation details now fit smaller screens more clearly.
+- Coaches can manage student requests, view their students, plan sessions, and keep student notes and progress information together.
+- Coaches can use a shared coach community chat, and players can message their coach after the coach accepts their request.
+
+---
 TYNG — TODAY'S WORK SUMMARY
 
 1. COACH ROLE EXPERIENCE

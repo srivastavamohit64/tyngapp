@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IonicModule } from '@ionic/angular';
+import { AlertController, IonicModule } from '@ionic/angular';
+import { firstValueFrom } from 'rxjs';
 import { CoachService } from '../../core/services/coach.service';
 import { ChatService } from '../../core/services/chat.service';
 
@@ -68,8 +69,8 @@ import { ChatService } from '../../core/services/chat.service';
             {{ requestSent ? 'Coaching Request Sent' : requesting ? 'Sending Request…' : 'Request to Join as Student' }}
           </button>
           <button *ngIf="canChat" (click)="openCoachChat()" class="w-full h-12 mb-3 rounded-full border border-[var(--app-primary)] bg-white text-[#111827] font-bold">Chat with Coach</button>
-          <button (click)="bookSession()" class="w-full h-12 rounded-full bg-gradient-to-r from-[var(--app-primary)] to-[var(--app-primary-to)] text-[#111827] font-bold shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all">
-            Book Coaching Session
+          <button (click)="bookSession()" [disabled]="bookingInProgress" class="w-full h-12 rounded-full bg-gradient-to-r from-[var(--app-primary)] to-[var(--app-primary-to)] text-[#111827] font-bold shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-60">
+            {{ bookingInProgress ? 'Sending request…' : bookingRequestSent ? 'Open Coach Chat' : 'Book Coaching Session' }}
           </button>
         </div>
 
@@ -92,12 +93,16 @@ export class CoachProfileDetailPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly coachService = inject(CoachService);
   private readonly chat = inject(ChatService);
+  private readonly alertCtrl = inject(AlertController);
 
   coachId: number | null = null;
   coach: any = null;
   requesting = false;
   requestSent = false;
   canChat = false;
+  bookingInProgress = false;
+  bookingRequestSent = false;
+  bookingChatId: string | null = null;
 
   readonly coaches = [
     { id: 1, name: 'Coach Arvind Sharma', sport: 'Cricket', experience: '12+ Yrs Exp', rating: 4.9, avatar: '🏏', distance: '1.5 km', price: '₹800/session', bio: 'Former State level cricketer focusing on batting techniques, stamina building, and match strategy for all age groups.', specialties: ['Batting Stance', 'Spin Tactics', 'Fitness Training', 'Group Scrimmage'] },
@@ -145,10 +150,75 @@ export class CoachProfileDetailPage implements OnInit {
     this.router.navigateByUrl('/app/coaches');
   }
 
-  bookSession() {
-    // Navigate to a simple booking completed or summary flow
-    alert('Booking request sent to ' + this.coach.name + '! They will confirm via Chat.');
-    this.router.navigateByUrl('/app/chat');
+  async bookSession() {
+    if (!this.coach || !this.coachId || this.bookingInProgress) return;
+    if (this.bookingRequestSent && this.bookingChatId) {
+      void this.router.navigateByUrl(`/app/chat/${encodeURIComponent(this.bookingChatId)}`);
+      return;
+    }
+
+    this.bookingInProgress = true;
+    let requestWasSent = false;
+    const sport = String(this.coach.sport || '').split(',')[0].trim();
+    const requestMessage = `Hi ${this.coach.name}, I'd like to book a coaching session with you. Please let me know your availability and confirm the details.`;
+
+    try {
+      const requestResponse = await firstValueFrom(this.coachService.requestCoachingBooking(this.coachId, {
+        sport,
+        message: requestMessage,
+      }));
+      if (!requestResponse.success) throw new Error(requestResponse.message || 'Unable to send the booking request.');
+      requestWasSent = true;
+
+      const threadResponse = await this.chat.openPrivate({
+        id: this.coachId,
+        name: this.coach.name,
+        avatar: this.coach.profileImage ?? null,
+      });
+      if (!threadResponse.success || !threadResponse.data?.id) {
+        throw new Error(threadResponse.message || 'Unable to open the coach chat.');
+      }
+
+      const chatId = threadResponse.data.id;
+      const messageResponse = await this.chat.sendMessage(chatId, requestMessage);
+      if (!messageResponse.success) {
+        throw new Error(messageResponse.message || 'Unable to send the first chat message.');
+      }
+
+      this.bookingRequestSent = true;
+      this.bookingChatId = chatId;
+      await this.showBookingSent(chatId);
+    } catch (error: any) {
+      const detail = error?.error?.message || error?.message || 'Please try again.';
+      const alert = await this.alertCtrl.create({
+        header: requestWasSent ? 'Request sent, chat unavailable' : 'Booking request not sent',
+        message: requestWasSent
+          ? `Your request is with ${this.coach.name}, but we could not send the first chat message. ${detail}`
+          : detail,
+        buttons: ['OK'],
+      });
+      await alert.present();
+    } finally {
+      this.bookingInProgress = false;
+    }
+  }
+
+  private async showBookingSent(chatId: string): Promise<void> {
+    const alert = await this.alertCtrl.create({
+      header: 'Booking request sent',
+      message: 'Booking request sent to ' + this.coach.name + '! They will confirm via Chat.',
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        { text: 'Proceed', role: 'confirm' },
+      ],
+      backdropDismiss: false,
+    });
+
+    await alert.present();
+    const { role } = await alert.onDidDismiss();
+    if (role === 'confirm') {
+      void this.router.navigateByUrl(`/app/chat/${encodeURIComponent(chatId)}`);
+    }
   }
 
   requestToJoin() {

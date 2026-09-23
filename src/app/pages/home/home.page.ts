@@ -340,11 +340,19 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
     }));
   }
 
-  coachFocus(): string {
-    const sessions = this.coachPulseMetrics[0]?.value || '0';
-    const requests = this.coachPulseMetrics[3]?.value || '0';
-    const earnings = this.coachPulseMetrics[1]?.value || '₹0';
-    return `${sessions} Sessions â€¢ ${requests} Requests â€¢ ${earnings} Expected`;
+  coachFocusSessions(): string { return this.coachPulseMetrics[0]?.value || '0'; }
+  coachFocusEarnings(): string { return this.coachPulseMetrics[1]?.value || '₹0'; }
+  coachFocusRequests(): string { return this.coachPulseMetrics[3]?.value || '0'; }
+
+  openCoachMetric(label: string): void {
+    const destinations: Record<string, string> = {
+      "Today's Sessions": '/app/coach/schedule',
+      'Expected Earnings': '/app/coach/earnings',
+      'New Reviews': '/app/coach/insights',
+      'Booking Requests': '/app/coach/booking-requests',
+    };
+    const destination = destinations[label];
+    if (destination) void this.router.navigateByUrl(destination);
   }
 
   metricIcon(label: string): string {

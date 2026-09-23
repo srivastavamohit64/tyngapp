@@ -9,6 +9,68 @@
   border: 1.5px solid rgba(var(--app-primary-rgb), 0.18);
 }
 
+.coach-focus-content {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  column-gap: 4px;
+  row-gap: 2px;
+  min-width: 0;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.coach-focus-title {
+  color: #111827;
+  font-weight: 800;
+  margin-right: 2px;
+  white-space: nowrap;
+}
+
+.coach-focus-stat {
+  color: #6B7280;
+  white-space: nowrap;
+
+  b {
+    color: #16A34A;
+    font-weight: 800;
+  }
+}
+
+.coach-focus-separator {
+  color: #9CA3AF;
+  white-space: nowrap;
+}
+
+.coach-focus-earnings b {
+  color: #16A34A;
+}
+
+.coach-pulse-metric {
+  appearance: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  min-height: 78px;
+  padding: 11px 10px;
+  border-radius: 16px;
+  transition: transform 140ms ease, box-shadow 140ms ease;
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--app-primary);
+    outline-offset: 2px;
+  }
+}
+
+.coach-pulse-card {
+  border: 1px solid #EDF1F5;
+  box-shadow: 0 6px 24px rgba(19, 35, 58, 0.07);
+}
+
 /* Section Card */
 .section-card {
   background: #FFFFFF;
@@ -16,6 +78,20 @@
   padding: 20px;
   box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
 }
+
+.section-card.coach-pulse-card { padding:18px; border-radius:23px; }
+.coach-pulse-heading { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.coach-pulse-title { margin:0; color:#172033; font-size:12px; line-height:1.2; font-weight:900; letter-spacing:.09em; text-transform:uppercase; }
+.coach-pulse-subtitle { margin:3px 0 0; color:#8C96A6; font-size:10px; line-height:1.25; }
+.coach-pulse-flash { display:grid; place-items:center; width:30px; height:30px; border-radius:50%; background:var(--app-primary); color:#fff; box-shadow:0 3px 10px rgba(var(--app-primary-rgb),.24); font-size:15px; }
+.coach-metric-icon { display:block; font-size:18px; }
+.coach-metric-value { margin:4px 0 0; color:#172033; font-size:23px; line-height:1; font-weight:900; letter-spacing:-.02em; }
+.coach-metric-label { margin:3px 0 0; color:#687386; font-size:11px; line-height:1.2; font-weight:600; }
+.coach-goal-progress { margin-top:14px; padding-top:14px; border-top:1px solid #EEF1F5; }
+.coach-goal-heading { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; font-size:10px; }
+.coach-goal-heading span { color:#8C96A6; font-weight:600; }
+.coach-goal-heading strong { color:#51B900; font-size:10px; font-weight:900; }
+.coach-goal-track { height:7px; overflow:hidden; border-radius:99px; background:#EEF1F5; }
 
 .section-title {
   font-size: 13px;
@@ -103,6 +179,106 @@
   overflow: hidden;
   box-shadow: 0 4px 24px rgba(var(--app-primary-rgb), 0.18);
   border: 1.5px solid rgba(var(--app-primary-rgb), 0.22);
+}
+
+.coach-milestone-card {
+  position: relative;
+  min-height: 102px;
+  overflow: hidden;
+  padding: 14px;
+  border-radius: 20px;
+  background: linear-gradient(115deg, #7435E8 0%, #6325D2 100%);
+  box-shadow: 0 7px 18px rgba(99, 37, 210, 0.2);
+  color: #fff;
+}
+
+.coach-milestone-content {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.coach-milestone-icon {
+  display: grid;
+  flex: 0 0 32px;
+  place-items: center;
+  width: 32px;
+  height: 36px;
+  color: #FFD04A;
+  font-size: 24px;
+}
+
+.coach-milestone-copy { min-width: 0; flex: 1; }
+.coach-milestone-kicker { margin: 0 0 2px; color: #FFFFFFA6; font-size: 8px; font-weight: 850; letter-spacing: .08em; text-transform: uppercase; }
+.coach-milestone-title { margin: 0; color: #fff; font-size: 13px; line-height: 1.22; font-weight: 850; }
+.coach-milestone-description { margin: 3px 0 0; color: #FFFFFFB3; font-size: 9px; line-height: 1.35; }
+
+.coach-weather-card {
+  padding: 10px 13px;
+  border: 1px solid #EDF1F5;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 4px 14px rgba(19, 35, 58, .06);
+}
+
+.coach-home-extras { display:grid; gap:14px; margin-top:-6px !important; }
+
+.coach-weather-icon { display:grid; flex:0 0 36px; place-items:center; width:36px; height:36px; border-radius:13px; background:#FFFBEB; color:#F59E0B; font-size:20px; }
+.coach-weather-location { margin:0; color:#9AA3B2; font-size:9px; line-height:1.2; }
+.coach-weather-reading { display:flex; align-items:baseline; gap:6px; }
+.coach-weather-temperature { margin:1px 0 0; color:#172033; font-size:21px; line-height:1; font-weight:900; }
+.coach-weather-condition { margin:0; color:#697487; font-size:10px; font-weight:650; }
+.coach-weather-outdoor { padding:6px 9px; border-radius:12px; background:#EFFAF0; text-align:center; }
+.coach-weather-outdoor p { margin:0; color:#159447; font-size:8px; font-weight:900; letter-spacing:.06em; text-transform:uppercase; }
+.coach-weather-outdoor span { color:#22A653; font-size:8px; font-weight:650; white-space:nowrap; }
+
+.coach-support-card {
+  display:flex;
+  align-items:center;
+  gap:11px;
+  width:100%;
+  min-height:64px;
+  padding:9px 13px;
+  border:1px solid #EDF1F5;
+  border-radius:18px;
+  background:#fff;
+  box-shadow:0 4px 14px rgba(19, 35, 58, .06);
+  text-align:left;
+  cursor:pointer;
+}
+
+.coach-support-icon { display:grid; flex:0 0 34px; place-items:center; width:34px; height:34px; border-radius:12px; background:#EFF6FF; color:#2563EB; font-size:17px; }
+.coach-support-copy { display:flex; min-width:0; flex:1; flex-direction:column; gap:2px; }
+.coach-support-copy p { margin:0; color:#172033; font-size:11px; font-weight:800; }
+.coach-support-copy span { color:#9AA3B2; font-size:9px; }
+.coach-support-chevron { color:#9AA3B2; font-size:15px; }
+
+@media (min-width: 700px) {
+  .coach-dashboard-heading,.coach-dashboard-content { padding-right:20px; padding-left:20px; }
+  .coach-milestone-card { padding:18px; }
+  .coach-milestone-title { font-size:15px; }
+  .coach-weather-card { padding:12px 16px; }
+  .coach-support-card { min-height:70px; padding:12px 16px; }
+}
+
+.coach-profile-card {
+  background: #FFFFFF;
+  border: 1px solid #E9EEF3;
+  box-shadow: 0 6px 24px rgba(19, 35, 58, 0.07);
+}
+
+.coach-profile-dismiss {
+  border: 0;
+  background: #F3F5F8;
+  color: #7B8494;
+}
+
+.coach-profile-action {
+  border: 0;
+  background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to));
+  color: #14210A;
+  box-shadow: 0 3px 12px rgba(var(--app-primary-rgb), 0.22);
 }
 
 /* Action Cards */
