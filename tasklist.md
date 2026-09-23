@@ -242,3 +242,10 @@
 - Expanded Laravel Admin Coach Management with the complete saved profile details, gallery and secure verification-document download links. The admin Coach list now shows gallery and verification submission counts.
 - Applied the `coach_media`, `coach_profile_details` and `coach_verification_documents` migrations on the live server, cleared relevant caches, and verified the live routes and Blade templates. Angular compilation and PHP syntax checks pass with only existing Angular warnings.
 - Deployed and pushed the backend on `developer` as `e2e6732` and the Ionic frontend on `master` as `f9e2946`.
+
+## Completed: Coach profile prefill and completion-sync correction - 24 September 2026
+
+- Fixed the Coach dashboard percentage so it uses the same 12 sections as the Coach completion screen, including saved gallery media and all three verification documents.
+- Added automatic draft saving while a Coach updates profile information. Saved values now reload when returning to Complete Profile, even if the Coach leaves without pressing a section button.
+- Refreshes the signed-in profile after saving so the dashboard percentage updates without requiring the Coach to log in again.
+- Angular compilation and PHP syntax checks pass with only existing Angular warnings. The live Laravel change was pushed as `eb62dba`.

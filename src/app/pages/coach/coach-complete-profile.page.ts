@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, DoCheck, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
@@ -777,7 +777,7 @@ const ALL_SECTIONS = [
     }
   `]
 })
-export class CoachCompleteProfilePage implements OnInit {
+export class CoachCompleteProfilePage implements DoCheck, OnInit {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly coachService = inject(CoachService);
@@ -836,6 +836,9 @@ export class CoachCompleteProfilePage implements OnInit {
   ];
   profileSaveBusy = false;
   profileSaveError = '';
+  private profileDetailsLoaded = false;
+  private lastProfileDraft = '';
+  private profileAutosaveTimer?: ReturnType<typeof setTimeout>;
 
   get verifyUp(): boolean { return this.verificationCategories.every((category) => !!this.verificationFor(category.id)); }
 
@@ -848,6 +851,15 @@ export class CoachCompleteProfilePage implements OnInit {
   }
 
   ngOnInit(): void { this.loadGallery(); this.loadVerificationDocuments(); this.loadProfileDetails(); }
+
+  ngDoCheck(): void {
+    if (!this.profileDetailsLoaded || this.profileSaveBusy) return;
+    const draft = this.profileDetailsDraft();
+    if (draft === this.lastProfileDraft) return;
+    this.lastProfileDraft = draft;
+    if (this.profileAutosaveTimer) clearTimeout(this.profileAutosaveTimer);
+    this.profileAutosaveTimer = setTimeout(() => { void this.saveProfileDetails(false); }, 700);
+  }
 
   galleryFor(category: CoachGalleryCategory): CoachGalleryItem[] {
     return this.gallery.filter((item) => item.category === category);
@@ -1068,6 +1080,8 @@ export class CoachCompleteProfilePage implements OnInit {
         const details = result.data;
         if (!result.success || !details) return;
         this.applyProfileDetails(details);
+        this.lastProfileDraft = this.profileDetailsDraft();
+        this.profileDetailsLoaded = true;
       },
       error: () => { this.profileSaveError = 'Saved profile details could not be loaded. You can still update them and save again.'; },
     });
@@ -1093,7 +1107,7 @@ export class CoachCompleteProfilePage implements OnInit {
     this.bio = details.bio || '';
   }
 
-  private async saveProfileDetails(): Promise<boolean> {
+  private async saveProfileDetails(showError = true): Promise<boolean> {
     if (this.profileSaveBusy) return false;
     this.profileSaveBusy = true;
     this.profileSaveError = '';
@@ -1115,11 +1129,22 @@ export class CoachCompleteProfilePage implements OnInit {
     try {
       const result = await firstValueFrom(this.coachService.saveMyCoachProfileDetails(payload));
       if (!result.success) throw new Error(result.message || 'Unable to save profile details.');
+      this.lastProfileDraft = this.profileDetailsDraft();
+      void firstValueFrom(this.auth.fetchMe()).catch(() => undefined);
       return true;
     } catch (error: any) {
-      this.profileSaveError = error?.error?.message || error?.message || 'Unable to save profile details. Please try again.';
+      if (showError) this.profileSaveError = error?.error?.message || error?.message || 'Unable to save profile details. Please try again.';
       return false;
     } finally { this.profileSaveBusy = false; }
+  }
+
+  private profileDetailsDraft(): string {
+    return JSON.stringify({
+      languages: this.langs, locations: this.locs, radius: this.radius, sessions: this.sessions,
+      equipment: this.equip, trialOn: this.trialOn, trialType: this.trialType, travel: this.travel,
+      availability: this.avail, fees: this.fees, negotiable: this.negotiable, bio: this.bio,
+      achievements: this.achievements,
+    });
   }
 
   finishOnboarding() {
