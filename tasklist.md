@@ -215,3 +215,13 @@
 - Added an initials fallback when a player's photo is missing or cannot load.
 - Made the requesting player's name and request status visible in the session participant row; the confirmed count remains visible.
 - No navigation, booking workflow, or backend/cloud configuration was changed.
+
+## Completed: Live Coach session details and Admin operations overview - 24 September 2026
+
+- Replaced the session-detail demo fallback with a Coach-owned API lookup for current and older scheduled sessions; an unknown ID now shows a clear error instead of the first demo session.
+- Connected participant names/photos, venue/court, date/time, status, session description and listed price breakdown to persisted session data.
+- Made Coach session notes save to the correct session and attendance changes persist per player for both current and legacy sessions.
+- Removed fabricated venue amenities, payment-completed claims, assistant tips and unrelated activity from the visible session detail.
+- Added an admin-only overview API and dashboard section for Coach/Venue/Player counts, partnerships needing review, venue approval queue, player names, recent current/legacy sessions and listed session value.
+- PHP syntax/route checks and the Angular production build pass; the build reports only existing Sass deprecation, optional-chain, and style-budget warnings.
+- The local Laravel database is unavailable on 127.0.0.1:3306, so migration status/application and database-backed endpoint checks remain pending. No production server was changed.

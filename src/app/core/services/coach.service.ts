@@ -88,6 +88,18 @@ export class CoachService {
     return this.api.get<any[]>(`/coach/scheduling/sessions${query ? `?${query}` : ''}`);
   }
 
+  getSchedulingSession(id: string): Observable<ApiResponse<any>> {
+    return this.api.get(`/coach/scheduling/sessions/${encodeURIComponent(id)}`);
+  }
+
+  saveSchedulingSessionNotes(id: string, notes: string): Observable<ApiResponse<any>> {
+    return this.api.patch(`/coach/scheduling/sessions/${encodeURIComponent(id)}/notes`, { notes });
+  }
+
+  saveSchedulingAttendance(id: string, playerId: number, status: 'present' | 'absent'): Observable<ApiResponse<any>> {
+    return this.api.patch(`/coach/scheduling/sessions/${encodeURIComponent(id)}/attendance`, { player_id: playerId, status });
+  }
+
   getCoachSessions(): Observable<ApiResponse<any>> {
     return this.api.get('/coach/sessions');
   }

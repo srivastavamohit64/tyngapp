@@ -184,3 +184,10 @@ TYNG — TODAY'S WORK SUMMARY
    - Added an initials display if a player's photo is unavailable.
    - Showed the requesting player's name and current request status alongside the confirmed-player count.
    - Kept existing navigation and booking steps unchanged; no backend or cloud settings were changed.
+
+31. LIVE SESSION DETAILS AND ADMIN SCHEDULING OVERVIEW - 24 September 2026
+   - Coach session detail now loads the selected session and its real player, venue, court, date, status and price details.
+   - Coaches can save private session notes and record which players attended; those changes are kept with the session.
+   - Removed example venue features, payment claims and unrelated activity from the session screen.
+   - The admin dashboard now summarizes coaches, venues, players, session requests, venue partnerships, recent sessions and listed session prices.
+   - The app build and Laravel code/route checks passed. The local database is currently offline, so its required update and database-backed checks still need to be run after MySQL is available. No live server was changed.

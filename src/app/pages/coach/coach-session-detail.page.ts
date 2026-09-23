@@ -3,6 +3,8 @@ import { Component, signal, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
+import { CoachService } from '../../core/services/coach.service';
+import { resolveMediaUrl } from '../../core/utils/media-url.util';
 
 interface Student {
   id: number;
@@ -11,6 +13,7 @@ interface Student {
   skill: string;
   attendance: number;
   sessions: number;
+  attendanceStatus?: 'present' | 'absent' | null;
 }
 
 interface CoachSession {
@@ -35,6 +38,15 @@ interface CoachSession {
   studentsConfirmed: number;
   studentsTotal: number;
   students: Student[];
+  source: 'scheduling' | 'legacy';
+  description: string;
+  coachNotes: string;
+  coachFee: number;
+  venueFee: number;
+  platformFee: number;
+  taxAmount: number;
+  paymentStatus: string;
+  attendanceSupported: boolean;
   tab: 'today' | 'upcoming' | 'completed' | 'cancelled';
 }
 
@@ -47,7 +59,7 @@ const MOCK_STUDENTS: Student[] = [
   { id: 6, name: 'Meena Krishnan', photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&h=80&fit=crop&auto=format', skill: 'Intermediate', attendance: 85, sessions: 9 },
 ];
 
-const SESSIONS: CoachSession[] = [
+const SESSIONS: any[] = [
   {
     id: 's1', name: 'Elite Cricket Academy', sport: 'Cricket', emoji: '🏏',
     image: 'https://images.unsplash.com/photo-1593341646782-e0b495cff86d?w=700&h=350&fit=crop&auto=format',
@@ -92,10 +104,15 @@ const SESSIONS: CoachSession[] = [
   imports: [CommonModule, IonicModule, FormsModule],
   template: `
     <ion-content [fullscreen]="true">
-      <div *ngIf="session" class="session-detail-page pb-32">
+      <div *ngIf="loading" class="p-8 text-center text-slate-500">Loading session details…</div>
+      <div *ngIf="errorMessage && !loading" class="p-8 text-center">
+        <p class="text-slate-700">{{ errorMessage }}</p>
+        <button (click)="back()" class="mt-3 px-5 py-3 rounded-xl bg-white border border-slate-200">Back to schedule</button>
+      </div>
+      <div *ngIf="session && !loading" class="session-detail-page pb-32">
         <!-- Hero section -->
         <div class="relative h-[32vh] min-h-[220px] overflow-hidden bg-gray-900">
-          <img [src]="session.image" class="w-full h-full object-cover" />
+          <img [src]="session.image" [alt]="session.sport + ' session'" class="w-full h-full object-cover" />
           <div class="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-[#FAFBFC]"></div>
 
           <div class="absolute top-0 left-0 right-0 flex items-center justify-between px-5 pt-12">
@@ -129,10 +146,11 @@ const SESSIONS: CoachSession[] = [
           <!-- Session general metadata card -->
           <div class="bg-white rounded-[24px] p-5 shadow-sm border border-slate-100 text-left">
             <h1 class="text-[22px] font-black text-[#111827] mb-1 m-0">{{ session.name }}</h1>
+            <p *ngIf="session.description" class="text-[13px] text-slate-600 mb-4 whitespace-pre-line">{{ session.description }}</p>
             <p class="text-[13px] text-[#9CA3AF] mb-4 m-0">{{ session.teamName ?? session.studentName }} · {{ session.type }}</p>
 
             <div class="grid grid-cols-2 gap-3">
-              <div *ngFor="let s of [{ name: 'location-outline', label:'Venue', val:session.venue }, { name: 'time-outline', label:'Time', val:session.time }, { name: 'people-outline', label:'Students', val: getAttendanceCount() + '/' + session.students.length }, { name: 'hourglass-outline', label:'Duration', val:session.duration }, { name: 'cloudy-night-outline', label:'Weather', val:session.weather }, { name: 'trail-sign-outline', label:'Distance', val:session.distance }]"
+              <div *ngFor="let s of sessionFacts()"
                 class="flex items-center gap-2.5">
                 <div class="w-8 h-8 rounded-xl bg-[#F3F4F6] flex items-center justify-center flex-shrink-0">
                   <ion-icon [name]="s.name" class="text-[#6B7280] text-sm"></ion-icon>
@@ -155,7 +173,7 @@ const SESSIONS: CoachSession[] = [
           </div>
 
           <!-- Present roster checklist -->
-          <div class="bg-white rounded-[24px] p-5 shadow-sm border border-slate-100 text-left">
+          <div id="session-attendance" class="bg-white rounded-[24px] p-5 shadow-sm border border-slate-100 text-left">
             <div class="flex items-center justify-between mb-4">
               <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest m-0">Students</p>
               <span class="text-[12px] font-bold text-[var(--app-primary)]">
@@ -165,30 +183,31 @@ const SESSIONS: CoachSession[] = [
 
             <div class="space-y-3">
               <div *ngFor="let s of session.students" class="flex items-center gap-3 bg-[#F9FAFB] rounded-2xl px-3.5 py-3 border border-slate-100">
-                <img [src]="s.photo" class="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+                <img *ngIf="s.photo" [src]="s.photo" [alt]="s.name" class="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+                <div *ngIf="!s.photo" class="w-10 h-10 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-bold">{{ initials(s.name) }}</div>
                 <div class="flex-1 min-w-0">
                   <p class="text-[13px] font-bold text-[#111827] m-0">{{ s.name }}</p>
                   <div class="flex items-center gap-2 text-[10px] text-[#9CA3AF]">
-                    <span [style.color]="getSkillColor(s.skill)" class="font-bold">{{ s.skill }}</span>
+                    <span class="font-bold">{{ s.attendanceStatus || 'Attendance not marked' }}</span>
                     <span>·</span>
-                    <span class="font-bold">{{ s.attendance }}% Attend</span>
+                    <span></span>
                   </div>
                 </div>
                 <div class="flex items-center gap-2 flex-shrink-0">
                   <button (click)="go('/app/coach/chat')" class="w-8 h-8 rounded-full bg-[#EFF6FF] border-none flex items-center justify-center">
                     <ion-icon name="chatbubble-ellipses-outline" class="text-[#2563EB] text-sm"></ion-icon>
                   </button>
-                  <button (click)="toggleAttendance(s.id)" class="w-8 h-8 rounded-full border-none flex items-center justify-center transition-all"
-                    [style.backgroundColor]="attendance[s.id] ? 'var(--app-primary)' : '#F3F4F6'">
-                    <ion-icon name="checkmark-outline" [style.color]="attendance[s.id] ? '#111827' : '#C4C9D4'" style="font-weight:bold;"></ion-icon>
+                  <button (click)="toggleAttendance(s.id)" [disabled]="savingAttendance[s.id] || !session.attendanceSupported" class="w-8 h-8 rounded-full border-none flex items-center justify-center transition-all"
+                    [style.backgroundColor]="s.attendanceStatus === 'present' ? 'var(--app-primary)' : '#F3F4F6'">
+                    <ion-icon [name]="s.attendanceStatus === 'present' ? 'checkmark-outline' : s.attendanceStatus === 'absent' ? 'close-outline' : 'ellipse-outline'" [style.color]="s.attendanceStatus === 'present' ? '#111827' : '#C4C9D4'" style="font-weight:bold;"></ion-icon>
                   </button>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Amenities -->
-          <div class="bg-white rounded-[24px] p-5 shadow-sm border border-slate-100 text-left">
+          <!-- Amenities are not provided by the session API, so don't show invented venue features. -->
+          <div *ngIf="session && false" class="bg-white rounded-[24px] p-5 shadow-sm border border-slate-100 text-left">
             <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-4 m-0">Venue Amenities</p>
             <div class="grid grid-cols-4 gap-2.5">
               <div *ngFor="let a of amenities" class="flex flex-col items-center gap-1.5 py-3 bg-[#F9FAFB] rounded-2xl border border-slate-100">
@@ -201,11 +220,11 @@ const SESSIONS: CoachSession[] = [
           <!-- Notes -->
           <div class="bg-white rounded-[24px] p-5 shadow-sm border border-slate-100 text-left">
             <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-3 m-0">Coach Notes</p>
-            <textarea [(ngModel)]="notes" (input)="savedNotes = false" rows="4" placeholder="Add notes about today's training session, observations, or reminders..."
+            <textarea [(ngModel)]="notes" (input)="savedNotes = false" rows="4" maxlength="4000" placeholder="Add private notes about this session..."
               class="w-full p-4 rounded-2xl text-[14px] text-[#111827] placeholder:text-[#C4C9D4] focus:outline-none resize-none bg-[#FAFBFC] border border-slate-200"></textarea>
             <div class="flex items-center justify-between mt-2">
-              <p class="text-[11px] text-[#C4C9D4] m-0 font-bold">{{ notes.length }}/500</p>
-              <button (click)="saveNotes()" [disabled]="!notes.trim()" class="px-5 py-2 rounded-xl text-[13px] font-bold border-none"
+              <p class="text-[11px] text-[#C4C9D4] m-0 font-bold">{{ notes.length }}/4000</p>
+              <button (click)="saveNotes()" [disabled]="savingNotes || notes.length > 4000" class="px-5 py-2 rounded-xl text-[13px] font-bold border-none"
                 [style.backgroundColor]="notes.trim() ? 'var(--app-primary)' : '#F3F4F6'"
                 [style.color]="notes.trim() ? '#111827' : '#C4C9D4'">
                 {{ savedNotes ? '✓ Saved' : 'Save Notes' }}
@@ -214,11 +233,11 @@ const SESSIONS: CoachSession[] = [
           </div>
 
           <!-- Payments card -->
-          <div class="bg-white rounded-[24px] p-5 shadow-sm border border-slate-100 text-left">
+          <div *ngIf="session && false" class="bg-white rounded-[24px] p-5 shadow-sm border border-slate-100 text-left">
             <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-4 m-0">Payment</p>
             <div class="space-y-3">
               <div class="flex justify-between py-2 border-b border-[#F9FAFB]">
-                <span class="text-[13px] text-[#6B7280]">Session Earnings</span>
+                <span class="text-[13px] text-[#6B7280]">Session total</span>
                 <span class="text-[13px] font-bold text-[#111827]">₹{{ session.earnings.toLocaleString() }}</span>
               </div>
               <div class="flex justify-between py-2 border-b border-[#F9FAFB]">
@@ -228,11 +247,11 @@ const SESSIONS: CoachSession[] = [
                 </span>
               </div>
               <div class="flex justify-between py-2 border-b border-[#F9FAFB]">
-                <span class="text-[13px] text-[#6B7280]">Platform Fee</span>
+                <span class="text-[13px] text-[#6B7280]">Venue fee</span>
                 <span class="text-[13px] font-bold text-[#6B7280]">₹49</span>
               </div>
               <div class="flex justify-between py-2 border-b border-[#F9FAFB]">
-                <span class="text-[13px] text-[#6B7280]">Net Earnings</span>
+                <span class="text-[13px] text-[#6B7280]">Coach fee</span>
                 <span class="text-[13px] font-black text-[#16A34A]">₹{{ Math.max(0, session.earnings - 49).toLocaleString() }}</span>
               </div>
             </div>
@@ -241,8 +260,18 @@ const SESSIONS: CoachSession[] = [
             </button>
           </div>
 
+          <div class="bg-white rounded-[24px] p-5 shadow-sm border border-slate-100 text-left">
+            <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-4 m-0">Session price details</p>
+            <div class="flex justify-between py-2 border-b border-slate-50"><span>Coach fee</span><strong>₹{{ session.coachFee | number:'1.2-2' }}</strong></div>
+            <div class="flex justify-between py-2 border-b border-slate-50"><span>Venue fee</span><strong>₹{{ session.venueFee | number:'1.2-2' }}</strong></div>
+            <div class="flex justify-between py-2 border-b border-slate-50"><span>Platform fee</span><strong>₹{{ session.platformFee | number:'1.2-2' }}</strong></div>
+            <div class="flex justify-between py-2 border-b border-slate-50"><span>Tax</span><strong>₹{{ session.taxAmount | number:'1.2-2' }}</strong></div>
+            <div class="flex justify-between pt-3 font-bold"><span>Total listed price</span><strong>₹{{ session.earnings | number:'1.2-2' }}</strong></div>
+            <p class="text-[11px] text-slate-500 mt-3 mb-0">Payment collection is not connected to this session record.</p>
+          </div>
+
           <!-- Coach Assistant AI card -->
-          <div class="rounded-[24px] p-5 relative overflow-hidden bg-gradient-to-br from-[var(--app-primary)] to-[var(--app-primary-to)] text-left">
+          <div *ngIf="false" class="rounded-[24px] p-5 relative overflow-hidden bg-gradient-to-br from-[var(--app-primary)] to-[var(--app-primary-to)] text-left">
             <div class="absolute top-0 right-0 w-24 h-24 rounded-full bg-white/10 -translate-y-8 translate-x-8"></div>
             <div class="relative">
               <div class="flex items-center gap-2 mb-3">
@@ -263,7 +292,7 @@ const SESSIONS: CoachSession[] = [
           </div>
 
           <!-- Recent activities list -->
-          <div class="bg-white rounded-[24px] px-5 py-5 shadow-sm border border-slate-100 text-left">
+          <div *ngIf="false" class="bg-white rounded-[24px] px-5 py-5 shadow-sm border border-slate-100 text-left">
             <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-3 m-0">Recent Activity</p>
             <div class="space-y-0">
               <div *ngFor="let a of activityList; let idx = index" class="flex items-center gap-3 py-3" [class.border-b]="idx < activityList.length - 1" class="border-slate-50">
@@ -290,7 +319,7 @@ const SESSIONS: CoachSession[] = [
           <button class="footer-action-btn">
             <ion-icon name="navigate-outline"></ion-icon>Navigate
           </button>
-          <button class="footer-action-btn font-black text-white bg-gradient-to-br from-[#FF7A00] to-[#FF9A40] shadow-md border-none">
+          <button (click)="scrollToAttendance()" class="footer-action-btn font-black text-white bg-gradient-to-br from-[#FF7A00] to-[#FF9A40] shadow-md border-none">
             Attendance
           </button>
         </div>
@@ -361,11 +390,16 @@ const SESSIONS: CoachSession[] = [
 export class CoachSessionDetailPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly coachService = inject(CoachService);
 
   session: CoachSession | null = null;
+  loading = true;
+  errorMessage = '';
   liked = false;
   notes = '';
   savedNotes = false;
+  savingNotes = false;
+  savingAttendance: Record<number, boolean> = {};
   attendance: Record<number, boolean> = {};
 
   readonly Math = Math;
@@ -390,17 +424,73 @@ export class CoachSessionDetailPage implements OnInit {
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
-      const match = SESSIONS.find(s => s.id === id) || SESSIONS[0];
-      if (match) {
-        this.session = JSON.parse(JSON.stringify(match));
-        if (this.session) {
-          this.attendance = this.session.students.reduce((acc, s) => {
-            acc[s.id] = s.id <= (this.session?.studentsConfirmed ?? 0);
-            return acc;
-          }, {} as Record<number, boolean>);
-        }
-      }
+      if (!id) { this.loading = false; this.errorMessage = 'Session not found.'; return; }
+      this.loading = true;
+      this.errorMessage = '';
+      this.coachService.getSchedulingSession(id).subscribe({
+        next: response => {
+          if (!response.success || !response.data) { this.errorMessage = response.message || 'Unable to load this session.'; this.loading = false; return; }
+          this.session = this.mapSession(response.data);
+          this.notes = this.session.coachNotes || '';
+          this.loading = false;
+        },
+        error: error => { this.errorMessage = error?.error?.message || 'Unable to load this session. Please try again.'; this.loading = false; },
+      });
     });
+  }
+
+  private mapSession(item: any): CoachSession {
+    const startsAt = item.starts_at ? new Date(item.starts_at) : new Date();
+    const endsAt = item.ends_at ? new Date(item.ends_at) : startsAt;
+    const participants = Array.isArray(item.participants) ? item.participants : [];
+    const status = this.statusLabel(item.status);
+    return {
+      id: String(item.id), source: item.source === 'legacy' ? 'legacy' : 'scheduling',
+      name: item.title || 'Coaching Session', sport: item.sport || 'Training', emoji: this.sportEmoji(item.sport), image: 'assets/hero-sports.png',
+      studentName: participants.length === 1 ? participants[0]?.name : undefined,
+      teamName: participants.length > 1 ? `${participants.length} players` : undefined,
+      venue: item.venue || 'Venue pending', address: [item.venue_location, item.court].filter(Boolean).join(' · ') || 'Location pending',
+      date: startsAt.toLocaleDateString(), time: `${startsAt.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })} · ${startsAt.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`,
+      duration: this.durationLabel(startsAt, endsAt), type: participants.length === 1 ? 'One-on-One' : 'Group Session', status,
+      weather: '', distance: '', earnings: Number(item.price ?? 0), studentsConfirmed: Number(item.confirmed_participants_count ?? 0), studentsTotal: participants.length,
+      coachFee: Number(item.coach_fee ?? item.price ?? 0), venueFee: Number(item.venue_fee ?? 0), platformFee: Number(item.platform_fee ?? 0),
+      taxAmount: Number(item.tax_amount ?? 0), paymentStatus: 'No payment recorded', description: item.description || '', coachNotes: item.coach_notes || '',
+      attendanceSupported: item.attendance_supported !== false && ['confirmed', 'completed', 'scheduled'].includes(item.status),
+      students: participants.map((player: any) => ({ id: Number(player.id), name: player.name || 'Player', photo: resolveMediaUrl(player.photo) || '', skill: '', attendance: 0, sessions: 0, attendanceStatus: player.attendance || null })),
+      tab: status === 'Completed' ? 'completed' : status === 'Cancelled' ? 'cancelled' : 'upcoming',
+    };
+  }
+
+  private statusLabel(status: string): CoachSession['status'] {
+    if (status === 'completed') return 'Completed';
+    if (['cancelled', 'rejected', 'expired'].includes(status)) return 'Cancelled';
+    if (['confirmed', 'scheduled'].includes(status)) return 'Confirmed';
+    return 'Pending';
+  }
+
+  private durationLabel(start: Date, end: Date): string {
+    const minutes = Math.max(0, Math.round((end.getTime() - start.getTime()) / 60000));
+    return minutes >= 60 ? `${Math.floor(minutes / 60)}h${minutes % 60 ? ` ${minutes % 60}m` : ''}` : `${minutes} min`;
+  }
+
+  private sportEmoji(sport: string): string {
+    return ({ cricket: '🏏', football: '⚽', badminton: '🏸', tennis: '🎾', basketball: '🏀' } as Record<string, string>)[String(sport || '').toLowerCase()] || '🏅';
+  }
+
+  sessionFacts(): Array<{ name: string; label: string; val: string }> {
+    if (!this.session) return [];
+    return [
+      { name: 'location-outline', label: 'Venue', val: this.session.venue },
+      { name: 'time-outline', label: 'Date & time', val: this.session.time },
+      { name: 'people-outline', label: 'Players', val: String(this.session.students.length) },
+      { name: 'hourglass-outline', label: 'Duration', val: this.session.duration },
+      { name: 'basketball-outline', label: 'Facility', val: this.session.address },
+      { name: 'checkmark-circle-outline', label: 'Confirmed', val: `${this.session.studentsConfirmed}/${this.session.studentsTotal}` },
+    ];
+  }
+
+  scrollToAttendance(): void {
+    document.getElementById('session-attendance')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   back() {
@@ -411,21 +501,36 @@ export class CoachSessionDetailPage implements OnInit {
     this.router.navigateByUrl(path);
   }
 
-  getPresentCount() {
-    return Object.values(this.attendance).filter(Boolean).length;
-  }
+  getPresentCount() { return this.session?.students.filter(student => student.attendanceStatus === 'present').length ?? 0; }
 
   getAttendanceCount() {
     return this.session ? this.session.studentsConfirmed : 0;
   }
 
   toggleAttendance(id: number) {
-    this.attendance[id] = !this.attendance[id];
+    if (!this.session) return;
+    const student = this.session.students.find(player => player.id === id);
+    if (!student || this.savingAttendance[id]) return;
+    const previous = student.attendanceStatus;
+    const status = previous === 'present' ? 'absent' : 'present';
+    student.attendanceStatus = status;
+    this.savingAttendance[id] = true;
+    this.coachService.saveSchedulingAttendance(this.session.id, id, status).subscribe({
+      next: () => { this.savingAttendance[id] = false; },
+      error: error => { student.attendanceStatus = previous; this.savingAttendance[id] = false; this.errorMessage = error?.error?.message || 'Attendance could not be saved.'; },
+    });
   }
 
   saveNotes() {
-    this.savedNotes = true;
+    if (!this.session || this.savingNotes) return;
+    this.savingNotes = true;
+    this.coachService.saveSchedulingSessionNotes(this.session.id, this.notes).subscribe({
+      next: () => { this.savedNotes = true; this.savingNotes = false; },
+      error: error => { this.savedNotes = false; this.savingNotes = false; this.errorMessage = error?.error?.message || 'Session notes could not be saved.'; },
+    });
   }
+
+  initials(name: string): string { return (name || 'Player').trim().split(/\s+/).slice(0, 2).map(part => part[0]).join('').toUpperCase(); }
 
   getSkillColor(skill: string) {
     if (skill === 'Expert') return '#C2410C';

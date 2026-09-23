@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
+import { ApiService } from '../../core/services/api.service';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -35,6 +36,32 @@ import { IonicModule } from '@ionic/angular';
         </header>
 
         <section class="section">
+          <h3>Coach &amp; Venue Operations</h3>
+          <p *ngIf="operationsLoading" class="text-sm text-slate-500">Loading live scheduling activity…</p>
+          <p *ngIf="operationsError" class="text-sm text-red-600">{{ operationsError }}</p>
+          <div *ngIf="operations as ops" class="bg-white rounded-2xl border border-slate-200 p-4">
+            <div class="grid grid-cols-2 gap-3 mb-4">
+              <div><p class="text-xl font-bold m-0">{{ ops.stats.pending_partnerships }}</p><p class="text-xs text-slate-500 m-0">Partnership requests</p></div>
+              <div><p class="text-xl font-bold m-0">{{ ops.stats.pending_venue_approval }}</p><p class="text-xs text-slate-500 m-0">Sessions awaiting venue</p></div>
+              <div><p class="text-xl font-bold m-0">{{ ops.stats.participants }}</p><p class="text-xs text-slate-500 m-0">Player invitations</p></div>
+              <div><p class="text-xl font-bold m-0">₹{{ ops.stats.scheduled_value | number:'1.0-0' }}</p><p class="text-xs text-slate-500 m-0">Confirmed/completed listed value</p></div>
+            </div>
+            <p class="text-xs text-slate-500 mb-2">{{ ops.stats.coaches }} coaches · {{ ops.stats.venues }} venues · {{ ops.stats.players }} players · {{ ops.stats.sessions }} scheduled sessions</p>
+            <h4 class="text-sm font-bold mt-4 mb-2">Partnership requests awaiting review</h4>
+            <p *ngIf="!ops.pending_partnership_requests.length" class="text-sm text-slate-500">No venue partnership requests are waiting.</p>
+            <div *ngFor="let request of ops.pending_partnership_requests" class="activity">
+              <div><p class="act-action">{{ request.coach }}</p><p class="act-user">Partnering with {{ request.venue }}</p></div>
+              <span class="act-time">Pending</span>
+            </div>
+            <p *ngIf="!ops.recent_sessions.length" class="text-sm text-slate-500 mb-0">No coaching sessions have been scheduled yet.</p>
+            <div *ngFor="let item of ops.recent_sessions" class="activity">
+              <div class="min-w-0"><p class="act-action truncate">{{ item.title }} · {{ item.sport }}</p><p class="act-user truncate">{{ item.coach }} at {{ item.venue }} · {{ item.players.join(', ') || 'No players added' }}</p></div>
+              <span class="act-time">{{ item.status.replace('_', ' ') }}</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
           <h3>Quick Actions</h3>
           <div class="actions">
             <button type="button" class="action" *ngFor="let a of actions" (click)="go(a.path)">
@@ -45,7 +72,7 @@ import { IonicModule } from '@ionic/angular';
           </div>
         </section>
 
-        <section class="section">
+        <section *ngIf="false" class="section">
           <h3>Alerts</h3>
           <div class="alert" *ngFor="let alert of alerts" [class.high]="alert.severity === 'high'">
             <ion-icon name="alert-circle-outline"></ion-icon>
@@ -56,7 +83,7 @@ import { IonicModule } from '@ionic/angular';
           </div>
         </section>
 
-        <section class="section">
+        <section *ngIf="false" class="section">
           <h3>Recent Activity</h3>
           <div class="activity" *ngFor="let item of activity">
             <div>
@@ -270,10 +297,35 @@ import { IonicModule } from '@ionic/angular';
     `,
   ],
 })
-export class AdminDashboardPage {
+export class AdminDashboardPage implements OnInit {
   private readonly router = inject(Router);
+  private readonly api = inject(ApiService);
+
+  operationsLoading = true;
+  operationsError = '';
+  operations: any = null;
 
   readonly stats = [
+    { label: 'Coaches', value: '—', change: 'Registered', icon: 'people-outline', color: 'var(--app-primary)', key: 'coaches' },
+    { label: 'Venues', value: '—', change: 'Registered', icon: 'business-outline', color: '#FF7A00', key: 'venues' },
+    { label: 'Coach sessions', value: '—', change: 'All statuses', icon: 'calendar-outline', color: '#38BDF8', key: 'sessions' },
+    { label: 'Awaiting approval', value: '—', change: 'Venue review', icon: 'time-outline', color: 'var(--app-primary)', key: 'pending_venue_approval' },
+  ];
+
+  ngOnInit(): void {
+    this.api.get<any>('/admin/coach-operations').subscribe({
+      next: response => {
+        const data = response.data;
+        if (!response.success || !data) { this.operationsError = response.message || 'Unable to load coach operations.'; this.operationsLoading = false; return; }
+        this.operations = data;
+        this.stats.forEach(stat => stat.value = String(data.stats[stat.key] ?? 0));
+        this.operationsLoading = false;
+      },
+      error: error => { this.operationsError = error?.error?.message || 'Coach operations could not be loaded.'; this.operationsLoading = false; },
+    });
+  }
+
+  readonly oldStats = [
     { label: 'Total Users', value: '12,450', change: '+245', icon: 'people-outline', color: 'var(--app-primary)' },
     { label: 'Active Venues', value: '42', change: '+3', icon: 'business-outline', color: '#FF7A00' },
     { label: 'Monthly Revenue', value: '₹24.5L', change: '+18%', icon: 'cash-outline', color: '#38BDF8' },
