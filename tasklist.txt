@@ -268,3 +268,27 @@ TYNG — TODAY'S WORK SUMMARY
    - Added a clear workspace rule that SSH access and the live-server name must be verified before any Laravel server file, command, upload or database update.
    - The rule also confirms that live Laravel work must stay inside the correct project folder and be checked, committed and pushed after completion.
    - The related Coach, schedule, profile and Insights updates were committed and pushed to the shared code repository on `master` as `7004a39`.
+
+44. WALLET IONIC SEGMENT NAVIGATION - 24 September 2026
+   - Reorganised the Wallet page into native Ionic segments: Wallet, TP Points and Gift Cards.
+   - Each segment shows only its own information while keeping top-up, points conversion, gift-card creation, redemption and history actions working.
+   - Added mobile-friendly segment styling and a short transition when switching sections.
+   - Corrected the Ionic segment value type so the Wallet page compiles with the current Ionic component definition.
+   - `git diff --check` passed, the production build process completed, and the local Angular application shell responds successfully.
+
+45. COACH PROFILE BACK NAVIGATION - 24 September 2026
+   - Added a clear Back button to the Coach Profile header.
+   - It returns to the preceding screen when available, with Coach Dashboard as the safe direct-link fallback.
+
+46. LIVE ADMIN BOOKINGS PAGINATION REPAIR - 24 September 2026
+   - Corrected the broken pagination layout on the live Admin Bookings page by using the Bootstrap pagination template that matches the Admin dashboard.
+   - This prevents duplicate pagination controls and oversized arrow graphics.
+   - Verified SSH host `srv1789528`, cleared the live compiled-view cache, and pushed the Laravel fix on `developer` as `e67aaa9`.
+
+47. CLIENT TASK-LIST ROLE CORRECTION - 24 September 2026
+   - Reorganised the client-facing feature summary so Wallet is shown under Player and Booking controls are shown under Admin.
+   - Removed internal server and repository notes from the client-facing document.
+
+48. CLIENT TASK-LIST DELIVERY SUMMARY - 24 September 2026
+   - Rebuilt `tasklistnew.txt` from completed task-list items 20–47 only, excluding planning and review work that did not create a user-facing change.
+   - Grouped the delivered changes into Coach, Player, Venue Staff, Admin and All App Users using client-friendly language.

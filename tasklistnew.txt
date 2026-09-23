@@ -1,68 +1,55 @@
-TYNG APP – CLIENT-FRIENDLY FEATURE SUMMARY
-Updates from 24 September 2026
+TYNG - TODAY'S NEW FEATURES
+24 September 2026
 
 COACH
 
-- Create coaching sessions at a specific venue and court.
-- See only suitable venues and courts for the selected sport.
-- View a live schedule with venue, court, player, date, time and session status.
-- Avoid accidental double-booking of the same court and time.
-- See venue photos while planning a session.
-- Move directly between the different steps while setting up a session.
-- Accept or decline a player’s coaching request.
-- See the requesting player’s name, photo or initials, and request status.
-- Accepted players are added to the Coach’s student list.
-- View complete session information, including player, venue, court, date, price and status.
-- Add private notes to a session and mark player attendance.
-- Open directions to the session venue using Google Maps.
-- Receive a clear message when attendance or directions are not yet available.
-- Upload, view, replace and remove profile photos, training photos, videos and certificates.
-- Submit Government ID, coaching certificate and professional profile photo for verification.
-- Save coaching locations, availability, pricing, trial preferences and achievements.
-- Return later and see saved profile information again.
-- See an accurate profile completion percentage based on completed information, gallery items and verification documents.
-- Weekly availability now shows each day and time window clearly, with saved-status feedback and an option to clear selections.
-- Session notes now have a cleaner layout, private label, character count and clear saving confirmation.
-- Update weekly availability using clearer day-by-day time slots, with confirmation once changes are saved.
-- After reaching 100% profile completion, the Coach Dashboard and side menu no longer show unnecessary “Complete Profile” reminders.
-- Edit all coaching information from one place: languages, coaching locations, travel distance, session types, equipment, trial options, session arrangements, availability, pricing, achievements and bio.
-- Update profile gallery items and verification documents directly from Edit Profile whenever needed.
-- See the real number of unread chat messages in the Coach Schedule and open Chat directly from that summary.
-- See the real number of active coaching sessions beside My Schedule in the side menu.
-- See Coach Insights in a clearer layout, with easier-to-understand performance sections and a direct link to the schedule.
-- Update profile information from Coach Insights without being asked to complete an already completed profile.
+- Create a coaching session by choosing the right venue and the exact court or facility.
+- See only venues and courts that support the selected sport.
+- Move between any step while planning a coaching session, without starting again.
+- See venue photos while choosing where to train.
+- Send a coaching-session request to the venue and see its current approval status in the schedule.
+- Avoid choosing a court and time that is already reserved.
+- Accept or decline a player's coaching request from the request card.
+- See the player's name, photo or initials, and request status before responding.
+- Accepted players are added to the Coach's student list.
+- View complete session information, including player, venue, court, date, time, price and status.
+- Add private notes for a session and mark which players attended.
+- Open directions to the confirmed session venue in Google Maps.
+- See clear guidance when attendance or directions are not yet available.
+- Upload, view, replace or remove profile photos, training photos, videos and certificates.
+- Submit identification, coaching certificates and a professional photo for Coach verification.
+- Save coaching locations, availability, pricing, trial options, achievements and other profile information, then see it again later.
+- Update all coaching information, photos and verification details from Edit Profile.
+- See a clear day-by-day weekly availability view, including confirmation when changes are saved.
+- Stop seeing profile-completion reminders once the Coach profile is fully complete.
+- See the real number of unread messages, pending requests and active upcoming sessions in the schedule area.
+- View Coach Insights in a clearer layout, with an easy way to open the schedule or update the profile.
+- Return easily from the Coach Profile page using a Back button.
 
 PLAYER
 
 - Receive an update when a Coach accepts or declines a coaching request.
-- Receive an invitation when a Coach accepts the request.
-- Coordinate the coaching time with the Coach after acceptance.
-- See clearer session information and status updates.
+- Receive an invitation after a session is approved and coordinate the time with the Coach.
+- Move easily between Wallet balance, TYNG Points and Gift Cards without leaving the Wallet screen.
+- Add money, exchange TYNG Points, create Gift Cards, redeem Gift Cards and view previous wallet activity from the relevant Wallet section.
 
 VENUE STAFF
 
-- See Coach session requests in the Venue Dashboard.
-- See Coach session requests together with regular booking requests in Bookings.
-- Review the requested Coach, player, sport, court, date and time.
-- Approve a coaching session directly from the Dashboard or Bookings area.
-- Approving a session keeps the selected court reserved and sends the player invitation.
-- Approved sessions show the correct confirmed status for the Coach and player.
-- Venue staff are the only users who can approve the venue request.
+- See coaching-session requests together with normal court bookings.
+- Review the Coach, player, sport, court, date and time before making a decision.
+- Approve a coaching session directly from the Venue Dashboard or the Bookings area.
+- Approval keeps the selected court reserved, confirms the session and sends the player invitation.
+- See the Coach session-request area near the top of the Venue Dashboard whenever action is needed.
 
 ADMIN
 
-- View a scheduling overview covering Coaches, Venues, Players, session requests, venue partnerships, recent sessions and listed prices.
-- View complete Coach profile information from the Admin Coach area.
-- Review Coach photos, training media, videos and certificates.
-- Open submitted verification documents securely.
-- See Coach verification and gallery submission progress more clearly.
+- See a clearer scheduling overview covering Coaches, Venues, Players, session requests, venue partnerships, recent sessions and listed prices.
+- View detailed Coach information, including student progress, sessions, requests, feedback, private notes and booking activity.
+- Review Coach photos, training media, videos, certificates and submitted verification details from the Coach area.
+- Move between Booking pages using clean, readable page controls.
 
-APP-WIDE IMPROVEMENTS
+ALL APP USERS
 
-- Improved the appearance and consistency of cards, buttons, forms, search, filters, tabs, labels, loading screens and messages.
-- Before any live server update, the connection and correct server identity are checked first to keep changes safe and on the right system.
-- The latest Coach improvements have been saved to the shared project code repository.
-- Improved readability, spacing, colours, shadows, touch feedback and keyboard focus.
-- Added friendly fallback displays when a profile photo, venue photo or gallery image is unavailable.
-- Improved mobile-safe spacing across Player, Coach, Venue, Admin, sign-in, booking, chat and profile screens.
-- Kept existing navigation and actions working as before.
+- Enjoy clearer cards, buttons, forms, search, filters, tabs, messages and loading screens across the app.
+- See more consistent spacing, colours, labels and touch feedback on mobile screens.
+- See a friendly fallback image or initials when a profile, venue or gallery photo is unavailable.

@@ -310,3 +310,32 @@
 - Made the calendar icon open the Coach Schedule and added accessible labels for the header actions.
 - Replaced the outdated Complete Profile prompt with an Edit Profile prompt, so a fully completed Coach is not asked to complete the profile again.
 - `git diff --check` passed and the local Angular application shell responds successfully. The production build runner did not return its final status summary; browser visual verification remains unavailable because no browser session is connected.
+
+## Completed: Wallet Ionic Segment navigation - 24 September 2026
+
+- Reorganised the Wallet page into native Ionic segments: Wallet, TP Points and Gift Cards.
+- Each segment displays only its related content while retaining the existing top-up, points conversion, gift-card creation, redemption and history actions.
+- Added mobile-friendly Ionic segment styling and a short transition between panels.
+- Corrected the Ionic segment value type so the Wallet page compiles with the current Ionic component definition.
+- `git diff --check` passed, the production build process completed, and the local Angular application shell responds successfully. Browser visual verification remains unavailable because no browser session is connected.
+
+## Completed: Coach Profile back navigation - 24 September 2026
+
+- Added a clear Back button to the Coach Profile header.
+- It returns to the preceding screen when available, with Coach Dashboard as the safe direct-link fallback.
+
+## Completed: Live Admin Bookings pagination repair - 24 September 2026
+
+- Corrected the broken pagination layout on the live Admin Bookings page by using the Bootstrap pagination template that matches the Admin dashboard.
+- This prevents the duplicate responsive pagination controls and oversized arrow graphics caused by Tailwind pagination markup on the Bootstrap page.
+- Verified SSH host `srv1789528`, cleared the live compiled-view cache, and pushed the live Laravel fix on `developer` as `e67aaa9`.
+
+## Completed: Client task-list role correction - 24 September 2026
+
+- Reorganised the client-facing feature summary so Wallet is shown under Player and Booking controls are shown under Admin.
+- Removed internal server and repository notes from the client-facing document.
+
+## Completed: Client task-list delivery summary - 24 September 2026
+
+- Rebuilt `tasklistnew.txt` from completed task-list items 20–47 only, excluding planning and review work that did not create a user-facing change.
+- Grouped the delivered changes into Coach, Player, Venue Staff, Admin and All App Users using client-friendly language.

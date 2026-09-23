@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule, MenuController, ViewWillEnter } from '@ionic/angular';
@@ -17,6 +17,7 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
 export class ProfilePage implements ViewWillEnter {
   readonly auth = inject(AuthService);
   readonly router = inject(Router);
+  private readonly location = inject(Location);
   private readonly menu = inject(MenuController);
   private readonly xpApi = inject(XpService);
   readonly xp = signal<XpSummary | null>(null);
@@ -94,6 +95,14 @@ export class ProfilePage implements ViewWillEnter {
 
   openXpHistory() {
     void this.router.navigateByUrl('/app/xp/history');
+  }
+
+  goBack() {
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      this.location.back();
+      return;
+    }
+    void this.router.navigateByUrl('/app/coach/dashboard');
   }
 
   async openMenu() {

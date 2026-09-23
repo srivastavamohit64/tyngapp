@@ -18,6 +18,8 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { PageSkeletonComponent, SkeletonListComponent } from '../../shared/components/skeleton';
 
+type WalletSection = 'wallet' | 'points' | 'gifts';
+
 @Component({
   selector: 'app-wallet-page',
   standalone: true,
@@ -56,7 +58,27 @@ import { PageSkeletonComponent, SkeletonListComponent } from '../../shared/compo
             </div>
 
             <ng-container *ngIf="wallet() as w">
-            <section class="tp-card">
+            <ion-segment
+              class="wallet-segment"
+              [value]="selectedSection()"
+              (ionChange)="selectSection($event.detail.value)"
+              aria-label="Wallet sections"
+            >
+              <ion-segment-button value="wallet">
+                <ion-icon name="wallet-outline"></ion-icon>
+                <ion-label>Wallet</ion-label>
+              </ion-segment-button>
+              <ion-segment-button value="points">
+                <ion-icon name="sparkles-outline"></ion-icon>
+                <ion-label>TP Points</ion-label>
+              </ion-segment-button>
+              <ion-segment-button value="gifts">
+                <ion-icon name="gift-outline"></ion-icon>
+                <ion-label>Gift Cards</ion-label>
+              </ion-segment-button>
+            </ion-segment>
+
+            <section *ngIf="selectedSection() === 'points'" class="tp-card section-panel" aria-label="TP Points">
               <div class="tp-top">
                 <div class="tp-main">
                   <p class="tp-kicker">TP Points</p>
@@ -81,7 +103,7 @@ import { PageSkeletonComponent, SkeletonListComponent } from '../../shared/compo
               <p class="tp-preview" *ngIf="convertPreview() as preview">≈ ₹{{ preview | number:'1.2-2' }} will be added</p>
             </section>
 
-            <section class="balance-card">
+            <section *ngIf="selectedSection() === 'wallet'" class="balance-card section-panel" aria-label="Wallet balance">
               <div class="balance-orb"></div>
               <button type="button" class="balance-topup-btn" (click)="openTopupModal()">
                 <ion-icon name="add"></ion-icon>
@@ -104,7 +126,7 @@ import { PageSkeletonComponent, SkeletonListComponent } from '../../shared/compo
               </div>
             </section>
 
-            <section class="gift-card-panel">
+            <section *ngIf="selectedSection() === 'gifts'" class="gift-card-panel section-panel" aria-label="Gift cards">
               <div class="gift-orb"></div>
               <button
                 type="button"
@@ -433,6 +455,36 @@ import { PageSkeletonComponent, SkeletonListComponent } from '../../shared/compo
       .wallet-body *,
       .wallet-body *::before,
       .wallet-body *::after { box-sizing: border-box; }
+      .wallet-segment {
+        --background: #ffffff;
+        background: #ffffff;
+        border: 1px solid #e8edf2;
+        border-radius: 18px;
+        box-shadow: 0 4px 14px rgba(15, 23, 42, .045);
+        padding: 4px;
+      }
+      .wallet-segment ion-segment-button {
+        --background: transparent;
+        --background-checked: rgba(105, 217, 0, .15);
+        --color: #738093;
+        --color-checked: #18250d;
+        --indicator-color: #69d900;
+        --indicator-box-shadow: none;
+        --border-radius: 13px;
+        min-width: 0;
+        min-height: 52px;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: -.01em;
+        text-transform: none;
+      }
+      .wallet-segment ion-segment-button ion-icon { font-size: 18px; margin-bottom: 3px; }
+      .wallet-segment ion-label { margin: 0; }
+      .section-panel { animation: wallet-section-enter 180ms ease-out; }
+      @keyframes wallet-section-enter {
+        from { opacity: 0; transform: translateY(5px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
       .tp-card, .balance-card, .gift-card-panel {
         width: 100%;
         min-width: 0;
@@ -801,6 +853,7 @@ export class WalletPage implements OnInit {
   private readonly router = inject(Router);
 
   readonly wallet = signal<WalletSummary | null>(null);
+  readonly selectedSection = signal<WalletSection>('wallet');
   readonly transactions = signal<WalletTransaction[]>([]);
   readonly myGiftCards = signal<GiftCard[]>([]);
   readonly loading = signal(true);
@@ -834,6 +887,12 @@ export class WalletPage implements OnInit {
 
   pageTitle(): string {
     return this.auth.user()?.role === 'venue' ? 'Venue Account' : 'Wallet';
+  }
+
+  selectSection(value: string | number | undefined): void {
+    if (value === 'wallet' || value === 'points' || value === 'gifts') {
+      this.selectedSection.set(value);
+    }
   }
 
   convertPreview(): number | null {

@@ -3,7 +3,12 @@
   <main *ngIf="auth.user()?.role === 'coach'" class="safe-area-top min-h-full bg-[#FAFBFC] text-slate-800 select-none">
     <section class="coach-profile-hero px-6 pt-6 pb-8 bg-gradient-to-b from-[var(--app-primary)]/20 to-transparent">
       <div class="flex items-center justify-between mb-6">
-        <h2 class="text-[22px] font-black text-[#111827] m-0">Profile</h2>
+        <div class="flex items-center gap-3">
+          <button type="button" class="grid h-10 w-10 place-items-center rounded-full bg-white shadow-sm text-slate-800 border-none" aria-label="Back" (click)="goBack()">
+            <ion-icon name="chevron-back-outline" class="text-xl"></ion-icon>
+          </button>
+          <h2 class="text-[22px] font-black text-[#111827] m-0">Profile</h2>
+        </div>
         <button type="button" class="grid h-10 w-10 place-items-center rounded-full bg-white shadow-sm text-slate-800 border-none" (click)="router.navigateByUrl('/app/coach/settings')">
           <ion-icon name="settings-outline" class="text-xl"></ion-icon>
         </button>
