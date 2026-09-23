@@ -213,7 +213,7 @@ function buildWeek() {
             <div class="text-6xl mb-3">🏋️</div>
             <h3 class="text-[18px] font-black text-[#111827] mb-1">No Coaching Sessions</h3>
             <p class="text-[13px] text-[#6B7280] leading-relaxed mb-5">Enjoy your free time or create a new coaching session.</p>
-            <button (click)="go('/app/coach/plan')" class="h-11 px-6 rounded-full text-[13px] font-black border-none btn-green-gradient text-[#111827]">
+            <button type="button" (click)="go('/app/coach/plan')" class="create-session-button">
               Create Session
             </button>
           </div>
@@ -375,6 +375,46 @@ function buildWeek() {
 
       ion-icon {
         font-size: 15px;
+      }
+    }
+
+    .create-session-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 168px;
+      min-height: 52px;
+      padding: 0 24px;
+      border: 1px solid rgba(var(--app-primary-rgb), 0.38);
+      border-radius: var(--app-radius-button);
+      background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to));
+      color: var(--app-button-contrast);
+      box-shadow: 0 6px 18px rgba(var(--app-primary-rgb), 0.25);
+      font-family: var(--app-font-family);
+      font-size: 15px;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: 0;
+      white-space: nowrap;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform var(--app-motion-fast) var(--app-motion-ease), box-shadow var(--app-motion-base) ease;
+    }
+
+    .create-session-button:active {
+      transform: translateY(1px) scale(0.985);
+      box-shadow: 0 2px 8px rgba(var(--app-primary-rgb), 0.2);
+    }
+
+    .create-session-button:focus-visible {
+      outline: 3px solid rgba(var(--app-primary-rgb), 0.72);
+      outline-offset: 3px;
+    }
+
+    @media (max-width: 360px) {
+      .create-session-button {
+        min-width: 156px;
+        min-height: 48px;
       }
     }
   `]

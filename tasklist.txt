@@ -174,3 +174,7 @@ TYNG — TODAY'S WORK SUMMARY
    - Added friendly fallback displays when a venue photo, profile photo or gallery image is unavailable.
    - Kept all existing screens, navigation and user actions working the same way.
    - The app build completed successfully. A final visual check on real mobile devices is recommended before release.
+
+29. COACH SCHEDULE BUTTON FINISHING - 24 September 2026
+   - Fixed the Create Session button size and text styling on the empty schedule screen.
+   - Improved its shape and touch feedback while keeping the existing action unchanged.

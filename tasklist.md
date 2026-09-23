@@ -203,3 +203,8 @@
 - Added graceful image fallbacks for reusable venue cards, avatars and image carousels so absent media does not render as a broken browser image.
 - Preserved all routes, navigation, page layouts, data bindings, service calls and business workflows; this pass changes presentation and interaction feedback only.
 - `npx ngc -p tsconfig.app.json` and `npm run build` pass. The build retains pre-existing Sass import deprecation, optional-chain advisory and style-budget warnings. A connected-browser/device visual regression pass remains the recommended release check because no in-app browser was available in this workspace.
+
+## Completed: Coach Schedule create button refinement - 24 September 2026
+
+- Corrected the empty-state Create Session button sizing, typography, shape, contrast and tap/focus feedback.
+- Kept its existing destination and session creation flow unchanged.
