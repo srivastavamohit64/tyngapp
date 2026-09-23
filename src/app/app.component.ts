@@ -8,6 +8,7 @@ import { PlatformService } from './core/services/platform.service';
 import { ThemeService } from './core/services/theme.service';
 import { AuthService } from './core/services/auth.service';
 import { VenueService } from './core/services/venue.service';
+import { CoachService } from './core/services/coach.service';
 import { RealtimeService } from './core/services/realtime.service';
 import { PushNotificationService } from './core/services/push-notification.service';
 import { TabBadgeService } from './core/services/tab-badge.service';
@@ -43,6 +44,7 @@ export class AppComponent implements OnInit {
   private readonly menu = inject(MenuController);
   private readonly router = inject(Router);
   private readonly venueService = inject(VenueService);
+  private readonly coachService = inject(CoachService);
   private readonly realtime = inject(RealtimeService);
   private readonly pushNotifications = inject(PushNotificationService);
   private readonly tabBadges = inject(TabBadgeService);
@@ -50,6 +52,7 @@ export class AppComponent implements OnInit {
 
   showLogoutConfirm = false;
   private lastScrollPath = '';
+  readonly coachScheduleCount = signal(0);
 
   private readonly venueMenuStats = signal<{
     profileName: string;
@@ -76,7 +79,7 @@ export class AppComponent implements OnInit {
   readonly coachMenuItems: CoachMenuItem[] = [
     { label: 'Complete Profile', sub: 'Finish your coach profile', path: '/app/coach/complete-profile', icon: 'clipboard-outline' },
     { label: 'Coach Insights', sub: 'Performance & coaching analytics', path: '/app/coach/insights', icon: 'pulse-outline' },
-    { label: 'My Schedule', sub: 'Sessions & calendar', path: '/app/coach/schedule', icon: 'calendar-outline', badge: '3' },
+    { label: 'My Schedule', sub: 'Sessions & calendar', path: '/app/coach/schedule', icon: 'calendar-outline' },
     { label: 'Wallet', sub: 'Balance, top-up & history', path: '/app/wallet', icon: 'wallet-outline' },
     { label: 'Book Venue', sub: 'Discover & reserve venues', path: '/app/coach/book-venue', icon: 'location-outline' },
     { label: 'My Students', sub: 'Manage your students', path: '/app/coach/students', icon: 'people-outline' },
@@ -140,6 +143,7 @@ export class AppComponent implements OnInit {
     });
     if (this.auth.getToken()) {
       this.tabBadges.start();
+      if (this.auth.user()?.role === 'coach') this.refreshCoachScheduleCount();
     }
   }
 
@@ -232,6 +236,12 @@ export class AppComponent implements OnInit {
 
   profileCompletion(): number {
     return this.venueMenuStats().profilePercent || this.user()?.profileCompletion || 0;
+  }
+
+  coachMenuBadge(item: CoachMenuItem): string | undefined {
+    if (item.path !== '/app/coach/schedule') return item.badge;
+    const count = this.coachScheduleCount();
+    return count > 0 ? String(count) : undefined;
   }
 
   tpPoints(): string {
@@ -329,7 +339,28 @@ export class AppComponent implements OnInit {
       if (this.auth.user()?.role === 'venue') {
         void this.refreshVenueMenu();
       }
+      if (this.auth.user()?.role === 'coach') {
+        this.refreshCoachScheduleCount();
+      }
     }
+  }
+
+  private refreshCoachScheduleCount(): void {
+    this.coachService.getSchedulingSessions().subscribe({
+      next: (response) => {
+        const now = new Date();
+        const sessions = Array.isArray(response.data) ? response.data : [];
+        const active = sessions.filter((session: any) => {
+          const status = String(session?.status || '').toLowerCase();
+          const startsAt = session?.starts_at ? new Date(session.starts_at) : null;
+          return !['completed', 'cancelled', 'rejected', 'expired'].includes(status)
+            && (!startsAt || !Number.isNaN(startsAt.getTime()))
+            && (!startsAt || startsAt >= new Date(now.getFullYear(), now.getMonth(), now.getDate()));
+        });
+        this.coachScheduleCount.set(active.length);
+      },
+      error: () => this.coachScheduleCount.set(0),
+    });
   }
 
   private async refreshVenueMenu() {

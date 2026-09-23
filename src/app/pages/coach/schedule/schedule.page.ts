@@ -5,6 +5,7 @@ import { IonicModule } from '@ionic/angular';
 import { BrandHeaderShellComponent } from '../../../shared/components/brand-header-shell/brand-header-shell.component';
 import { SegmentControlComponent, SegmentOption } from '../../../shared/components/segment-control/segment-control.component';
 import { CoachService } from '../../../core/services/coach.service';
+import { TabBadgeService } from '../../../core/services/tab-badge.service';
 import { resolveMediaUrl } from '../../../core/utils/media-url.util';
 
 interface Student {
@@ -183,14 +184,14 @@ function buildWeek() {
               </button>
             </div>
             <div class="grid grid-cols-2 gap-3">
-              <div *ngFor="let m of [{ emoji:'📅', label:'Sessions', value: confirmedCount + ' of ' + todaySessions.length, accent:'var(--app-primary)' }, { emoji:'💰', label:'Expected Earnings', value:'₹' + totalEarnings.toLocaleString(), accent:'#FF7A00' }, { emoji:'🔄', label:'Reschedule Requests', value:'1 Pending', accent:'#F59E0B' }, { emoji:'💬', label:'New Messages', value:'3 Unread', accent:'#38BDF8' }]"
+              <button type="button" *ngFor="let m of todaySummary" (click)="m.action && go(m.action)"
                 class="flex items-center gap-3 py-2.5 px-3 rounded-[18px]" [style.backgroundColor]="m.accent + '10'">
                 <span class="text-xl">{{ m.emoji }}</span>
                 <div>
                   <p class="text-[14px] font-black text-[#111827] leading-none m-0">{{ m.value }}</p>
                   <p class="text-[10px] text-[#9CA3AF] mt-0.5 m-0 font-bold">{{ m.label }}</p>
                 </div>
-              </div>
+              </button>
             </div>
 
             <div class="mt-4 pt-3.5 border-t border-[#F3F4F6]">
@@ -438,6 +439,7 @@ function buildWeek() {
 export class CoachSchedulePage implements OnInit {
   private readonly router = inject(Router);
   private readonly coachService = inject(CoachService);
+  private readonly tabBadges = inject(TabBadgeService);
 
   selectedDay = signal(0);
   activeTab = signal<'today' | 'upcoming' | 'completed' | 'cancelled'>('today');
@@ -477,6 +479,23 @@ export class CoachSchedulePage implements OnInit {
 
   get confirmedCount(): number {
     return this.todaySessions.filter(session => session.status === 'Confirmed').length;
+  }
+
+  get pendingSessionCount(): number {
+    return this.sessions().filter((session) => session.status === 'Pending').length;
+  }
+
+  get unreadChatCount(): number {
+    return this.tabBadges.chatBadge();
+  }
+
+  get todaySummary(): { emoji: string; label: string; value: string; accent: string; action?: string }[] {
+    return [
+      { emoji: '📅', label: 'Sessions', value: `${this.confirmedCount} of ${this.todaySessions.length}`, accent: 'var(--app-primary)' },
+      { emoji: '💰', label: 'Expected Earnings', value: `₹${this.totalEarnings.toLocaleString()}`, accent: '#FF7A00' },
+      { emoji: '🔄', label: 'Session Requests', value: `${this.pendingSessionCount} Pending`, accent: '#F59E0B' },
+      { emoji: '💬', label: 'New Messages', value: `${this.unreadChatCount} Unread`, accent: '#38BDF8', action: '/app/coach/chat' },
+    ];
   }
 
   filteredSessions = computed(() => {

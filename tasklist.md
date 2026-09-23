@@ -264,3 +264,49 @@
 - The dashboard now counts coaching-session requests with normal venue booking requests.
 - Removed a duplicate initial dashboard refresh, reducing the number of profile, dashboard and location calls when a venue first opens the app.
 - The live dashboard API and Ionic Angular compilation were verified successfully.
+
+## Completed: Google Maps API key environment alignment - 24 September 2026
+
+- Set the requested Google Maps API key in the Angular `.env` and regenerated `environment.generated.ts` through `scripts/sync-env.js`.
+- Set `GOOGLE_MAPS_API_KEY` in the local Laravel `.env` and live Laravel `/var/www/tyng/.env`.
+- Confirmed the live hostname is `srv1789528`, cleared Laravel configuration cache, and verified the live environment entry with the key masked.
+- No tracked Laravel files belonged to this environment-only change; pre-existing unrelated live working-tree changes were left untouched.
+
+## Completed: Coach session notes design - 24 September 2026
+
+- Refined the Coach Session Details notes card with a clearer private-notes header, helper copy, icon treatment and character counter.
+- Improved the editor surface with a stronger focus state and responsive vertical sizing.
+- Added visible saving/saved states, spinner feedback and a consistent save button treatment.
+- `git diff --check` passed and the Angular production build completed successfully with only existing project warnings.
+- Browser visual verification was unavailable because no browser session was connected.
+
+## Completed: Coach weekly availability persistence and design - 24 September 2026
+
+- Fixed weekly availability updates to replace the availability map immutably, so the autosave draft detector reliably sees every slot change.
+- Added availability save-state feedback, loading feedback on Save & Next, retry/error messaging and a clear-all action.
+- Redesigned the availability section into day cards with selected-slot counts, time-window buttons and a clearer weekly overview.
+- Confirmed the live `weekly_availability` migration is applied on `srv1789528`; Angular production build and `git diff --check` passed with existing project warnings only.
+- Browser visual verification was unavailable because no browser session was connected.
+
+## Completed: Coach profile completion prompts and edit profile coverage - 24 September 2026
+
+- Removed the Coach dashboard and side-menu completion prompts once the profile reaches 100%.
+- Added all Complete Profile information to Coach Edit Profile: languages, coaching locations, travel radius, training formats, equipment, trial settings, session arrangement, weekly availability, pricing, achievements and bio.
+- Added Coach verification document replacement and removal from Edit Profile, alongside the existing gallery management.
+- Edit Profile now loads and saves these Coach details using the same account information as Complete Profile.
+- Angular production build and `git diff --check` passed with existing project warnings only.
+
+## Completed: Live Coach Schedule message and session counts - 24 September 2026
+
+- Replaced the fixed “3 Unread” message value in the Coach Schedule summary with the live unread Chat count.
+- Made the New Messages summary open Coach Chat when selected.
+- Replaced the fixed side-menu Schedule badge with the real count of active today/upcoming Coach sessions; completed, cancelled, rejected and expired sessions are excluded.
+- Replaced the fixed pending-reschedule display with the actual pending session-request count.
+- Angular production build and `git diff --check` passed with existing project warnings only.
+
+## Completed: Coach Insights design refresh - 24 September 2026
+
+- Refined the Coach Insights page with a clearer page header, explanatory section labels, calmer card borders and shadows, and more consistent spacing on mobile and larger screens.
+- Made the calendar icon open the Coach Schedule and added accessible labels for the header actions.
+- Replaced the outdated Complete Profile prompt with an Edit Profile prompt, so a fully completed Coach is not asked to complete the profile again.
+- `git diff --check` passed and the local Angular application shell responds successfully. The production build runner did not return its final status summary; browser visual verification remains unavailable because no browser session is connected.

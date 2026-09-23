@@ -223,3 +223,47 @@ TYNG — TODAY'S WORK SUMMARY
    - Venue staff can approve directly from this area, or open Bookings to review all requests.
    - Approval confirms the session, reserves the court and sends the player invitation. Coaches cannot approve their own venue request.
    - The first dashboard opening now avoids duplicate loading, so it responds faster.
+
+37. GOOGLE MAPS API KEY ENVIRONMENT ALIGNMENT - 24 September 2026
+   - Set the requested Google Maps API key in the Angular `.env` and regenerated `environment.generated.ts` through `scripts/sync-env.js`.
+   - Set `GOOGLE_MAPS_API_KEY` in the local Laravel `.env` and live Laravel `/var/www/tyng/.env`.
+   - Confirmed live hostname `srv1789528`, cleared Laravel configuration cache, and verified the live environment entry with the key masked.
+   - No tracked Laravel files belonged to this environment-only change; unrelated existing live working-tree changes were left untouched.
+
+38. COACH SESSION NOTES DESIGN - 24 September 2026
+   - Refined the Coach Session Details notes card with a clearer private-notes header, helper copy, icon treatment and character counter.
+   - Improved the editor surface with a stronger focus state and responsive vertical sizing.
+   - Added visible saving/saved states, spinner feedback and a consistent save button treatment.
+   - `git diff --check` passed and the Angular production build completed successfully with only existing project warnings.
+   - Browser visual verification was unavailable because no browser session was connected.
+
+39. COACH WEEKLY AVAILABILITY PERSISTENCE AND DESIGN - 24 September 2026
+   - Fixed weekly availability updates to replace the availability map immutably, so the autosave draft detector reliably sees every slot change.
+   - Added availability save-state feedback, loading feedback on Save & Next, retry/error messaging and a clear-all action.
+   - Redesigned the availability section into day cards with selected-slot counts, time-window buttons and a clearer weekly overview.
+   - Confirmed the live `weekly_availability` migration is applied on `srv1789528`; Angular production build and `git diff --check` passed with existing project warnings only.
+   - Browser visual verification was unavailable because no browser session was connected.
+
+40. COACH PROFILE COMPLETION PROMPTS AND EDIT PROFILE COVERAGE - 24 September 2026
+   - Removed the Coach dashboard and side-menu completion prompts once the profile reaches 100%.
+   - Added all Complete Profile information to Coach Edit Profile: languages, coaching locations, travel radius, training formats, equipment, trial settings, session arrangement, weekly availability, pricing, achievements and bio.
+   - Added Coach verification document replacement and removal from Edit Profile, alongside the existing gallery management.
+   - Edit Profile now loads and saves these Coach details using the same account information as Complete Profile.
+   - Angular production build and `git diff --check` passed with existing project warnings only.
+
+41. LIVE COACH SCHEDULE MESSAGE AND SESSION COUNTS - 24 September 2026
+   - Replaced the fixed “3 Unread” message value in the Coach Schedule summary with the live unread Chat count.
+   - Made the New Messages summary open Coach Chat when selected.
+   - Replaced the fixed side-menu Schedule badge with the real count of active today/upcoming Coach sessions; completed, cancelled, rejected and expired sessions are excluded.
+   - Replaced the fixed pending-reschedule display with the actual pending session-request count.
+   - Angular production build and `git diff --check` passed with existing project warnings only.
+
+42. COACH INSIGHTS DESIGN REFRESH - 24 September 2026
+   - Improved the Coach Insights page with a clearer header, more helpful section descriptions, calmer cards and improved spacing for mobile and larger screens.
+   - The calendar button now opens the Coach Schedule.
+   - Replaced the old Complete Profile reminder with Edit Profile, so a fully completed Coach does not see an unnecessary completion request.
+   - `git diff --check` passed and the local Angular application shell responds successfully. Browser visual verification was unavailable because no browser session was connected.
+
+43. LARAVEL LIVE-SERVER SSH CHECK RULE - 24 September 2026
+   - Added a clear workspace rule that SSH access and the live-server name must be verified before any Laravel server file, command, upload or database update.
+   - The rule also confirms that live Laravel work must stay inside the correct project folder and be checked, committed and pushed after completion.

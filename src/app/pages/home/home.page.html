@@ -59,7 +59,7 @@
         </div>
 
         <!-- Profile Completion banner -->
-        <div *ngIf="!coachProfileDismissed()" class="profile-comp-banner coach-profile-card">
+        <div *ngIf="!coachProfileDismissed() && coachProfileCompletion < 100" class="profile-comp-banner coach-profile-card">
           <div class="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-[var(--app-primary)]/10"></div>
           <div class="absolute -bottom-4 right-16 w-16 h-16 rounded-full bg-[#FF7A00]/10"></div>
           <div class="relative">

@@ -56,12 +56,15 @@ const FUNNEL = [
     <ion-content [fullscreen]="true">
       <div class="insights-page">
         <!-- Sticky Header -->
-        <div class="sticky-header flex items-center justify-between px-5 h-14 bg-white border-b border-[#F3F4F6]">
-          <button (click)="back()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
+        <div class="sticky-header flex items-center justify-between px-5 h-16 bg-white border-b border-[#F3F4F6]">
+          <button (click)="back()" aria-label="Back to dashboard" class="header-action w-10 h-10 flex items-center justify-center rounded-xl border-none">
             <ion-icon name="chevron-back-outline" class="text-xl text-[#111827]"></ion-icon>
           </button>
-          <p class="text-[17px] font-black text-[#111827] m-0">Coach Insights</p>
-          <button class="w-10 h-10 flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
+          <div class="header-title">
+            <p class="text-[17px] font-black text-[#111827] m-0">Coach Insights</p>
+            <span>Your coaching performance</span>
+          </div>
+          <button (click)="go('/app/coach/schedule')" aria-label="Open schedule" class="header-action w-10 h-10 flex items-center justify-center rounded-xl border-none">
             <ion-icon name="calendar-outline" class="text-xl text-[#111827]"></ion-icon>
           </button>
         </div>
@@ -75,33 +78,33 @@ const FUNNEL = [
           </button>
         </div>
 
-        <div class="px-5 pt-4 pb-32 space-y-4">
+        <div class="insights-content px-5 pt-5 pb-32 space-y-5">
           <!-- Coach Growth Index (Hero) -->
-          <div class="hero-growth-card p-6 relative overflow-hidden bg-gradient-to-br from-[#111827] to-[#1F2937] text-white">
+          <div class="hero-growth-card p-5 relative overflow-hidden bg-gradient-to-br from-[#111827] to-[#1F2937] text-white">
             <div class="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-[var(--app-primary)]/10"></div>
             <div class="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-[#FF7A00]/10"></div>
 
-            <div class="relative flex items-center gap-6">
+            <div class="relative flex items-center gap-4">
               <!-- Ring visual percentage -->
-              <div class="flex-shrink-0 relative w-[100px] h-[100px] flex items-center justify-center">
-                <svg width="100" height="100" viewBox="0 0 100 100" class="absolute">
+              <div class="flex-shrink-0 relative w-[92px] h-[92px] flex items-center justify-center">
+                <svg width="92" height="92" viewBox="0 0 100 100" class="absolute">
                   <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="8" />
                   <circle cx="50" cy="50" r="42" fill="none" stroke="var(--app-primary)" strokeWidth="8"
                     strokeDasharray="263.8" strokeDashoffset="15.8" strokeLinecap="round" transform="rotate(-90 50 50)" />
                 </svg>
                 <div class="text-center relative">
-                  <p class="text-[26px] font-black text-white m-0">94</p>
+                  <p class="text-[25px] font-black text-white m-0">94</p>
                   <p class="text-[10px] text-white/50 m-0">/ 100</p>
                 </div>
               </div>
 
               <div class="flex-1">
-                <p class="text-[11px] font-black text-[var(--app-primary)] uppercase tracking-widest mb-1 m-0">Coach Growth Index</p>
+                <p class="text-[10px] font-black text-[var(--app-primary)] uppercase tracking-widest mb-1 m-0">Coach Growth Index</p>
                 <div class="flex gap-0.5 mb-1.5">
                   <ion-icon *ngFor="let s of [1,2,3,4,5]" name="star" class="text-[#F59E0B] text-sm"></ion-icon>
                 </div>
                 <p class="text-[16px] font-black text-white m-0">Elite Coach</p>
-                <p class="text-[11px] text-white/50 m-0">Top 5% of TYNG coaches this month</p>
+                <p class="text-[11px] text-white/50 leading-relaxed m-0">Top 5% of TYNG coaches this month</p>
               </div>
             </div>
 
@@ -118,9 +121,9 @@ const FUNNEL = [
 
           <!-- Performance Overview grid -->
           <div>
-            <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-3">Performance Overview</p>
+            <div class="section-heading"><div><p>Performance overview</p><span>How your profile is performing</span></div><span class="period-label">{{ selectedTab() }}</span></div>
             <div class="grid grid-cols-2 gap-3">
-              <div *ngFor="let card of perfCards" class="section-card p-4">
+              <div *ngFor="let card of perfCards" class="section-card metric-card p-4">
                 <div class="flex items-start justify-between mb-2">
                   <div class="w-9 h-9 rounded-xl flex items-center justify-center"
                     [style.backgroundColor]="card.color + '15'">
@@ -147,7 +150,7 @@ const FUNNEL = [
 
           <!-- Business Performance progress charts -->
           <div class="section-card p-5">
-            <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-4">Business Performance</p>
+            <div class="section-heading compact"><div><p>Business performance</p><span>Your activity and earnings</span></div></div>
             <div class="space-y-4">
               <div *ngFor="let item of businessMetrics" class="flex items-center gap-3">
                 <div class="w-9 h-9 rounded-xl bg-[#F3F4F6] flex items-center justify-center flex-shrink-0 text-lg">
@@ -169,7 +172,7 @@ const FUNNEL = [
 
           <!-- Student Growth -->
           <div class="section-card p-5">
-            <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-4">Student Growth Dashboard</p>
+            <div class="section-heading compact"><div><p>Student growth</p><span>Progress across your students</span></div></div>
             <div class="grid grid-cols-3 gap-3 mb-4">
               <div *ngFor="let m of [{ emoji:'🏆', label:'Tournament Winners', value:'3', color:'#F59E0B' }, { emoji:'📈', label:'Students Improved', value:'18/24', color:'#22C55E' }, { emoji:'🎯', label:'Avg Improvement', value:'+28%', color:'var(--app-primary)' }]"
                 class="rounded-[18px] p-3 text-center"
@@ -204,7 +207,7 @@ const FUNNEL = [
 
           <!-- Student Retention Donut metrics -->
           <div class="section-card p-5">
-            <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-4">Student Retention</p>
+            <div class="section-heading compact"><div><p>Student retention</p><span>How well students stay engaged</span></div></div>
             <div class="grid grid-cols-4 gap-2 mb-4">
               <div *ngFor="let r of [{ pct:82, color:'var(--app-primary)', label:'Repeat Rate' }, { pct:78, color:'#FF7A00', label:'Renewals' }, { pct:91, color:'#38BDF8', label:'Satisfaction' }, { pct:65, color:'#7C3AED', label:'Referrals' }]"
                 class="flex flex-col items-center gap-1.5">
@@ -230,7 +233,7 @@ const FUNNEL = [
 
           <!-- Review Highlights -->
           <div class="section-card p-5">
-            <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-4">Review Highlights</p>
+            <div class="section-heading compact"><div><p>Review highlights</p><span>Words students use most often</span></div></div>
             <div class="flex flex-wrap gap-2 mb-4">
               <div *ngFor="let tag of reviewTags" class="flex items-center gap-1 bg-[#F9FAFB] border border-[#F3F4F6] rounded-full px-3.5 py-1.5">
                 <span class="text-[11px] font-bold text-[#111827]">{{ tag.label }}</span>
@@ -247,7 +250,7 @@ const FUNNEL = [
 
           <!-- Conversion funnel -->
           <div class="section-card p-5">
-            <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-4">Conversion Funnel</p>
+            <div class="section-heading compact"><div><p>Booking journey</p><span>From profile visits to returning students</span></div></div>
             <div class="space-y-3">
               <div *ngFor="let step of funnelSteps; let i = index">
                 <div class="flex items-center justify-between mb-1.5">
@@ -268,14 +271,14 @@ const FUNNEL = [
           </div>
 
           <!-- Coach Tip CTA -->
-          <button (click)="go('/app/coach/complete-profile')" class="coach-tip-cta w-full rounded-[24px] p-5 text-left relative overflow-hidden border-none">
+          <button (click)="go('/app/profile/edit')" class="coach-tip-cta w-full rounded-[24px] p-5 text-left relative overflow-hidden border-none">
             <div class="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-white/10"></div>
             <div class="relative">
               <p class="text-[11px] font-black text-white/60 uppercase tracking-wider mb-1 m-0">Coach Tip</p>
-              <p class="text-[15px] font-black text-white mb-1 m-0">Boost your growth score to 100</p>
-              <p class="text-[12px] text-white/70 m-0">Complete your profile to unlock higher search rankings and verified coach status.</p>
+              <p class="text-[15px] font-black text-white mb-1 m-0">Keep your profile fresh</p>
+              <p class="text-[12px] text-white/70 m-0">Refresh your coaching details, availability and achievements to help more students find you.</p>
               <div class="flex items-center gap-1.5 mt-3">
-                <span class="text-[13px] font-black text-white">Complete Profile</span>
+                <span class="text-[13px] font-black text-white">Edit profile</span>
                 <ion-icon name="chevron-forward-outline" class="text-white text-sm"></ion-icon>
               </div>
             </div>
@@ -295,18 +298,94 @@ const FUNNEL = [
       position: sticky;
       top: 0;
       z-index: 30;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+      box-shadow: 0 2px 12px rgba(15, 23, 42, 0.03);
+    }
+
+    .header-action {
+      background: #F6F7F9;
+      transition: transform 160ms ease, background 160ms ease;
+    }
+
+    .header-action:active {
+      background: #E9EDF2;
+      transform: scale(0.94);
+    }
+
+    .header-title {
+      text-align: center;
+      line-height: 1.05;
+    }
+
+    .header-title span {
+      display: block;
+      color: #94A3B8;
+      font-size: 10px;
+      font-weight: 600;
+      margin-top: 3px;
+    }
+
+    .insights-content {
+      max-width: 680px;
+      margin: 0 auto;
     }
 
     .hero-growth-card {
       border-radius: 24px;
-      box-shadow: 0 6px 30px rgba(0,0,0,0.20);
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.20);
+      border: 1px solid rgba(255, 255, 255, 0.06);
     }
 
     .section-card {
       background: #FFFFFF;
-      border-radius: 24px;
-      box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+      border-radius: 20px;
+      border: 1px solid #EEF1F4;
+      box-shadow: 0 5px 16px rgba(15, 23, 42, 0.045);
+    }
+
+    .metric-card {
+      border-radius: 18px;
+      box-shadow: none;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 2px 0 12px;
+    }
+
+    .section-heading.compact {
+      margin: 0 0 18px;
+    }
+
+    .section-heading p {
+      color: #111827;
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      line-height: 1.2;
+      margin: 0;
+      text-transform: uppercase;
+    }
+
+    .section-heading span {
+      color: #94A3B8;
+      display: block;
+      font-size: 10px;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    .section-heading .period-label {
+      background: rgba(var(--app-primary-rgb), 0.11);
+      border-radius: 999px;
+      color: #526100;
+      font-size: 10px;
+      font-weight: 800;
+      margin: 0;
+      padding: 6px 9px;
+      white-space: nowrap;
     }
 
     .no-scrollbar {
@@ -346,6 +425,19 @@ const FUNNEL = [
       background: linear-gradient(135deg, #FF7A00 0%, #FF9A40 100%);
       box-shadow: 0 4px 20px rgba(255, 122, 0, 0.35);
       cursor: pointer;
+    }
+
+    @media (min-width: 768px) {
+      .insights-page {
+        padding: 0 16px;
+      }
+
+      .sticky-header,
+      .insights-page > div:nth-child(2) {
+        max-width: 680px;
+        margin-left: auto;
+        margin-right: auto;
+      }
     }
   `]
 })

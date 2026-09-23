@@ -322,21 +322,38 @@ const ALL_SECTIONS = [
               <ion-icon [name]="expandedSection() === 'availability' ? 'chevron-up-outline' : 'chevron-down-outline'" class="text-[#9CA3AF]"></ion-icon>
             </button>
             <div *ngIf="expandedSection() === 'availability'" class="section-body">
-              <p class="text-[12px] text-[#9CA3AF] mb-3 leading-relaxed">Select times you're available to coach.</p>
-              <div class="space-y-3">
-                <div *ngFor="let day of daysOptions" class="flex items-center gap-2">
-                  <span class="text-[11px] font-black text-[#6B7280] w-8">{{ day }}</span>
-                  <div class="flex gap-1.5 flex-1">
-                    <button *ngFor="let time of timeOptions" class="flex-1 py-1.5 rounded-xl text-[9px] font-bold border-none"
-                      [style.backgroundColor]="isAvail(day, time) ? 'var(--app-primary)' : '#F3F4F6'"
-                      [style.color]="isAvail(day, time) ? '#111827' : '#9CA3AF'"
-                      (click)="toggleAvail(day, time)">
-                      {{ time.slice(0,3) }}
+              <div class="availability-intro">
+                <div class="availability-intro-icon"><ion-icon name="calendar-outline"></ion-icon></div>
+                <div>
+                  <p class="availability-title">Build your coaching week</p>
+                  <p class="availability-copy">Choose the time windows players can request.</p>
+                </div>
+                <span class="availability-count">{{ getSelectedSlotCount() }} slots</span>
+              </div>
+              <div class="availability-grid">
+                <div *ngFor="let day of daysOptions" class="availability-day" [class.availability-day-active]="getSelectedSlotCount(day) > 0">
+                  <div class="availability-day-head">
+                    <span class="availability-day-name">{{ day }}</span>
+                    <span class="availability-day-count" *ngIf="getSelectedSlotCount(day) > 0">{{ getSelectedSlotCount(day) }}</span>
+                  </div>
+                  <div class="availability-slots">
+                    <button *ngFor="let time of timeOptions" type="button" class="availability-slot" [class.availability-slot-active]="isAvail(day, time)"
+                      (click)="toggleAvail(day, time)" [attr.aria-pressed]="isAvail(day, time)">
+                      <span>{{ time }}</span>
+                      <ion-icon [name]="isAvail(day, time) ? 'checkmark-circle-outline' : 'ellipse-outline'"></ion-icon>
                     </button>
                   </div>
                 </div>
               </div>
-              <button (click)="finishSection('fees')" [disabled]="!isDone('availability')" class="next-step-btn w-full h-11 mt-4">
+              <div class="availability-footer">
+                <span class="availability-save-state" [class.availability-save-error]="availabilitySaveState === 'error'">
+                  <ion-icon [name]="availabilitySaveState === 'error' ? 'alert-circle-outline' : availabilitySaveState === 'saved' ? 'checkmark-circle-outline' : 'cloud-upload-outline'"></ion-icon>
+                  {{ availabilitySaveState === 'saved' ? 'Availability saved' : availabilitySaveState === 'error' ? 'Save failed — try again' : 'Changes save automatically' }}
+                </span>
+                <button *ngIf="getSelectedSlotCount() > 0" type="button" (click)="clearAvailability()" class="availability-clear-btn">Clear</button>
+              </div>
+              <button (click)="finishSection('fees')" [disabled]="!isDone('availability') || profileSaveBusy" class="next-step-btn w-full h-11 mt-4">
+                <ion-spinner *ngIf="profileSaveBusy" name="crescent"></ion-spinner>
                 Save & Next
               </button>
             </div>
@@ -668,6 +685,167 @@ const ALL_SECTIONS = [
       cursor: not-allowed;
     }
 
+    .availability-intro {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      padding: 12px;
+      background: #F8FAFC;
+      border: 1px solid #EEF0F3;
+      border-radius: 16px;
+    }
+
+    .availability-intro-icon {
+      width: 34px;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 34px;
+      color: #111827;
+      background: var(--app-primary);
+      border-radius: 11px;
+      font-size: 18px;
+    }
+
+    .availability-title {
+      margin: 0 0 2px;
+      color: #111827;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .availability-copy {
+      margin: 0;
+      color: #9CA3AF;
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .availability-count {
+      margin-left: auto;
+      padding: 6px 8px;
+      color: #6B7280;
+      background: #FFFFFF;
+      border: 1px solid #E5E7EB;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .availability-grid {
+      display: grid;
+      gap: 8px;
+    }
+
+    .availability-day {
+      padding: 10px;
+      background: #FFFFFF;
+      border: 1px solid #EEF0F3;
+      border-radius: 16px;
+      transition: border-color 160ms ease, background 160ms ease;
+    }
+
+    .availability-day-active {
+      background: #FCFFEF;
+      border-color: rgba(var(--app-primary-rgb), 0.55);
+    }
+
+    .availability-day-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .availability-day-name {
+      color: #374151;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .availability-day-count {
+      min-width: 18px;
+      height: 18px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #111827;
+      background: var(--app-primary);
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 900;
+    }
+
+    .availability-slots {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .availability-slot {
+      min-height: 42px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      padding: 5px 2px;
+      color: #6B7280;
+      background: #F8FAFC;
+      border: 1px solid #EEF0F3;
+      border-radius: 11px;
+      font-size: 9px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 160ms ease;
+    }
+
+    .availability-slot ion-icon { color: #C4C9D4; font-size: 14px; }
+    .availability-slot-active {
+      color: #111827;
+      background: var(--app-primary);
+      border-color: var(--app-primary);
+      box-shadow: 0 2px 7px rgba(var(--app-primary-rgb), 0.25);
+    }
+
+    .availability-slot-active ion-icon { color: #111827; }
+
+    .availability-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      min-height: 28px;
+      margin-top: 12px;
+    }
+
+    .availability-save-state {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: #9CA3AF;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .availability-save-state ion-icon { font-size: 14px; }
+    .availability-save-error { color: #DC2626; }
+
+    .availability-clear-btn {
+      padding: 5px 8px;
+      color: #9CA3AF;
+      background: transparent;
+      border: 0;
+      font-size: 10px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
     /* Toggle */
     .toggle-btn {
       width: 48px; height: 26px;
@@ -836,6 +1014,7 @@ export class CoachCompleteProfilePage implements DoCheck, OnInit {
   ];
   profileSaveBusy = false;
   profileSaveError = '';
+  availabilitySaveState: 'idle' | 'saving' | 'saved' | 'error' = 'idle';
   private profileDetailsLoaded = false;
   private lastProfileDraft = '';
   private profileAutosaveTimer?: ReturnType<typeof setTimeout>;
@@ -1024,10 +1203,22 @@ export class CoachCompleteProfilePage implements DoCheck, OnInit {
 
   toggleAvail(day: string, slot: string) {
     const list = this.avail[day] ?? [];
-    this.avail[day] = list.includes(slot) ? list.filter(x => x !== slot) : [...list, slot];
+    const nextSlots = list.includes(slot) ? list.filter(x => x !== slot) : [...list, slot];
+    this.avail = { ...this.avail, [day]: nextSlots };
+    this.availabilitySaveState = 'saving';
   }
 
-  getSelectedDaysCount() {
+  clearAvailability(): void {
+    this.avail = {};
+    this.availabilitySaveState = 'saving';
+  }
+
+  getSelectedSlotCount(day?: string): number {
+    if (day) return (this.avail[day] ?? []).length;
+    return Object.values(this.avail).reduce((total, slots) => total + slots.length, 0);
+  }
+
+  getSelectedDaysCount(): number {
     return Object.values(this.avail).filter(s => s.length > 0).length;
   }
 
@@ -1096,7 +1287,8 @@ export class CoachCompleteProfilePage implements DoCheck, OnInit {
     this.trialOn = details.trialEnabled;
     this.trialType = details.trialType || '';
     this.travel = details.travelMode || '';
-    this.avail = details.weeklyAvailability && typeof details.weeklyAvailability === 'object' ? details.weeklyAvailability : {};
+    this.avail = details.weeklyAvailability && typeof details.weeklyAvailability === 'object' ? { ...details.weeklyAvailability } : {};
+    this.availabilitySaveState = 'idle';
     this.fees = {
       individual: String(details.feeOptions?.['individual'] ?? ''),
       group: String(details.feeOptions?.['group'] ?? ''),
@@ -1130,10 +1322,12 @@ export class CoachCompleteProfilePage implements DoCheck, OnInit {
       const result = await firstValueFrom(this.coachService.saveMyCoachProfileDetails(payload));
       if (!result.success) throw new Error(result.message || 'Unable to save profile details.');
       this.lastProfileDraft = this.profileDetailsDraft();
+      if (this.availabilitySaveState === 'saving') this.availabilitySaveState = 'saved';
       void firstValueFrom(this.auth.fetchMe()).catch(() => undefined);
       return true;
     } catch (error: any) {
       if (showError) this.profileSaveError = error?.error?.message || error?.message || 'Unable to save profile details. Please try again.';
+      if (this.availabilitySaveState === 'saving') this.availabilitySaveState = 'error';
       return false;
     } finally { this.profileSaveBusy = false; }
   }

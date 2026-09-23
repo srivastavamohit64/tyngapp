@@ -30,7 +30,7 @@
         </div>
       </div>
 
-      <div class="coach-completion-card" (click)="navigateTo('/app/coach/complete-profile')">
+      <div *ngIf="profileCompletion() < 100" class="coach-completion-card" (click)="navigateTo('/app/coach/complete-profile')">
         <div class="xp-orb1"></div>
         <div class="xp-orb2"></div>
         <div class="coach-completion-inner">
@@ -50,14 +50,14 @@
       </div>
 
       <div class="drawer-menu">
-        <button class="menu-item" *ngFor="let item of coachMenuItems" (click)="navigateTo(item.path)">
+        <button class="menu-item" *ngFor="let item of coachMenuItems" [hidden]="item.label === 'Complete Profile' && profileCompletion() >= 100" (click)="navigateTo(item.path)">
           <div class="menu-icon"><ion-icon [name]="item.icon"></ion-icon></div>
           <div class="menu-text">
             <div class="menu-label">{{ item.label }}</div>
             <div class="menu-desc">{{ item.sub }}</div>
           </div>
-          <div *ngIf="item.badge" class="menu-badge">{{ item.badge }}</div>
-          <ion-icon *ngIf="!item.badge" name="chevron-forward-outline" class="menu-chevron"></ion-icon>
+          <div *ngIf="coachMenuBadge(item) as badge" class="menu-badge">{{ badge }}</div>
+          <ion-icon *ngIf="!coachMenuBadge(item)" name="chevron-forward-outline" class="menu-chevron"></ion-icon>
         </button>
 
         <div class="menu-divider"></div>

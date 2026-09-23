@@ -218,15 +218,28 @@ const SESSIONS: any[] = [
           </div>
 
           <!-- Notes -->
-          <div class="bg-white rounded-[24px] p-5 shadow-sm border border-slate-100 text-left">
-            <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-3 m-0">Coach Notes</p>
-            <textarea [(ngModel)]="notes" (input)="savedNotes = false" rows="4" maxlength="4000" placeholder="Add private notes about this session..."
-              class="w-full p-4 rounded-2xl text-[14px] text-[#111827] placeholder:text-[#C4C9D4] focus:outline-none resize-none bg-[#FAFBFC] border border-slate-200"></textarea>
-            <div class="flex items-center justify-between mt-2">
-              <p class="text-[11px] text-[#C4C9D4] m-0 font-bold">{{ notes.length }}/4000</p>
-              <button (click)="saveNotes()" [disabled]="savingNotes || notes.length > 4000" class="px-5 py-2 rounded-xl text-[13px] font-bold border-none"
-                [style.backgroundColor]="notes.trim() ? 'var(--app-primary)' : '#F3F4F6'"
-                [style.color]="notes.trim() ? '#111827' : '#C4C9D4'">
+          <div class="notes-card text-left">
+            <div class="notes-header">
+              <div class="notes-heading">
+                <div class="notes-icon" aria-hidden="true"><ion-icon name="create-outline"></ion-icon></div>
+                <div>
+                  <p class="notes-eyebrow">Session notes</p>
+                  <h2>Coach Notes</h2>
+                </div>
+              </div>
+              <span class="notes-private"><ion-icon name="lock-closed-outline"></ion-icon> Private</span>
+            </div>
+            <p class="notes-helper">Capture observations, progress and the next focus for this player.</p>
+            <textarea [(ngModel)]="notes" (input)="savedNotes = false" rows="5" maxlength="4000"
+              aria-label="Private coach notes"
+              placeholder="Write a note about this session..."
+              class="notes-textarea"></textarea>
+            <div class="notes-footer">
+              <p class="notes-count">{{ notes.length }}/4000</p>
+              <span *ngIf="savedNotes" class="notes-saved"><ion-icon name="checkmark-circle-outline"></ion-icon> Saved</span>
+              <button (click)="saveNotes()" [disabled]="savingNotes || notes.length > 4000" class="notes-save-btn">
+                <ion-spinner *ngIf="savingNotes" name="crescent"></ion-spinner>
+                <ion-icon *ngIf="!savingNotes" name="checkmark-outline"></ion-icon>
                 {{ savedNotes ? '✓ Saved' : 'Save Notes' }}
               </button>
             </div>
@@ -339,6 +352,141 @@ const SESSIONS: any[] = [
       border-radius: 24px;
       box-shadow: 0 2px 16px rgba(0,0,0,0.06);
     }
+
+    .notes-card {
+      padding: 20px;
+      background: #FFFFFF;
+      border: 1px solid #EEF0F3;
+      border-radius: 24px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.05);
+    }
+
+    .notes-header, .notes-heading, .notes-footer {
+      display: flex;
+      align-items: center;
+    }
+
+    .notes-header, .notes-footer {
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .notes-heading { gap: 10px; }
+
+    .notes-icon {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 36px;
+      color: #111827;
+      background: var(--app-primary);
+      border-radius: 12px;
+      font-size: 18px;
+    }
+
+    .notes-eyebrow {
+      margin: 0 0 2px;
+      color: #9CA3AF;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .notes-header h2 {
+      margin: 0;
+      color: #111827;
+      font-size: 16px;
+      line-height: 1.2;
+      font-weight: 800;
+    }
+
+    .notes-private {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 9px;
+      color: #6B7280;
+      background: #F8FAFC;
+      border: 1px solid #EEF0F3;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .notes-helper {
+      margin: 14px 0 10px;
+      color: #6B7280;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .notes-textarea {
+      width: 100%;
+      min-height: 128px;
+      display: block;
+      box-sizing: border-box;
+      padding: 14px;
+      color: #111827;
+      background: #FBFCFD;
+      border: 1px solid #E5E7EB;
+      border-radius: 16px;
+      font: inherit;
+      font-size: 14px;
+      line-height: 1.55;
+      resize: vertical;
+      outline: none;
+      transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+    }
+
+    .notes-textarea::placeholder { color: #AEB5C1; }
+    .notes-textarea:focus {
+      background: #FFFFFF;
+      border-color: var(--app-primary);
+      box-shadow: 0 0 0 3px rgba(var(--app-primary-rgb), 0.14);
+    }
+
+    .notes-footer { margin-top: 12px; }
+    .notes-count {
+      margin: 0;
+      color: #AEB5C1;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .notes-saved {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-left: auto;
+      color: #16A34A;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .notes-save-btn {
+      min-width: 112px;
+      height: 38px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 0 14px;
+      color: #111827;
+      background: var(--app-primary);
+      border: 0;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 160ms ease, opacity 160ms ease;
+    }
+
+    .notes-save-btn:not(:disabled):active { transform: scale(0.97); }
+    .notes-save-btn:disabled { opacity: 0.55; cursor: not-allowed; }
 
     .action-btn {
       flex: 1;
