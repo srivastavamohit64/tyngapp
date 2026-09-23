@@ -178,3 +178,9 @@ TYNG — TODAY'S WORK SUMMARY
 29. COACH SCHEDULE BUTTON FINISHING - 24 September 2026
    - Fixed the Create Session button size and text styling on the empty schedule screen.
    - Improved its shape and touch feedback while keeping the existing action unchanged.
+
+30. COACH SCHEDULE PLAYER PHOTO AND REQUESTER - 24 September 2026
+   - Fixed player photos on the coach schedule so they load from the backend instead of the Ionic website address.
+   - Added an initials display if a player's photo is unavailable.
+   - Showed the requesting player's name and current request status alongside the confirmed-player count.
+   - Kept existing navigation and booking steps unchanged; no backend or cloud settings were changed.

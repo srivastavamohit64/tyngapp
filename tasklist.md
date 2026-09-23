@@ -208,3 +208,10 @@
 
 - Corrected the empty-state Create Session button sizing, typography, shape, contrast and tap/focus feedback.
 - Kept its existing destination and session creation flow unchanged.
+
+## Completed: Coach schedule participant image and identity - 24 September 2026
+
+- Fixed coach schedule profile photos by converting backend-relative image paths into public backend media URLs.
+- Added an initials fallback when a player's photo is missing or cannot load.
+- Made the requesting player's name and request status visible in the session participant row; the confirmed count remains visible.
+- No navigation, booking workflow, or backend/cloud configuration was changed.

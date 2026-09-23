@@ -5,6 +5,7 @@ import { IonicModule } from '@ionic/angular';
 import { BrandHeaderShellComponent } from '../../../shared/components/brand-header-shell/brand-header-shell.component';
 import { SegmentControlComponent, SegmentOption } from '../../../shared/components/segment-control/segment-control.component';
 import { CoachService } from '../../../core/services/coach.service';
+import { resolveMediaUrl } from '../../../core/utils/media-url.util';
 
 interface Student {
   id: number;
@@ -13,6 +14,8 @@ interface Student {
   skill: string;
   attendance: number;
   sessions: number;
+  status?: string;
+  imageFailed?: boolean;
 }
 
 interface CoachSession {
@@ -293,19 +296,32 @@ function buildWeek() {
                     <div class="bg-[#F9FAFB] rounded-2xl px-3.5 py-3 mb-3 flex items-center justify-between border border-slate-100">
                       <div class="flex items-center gap-3">
                         <div class="flex items-center">
-                          <img *ngFor="let stud of sess.students.slice(0, 4); let idx = index" [src]="stud.photo"
-                            class="w-7 h-7 rounded-full border-2 border-white object-cover"
-                            [style.marginLeft]="idx > 0 ? '-8px' : '0px'"
-                            [style.zIndex]="10 - idx" />
+                          <ng-container *ngFor="let stud of sess.students.slice(0, 4); let idx = index">
+                            <img *ngIf="stud.photo && !stud.imageFailed" [src]="stud.photo" [alt]="stud.name"
+                              (error)="stud.imageFailed = true"
+                              class="w-7 h-7 rounded-full border-2 border-white object-cover"
+                              [style.marginLeft]="idx > 0 ? '-8px' : '0px'"
+                              [style.zIndex]="10 - idx" />
+                            <div *ngIf="!stud.photo || stud.imageFailed" [attr.aria-label]="stud.name"
+                              class="w-7 h-7 rounded-full border-2 border-white bg-slate-200 text-slate-600 flex items-center justify-center text-[9px] font-bold"
+                              [style.marginLeft]="idx > 0 ? '-8px' : '0px'"
+                              [style.zIndex]="10 - idx">{{ studentInitials(stud.name) }}</div>
+                          </ng-container>
                           <div *ngIf="sess.students.length > 4" class="w-7 h-7 rounded-full bg-[#F3F4F6] border-2 border-white flex items-center justify-center" style="margin-left:-8px;z-index:0;">
                             <span class="text-[9px] font-bold text-[#6B7280]">+{{ sess.students.length - 4 }}</span>
                           </div>
                         </div>
-                        <p class="text-[11px] text-[#9CA3AF] font-bold m-0">
-                          <span class="text-[#111827] font-black">{{ sess.studentsConfirmed }}/{{ sess.studentsTotal }}</span> Confirmed
-                        </p>
+                        <div class="min-w-0">
+                          <p class="text-[11px] text-[#111827] font-bold m-0 truncate">
+                            {{ sess.students.length === 1 ? sess.students[0].name : (sess.students[0]?.name || 'Players') + (sess.students.length > 1 ? ' +' + (sess.students.length - 1) : '') }}
+                          </p>
+                          <p class="text-[10px] text-[#9CA3AF] font-medium m-0 truncate">
+                            <span class="text-[#111827] font-bold">{{ sess.studentsConfirmed }}/{{ sess.studentsTotal }} confirmed</span>
+                            <ng-container *ngIf="sess.students.length === 1 && sess.students[0].status"> · {{ participantStatusLabel(sess.students[0].status) }}</ng-container>
+                          </p>
+                        </div>
                       </div>
-                      <button (click)="go('/app/coach/student/' + sess.students[0].id)" class="text-[11px] font-bold text-[var(--app-primary)] bg-transparent border-none flex items-center gap-0.5">
+                      <button *ngIf="sess.students.length" (click)="go('/app/coach/student/' + sess.students[0].id)" class="text-[11px] font-bold text-[var(--app-primary)] bg-transparent border-none flex items-center gap-0.5">
                         Manage<ion-icon name="chevron-forward-outline"></ion-icon>
                       </button>
                     </div>
@@ -521,7 +537,7 @@ export class CoachSchedulePage implements OnInit {
       earnings: Number(item.coach_fee ?? item.price ?? 0),
       studentsConfirmed: Number(item.confirmed_participants_count ?? participants.filter((participant: any) => participant.status === 'confirmed').length),
       studentsTotal: Number(item.capacity ?? participants.length),
-      students: participants.map((participant: any) => ({ id: Number(participant.id), name: participant.name || 'Player', photo: participant.photo || 'assets/icon/avatar-placeholder.svg', skill: '', attendance: 0, sessions: 0 })),
+      students: participants.map((participant: any) => ({ id: Number(participant.id), name: participant.name || 'Player', photo: resolveMediaUrl(participant.photo) || '', status: participant.status, skill: '', attendance: 0, sessions: 0 })),
       tab: status === 'Completed' ? 'completed' : status === 'Cancelled' ? 'cancelled' : startsAt.toDateString() === new Date().toDateString() ? 'today' : 'upcoming',
     };
   }
@@ -531,6 +547,21 @@ export class CoachSchedulePage implements OnInit {
     if (['cancelled', 'rejected', 'expired'].includes(status)) return 'Cancelled';
     if (status === 'confirmed' || status === 'scheduled') return 'Confirmed';
     return 'Pending';
+  }
+
+  studentInitials(name: string): string {
+    return (name || 'Player').trim().split(/\s+/).slice(0, 2).map(part => part[0]).join('').toUpperCase();
+  }
+
+  participantStatusLabel(status: string): string {
+    const labels: Record<string, string> = {
+      pending_venue_approval: 'Awaiting venue approval',
+      pending: 'Awaiting confirmation',
+      invited: 'Invitation sent',
+      confirmed: 'Confirmed',
+      declined: 'Declined',
+    };
+    return labels[status] || status.replace(/_/g, ' ');
   }
 
   private dateForOffset(offset: number): Date {
