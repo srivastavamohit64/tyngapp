@@ -129,3 +129,8 @@
 
 - Expanded the Laravel Admin Coach profile to show student status, session and group-member history, coaching requests, evaluations, private notes, booking requests, reviews, and summary metrics.
 - Deployed to `srv1789528`, cleared and rebuilt Blade views, and pushed backend commit `3725a60` to `developer`.
+
+## Completed: Admin Coach page layout fix — 23 September 2026
+
+- Fixed the production Admin Coach profile 500 error caused by extending a non-existent Blade layout.
+- Rebuilt production Blade views and pushed Laravel commit `a222795` to `developer`.

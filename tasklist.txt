@@ -100,3 +100,7 @@ TYNG — TODAY'S WORK SUMMARY
 17. ADMIN COACH OPERATIONAL HISTORY — 23 September 2026
    - Expanded the Laravel Admin Coach profile with student status, session/group history, requests, evaluations, private notes, booking requests, reviews, and metrics.
    - Deployed to srv1789528, rebuilt Blade views, and pushed backend commit 3725a60 to developer.
+
+18. ADMIN COACH PAGE LAYOUT FIX — 23 September 2026
+   - Fixed the production 500 caused by the Admin Coach view extending a missing Blade layout.
+   - Rebuilt production Blade views and pushed Laravel commit a222795 to developer.
