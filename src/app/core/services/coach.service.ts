@@ -11,6 +11,10 @@ export class CoachService {
     return this.api.get<CoachDashboard>('/coach/dashboard');
   }
 
+  getEarnings(period: 'today' | 'week' | 'month' | 'year' = 'month'): Observable<ApiResponse<any>> {
+    return this.api.get(`/coach/earnings?period=${encodeURIComponent(period)}`);
+  }
+
   getCoaches(search = '', sport = ''): Observable<ApiResponse<any>> {
     const params = new URLSearchParams();
     if (search.trim()) params.set('search', search.trim());

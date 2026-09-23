@@ -1,497 +1,250 @@
 import { CommonModule } from '@angular/common';
-import { Component, signal, computed, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
+import { CoachService } from '../../core/services/coach.service';
 
-interface PeriodData {
-  main: number;
-  today: number;
-  week: number;
+type EarningsPeriod = 'today' | 'week' | 'month' | 'year';
+
+interface CoachEarningsData {
+  total: number;
+  previous_total: number;
+  change_percent: number | null;
+  stats: { today: number; week: number; month: number };
+  wallet_balance: number;
+  breakdown: Array<{ label: string; sessions: number; amount: number; percentage: number }>;
+  recent_sessions: Array<{
+    id: number;
+    title: string;
+    sport: string | null;
+    student_name: string | null;
+    venue_name: string | null;
+    date: string | null;
+    amount: number;
+  }>;
 }
-
-const PERIOD_DATA: Record<string, PeriodData> = {
-  'Today':      { main: 3850,   today: 3850,  week: 18250 },
-  'This Week':  { main: 18250,  today: 3850,  week: 18250 },
-  'This Month': { main: 74800,  today: 3850,  week: 18250 },
-  'This Year':  { main: 284500, today: 3850,  week: 18250 },
-};
-
-const BREAKDOWNS = [
-  { icon: 'trending-up-outline', label: 'Individual Coaching', amount: 22500, pct: 30, color: 'var(--app-primary)' },
-  { icon: 'people-outline', label: 'Group Sessions', amount: 18400, pct: 25, color: '#FF7A00' },
-  { icon: 'book-outline', label: 'Academy Sessions', amount: 33900, pct: 45, color: '#38BDF8' },
-];
-
-const PAYOUTS = [
-  { amount: 8400, label: 'Scheduled for Tomorrow', status: 'Processing', date: '30 Jun 2025' },
-  { amount: 12600, label: 'Scheduled for Friday', status: 'Pending', date: '4 Jul 2025' },
-];
-
-const VENUES = [
-  {
-    id: 1, name: 'Elite Cricket Academy', sport: 'Cricket', emoji: '🏏',
-    image: 'https://images.unsplash.com/photo-1593341646782-e0b495cff86d?w=500&h=220&fit=crop&auto=format',
-    type: 'Monthly Contract', monthly: 35000,
-    schedule: 'Mon · Wed · Fri', time: '4:00 PM – 7:00 PM', status: 'Active',
-  },
-  {
-    id: 2, name: 'Phoenix Sports Hub', sport: 'Badminton', emoji: '🏸',
-    image: 'https://images.unsplash.com/photo-1722087642932-9b070e9a066e?w=500&h=220&fit=crop&auto=format',
-    type: 'Per Session', monthly: 18000,
-    schedule: 'Tue · Thu · Sat', time: '6:00 AM – 9:00 AM', status: 'Active',
-  },
-  {
-    id: 3, name: 'K.D. Singh Stadium', sport: 'Football', emoji: '⚽',
-    image: 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=500&h=220&fit=crop&auto=format',
-    type: 'Weekend Sessions', monthly: 8000,
-    schedule: 'Sat · Sun', time: '5:00 PM – 8:00 PM', status: 'Review',
-  },
-];
-
-const WITHDRAWALS = [
-  { amount: 12000, date: '28 Jun 2025', bank: 'HDFC Bank', status: 'Completed', ref: 'TXN8821' },
-  { amount: 8000, date: '25 Jun 2025', bank: 'HDFC Bank', status: 'Completed', ref: 'TXN8654' },
-  { amount: 15000, date: '20 Jun 2025', bank: 'HDFC Bank', status: 'Completed', ref: 'TXN8412' },
-];
-
-const TRANSACTIONS = [
-  { label: 'Individual Cricket Session', amount: 800, time: 'Today, 6:00 PM', type: 'credit' },
-  { label: 'Group Football Training', amount: 2400, time: 'Yesterday, 7:30 PM', type: 'credit' },
-  { label: 'Academy Coaching', amount: 5000, time: 'Monday, 4:00 PM', type: 'credit' },
-  { label: 'Group Badminton Session', amount: 1200, time: 'Monday, 8:00 AM', type: 'credit' },
-  { label: 'Individual Tennis Coaching', amount: 900, time: 'Last Week', type: 'credit' },
-];
 
 @Component({
   selector: 'app-coach-earnings',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule],
+  imports: [CommonModule, IonicModule],
   template: `
-    <ion-content [fullscreen]="true">
-      <div class="earnings-page pb-32">
-        <!-- Header -->
-        <div class="sticky-header flex items-center justify-between px-5 h-14 bg-white border-b border-[#F3F4F6]">
-          <button (click)="back()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
-            <ion-icon name="chevron-back-outline" class="text-xl text-[#111827]"></ion-icon>
+    <ion-content [fullscreen]="true" class="has-tabs">
+      <div class="earnings-page">
+        <header class="sticky-header">
+          <button type="button" class="header-button" aria-label="Back to dashboard" (click)="back()">
+            <ion-icon name="chevron-back-outline"></ion-icon>
           </button>
-          <p class="text-[17px] font-black text-[#111827] m-0">Earnings</p>
-          <button class="w-10 h-10 flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
-            <ion-icon name="calendar-outline" class="text-xl text-[#111827]"></ion-icon>
+          <h1>Earnings</h1>
+          <button type="button" class="header-button" aria-label="Open your schedule" (click)="go('/app/coach/schedule')">
+            <ion-icon name="calendar-outline"></ion-icon>
           </button>
-        </div>
+        </header>
 
-        <!-- Period chips -->
-        <div class="flex gap-2 px-5 py-3 bg-white border-b border-[#F3F4F6] overflow-x-auto no-scrollbar">
-          <button *ngFor="let p of periods" (click)="selectedPeriod.set(p)" class="flex-shrink-0 px-4 py-2 rounded-full text-[12px] font-bold border-none transition-all"
-            [style.backgroundColor]="selectedPeriod() === p ? 'var(--app-primary)' : '#F3F4F6'"
-            [style.color]="selectedPeriod() === p ? '#111827' : '#6B7280'">
-            {{ p }}
+        <nav class="period-grid" role="tablist" aria-label="Choose earnings period">
+          <button *ngFor="let period of periods" type="button" role="tab"
+            [attr.aria-selected]="selectedPeriod() === period.key"
+            [class.selected]="selectedPeriod() === period.key"
+            (click)="selectPeriod(period.key)">
+            {{ period.label }}
           </button>
-        </div>
+        </nav>
 
-        <div class="px-5 pt-4 space-y-4">
-          <!-- Summary Hero Card -->
-          <div class="summary-hero-card p-6 relative overflow-hidden bg-gradient-to-br from-[#111827] to-[#1F2937] text-white">
-            <div class="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-[var(--app-primary)]/10"></div>
-            <div class="absolute -bottom-6 left-10 w-28 h-28 rounded-full bg-[#FF7A00]/10"></div>
-
-            <div class="relative text-left">
-              <p class="text-[12px] font-black text-[var(--app-primary)] uppercase tracking-widest mb-1 m-0">{{ selectedPeriod() }}'s Earnings</p>
-              <div class="flex items-baseline gap-2 mb-1">
-                <span class="text-[16px] font-bold text-white/50">₹</span>
-                <p class="text-[42px] font-black text-white leading-none m-0">
-                  {{ getCurrentData().main.toLocaleString('en-IN') }}
-                </p>
-              </div>
-              <p class="text-[12px] text-white/40 mb-5 m-0">+22% compared to last period</p>
-
-              <!-- 3 Stat tiles -->
-              <div class="grid grid-cols-3 gap-3">
-                <div *ngFor="let s of [{ emoji:'💰', label:'Today', value: getCurrentData().today }, { emoji:'📅', label:'This Week', value: getCurrentData().week }, { emoji:'👛', label:'Wallet', value: 12500 }]"
-                  class="bg-white/10 rounded-2xl px-3 py-3 text-center">
-                  <span class="text-lg">{{ s.emoji }}</span>
-                  <p class="text-[14px] font-black text-white mt-1 m-0">₹{{ s.value.toLocaleString('en-IN') }}</p>
-                  <p class="text-[9px] text-white/40 mt-0.5 m-0 font-medium">{{ s.label }}</p>
-                </div>
-              </div>
-            </div>
+        <main class="earnings-content">
+          <div *ngIf="error()" class="error-card" role="alert">
+            <ion-icon name="alert-circle-outline"></ion-icon>
+            <span>{{ error() }}</span>
+            <button type="button" (click)="load()">Try again</button>
           </div>
 
-          <!-- Wallet card -->
-          <div class="section-card p-5 bg-white text-left">
-            <div class="flex items-center gap-2 mb-4">
-              <div class="w-9 h-9 rounded-xl bg-[var(--app-primary)]/15 flex items-center justify-center">
-                <ion-icon name="wallet-outline" class="text-[var(--app-primary)] text-lg"></ion-icon>
-              </div>
-              <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-0 m-0">TYNG Wallet</p>
-            </div>
-
-            <div class="bg-[#F9FAFB] rounded-2xl px-5 py-4 mb-4 text-center border border-slate-50">
-              <p class="text-[12px] text-[#9CA3AF] font-bold mb-1 m-0">Available Balance</p>
-              <p class="text-[36px] font-black text-[#111827] m-0">₹12,500</p>
-              <div class="flex items-center justify-center gap-1.5 mt-1">
-                <div class="w-2 h-2 rounded-full bg-[var(--app-primary)]"></div>
-                <p class="text-[11px] text-[#22C55E] font-bold m-0">Ready to withdraw</p>
-              </div>
-            </div>
-
-            <div class="flex gap-3">
-              <button (click)="openWithdrawModal()" class="flex-1 h-12 rounded-2xl text-[14px] font-black text-[#111827] flex items-center justify-center gap-2 btn-orange-gradient border-none">
-                <ion-icon name="arrow-down-circle-outline" class="text-base"></ion-icon>Withdraw
-              </button>
-              <button class="flex-1 h-12 rounded-2xl text-[14px] font-bold text-[#6B7280] bg-[#F9FAFB] border border-[#E5E7EB]">
-                Manage Account
-              </button>
-            </div>
-          </div>
-
-          <!-- Breakdown list -->
-          <div class="section-card p-5 bg-white text-left">
-            <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-4 m-0">Earnings Breakdown</p>
-            <div class="space-y-4">
-              <div *ngFor="let b of breakdowns">
-                <div class="flex items-center gap-3 mb-2">
-                  <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" [style.backgroundColor]="b.color + '15'">
-                    <ion-icon [name]="b.icon" [style.color]="b.color" class="text-base"></ion-icon>
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <div class="flex items-center justify-between mb-1">
-                      <span class="text-[13px] font-bold text-[#111827]">{{ b.label }}</span>
-                      <span class="text-[14px] font-black text-[#111827]">₹{{ b.amount.toLocaleString('en-IN') }}</span>
-                    </div>
-                    <div class="h-1.5 bg-[#F3F4F6] rounded-full overflow-hidden">
-                      <div class="h-full rounded-full" [style.backgroundColor]="b.color" [style.width]="b.pct + '%'"></div>
-                    </div>
-                  </div>
-                  <span class="text-[11px] font-black ml-2 flex-shrink-0" [style.color]="b.color">{{ b.pct }}%</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Upcoming payouts -->
-          <div class="section-card p-5 bg-white text-left">
-            <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-4 m-0">Upcoming Payouts</p>
-            <div class="space-y-3">
-              <div *ngFor="let p of payouts" class="flex items-center gap-4 bg-[#F9FAFB] rounded-2xl px-4 py-3.5 border border-slate-100">
-                <div class="w-10 h-10 rounded-2xl bg-white flex items-center justify-center flex-shrink-0 shadow-sm border border-slate-50">
-                  <ion-icon name="time-outline" class="text-[#6B7280] text-lg"></ion-icon>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <p class="text-[16px] font-black text-[#111827] m-0">₹{{ p.amount.toLocaleString('en-IN') }}</p>
-                  <p class="text-[12px] text-[#9CA3AF] m-0 font-medium">{{ p.label }} · {{ p.date }}</p>
-                </div>
-                <span class="text-[11px] font-bold px-2.5 py-1 rounded-full flex-shrink-0"
-                  [style.backgroundColor]="getStatusStyle(p.status).bg"
-                  [style.color]="getStatusStyle(p.status).color">
-                  {{ p.status }}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Venue collaborations list -->
-          <div class="text-left">
-            <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-3 px-1 m-0">Venue Collaborations</p>
-            <div class="space-y-4">
-              <div *ngFor="let v of venues" class="section-card bg-white overflow-hidden shadow-sm border border-slate-100">
-                <!-- Cover -->
-                <div class="relative h-[130px] overflow-hidden bg-gray-200">
-                  <img [src]="v.image" class="w-full h-full object-cover" />
-                  <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                  <!-- Status -->
-                  <span class="absolute top-3 right-3 text-[10px] font-bold px-2.5 py-1 rounded-full"
-                    [style.backgroundColor]="getStatusStyle(v.status).bg"
-                    [style.color]="getStatusStyle(v.status).color">
-                    {{ v.status }}
-                  </span>
-                  <!-- Name overlay -->
-                  <div class="absolute bottom-3 left-3">
-                    <div class="flex items-center gap-2">
-                      <span class="text-xl leading-none">{{ v.emoji }}</span>
-                      <p class="text-white font-black text-[15px] m-0 drop-shadow-md leading-none">{{ v.name }}</p>
-                    </div>
-                    <p class="text-white/70 text-[11px] m-0 mt-1 font-medium">{{ v.sport }} · {{ v.type }}</p>
-                  </div>
-                </div>
-
-                <!-- Body details -->
-                <div class="px-4 py-3.5">
-                  <div class="flex items-center justify-between mb-3">
-                    <div>
-                      <p class="text-[11px] text-[#9CA3AF] font-bold m-0">Monthly Earnings</p>
-                      <p class="text-[22px] font-black text-[#111827] m-0">₹{{ v.monthly.toLocaleString('en-IN') }}</p>
-                    </div>
-                    <div class="text-right">
-                      <p class="text-[11px] text-[#9CA3AF] m-0 font-bold">{{ v.schedule }}</p>
-                      <p class="text-[12px] font-black text-[#111827] m-0 mt-0.5">{{ v.time }}</p>
-                    </div>
-                  </div>
-                  <button (click)="go('/app/coach/venue-collab/' + v.id)" class="w-full h-10 rounded-2xl text-[13px] font-bold text-[#111827] flex items-center justify-center gap-1 border-none bg-[var(--app-primary)]/12 border-[var(--app-primary)]/35 border-2">
-                    View Details<ion-icon name="chevron-forward-outline"></ion-icon>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Withdrawal history log timelines -->
-          <div class="section-card p-5 bg-white text-left">
-            <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-4 m-0">Withdrawal History</p>
-            <div class="relative pl-6">
-              <div class="absolute left-2 top-2 bottom-2 w-px bg-[#F3F4F6]"></div>
-              <div class="space-y-4">
-                <div *ngFor="let w of withdrawals" class="relative flex items-start gap-3">
-                  <div class="absolute -left-7 top-2 w-4 h-4 rounded-full border-2 border-white flex items-center justify-center bg-[var(--app-primary)]">
-                    <ion-icon name="checkmark-outline" style="font-size:8px;color:#111827;font-weight:bold;"></ion-icon>
-                  </div>
-
-                  <div class="flex-1 bg-[#F9FAFB] rounded-2xl px-4 py-3 border border-slate-100">
-                    <div class="flex items-center justify-between mb-1">
-                      <p class="text-[16px] font-black text-[#111827] m-0">₹{{ w.amount.toLocaleString('en-IN') }}</p>
-                      <span class="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                        [style.backgroundColor]="getStatusStyle(w.status).bg"
-                        [style.color]="getStatusStyle(w.status).color">
-                        {{ w.status }}
-                      </span>
-                    </div>
-                    <div class="flex items-center gap-2 text-[11px] text-[#9CA3AF] font-bold">
-                      <ion-icon name="card-outline"></ion-icon>
-                      <span>{{ w.bank }}</span>
-                      <span>·</span>
-                      <span>{{ w.date }}</span>
-                      <span>·</span>
-                      <span class="font-mono text-[9px]">{{ w.ref }}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Recent transactions list -->
-          <div class="section-card p-5 bg-white text-left">
-            <div class="flex items-center justify-between mb-4">
-              <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-0 m-0">Recent Transactions</p>
-              <button class="text-[12px] font-bold text-[var(--app-primary)] flex items-center gap-0.5 bg-transparent border-none">
-                View All<ion-icon name="chevron-forward-outline"></ion-icon>
-              </button>
-            </div>
-            <div class="space-y-1">
-              <div *ngFor="let t of transactions; let idx = index" class="flex items-center gap-3 py-3.5 border-b border-[#F9FAFB] last:border-none">
-                <div class="w-10 h-10 rounded-2xl bg-[#F0FDF4] flex items-center justify-center flex-shrink-0 border border-slate-100">
-                  <ion-icon name="trending-up-outline" class="text-[#22C55E] text-lg"></ion-icon>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <p class="text-[13px] font-bold text-[#111827] leading-tight m-0">{{ t.label }}</p>
-                  <p class="text-[11px] text-[#9CA3AF] mt-0.5 m-0 font-medium">{{ t.time }}</p>
-                </div>
-                <p class="text-[15px] font-black flex-shrink-0 text-[#16A34A] m-0">
-                  +₹{{ t.amount.toLocaleString('en-IN') }}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Bank account metrics -->
-          <div class="section-card p-5 bg-white text-left">
-            <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-4 m-0">Linked Bank Account</p>
-            <div class="bg-gradient-to-br from-[#111827] to-[#374151] rounded-2xl px-5 py-4 mb-4 relative overflow-hidden">
-              <div class="absolute -top-5 -right-5 w-20 h-20 rounded-full bg-white/5"></div>
-              <div class="flex items-start justify-between mb-4">
-                <div>
-                  <p class="text-[12px] text-white/50 font-medium mb-0.5 m-0">Primary Account</p>
-                  <p class="text-[17px] font-black text-white m-0">HDFC Bank</p>
-                </div>
-                <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
-                  <ion-icon name="business-outline" class="text-white/70 text-xl"></ion-icon>
-                </div>
-              </div>
-              <p class="text-[18px] font-bold text-white tracking-widest font-mono m-0">
-                XXXX XXXX 4589
+          <section class="summary-card" aria-label="Earnings summary">
+            <div class="summary-orb"></div>
+            <p class="summary-label">{{ selectedPeriodLabel() }}'s Earnings</p>
+            <ng-container *ngIf="!loading(); else totalLoading">
+              <p class="summary-total">{{ currency(data()?.total || 0) }}</p>
+              <p class="summary-change" [class.positive]="(data()?.change_percent || 0) > 0" [class.negative]="(data()?.change_percent || 0) < 0">
+                {{ changeText() }}
               </p>
-              <div class="mt-3 flex items-center gap-1.5">
-                <div class="w-2 h-2 rounded-full bg-[var(--app-primary)]"></div>
-                <p class="text-[11px] text-white/50 m-0 font-bold">Verified & Active</p>
+            </ng-container>
+            <ng-template #totalLoading><div class="loading-total"></div></ng-template>
+
+            <div class="summary-stats">
+              <div class="summary-stat">
+                <ion-icon name="today-outline"></ion-icon>
+                <strong>{{ currency(data()?.stats?.today || 0) }}</strong>
+                <span>Today</span>
+              </div>
+              <div class="summary-stat">
+                <ion-icon name="calendar-outline"></ion-icon>
+                <strong>{{ currency(data()?.stats?.week || 0) }}</strong>
+                <span>This Week</span>
+              </div>
+              <div class="summary-stat">
+                <ion-icon name="wallet-outline"></ion-icon>
+                <strong>{{ currency(data()?.wallet_balance || 0) }}</strong>
+                <span>Wallet</span>
               </div>
             </div>
-            <div class="flex gap-3">
-              <button class="flex-1 h-10 rounded-2xl text-[13px] font-bold text-[#111827] border-none bg-[var(--app-primary)]/12 border-[var(--app-primary)]/35 border-2">
-                Edit Details
+          </section>
+
+          <section class="wallet-card">
+            <div class="section-heading">
+              <div class="section-icon"><ion-icon name="wallet-outline"></ion-icon></div>
+              <h2>TYNG Wallet</h2>
+            </div>
+            <div class="wallet-balance">
+              <span>Available Balance</span>
+              <strong>{{ currency(data()?.wallet_balance || 0) }}</strong>
+              <p><i></i> Current wallet balance</p>
+            </div>
+            <div class="wallet-actions">
+              <button type="button" class="wallet-primary" (click)="go('/app/wallet')">
+                <ion-icon name="wallet-outline"></ion-icon> Open Wallet
               </button>
-              <button class="flex-1 h-10 rounded-2xl text-[13px] font-bold text-[#6B7280] bg-[#F9FAFB] border border-[#E5E7EB]">
-                Change Account
-              </button>
+              <button type="button" class="wallet-secondary" (click)="go('/app/coach/settings')">Manage Account</button>
             </div>
-          </div>
+          </section>
 
-        </div>
-      </div>
-
-      <!-- Withdraw bottom sheet overlay modal -->
-      <div *ngIf="showWithdrawSheet()" class="modal-overlay">
-        <div class="modal-backdrop" (click)="showWithdrawSheet.set(false)"></div>
-        <div class="modal-content bg-white rounded-t-[32px] p-6 max-w-sm w-full relative z-50 text-left">
-          <div class="w-10 h-1 rounded-full bg-[#E5E7EB] mx-auto mb-5"></div>
-
-          <!-- SUCCESS STATE -->
-          <div *ngIf="withdrawState() === 'success'" class="flex flex-col items-center text-center">
-            <div class="success-circle mb-4">
-              <ion-icon name="checkmark-outline" class="text-white text-5xl font-black"></ion-icon>
+          <section class="content-card">
+            <div class="section-title-row">
+              <div><h2>Earnings Breakdown</h2><p>Completed sessions by sport</p></div>
             </div>
-            <p class="text-[20px] font-black text-[#111827] mb-1 m-0">Withdrawal Initiated!</p>
-            <p class="text-[14px] text-[#9CA3AF] mb-4 m-0">Amount: ₹{{ withdrawVal }}</p>
-            <div class="bg-[#F0FDF4] rounded-2xl px-4 py-2.5 w-full border border-[var(--app-primary)]/22 mb-4">
-              <p class="text-[12px] font-bold text-[#16A34A] text-center m-0">Funds will credit within 24 hours.</p>
-            </div>
-            <button (click)="showWithdrawSheet.set(false)" class="w-full h-11 rounded-2xl text-[14px] font-black btn-orange-gradient text-white border-none">
-              Done
-            </button>
-          </div>
-
-          <!-- INPUT SLIDE STATE -->
-          <div *ngIf="withdrawState() === 'input'" class="space-y-4">
-            <h2 class="text-[18px] font-black text-[#111827] m-0">Enter Amount</h2>
-            <p class="text-[13px] text-[#9CA3AF] m-0">Select how much you want to transfer to your HDFC bank account.</p>
-
-            <div class="bg-[#FAFBFC] rounded-2xl p-4 border border-[#F3F4F6]">
-              <p class="text-[10px] text-[#9CA3AF] font-bold uppercase tracking-wider mb-1 m-0">Withdrawal Amount</p>
-              <div class="flex items-baseline gap-2">
-                <span class="text-[24px] font-black text-[#111827]/40">₹</span>
-                <input type="number" [(ngModel)]="withdrawVal" placeholder="Enter amount" class="flex-1 bg-transparent text-[36px] font-black text-[#111827] focus:outline-none min-h-0 border-none outline-none" />
+            <div *ngIf="!loading() && data()?.breakdown?.length === 0" class="empty-copy">Completed sessions will appear here.</div>
+            <div *ngFor="let item of data()?.breakdown; trackBy: trackBreakdown" class="breakdown-row">
+              <div class="breakdown-topline">
+                <div><strong>{{ item.label }}</strong><span>{{ item.sessions }} session{{ item.sessions === 1 ? '' : 's' }}</span></div>
+                <b>{{ currency(item.amount) }}</b>
               </div>
-              <p class="text-[11px] text-[#9CA3AF] mt-2 mb-0">Max available: ₹12,500</p>
+              <div class="progress-track"><span [style.width.%]="item.percentage"></span></div>
             </div>
+          </section>
 
-            <button (click)="submitWithdrawal()" [disabled]="!isWithdrawValid()" class="w-full h-12 rounded-2xl text-[15px] font-black btn-orange-gradient text-white border-none">
-              Confirm Withdrawal
-            </button>
-          </div>
-        </div>
+          <section class="content-card">
+            <div class="section-title-row">
+              <div><h2>Recent Sessions</h2><p>Your latest completed coaching sessions</p></div>
+              <button type="button" class="view-all" (click)="go('/app/coach/schedule')">Schedule <ion-icon name="chevron-forward-outline"></ion-icon></button>
+            </div>
+            <div *ngIf="!loading() && data()?.recent_sessions?.length === 0" class="empty-copy">No completed sessions yet.</div>
+            <article *ngFor="let session of data()?.recent_sessions; trackBy: trackSession" class="session-row">
+              <div class="session-icon"><ion-icon name="checkmark-circle-outline"></ion-icon></div>
+              <div class="session-copy">
+                <strong>{{ session.title || session.sport || 'Coaching session' }}</strong>
+                <span>{{ session.sport || 'Coaching' }}<ng-container *ngIf="session.student_name"> · {{ session.student_name }}</ng-container></span>
+                <span *ngIf="session.date" class="session-date">{{ session.date | date:'d MMM y' }}</span>
+              </div>
+              <b class="session-amount">{{ currency(session.amount) }}</b>
+            </article>
+          </section>
+        </main>
       </div>
     </ion-content>
   `,
   styles: [`
-    .earnings-page {
-      background: #FAFBFC;
-      min-height: 100%;
-    }
-
-    .sticky-header {
-      position: sticky;
-      top: 0;
-      z-index: 30;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
-    }
-
-    .summary-hero-card {
-      border-radius: 24px;
-      box-shadow: 0 6px 28px rgba(0,0,0,0.20);
-    }
-
-    .section-card {
-      border-radius: 24px;
-      box-shadow: 0 2px 16px rgba(0,0,0,0.07);
-    }
-
-    .no-scrollbar {
-      scrollbar-width: none;
-      &::-webkit-scrollbar {
-        display: none;
-      }
-    }
-
-    .btn-orange-gradient {
-      background: linear-gradient(135deg, #FF7A00, #FF9A40);
-      box-shadow: 0 4px 16px rgba(255, 122, 0, 0.35);
-      color: white;
-    }
-
-    /* Modal styles */
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-      z-index: 50;
-    }
-
-    .modal-backdrop {
-      position: absolute;
-      inset: 0;
-      background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(4px);
-    }
-
-    .modal-content {
-      box-shadow: 0 -10px 40px rgba(0,0,0,0.15);
-      animation: slideUp 0.3s ease-out;
-    }
-
-    @keyframes slideUp {
-      from { transform: translateY(100%); }
-      to { transform: translateY(0); }
-    }
-
-    .success-circle {
-      width: 80px; height: 80px;
-      border-radius: 50%;
-      background: var(--app-primary);
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 8px 32px rgba(var(--app-primary-rgb),0.45);
-    }
-  `]
+    :host { display:block; }
+    .earnings-page { min-height:100%; padding-bottom:calc(120px + var(--safe-area-bottom, 0px)); background:#F7F9FC; color:#172033; }
+    .sticky-header { position:sticky; top:0; z-index:20; display:grid; grid-template-columns:42px 1fr 42px; align-items:center; min-height:62px; padding:0 16px; border-bottom:1px solid #EEF1F5; background:#fff; }
+    .sticky-header h1 { margin:0; text-align:center; font-size:17px; font-weight:850; }
+    .header-button { display:grid; place-items:center; width:42px; height:42px; border:0; border-radius:15px; background:#F3F5F8; color:#172033; font-size:20px; }
+    .period-grid { position:sticky; top:62px; z-index:19; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; padding:10px 14px; border-bottom:1px solid #EEF1F5; background:#fff; }
+    .period-grid button { min-width:0; min-height:36px; padding:5px 3px; border:0; border-radius:12px; background:#F3F5F8; color:#687386; font-size:11px; font-weight:700; white-space:nowrap; }
+    .period-grid button.selected { background:#69D900; color:#14210A; box-shadow:0 3px 10px #69d90030; }
+    .earnings-content { display:grid; gap:16px; padding:16px 18px 0; }
+    .summary-card { position:relative; overflow:hidden; padding:24px 20px 18px; border-radius:25px; background:linear-gradient(140deg,#111827 0%,#1D293B 100%); box-shadow:0 10px 28px #15264220; color:#fff; }
+    .summary-orb { position:absolute; top:-48px; right:-40px; width:165px; height:165px; border-radius:50%; background:#69d90016; pointer-events:none; }
+    .summary-label { position:relative; margin:0 0 4px; color:#78E100; font-size:11px; font-weight:850; letter-spacing:.09em; text-transform:uppercase; }
+    .summary-total { position:relative; margin:0; font-size:clamp(36px,11vw,48px); line-height:1.05; font-weight:900; letter-spacing:-.04em; }
+    .summary-change { position:relative; min-height:18px; margin:5px 0 20px; color:#ADB8C7; font-size:11px; }
+    .summary-change.positive { color:#9BE859; }
+    .summary-change.negative { color:#FDB4A8; }
+    .loading-total { width:190px; height:44px; margin:4px 0 5px; border-radius:9px; background:#ffffff16; animation:pulse 1s infinite alternate; }
+    .summary-stats { position:relative; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+    .summary-stat { display:flex; min-width:0; min-height:87px; flex-direction:column; align-items:center; justify-content:center; gap:3px; padding:9px 5px; border:1px solid #ffffff0d; border-radius:16px; background:#ffffff12; text-align:center; }
+    .summary-stat ion-icon { color:#79E300; font-size:18px; }
+    .summary-stat strong { max-width:100%; overflow:hidden; font-size:clamp(11px,3.2vw,14px); font-weight:850; text-overflow:ellipsis; white-space:nowrap; }
+    .summary-stat span { color:#B7C0CE; font-size:9px; }
+    .wallet-card,.content-card { min-width:0; padding:19px; border:1px solid #E9EEF3; border-radius:23px; background:#fff; box-shadow:0 5px 20px #1526420c; }
+    .section-heading { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
+    .section-icon { display:grid; place-items:center; width:40px; height:40px; border-radius:14px; background:#EFFADB; color:#55B900; font-size:20px; }
+    .section-heading h2 { margin:0; font-size:13px; font-weight:850; letter-spacing:.06em; }
+    .wallet-balance { display:flex; flex-direction:column; align-items:center; gap:5px; padding:17px 12px; border:1px solid #F0F2F5; border-radius:17px; background:#F8FAFC; }
+    .wallet-balance>span { color:#8A94A6; font-size:12px; }
+    .wallet-balance strong { max-width:100%; color:#172033; font-size:clamp(30px,9vw,38px); line-height:1.1; font-weight:900; letter-spacing:-.03em; overflow-wrap:anywhere; }
+    .wallet-balance p { display:flex; align-items:center; gap:7px; margin:2px 0 0; color:#687386; font-size:11px; }
+    .wallet-balance i { width:8px; height:8px; border-radius:50%; background:#69D900; }
+    .wallet-actions { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px; }
+    .wallet-actions button { min-width:0; min-height:46px; padding:8px 10px; border-radius:14px; font-size:12px; font-weight:750; }
+    .wallet-primary { display:flex; align-items:center; justify-content:center; gap:6px; border:0; background:linear-gradient(135deg,#69D900,#83E521); color:#14210A; }
+    .wallet-secondary { border:1px solid #D9DEE7; background:#fff; color:#5D687A; }
+    .section-title-row { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:16px; }
+    .section-title-row h2 { margin:0; font-size:13px; font-weight:850; }
+    .section-title-row p { margin:4px 0 0; color:#9099A8; font-size:10px; }
+    .view-all { display:flex; flex:0 0 auto; align-items:center; gap:2px; border:0; background:transparent; color:#4C9B00; font-size:11px; font-weight:800; }
+    .breakdown-row + .breakdown-row { margin-top:15px; }
+    .breakdown-topline { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:7px; }
+    .breakdown-topline div { display:flex; min-width:0; flex-direction:column; gap:2px; }
+    .breakdown-topline strong { overflow:hidden; font-size:12px; text-overflow:ellipsis; white-space:nowrap; }
+    .breakdown-topline span { color:#9099A8; font-size:10px; }
+    .breakdown-topline>b { flex:0 0 auto; font-size:12px; }
+    .progress-track { height:6px; overflow:hidden; border-radius:9px; background:#F0F2F5; }
+    .progress-track span { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,#69D900,#93E648); }
+    .session-row { display:flex; align-items:center; gap:10px; padding:12px 0; border-top:1px solid #F0F2F5; }
+    .session-icon { display:grid; flex:0 0 36px; place-items:center; width:36px; height:36px; border-radius:12px; background:#EFFADB; color:#55B900; font-size:19px; }
+    .session-copy { display:flex; min-width:0; flex:1; flex-direction:column; gap:3px; }
+    .session-copy strong { overflow:hidden; font-size:11px; text-overflow:ellipsis; white-space:nowrap; }
+    .session-copy span { overflow:hidden; color:#778296; font-size:10px; text-overflow:ellipsis; white-space:nowrap; }
+    .session-copy .session-date { color:#A0A8B5; font-size:9px; }
+    .session-amount { flex:0 0 auto; font-size:11px; }
+    .empty-copy { padding:14px 0 4px; color:#8B95A5; font-size:11px; text-align:center; }
+    .error-card { display:flex; align-items:center; gap:8px; padding:12px; border-radius:14px; background:#FFF1F0; color:#B42318; font-size:11px; }
+    .error-card span { flex:1; }
+    .error-card button { border:0; background:transparent; color:#9F1C13; font-size:11px; font-weight:800; }
+    @keyframes pulse { to { opacity:.45; } }
+    @media (min-width:700px) { .earnings-content { max-width:720px; width:100%; margin:0 auto; padding-top:24px; } .period-grid { padding-right:max(14px,calc((100% - 720px)/2)); padding-left:max(14px,calc((100% - 720px)/2)); } }
+  `],
 })
-export class CoachEarningsPage {
+export class CoachEarningsPage implements OnInit {
   private readonly router = inject(Router);
+  private readonly coach = inject(CoachService);
+  readonly selectedPeriod = signal<EarningsPeriod>('month');
+  readonly loading = signal(false);
+  readonly error = signal('');
+  readonly data = signal<CoachEarningsData | null>(null);
+  readonly periods: Array<{ key: EarningsPeriod; label: string }> = [
+    { key: 'today', label: 'Today' },
+    { key: 'week', label: 'This Week' },
+    { key: 'month', label: 'This Month' },
+    { key: 'year', label: 'This Year' },
+  ];
 
-  selectedPeriod = signal('This Month');
-  showWithdrawSheet = signal(false);
-  withdrawState = signal<'input' | 'success'>('input');
-  withdrawVal = '';
+  ngOnInit(): void { this.load(); }
 
-  readonly periods = ['Today', 'This Week', 'This Month', 'This Year'];
-  readonly breakdowns = BREAKDOWNS;
-  readonly payouts = PAYOUTS;
-  readonly venues = VENUES;
-  readonly withdrawals = WITHDRAWALS;
-  readonly transactions = TRANSACTIONS;
-  readonly Math = Math;
-
-  back() {
-    this.router.navigateByUrl('/app/coach/dashboard');
+  load(): void {
+    this.loading.set(true);
+    this.error.set('');
+    this.coach.getEarnings(this.selectedPeriod()).subscribe({
+      next: (response) => { this.data.set(response.data || null); this.loading.set(false); },
+      error: () => { this.error.set('Could not load your earnings. Please try again.'); this.loading.set(false); },
+    });
   }
 
-  go(path: string) {
-    this.router.navigateByUrl(path);
+  selectPeriod(period: EarningsPeriod): void {
+    if (this.selectedPeriod() === period) return;
+    this.selectedPeriod.set(period);
+    this.load();
   }
 
-  getCurrentData(): PeriodData {
-    return PERIOD_DATA[this.selectedPeriod()] || PERIOD_DATA['This Month'];
+  selectedPeriodLabel(): string { return this.periods.find((item) => item.key === this.selectedPeriod())?.label || 'This Month'; }
+
+  changeText(): string {
+    const percent = this.data()?.change_percent;
+    if (percent === null || percent === undefined) return 'No earnings in the previous period';
+    if (percent === 0) return 'Same as the previous period';
+    return `${percent > 0 ? '+' : ''}${percent}% compared with the previous period`;
   }
 
-  getStatusStyle(status: string) {
-    if (status === 'Active') return { bg: '#F0FDF4', color: '#16A34A' };
-    if (status === 'Review') return { bg: '#FFFBEB', color: '#D97706' };
-    if (status === 'Processing') return { bg: '#EFF6FF', color: '#1D4ED8' };
-    if (status === 'Pending') return { bg: '#FFF7ED', color: '#C2410C' };
-    return { bg: '#F0FDF4', color: '#16A34A' }; // Completed
-  }
-
-  openWithdrawModal() {
-    this.withdrawVal = '';
-    this.withdrawState.set('input');
-    this.showWithdrawSheet.set(true);
-  }
-
-  isWithdrawValid(): boolean {
-    const val = parseInt(this.withdrawVal) || 0;
-    return val > 0 && val <= 12500;
-  }
-
-  submitWithdrawal() {
-    this.withdrawState.set('success');
-  }
+  currency(value: number): string { return `₹${Number(value || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`; }
+  trackBreakdown(_index: number, item: CoachEarningsData['breakdown'][number]): string { return item.label; }
+  trackSession(_index: number, item: CoachEarningsData['recent_sessions'][number]): number { return item.id; }
+  back(): void { void this.router.navigateByUrl('/app/coach/dashboard'); }
+  go(path: string): void { void this.router.navigateByUrl(path); }
 }
