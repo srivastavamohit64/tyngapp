@@ -225,3 +225,11 @@
 - Added an admin-only overview API and dashboard section for Coach/Venue/Player counts, partnerships needing review, venue approval queue, player names, recent current/legacy sessions and listed session value.
 - PHP syntax/route checks and the Angular production build pass; the build reports only existing Sass deprecation, optional-chain, and style-budget warnings.
 - The local Laravel database is unavailable on 127.0.0.1:3306, so local database checks remain pending. The migration, route registration, syntax checks and cache refresh were completed on the live server.
+
+## Completed: Coach session navigation and attendance actions - 24 September 2026
+
+- Connected both Navigate buttons on the Coach session detail screen to Google Maps directions using the session's venue and address.
+- Made the Attendance button scroll to the player roster using Ionic's scrolling API, so it works within the page's scroll container.
+- When a venue has not approved a session yet, the attendance action explains that attendance becomes available after approval; recording remains tied to the existing attendance API.
+- Directions show a clear message if the session does not yet have a confirmed venue location.
+- `git diff --check` passed. No build or tests were run for this focused interaction fix.

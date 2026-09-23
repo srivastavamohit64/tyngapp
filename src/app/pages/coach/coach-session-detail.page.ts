@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, signal, inject, OnInit } from '@angular/core';
+import { Component, ElementRef, inject, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, IonContent } from '@ionic/angular';
 import { CoachService } from '../../core/services/coach.service';
 import { resolveMediaUrl } from '../../core/utils/media-url.util';
 
@@ -166,14 +166,14 @@ const SESSIONS: any[] = [
               <button (click)="go('/app/coach/chat')" class="action-btn">
                 <ion-icon name="chatbubbles-outline"></ion-icon>Chat
               </button>
-              <button class="action-btn">
+              <button (click)="navigateToVenue()" class="action-btn">
                 <ion-icon name="navigate-outline"></ion-icon>Navigate
               </button>
             </div>
           </div>
 
           <!-- Present roster checklist -->
-          <div id="session-attendance" class="bg-white rounded-[24px] p-5 shadow-sm border border-slate-100 text-left">
+          <div #attendanceSection class="bg-white rounded-[24px] p-5 shadow-sm border border-slate-100 text-left">
             <div class="flex items-center justify-between mb-4">
               <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest m-0">Students</p>
               <span class="text-[12px] font-bold text-[var(--app-primary)]">
@@ -316,13 +316,15 @@ const SESSIONS: any[] = [
           <button (click)="go('/app/coach/chat')" class="footer-action-btn">
             <ion-icon name="chatbubbles-outline"></ion-icon>Chat
           </button>
-          <button class="footer-action-btn">
+          <button (click)="navigateToVenue()" class="footer-action-btn">
             <ion-icon name="navigate-outline"></ion-icon>Navigate
           </button>
-          <button (click)="scrollToAttendance()" class="footer-action-btn font-black text-white bg-gradient-to-br from-[#FF7A00] to-[#FF9A40] shadow-md border-none">
+          <button (click)="openAttendance()" class="footer-action-btn font-black text-white bg-gradient-to-br from-[#FF7A00] to-[#FF9A40] shadow-md border-none"
+            [class.opacity-50]="session?.attendanceSupported === false" [attr.aria-disabled]="session?.attendanceSupported === false">
             Attendance
           </button>
         </div>
+        <p *ngIf="actionNotice" class="text-center text-xs text-slate-600 mt-2 mb-0">{{ actionNotice }}</p>
       </div>
     </ion-content>
   `,
@@ -388,6 +390,8 @@ const SESSIONS: any[] = [
   `]
 })
 export class CoachSessionDetailPage implements OnInit {
+  @ViewChild(IonContent) private content?: IonContent;
+  @ViewChild('attendanceSection') private attendanceSection?: ElementRef<HTMLElement>;
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly coachService = inject(CoachService);
@@ -395,6 +399,7 @@ export class CoachSessionDetailPage implements OnInit {
   session: CoachSession | null = null;
   loading = true;
   errorMessage = '';
+  actionNotice = '';
   liked = false;
   notes = '';
   savedNotes = false;
@@ -489,8 +494,32 @@ export class CoachSessionDetailPage implements OnInit {
     ];
   }
 
-  scrollToAttendance(): void {
-    document.getElementById('session-attendance')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  async scrollToAttendance(): Promise<void> {
+    const section = this.attendanceSection?.nativeElement;
+    const content = this.content;
+    if (!section || !content) return;
+    const scrollElement = await content.getScrollElement();
+    const sectionTop = section.getBoundingClientRect().top - scrollElement.getBoundingClientRect().top + scrollElement.scrollTop;
+    await content.scrollToPoint(0, Math.max(0, sectionTop - 12), 350);
+  }
+
+  async openAttendance(): Promise<void> {
+    this.actionNotice = this.session?.attendanceSupported
+      ? ''
+      : 'Attendance can be recorded after the venue approves this session.';
+    await this.scrollToAttendance();
+  }
+
+  navigateToVenue(): void {
+    if (!this.session) return;
+    const destination = [this.session.venue, this.session.address].filter(Boolean).join(', ');
+    if (!destination || this.session.venue.toLowerCase().includes('pending') || this.session.address.toLowerCase().includes('location pending')) {
+      this.actionNotice = 'Venue directions are unavailable because this session has no confirmed venue address yet.';
+      return;
+    }
+    this.actionNotice = '';
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
   }
 
   back() {

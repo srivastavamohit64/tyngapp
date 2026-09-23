@@ -191,3 +191,10 @@ TYNG — TODAY'S WORK SUMMARY
    - Removed example venue features, payment claims and unrelated activity from the session screen.
    - The admin dashboard now summarizes coaches, venues, players, session requests, venue partnerships, recent sessions and listed session prices.
    - The app build and Laravel code/route checks passed. The live server was updated and its database was updated. The local database is currently offline, so local database checks still need to be run after MySQL is available.
+
+32. COACH SESSION NAVIGATION AND ATTENDANCE - 24 September 2026
+   - The Navigate buttons now open Google Maps directions for the session's venue and address.
+   - The Attendance button now scrolls directly to the player list within the page.
+   - If the venue has not approved the session, the app explains that attendance can be recorded after approval.
+   - If the session has no confirmed venue location, the app explains why directions are unavailable.
+   - The focused code check passed. No build or tests were run for this small interaction update.
