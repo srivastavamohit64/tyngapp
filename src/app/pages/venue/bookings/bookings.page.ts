@@ -7,6 +7,7 @@ import { Subscription, firstValueFrom } from 'rxjs';
 import { BookingRecord } from '../../../core/models/api.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { BookingService } from '../../../core/services/booking.service';
+import { VenueCoachingSession, VenueService } from '../../../core/services/venue.service';
 import { RealtimeService } from '../../../core/services/realtime.service';
 import { TabBadgeService } from '../../../core/services/tab-badge.service';
 import { BrandHeaderShellComponent } from '../../../shared/components/brand-header-shell/brand-header-shell.component';
@@ -15,6 +16,8 @@ import { formatBookingDate, formatBookingTimeRange } from '../../../core/utils/b
 
 interface BookingItem {
   id: string;
+  source: 'booking' | 'coach_session';
+  coachSessionId?: number;
   date: string;
   time: string;
   customer: string;
@@ -30,7 +33,7 @@ interface BookingItem {
   couponLabel: string | null;
   approvalDeadlineAt: string | null;
   rentals: Array<{ name: string; qty: number; lineTotal: string }>;
-  raw: BookingRecord;
+  sortAt: string;
 }
 
 @Component({
@@ -76,7 +79,7 @@ interface BookingItem {
           </div>
           <div *ngIf="!loading() && errorMessage()" class="error-box">{{ errorMessage() }}</div>
 
-          <article class="booking-card" *ngFor="let booking of filteredBookings()" (click)="openBooking(booking.id)">
+          <article class="booking-card" *ngFor="let booking of filteredBookings()" (click)="openBooking(booking)">
             <div class="booking-card__top">
               <div class="booking-card__meta">
                 <span><ion-icon name="calendar-outline"></ion-icon>{{ booking.date }}</span>
@@ -136,8 +139,8 @@ interface BookingItem {
             </div>
 
             <div class="booking-card__actions" *ngIf="booking.status === 'pending'" (click)="$event.stopPropagation()">
-              <button type="button" class="btn-accept" (click)="acceptBooking(booking.id)">Accept</button>
-              <button type="button" class="btn-decline" (click)="declineBooking(booking.id)">Decline</button>
+              <button type="button" class="btn-accept" (click)="acceptBooking(booking)">Accept</button>
+              <button *ngIf="booking.source === 'booking'" type="button" class="btn-decline" (click)="declineBooking(booking.id)">Decline</button>
             </div>
           </article>
 
@@ -593,6 +596,7 @@ export class VenueBookingsPage implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
   private readonly bookingService = inject(BookingService);
+  private readonly venueService = inject(VenueService);
   private readonly realtime = inject(RealtimeService);
   private readonly tabBadges = inject(TabBadgeService);
 
@@ -686,8 +690,7 @@ export class VenueBookingsPage implements OnInit, OnDestroy {
       // Pending approvals first so Accept is visible immediately.
       if (a.status === 'pending' && b.status !== 'pending') return -1;
       if (b.status === 'pending' && a.status !== 'pending') return 1;
-      return String(b.raw.bookingDate || '').localeCompare(String(a.raw.bookingDate || ''))
-        || String(b.raw.startTime || '').localeCompare(String(a.raw.startTime || ''));
+      return b.sortAt.localeCompare(a.sortAt);
     });
   }
 
@@ -733,7 +736,10 @@ export class VenueBookingsPage implements OnInit, OnDestroy {
     if (!silent) this.loading.set(true);
     this.errorMessage.set('');
     try {
-      const response = await firstValueFrom(this.bookingService.getMyBookings());
+      const [response, coachingResponse] = await Promise.all([
+        firstValueFrom(this.bookingService.getMyBookings()),
+        firstValueFrom(this.venueService.getCoachScheduleSessions()),
+      ]);
       if (!response.success || !response.data) {
         this.errorMessage.set(response.message || 'Unable to load bookings.');
         if (!silent) this.bookings.set([]);
@@ -748,7 +754,10 @@ export class VenueBookingsPage implements OnInit, OnDestroy {
         ...this.asBookingList(response.data.invited),
       ];
 
-      const venueBookings = this.sortBookings(all.map((b) => this.mapBooking(b)));
+      const coachingSessions = coachingResponse.success && Array.isArray(coachingResponse.data)
+        ? coachingResponse.data.map((session) => this.mapCoachingSession(session))
+        : [];
+      const venueBookings = this.sortBookings([...all.map((b) => this.mapBooking(b)), ...coachingSessions]);
 
       this.bookings.set(venueBookings);
     } catch (error: any) {
@@ -759,9 +768,13 @@ export class VenueBookingsPage implements OnInit, OnDestroy {
     }
   }
 
-  async acceptBooking(id: string) {
+  async acceptBooking(booking: BookingItem) {
     try {
-      await firstValueFrom(this.bookingService.approveBooking(id));
+      if (booking.source === 'coach_session' && booking.coachSessionId) {
+        await firstValueFrom(this.venueService.approveCoachScheduleSession(booking.coachSessionId));
+      } else {
+        await firstValueFrom(this.bookingService.approveBooking(booking.id));
+      }
       await this.loadBookings();
     } catch (error: any) {
       this.errorMessage.set(error?.error?.message || 'Unable to accept booking.');
@@ -781,8 +794,10 @@ export class VenueBookingsPage implements OnInit, OnDestroy {
     void this.router.navigateByUrl('/app/venue/dashboard');
   }
 
-  openBooking(id: string) {
-    void this.router.navigateByUrl(`/app/venue/bookings/${encodeURIComponent(id)}`);
+  openBooking(booking: BookingItem) {
+    if (booking.source === 'booking') {
+      void this.router.navigateByUrl(`/app/venue/bookings/${encodeURIComponent(booking.id)}`);
+    }
   }
 
   private mapBooking(booking: BookingRecord): BookingItem {
@@ -808,6 +823,7 @@ export class VenueBookingsPage implements OnInit, OnDestroy {
 
     return {
       id: booking.id,
+      source: 'booking',
       date: formatBookingDate(booking.bookingDate),
       time: formatBookingTimeRange(booking.startTime, booking.endTime).replace(' · ', ' - '),
       customer: booking.host?.name || 'Player',
@@ -829,7 +845,39 @@ export class VenueBookingsPage implements OnInit, OnDestroy {
         : null,
       approvalDeadlineAt: status === 'pending' ? (booking.approvalDeadlineAt || null) : null,
       rentals,
-      raw: booking,
+      sortAt: `${booking.bookingDate || ''}T${booking.startTime || ''}`,
+    };
+  }
+
+  private mapCoachingSession(session: VenueCoachingSession): BookingItem {
+    const startsAt = session.starts_at ? new Date(session.starts_at) : null;
+    const endsAt = session.ends_at ? new Date(session.ends_at) : null;
+    const validStart = startsAt && !Number.isNaN(startsAt.getTime()) ? startsAt : null;
+    const durationMinutes = validStart && endsAt && !Number.isNaN(endsAt.getTime())
+      ? Math.max(1, Math.round((endsAt.getTime() - validStart.getTime()) / 60000))
+      : 60;
+    const status = this.normalizeStatus(session.status === 'pending_venue_approval' ? 'pending' : session.status);
+
+    return {
+      id: `coach-session-${session.id}`,
+      source: 'coach_session',
+      coachSessionId: session.id,
+      date: validStart ? validStart.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Scheduled date',
+      time: validStart ? validStart.toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' }) : 'Scheduled time',
+      customer: session.coach?.name || 'Coach',
+      customerPhone: '',
+      customerEmail: '',
+      court: session.court || 'Court',
+      sport: this.titleCase(session.sport || 'Coaching session'),
+      status,
+      amount: `â‚¹${Number(session.price || 0).toLocaleString('en-IN')}`,
+      durationLabel: durationMinutes < 60 ? `${durationMinutes} min` : `${Math.round(durationMinutes / 60)} ${Math.round(durationMinutes / 60) === 1 ? 'hour' : 'hours'}`,
+      paymentMethodLabel: 'Coach session',
+      paymentStatusLabel: status === 'pending' ? 'Awaiting your approval' : 'Player invitations sent',
+      couponLabel: null,
+      approvalDeadlineAt: null,
+      rentals: [],
+      sortAt: session.starts_at || '',
     };
   }
 

@@ -249,3 +249,10 @@
 - Added automatic draft saving while a Coach updates profile information. Saved values now reload when returning to Complete Profile, even if the Coach leaves without pressing a section button.
 - Refreshes the signed-in profile after saving so the dashboard percentage updates without requiring the Coach to log in again.
 - Angular compilation and PHP syntax checks pass with only existing Angular warnings. The live Laravel change was pushed as `eb62dba`.
+
+## Completed: Venue approval now updates Coach schedules - 24 September 2026
+
+- Added the Venue Bookings view for coaching sessions, alongside normal venue bookings, so venue staff can review and accept the real coaching-session request.
+- Connected Accept to the dedicated approval process. Approval now confirms the session, confirms its court reservation and sends the player invitation together.
+- Corrected the already accepted Mohit Session through the same approval process. It now shows as Confirmed to the Coach and the player invitation shows as sent.
+- Verified the live API route, PHP syntax and Ionic Angular compilation. The backend is live and the frontend changes are ready to publish.

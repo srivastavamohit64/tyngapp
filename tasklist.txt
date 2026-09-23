@@ -211,3 +211,9 @@ TYNG — TODAY'S WORK SUMMARY
    - When a Coach returns to Complete Profile, saved choices are loaded back into the form.
    - The dashboard percentage now uses the same profile sections, gallery and verification documents shown in the Coach profile screen.
    - The live server update was completed successfully.
+
+35. VENUE APPROVAL FOR COACH SESSIONS - 24 September 2026
+   - Venue staff can now see coaching-session requests in their existing Bookings area, alongside regular court bookings.
+   - Accepting a coaching session now confirms the session, keeps the selected court reserved and sends the invitation to the player.
+   - Corrected the previously accepted Mohit Session. It now appears as Confirmed for the Coach and the player invitation is marked as sent.
+   - The live API route and app code checks were completed successfully.

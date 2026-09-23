@@ -34,6 +34,22 @@ export interface VenueCompletion {
   missing: string[];
 }
 
+export interface VenueCoachingSession {
+  id: number;
+  source: 'scheduling';
+  title: string;
+  sport: string;
+  coach?: { id?: number | null; name?: string | null; photo?: string | null } | null;
+  venue?: string | null;
+  venue_location?: string | null;
+  court?: string | null;
+  starts_at?: string | null;
+  ends_at?: string | null;
+  status: 'pending_venue_approval' | 'confirmed' | 'completed' | 'cancelled' | 'expired' | string;
+  capacity: number;
+  price: number;
+}
+
 export interface VenueDashboardData {
   pulse: {
     todayBookings: number;
@@ -238,6 +254,14 @@ export class VenueService {
 
   getDashboard(): Observable<ApiResponse<VenueDashboardData>> {
     return this.api.get<VenueDashboardData>('/venue/dashboard');
+  }
+
+  getCoachScheduleSessions(): Observable<ApiResponse<VenueCoachingSession[]>> {
+    return this.api.get<VenueCoachingSession[]>('/venue/coach-schedule-sessions');
+  }
+
+  approveCoachScheduleSession(id: number | string): Observable<ApiResponse<VenueCoachingSession>> {
+    return this.api.post<VenueCoachingSession>(`/venue/coach-schedule-sessions/${encodeURIComponent(id)}/approve`, {});
   }
 
   getEarnings(period: 'today' | 'week' | 'month' | 'year' = 'month'): Observable<ApiResponse<VenueEarningsData>> {
