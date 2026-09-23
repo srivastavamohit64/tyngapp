@@ -99,8 +99,19 @@ export interface VenueDashboardData {
     students: number;
     court: string;
   }[];
+  coachApprovalRequests?: {
+    id: string;
+    title: string;
+    coachName: string;
+    photo?: string | null;
+    sport: string;
+    court: string;
+    time: string;
+    students: number;
+    amount: string;
+  }[];
   activities: { emoji: string; bg: string; text: string; time: string }[];
-  pendingActions: { label: string; sub: string; urgency: string; bookingId?: string; approvalDeadlineAt?: string | null }[];
+  pendingActions: { label: string; sub: string; urgency: string; bookingId?: string; coachSessionId?: string; approvalDeadlineAt?: string | null }[];
   aiTips: { emoji: string; text: string }[];
 }
 

@@ -92,11 +92,13 @@ export class VenueDashboardPage implements OnInit, OnDestroy, ViewWillEnter {
   bookings: VenueBooking[] = [];
   courts: VenueCourt[] = [];
   coachSessions: { id: string | number; name: string; photo: string; sport: string; time: string; students: number; court: string }[] = [];
+  coachApprovalRequests: { id: string; title: string; coachName: string; photo: string; sport: string; court: string; time: string; students: number; amount: string }[] = [];
   activities: { emoji: string; bg: string; text: string; time: string }[] = [];
   aiTips: { emoji: string; text: string }[] = [];
   pendingActions: { label: string; sub: string; urgency: string }[] = [];
   bookingBlockMessage = signal<string | null>(null);
   statusBusyId = signal<string | null>(null);
+  coachApprovalBusyId = signal<string | null>(null);
   readonly docsModalOpen = signal(false);
   readonly docsRows = signal<VenueDocRow[]>([]);
   readonly checkingAccess = signal(true);
@@ -116,6 +118,7 @@ export class VenueDashboardPage implements OnInit, OnDestroy, ViewWillEnter {
 
   private realtimeSub: Subscription | null = null;
   private realtimeReloadTimer: ReturnType<typeof setTimeout> | null = null;
+  private initialLoadComplete = false;
 
   async ngOnInit() {
     if (this.auth.user()?.role !== 'venue') {
@@ -137,10 +140,11 @@ export class VenueDashboardPage implements OnInit, OnDestroy, ViewWillEnter {
     await this.loadDashboard();
     void this.loadWeatherLocation();
     void this.bindRealtime();
+    this.initialLoadComplete = true;
   }
 
   ionViewWillEnter(): void {
-    if (this.auth.user()?.role === 'venue') {
+    if (this.initialLoadComplete && this.auth.user()?.role === 'venue') {
       void this.onEnter();
     }
   }
@@ -311,6 +315,10 @@ export class VenueDashboardPage implements OnInit, OnDestroy, ViewWillEnter {
       ...s,
       photo: s.photo || DEFAULT_PHOTO,
     }));
+    this.coachApprovalRequests = (data.coachApprovalRequests || []).map((request) => ({
+      ...request,
+      photo: request.photo || DEFAULT_PHOTO,
+    }));
     this.activities = data.activities || [];
     this.aiTips = data.aiTips || [];
     this.pendingActions = data.pendingActions || [];
@@ -374,6 +382,21 @@ export class VenueDashboardPage implements OnInit, OnDestroy, ViewWillEnter {
       );
     } finally {
       this.statusBusyId.set(null);
+    }
+  }
+
+  async approveCoachSession(id: string): Promise<void> {
+    if (!id || this.coachApprovalBusyId()) return;
+    this.coachApprovalBusyId.set(id);
+    this.errorMessage.set('');
+    try {
+      await firstValueFrom(this.venueService.approveCoachScheduleSession(id));
+      await this.loadDashboard(true);
+      await this.tabBadges.refresh();
+    } catch (error: any) {
+      this.errorMessage.set(error?.error?.message || 'Unable to approve this coaching session.');
+    } finally {
+      this.coachApprovalBusyId.set(null);
     }
   }
 

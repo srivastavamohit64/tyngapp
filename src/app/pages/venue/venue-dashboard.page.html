@@ -50,6 +50,30 @@
           </div>
         </section>
 
+        <!-- Coach session approvals: these are distinct from standard court bookings. -->
+        <section *ngIf="coachApprovalRequests.length" class="venue-card venue-card-padded coach-approval-card">
+          <div class="venue-section-header">
+            <div>
+              <h3 class="venue-section-title">Coach Session Requests</h3>
+              <p class="coach-approval-hint">Approve to reserve the court and notify the selected players.</p>
+            </div>
+            <button type="button" class="venue-see-all" (click)="go('/app/venue/bookings')">
+              Review all <ion-icon name="chevron-forward-outline"></ion-icon>
+            </button>
+          </div>
+          <div *ngFor="let request of coachApprovalRequests" class="coach-approval-row">
+            <img [src]="request.photo" [alt]="request.coachName" class="venue-avatar venue-avatar--sm" />
+            <div class="venue-list-body">
+              <p class="venue-list-name">{{ request.title }}</p>
+              <p class="venue-list-meta">{{ request.coachName }} · {{ request.sport }} · {{ request.court }}</p>
+              <p class="coach-approval-meta">{{ request.time }} · {{ request.students }} player{{ request.students === 1 ? '' : 's' }} · {{ request.amount }}</p>
+            </div>
+            <button type="button" class="venue-act-btn coach-approve-btn" [disabled]="coachApprovalBusyId() === request.id" (click)="approveCoachSession(request.id)">
+              {{ coachApprovalBusyId() === request.id ? 'Approving…' : 'Approve' }}
+            </button>
+          </div>
+        </section>
+
         <!-- Complete Profile -->
         <section *ngIf="!profileDismissed() && completionPercent < 100" class="venue-completion-card">
           <div class="venue-hero-orb venue-hero-orb--sm"></div>

@@ -256,3 +256,11 @@
 - Connected Accept to the dedicated approval process. Approval now confirms the session, confirms its court reservation and sends the player invitation together.
 - Corrected the already accepted Mohit Session through the same approval process. It now shows as Confirmed to the Coach and the player invitation shows as sent.
 - Verified the live API route, PHP syntax and Ionic Angular compilation. The backend is live and the frontend changes are ready to publish.
+
+## Completed: Coach session approvals on the Venue Dashboard - 24 September 2026
+
+- Added a clear Coach Session Requests panel near the top of the Venue Dashboard. Venue staff can approve a request directly from this panel or review it in Bookings.
+- The approval button confirms the selected session, keeps its court reserved and sends player invitations; only the venue can perform this action.
+- The dashboard now counts coaching-session requests with normal venue booking requests.
+- Removed a duplicate initial dashboard refresh, reducing the number of profile, dashboard and location calls when a venue first opens the app.
+- The live dashboard API and Ionic Angular compilation were verified successfully.

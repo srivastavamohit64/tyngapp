@@ -217,3 +217,9 @@ TYNG — TODAY'S WORK SUMMARY
    - Accepting a coaching session now confirms the session, keeps the selected court reserved and sends the invitation to the player.
    - Corrected the previously accepted Mohit Session. It now appears as Confirmed for the Coach and the player invitation is marked as sent.
    - The live API route and app code checks were completed successfully.
+
+36. COACH SESSION APPROVAL ON VENUE DASHBOARD - 24 September 2026
+   - A new Coach Session Requests area now appears near the top of the Venue Dashboard whenever approval is needed.
+   - Venue staff can approve directly from this area, or open Bookings to review all requests.
+   - Approval confirms the session, reserves the court and sends the player invitation. Coaches cannot approve their own venue request.
+   - The first dashboard opening now avoids duplicate loading, so it responds faster.
