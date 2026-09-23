@@ -124,3 +124,35 @@ TYNG — TODAY'S WORK SUMMARY
 18. ADMIN COACH PAGE LAYOUT FIX — 23 September 2026
    - Fixed the production 500 caused by the Admin Coach view extending a missing Blade layout.
    - Rebuilt production Blade views and pushed Laravel commit a222795 to developer.
+
+19. LARAVEL MERGE CONFLICT RESOLUTION — 23 September 2026
+   - Resolved the active git pull origin developer conflicts in the coach API controller, chat service, and API routes while preserving local and remote functionality.
+   - Verified no unmerged entries or conflict markers remain; PHP syntax checks and the coach route listing pass.
+   - Changes remain uncommitted and unpushed as requested.
+
+20. PLANNED: COACH SCHEDULE END-TO-END WORKFLOW — 23 September 2026
+   - Audited the schedule UI, coach planning flow, venue booking flow, Laravel APIs, and the available Figma reference.
+   - Identified that the schedule currently uses mock data; production implementation requires API-backed coach sessions, player visibility/notifications, and a real venue reservation linkage.
+   - Figma Make design context could not be inspected because the connected account lacks edit access; implementation awaits approval and/or access.
+
+21. PLANNED: COACH MULTI-VENUE SCHEDULING ARCHITECTURE — 23 September 2026
+   - Defined the approved planning direction: coaches may hold permanent partnerships with multiple venues, each with recurring availability and commercial rules, while retaining one-off venue booking.
+   - Prepared the implementation scope covering partnerships, venue-controlled reservations, player invitations and RSVP, schedule views, notifications, attendance, completion, and evaluation flows.
+
+22. COMPLETED: EXPORTED FIGMA CODE REVIEW — 23 September 2026
+   - Reviewed E:\TYNG APP as the available design source, including coach schedule, session creation/detail, venue coach-management, availability, and calendar screens.
+   - Confirmed the intended workflow includes venue-aware time slots, participant invitations, automatic session chat/reminders/attendance, per-student payment allocation, and venue-wide facility conflict management.
+
+23. PLANNED: FINAL COACH SCHEDULING IMPLEMENTATION — 23 September 2026
+   - Finalized the implementation plan against the exported Figma code and existing Ionic/Laravel architecture, separating venue employment from multi-venue coach partnerships.
+   - Scope is ready for approval: database/API foundation, live schedule, venue reservations, player RSVP, financial allocation, notifications, attendance, completion, and verification.
+
+24. COMPLETED: SENIOR ARCHITECTURE REVIEW FOR COACH SCHEDULING & VENUE PARTNERSHIPS — 23 September 2026
+   - Produced E:\xampp\htdocs\tyng\docs\coach-scheduling-venue-partnership-architecture.md, a production-readiness redesign based on the Figma export, Ionic application, Laravel Coach module, and existing booking domain.
+   - Documented target workflows, ERD, normalized schema, API contracts, lifecycle and sequence diagrams, authorization, conflict locking, commerce/settlement, edge cases, notifications, reporting, scalability, migration strategy, and phased delivery.
+   - No application code, database schema, live-server configuration, Google Cloud configuration, commits, or deployments were changed.
+
+25. COACH SCHEDULING FOUNDATION — 24 September 2026
+   - Coaches can select a real venue facility when creating a session, instead of choosing a venue without reserving a court.
+   - The venue can review and approve coaching session requests. The coach schedule now uses live information.
+   - The system prevents the same court time from being used twice and keeps existing sessions visible during the transition.

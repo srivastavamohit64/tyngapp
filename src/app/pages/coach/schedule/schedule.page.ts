@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, signal, computed, inject } from '@angular/core';
+import { Component, signal, computed, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { BrandHeaderShellComponent } from '../../../shared/components/brand-header-shell/brand-header-shell.component';
 import { SegmentControlComponent, SegmentOption } from '../../../shared/components/segment-control/segment-control.component';
+import { CoachService } from '../../../core/services/coach.service';
 
 interface Student {
   id: number;
@@ -378,11 +379,15 @@ function buildWeek() {
     }
   `]
 })
-export class CoachSchedulePage {
+export class CoachSchedulePage implements OnInit {
   private readonly router = inject(Router);
+  private readonly coachService = inject(CoachService);
 
   selectedDay = signal(0);
   activeTab = signal<'today' | 'upcoming' | 'completed' | 'cancelled'>('today');
+  loading = signal(false);
+  loadError = signal('');
+  private readonly sessions = signal<CoachSession[]>([]);
 
   readonly todayLabel = new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long' });
   readonly weekDays = buildWeek();
@@ -405,14 +410,114 @@ export class CoachSchedulePage {
     this.activeTab.set(id as 'today' | 'upcoming' | 'completed' | 'cancelled');
   }
 
-  readonly todaySessions = SESSIONS.filter(s => s.tab === 'today');
-  readonly totalEarnings = this.todaySessions.reduce((sum, s) => sum + s.earnings, 0);
-  readonly confirmedCount = this.todaySessions.filter(s => s.status === 'Confirmed').length;
+  get todaySessions(): CoachSession[] {
+    const today = this.dateForOffset(0).toDateString();
+    return this.sessions().filter(session => new Date(session.date).toDateString() === today && session.status !== 'Cancelled');
+  }
+
+  get totalEarnings(): number {
+    return this.todaySessions.reduce((sum, session) => sum + session.earnings, 0);
+  }
+
+  get confirmedCount(): number {
+    return this.todaySessions.filter(session => session.status === 'Confirmed').length;
+  }
 
   filteredSessions = computed(() => {
     const tab = this.activeTab();
-    return SESSIONS.filter(s => s.tab === tab).sort((a, b) => a.time.localeCompare(b.time));
+    const selectedDate = this.dateForOffset(this.selectedDay()).toDateString();
+    const now = new Date();
+    return this.sessions().filter(session => {
+      const date = new Date(session.date);
+      if (tab === 'today') return date.toDateString() === selectedDate && !['Completed', 'Cancelled'].includes(session.status);
+      if (tab === 'upcoming') return date > now && !['Completed', 'Cancelled'].includes(session.status);
+      if (tab === 'completed') return session.status === 'Completed';
+      return session.status === 'Cancelled';
+    }).sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
   });
+
+  ngOnInit(): void {
+    this.loadSchedule();
+  }
+
+  private loadSchedule(): void {
+    this.loading.set(true);
+    this.loadError.set('');
+    this.coachService.getSchedulingSessions().subscribe({
+      next: response => {
+        this.sessions.set((response.data || []).map(item => this.toSession(item)));
+        this.loading.set(false);
+      },
+      error: error => {
+        this.loadError.set(error?.error?.message || 'Unable to load your schedule. Please try again.');
+        this.loading.set(false);
+      },
+    });
+  }
+
+  private toSession(item: any): CoachSession {
+    const startsAt = item.starts_at ? new Date(item.starts_at) : new Date();
+    const endsAt = item.ends_at ? new Date(item.ends_at) : startsAt;
+    const participants = Array.isArray(item.participants) ? item.participants : [];
+    const status = this.statusLabel(item.status);
+    return {
+      id: `${item.source || 'scheduling'}-${item.id}`,
+      name: item.title || 'Coaching Session',
+      sport: item.sport || 'Training',
+      emoji: this.sportEmoji(item.sport),
+      image: this.sportImage(item.sport),
+      studentName: participants.length === 1 ? participants[0]?.name : undefined,
+      teamName: participants.length > 1 ? `${participants.length} invited players` : undefined,
+      venue: item.venue || 'Venue pending',
+      address: [item.venue_location, item.court].filter(Boolean).join(' · ') || 'Location pending',
+      date: startsAt.toISOString(),
+      time: startsAt.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }),
+      duration: this.durationLabel(startsAt, endsAt),
+      type: participants.length === 1 ? 'One-on-One' : 'Group Session',
+      status,
+      weather: item.court ? `Court: ${item.court}` : 'Venue to be confirmed',
+      distance: '',
+      startsIn: this.startsIn(startsAt, status),
+      earnings: Number(item.coach_fee ?? item.price ?? 0),
+      studentsConfirmed: Number(item.confirmed_participants_count ?? participants.filter((participant: any) => participant.status === 'confirmed').length),
+      studentsTotal: Number(item.capacity ?? participants.length),
+      students: participants.map((participant: any) => ({ id: Number(participant.id), name: participant.name || 'Player', photo: participant.photo || 'assets/icon/avatar-placeholder.svg', skill: '', attendance: 0, sessions: 0 })),
+      tab: status === 'Completed' ? 'completed' : status === 'Cancelled' ? 'cancelled' : startsAt.toDateString() === new Date().toDateString() ? 'today' : 'upcoming',
+    };
+  }
+
+  private statusLabel(status: string): CoachSession['status'] {
+    if (status === 'completed') return 'Completed';
+    if (['cancelled', 'rejected', 'expired'].includes(status)) return 'Cancelled';
+    if (status === 'confirmed' || status === 'scheduled') return 'Confirmed';
+    return 'Pending';
+  }
+
+  private dateForOffset(offset: number): Date {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    date.setDate(date.getDate() + offset);
+    return date;
+  }
+
+  private durationLabel(startsAt: Date, endsAt: Date): string {
+    const minutes = Math.max(0, Math.round((endsAt.getTime() - startsAt.getTime()) / 60000));
+    return minutes >= 60 ? `${Math.floor(minutes / 60)}h${minutes % 60 ? ` ${minutes % 60}m` : ''}` : `${minutes} min`;
+  }
+
+  private startsIn(startsAt: Date, status: CoachSession['status']): string | null {
+    const minutes = Math.round((startsAt.getTime() - Date.now()) / 60000);
+    if (status !== 'Confirmed' || minutes < 0 || minutes > 180) return null;
+    return minutes < 60 ? `${minutes} min` : `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
+  }
+
+  private sportEmoji(sport: string): string {
+    return ({ cricket: '🏏', football: '⚽', badminton: '🏸', basketball: '🏀', tennis: '🎾', volleyball: '🏐' } as Record<string, string>)[String(sport || '').toLowerCase()] || '🏅';
+  }
+
+  private sportImage(sport: string): string {
+    return ({ cricket: 'https://images.unsplash.com/photo-1593341646782-e0b495cff86d?w=700&h=350&fit=crop&auto=format', football: 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=700&h=350&fit=crop&auto=format', badminton: 'https://images.unsplash.com/photo-1722087642932-9b070e9a066e?w=700&h=350&fit=crop&auto=format' } as Record<string, string>)[String(sport || '').toLowerCase()] || 'assets/icon/favicon.png';
+  }
 
   back() {
     this.router.navigateByUrl('/app/coach/dashboard');
@@ -423,7 +528,14 @@ export class CoachSchedulePage {
   }
 
   getTabCount(tab: 'today' | 'upcoming' | 'completed' | 'cancelled'): number {
-    return SESSIONS.filter(s => s.tab === tab).length;
+    const now = new Date();
+    const selectedDate = this.dateForOffset(this.selectedDay()).toDateString();
+    return this.sessions().filter(session => {
+      const date = new Date(session.date);
+      if (tab === 'today') return date.toDateString() === selectedDate && !['Completed', 'Cancelled'].includes(session.status);
+      if (tab === 'upcoming') return date > now && !['Completed', 'Cancelled'].includes(session.status);
+      return tab === 'completed' ? session.status === 'Completed' : session.status === 'Cancelled';
+    }).length;
   }
 
   getStatusStyle(status: string) {

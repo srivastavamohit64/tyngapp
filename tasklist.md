@@ -134,3 +134,44 @@
 
 - Fixed the production Admin Coach profile 500 error caused by extending a non-existent Blade layout.
 - Rebuilt production Blade views and pushed Laravel commit `a222795` to `developer`.
+
+## Completed: Laravel merge conflict resolution — 23 September 2026
+
+- Resolved the active `git pull origin developer` conflicts in the coach API controller, chat service, and API routes while preserving local and remote functionality.
+- Verified no unmerged entries or conflict markers remain; PHP syntax checks and the coach route listing pass.
+- Changes remain uncommitted and unpushed as requested.
+
+## Planned: Coach schedule end-to-end workflow — 23 September 2026
+
+- Audited the schedule UI, coach planning flow, venue booking flow, Laravel APIs, and the available Figma reference.
+- Identified that the schedule currently uses mock data; production implementation requires API-backed coach sessions, player visibility/notifications, and a real venue reservation linkage.
+- Figma Make design context could not be inspected because the connected account lacks edit access; implementation awaits approval and/or access.
+
+## Planned: Coach multi-venue scheduling architecture — 23 September 2026
+
+- Defined the approved planning direction: coaches may hold permanent partnerships with multiple venues, each with recurring availability and commercial rules, while retaining one-off venue booking.
+- Prepared the implementation scope covering partnerships, venue-controlled reservations, player invitations and RSVP, schedule views, notifications, attendance, completion, and evaluation flows.
+
+## Completed: Exported Figma code review — 23 September 2026
+
+- Reviewed `E:\TYNG APP` as the available design source, including coach schedule, session creation/detail, venue coach-management, availability, and calendar screens.
+- Confirmed the intended workflow includes venue-aware time slots, participant invitations, automatic session chat/reminders/attendance, per-student payment allocation, and venue-wide facility conflict management.
+
+## Planned: Final coach scheduling implementation — 23 September 2026
+
+- Finalized the implementation plan against the exported Figma code and existing Ionic/Laravel architecture, separating venue employment from multi-venue coach partnerships.
+- Scope is ready for approval: database/API foundation, live schedule, venue reservations, player RSVP, financial allocation, notifications, attendance, completion, and verification.
+
+## Completed: Senior architecture review for Coach Scheduling & Venue Partnerships — 23 September 2026
+
+- Produced `E:\xampp\htdocs\tyng\docs\coach-scheduling-venue-partnership-architecture.md`, a production-readiness redesign based on the Figma export, Ionic application, Laravel Coach module, and existing booking domain.
+- Documented target workflows, ERD, normalized schema, API contracts, lifecycle and sequence diagrams, authorization, conflict locking, commerce/settlement, edge cases, notifications, reporting, scalability, migration strategy, and phased delivery.
+- No application code, database schema, live-server configuration, Google Cloud configuration, commits, or deployments were changed.
+
+## Completed: Coach scheduling foundation — 24 September 2026
+
+- Added a dedicated scheduling domain: coach/venue partnerships, court-backed coaching sessions, normalized participants, reservation records, and database-enforced 15-minute court allocation locks.
+- Added protected Coach and Venue APIs for bookable facilities, session creation, partnership requests, session approval, and schedule retrieval; legacy sessions remain visible during the transition.
+- Updated the Coach Planner to select a real venue facility and submit it to the reservation API. Updated My Schedule to load real schedule data rather than the prototype data set.
+- Integrated the existing venue-booking availability check with coaching reservations, preventing a standard booking from overlapping an active coaching session.
+- TypeScript compilation, PHP syntax validation, route registration, and diff whitespace checks pass locally. Local migration execution is unavailable because local MySQL is stopped; live migration and route verification are required during deployment.

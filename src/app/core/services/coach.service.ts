@@ -76,6 +76,18 @@ export class CoachService {
     return this.api.get<any[]>('/venues');
   }
 
+  getSchedulingVenues(): Observable<ApiResponse<any[]>> {
+    return this.api.get<any[]>('/coach/scheduling/venues');
+  }
+
+  getSchedulingSessions(from?: string, to?: string): Observable<ApiResponse<any[]>> {
+    const params = new URLSearchParams();
+    if (from) params.set('from', from);
+    if (to) params.set('to', to);
+    const query = params.toString();
+    return this.api.get<any[]>(`/coach/scheduling/sessions${query ? `?${query}` : ''}`);
+  }
+
   getCoachSessions(): Observable<ApiResponse<any>> {
     return this.api.get('/coach/sessions');
   }
@@ -89,6 +101,6 @@ export class CoachService {
   }
 
   createSession(payload: Record<string, unknown>): Observable<ApiResponse<any>> {
-    return this.api.post('/coach/sessions', payload);
+    return this.api.post('/coach/scheduling/sessions', payload);
   }
 }

@@ -32,6 +32,15 @@ interface Venue {
   address: string;
   sportEmojis: string[];
   isCoachFriendly: boolean;
+  courts: VenueCourt[];
+}
+
+interface VenueCourt {
+  id: number;
+  name: string;
+  sport: string;
+  pricePerHour: number;
+  maxPlayers: number | null;
 }
 
 const SPORTS: Sport[] = [
@@ -84,12 +93,6 @@ const MOCK_STUDENTS: Student[] = [
   { id: 3, name: 'Vikram Patel', photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop&auto=format', skill: 'Advanced', attendance: 92 },
 ];
 
-const COACH_VENUES: Venue[] = [
-  { id: 1, name: 'Ekana Cricket Stadium', image: 'https://images.unsplash.com/photo-1593341646782-e0b495cff86d?w=300&h=200&fit=crop&auto=format', distance: '2.1 km', slots: ['6 AM','7 AM','8 AM','4 PM','5 PM','6 PM','7 PM','8 PM'], pricePerHour: 1200, rating: 4.8, address: 'Amar Shaheed Path, Gomti Nagar', sportEmojis: ['🏏','⚽'], isCoachFriendly: true },
-  { id: 2, name: 'Phoenix Sports Hub', image: 'https://images.unsplash.com/photo-1722087642932-9b070e9a066e?w=300&h=200&fit=crop&auto=format', distance: '3.8 km', slots: ['6 AM','8 AM','10 AM','4 PM','6 PM','8 PM'], pricePerHour: 1000, rating: 4.5, address: 'Vibhuti Khand, Gomti Nagar', sportEmojis: ['🏸','🏀','🏐'], isCoachFriendly: true },
-  { id: 3, name: 'Sports Authority Complex', image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=300&h=200&fit=crop&auto=format', distance: '4.5 km', slots: ['7 AM','9 AM','3 PM','5 PM','7 PM'], pricePerHour: 800, rating: 4.2, address: 'Aliganj, Lucknow', sportEmojis: ['🏏','🎾','🏓'], isCoachFriendly: false }
-];
-
 function buildDates() {
   const today = new Date();
   return Array.from({ length:14 }, (_,i) => {
@@ -111,7 +114,7 @@ function buildDates() {
             <ion-icon name="checkmark-outline" class="text-white text-5xl font-black"></ion-icon>
           </div>
           <h1 class="text-[26px] font-black text-[#111827] mb-1">Session Created! 🎉</h1>
-          <p class="text-[14px] text-[#9CA3AF] mb-6 text-center">Your coaching session is live and students are notified.</p>
+          <p class="text-[14px] text-[#9CA3AF] mb-6 text-center">{{ sessionCreationMessage() }}</p>
         </div>
 
         <div class="w-full max-w-sm bg-white rounded-[24px] p-5 mb-5 shadow-sm border border-slate-100 space-y-2.5">
@@ -283,7 +286,7 @@ function buildDates() {
             <p *ngIf="loading()" class="text-[13px] text-[#6B7280]">Loading approved venues…</p>
             <p *ngIf="!loading() && !venueOptions.length" class="py-8 text-center text-[13px] text-[#6B7280]">No approved venues are available right now.</p>
             <div class="space-y-4">
-              <button *ngFor="let v of venueOptions" (click)="selectedVenue = v" class="venue-select-btn border-none shadow-sm text-left bg-white"
+              <button *ngFor="let v of venueOptions" (click)="chooseVenue(v)" class="venue-select-btn border-none shadow-sm text-left bg-white"
                 [style.border]="selectedVenue?.id === v.id ? '2.5px solid var(--app-primary)' : '2.5px solid transparent'">
                 <div class="relative h-[120px] overflow-hidden bg-slate-200">
                   <img [src]="v.image" class="w-full h-full object-cover" />
@@ -307,6 +310,18 @@ function buildDates() {
                   <p class="text-[11px] text-[#9CA3AF] m-0">{{ v.address }} · {{ v.distance }}</p>
                 </div>
               </button>
+            </div>
+            <div *ngIf="selectedVenue" class="mt-5">
+              <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-3">Select Facility</p>
+              <div class="grid grid-cols-1 gap-2">
+                <button *ngFor="let court of selectedVenue.courts" type="button" (click)="chooseCourt(court)" class="rounded-2xl px-4 py-3 text-left border-none bg-white shadow-sm"
+                  [style.border]="selectedCourtId === court.id ? '2px solid var(--app-primary)' : '2px solid #F3F4F6'">
+                  <div class="flex items-center justify-between gap-3">
+                    <div><p class="text-[13px] font-black text-[#111827] m-0">{{ court.name }}</p><p class="text-[11px] text-[#9CA3AF] m-0">{{ court.sport }}<span *ngIf="court.maxPlayers"> · Up to {{ court.maxPlayers }} players</span></p></div>
+                    <span class="text-[12px] font-black text-[#111827]">₹{{ court.pricePerHour }}/hr</span>
+                  </div>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -885,6 +900,7 @@ export class CoachPlanPage implements OnInit {
   publishing = signal(false);
   loadError = signal('');
   publishError = signal('');
+  sessionCreationMessage = signal('Your session is being created.');
 
   // Flow step State
   step = signal(1);
@@ -897,6 +913,7 @@ export class CoachPlanPage implements OnInit {
   selBatch = '';
   searchQ = '';
   selectedVenue: Venue | null = null;
+  selectedCourtId: number | null = null;
   dateIdx = 0;
   time = '';
   duration = '60min';
@@ -948,7 +965,7 @@ export class CoachPlanPage implements OnInit {
     try {
       const [studentsResponse, venuesResponse, batchesResponse] = await Promise.all([
         firstValueFrom(this.coachService.getStudents()),
-        firstValueFrom(this.coachService.getVenues()),
+        firstValueFrom(this.coachService.getSchedulingVenues()),
         firstValueFrom(this.coachService.getSessionBatches()),
       ]);
       const students = studentsResponse.data?.data ?? studentsResponse.data ?? [];
@@ -960,12 +977,18 @@ export class CoachPlanPage implements OnInit {
         skill: item.student?.level || 'Player',
         attendance: 0,
       })).filter((item: Student) => item.id > 0);
-      this.venueOptions = venues.map((item: any) => ({
-        id: Number(item.id), name: item.name, image: item.profileImage || 'assets/icon/favicon.png',
-        distance: item.distance || '', pricePerHour: Number(item.price || 0), rating: Number(item.rating || 0),
-        address: item.location || item.city || 'Location pending', sportEmojis: [], isCoachFriendly: true,
-        slots: this.defaultVenueSlots(item.openTime, item.closeTime),
-      })).filter((item: Venue) => item.id > 0);
+      this.venueOptions = venues.map((item: any) => {
+        const courts = (item.courts || []).map((court: any) => ({
+          id: Number(court.id), name: court.name || 'Facility', sport: court.sport || 'Sport',
+          pricePerHour: Number(court.price_per_hour || 0), maxPlayers: court.max_players ? Number(court.max_players) : null,
+        })).filter((court: VenueCourt) => court.id > 0);
+        return {
+          id: Number(item.id), name: item.name, image: item.image || 'assets/icon/favicon.png',
+          distance: '', pricePerHour: courts[0]?.pricePerHour || 0, rating: 0,
+          address: item.location || 'Location pending', sportEmojis: [], isCoachFriendly: item.partnership?.status === 'active',
+          slots: this.defaultVenueSlots(item.open_time, item.close_time), courts,
+        };
+      }).filter((item: Venue) => item.id > 0 && item.courts.length > 0);
       this.batchOptions = (batchesResponse.data || []).map((item: any) => ({
         id: String(item.id), label: item.label || 'Previous group session', sport: item.sport || 'Training',
         members: Number(item.members || 0), studentIds: (item.studentIds || []).map(Number),
@@ -997,7 +1020,7 @@ export class CoachPlanPage implements OnInit {
     const s = this.step();
     if (s === 1) return this.sport !== '';
     if (s === 2) return this.selStudents.length > 0 || this.selBatch !== '';
-    if (s === 3) return this.selectedVenue !== null;
+    if (s === 3) return this.selectedVenue !== null && this.selectedCourtId !== null;
     if (s === 4) return this.time !== '';
     if (s === 5) return this.sessType !== '';
     if (s === 7) return this.getCoachFeeNumber() > 0;
@@ -1080,13 +1103,16 @@ export class CoachPlanPage implements OnInit {
     try {
       const response = await firstValueFrom(this.coachService.createSession({
         title: this.sessionTitle.trim(), sport: this.sportsOptions.find(s => s.id === this.sport)?.name || this.sport,
-        student_ids: this.selStudents, venue_id: this.selectedVenue?.id,
+        student_ids: this.selStudents, venue_court_id: this.selectedCourtId,
         session_date: this.sessionDate(), start_time: this.timeForApi(this.time), end_time: this.timeForApi(this.getEndTime()),
-        price: this.getCoachFeeNumber(),
+        coach_fee: this.getCoachFeeNumber(),
         description: `Type: ${this.sessType}; Focus: ${this.trainingFocus.join(', ') || 'General'}; Equipment: ${this.equip.join(', ') || 'None'} (${this.equipSrc}).`,
         notes: this.notes || null,
       }));
       if (!response.success) throw new Error(response.message || 'Unable to create the session.');
+      this.sessionCreationMessage.set(response.data?.status === 'confirmed'
+        ? 'Your session is confirmed and player invitations are ready.'
+        : 'Your session request has been sent to the venue for approval.');
       this.success.set(true);
     } catch (error: any) {
       this.publishError.set(error?.error?.message || error?.message || 'Unable to create the session. Please review the selected time and try again.');
@@ -1114,9 +1140,28 @@ export class CoachPlanPage implements OnInit {
   }
 
   getVenueCost(): number {
-    if (!this.selectedVenue) return 0;
+    const court = this.selectedCourt();
+    if (!court) return 0;
     const dur = this.durationsOptions.find(d => d.id === this.duration);
-    return Math.round(this.selectedVenue.pricePerHour * (dur?.hrs ?? 1));
+    return Math.round(court.pricePerHour * (dur?.hrs ?? 1));
+  }
+
+  chooseVenue(venue: Venue): void {
+    this.selectedVenue = venue;
+    this.selectedCourtId = this.preferredCourt(venue)?.id ?? null;
+  }
+
+  chooseCourt(court: VenueCourt): void {
+    this.selectedCourtId = court.id;
+  }
+
+  selectedCourt(): VenueCourt | null {
+    return this.selectedVenue?.courts.find(court => court.id === this.selectedCourtId) ?? null;
+  }
+
+  private preferredCourt(venue: Venue): VenueCourt | undefined {
+    const sport = this.sportsOptions.find(item => item.id === this.sport)?.name.toLowerCase();
+    return venue.courts.find(court => court.sport.toLowerCase() === sport) ?? venue.courts[0];
   }
 
   getGst(): number {
