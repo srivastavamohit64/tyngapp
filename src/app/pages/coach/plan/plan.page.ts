@@ -166,10 +166,13 @@ function buildDates() {
           </div>
           <div class="py-3 bg-white flex justify-center">
             <!-- Progress indicator dots -->
-            <div class="flex items-center gap-1.5">
-              <div *ngFor="let s of [1,2,3,4,5,6,7,8]" class="h-2 rounded-full transition-all"
-                [style.width]="step() === s ? '20px' : '8px'"
-                [style.backgroundColor]="step() > s ? '#FF7A00' : (step() === s ? 'var(--app-primary)' : '#E5E7EB')"></div>
+            <div class="flex items-center gap-1.5" role="group" aria-label="Session setup steps">
+              <button *ngFor="let s of [1,2,3,4,5,6,7,8]" type="button" (click)="goToStep(s)"
+                class="h-3 rounded-full border-0 p-0 transition-all focus:outline-none focus:ring-2 focus:ring-orange-300"
+                [attr.aria-label]="'Go to step ' + s + ': ' + stepTitles[s - 1]"
+                [attr.aria-current]="step() === s ? 'step' : null"
+                [style.width]="step() === s ? '24px' : '12px'"
+                [style.backgroundColor]="step() > s ? '#FF7A00' : (step() === s ? 'var(--app-primary)' : '#E5E7EB')"></button>
             </div>
           </div>
         </div>
@@ -182,7 +185,7 @@ function buildDates() {
               <p>Select the sport you'll be coaching</p>
             </div>
             <div class="grid grid-cols-3 gap-3">
-              <button *ngFor="let s of sportsOptions" (click)="sport = s.id" class="sport-selection-btn"
+                <button *ngFor="let s of sportsOptions" (click)="selectSport(s.id)" class="sport-selection-btn"
                 [style.borderColor]="sport === s.id ? 'var(--app-primary)' : 'transparent'"
                 [style.boxShadow]="sport === s.id ? '0 0 0 3px rgba(var(--app-primary-rgb),0.20)' : 'none'">
                 <img [src]="s.image" [alt]="s.name" class="sport-bg-img" />
@@ -287,7 +290,7 @@ function buildDates() {
             <p *ngIf="loading()" class="text-[13px] text-[#6B7280]">Loading approved venues…</p>
             <p *ngIf="!loading() && !venueOptions.length" class="py-8 text-center text-[13px] text-[#6B7280]">No approved venues are available right now.</p>
             <div class="space-y-4">
-              <button *ngFor="let v of venueOptions" (click)="chooseVenue(v)" class="venue-select-btn border-none shadow-sm text-left bg-white"
+              <button *ngFor="let v of availableVenues()" (click)="chooseVenue(v)" class="venue-select-btn border-none shadow-sm text-left bg-white"
                 [style.border]="selectedVenue?.id === v.id ? '2.5px solid var(--app-primary)' : '2.5px solid transparent'">
                 <div class="relative h-[120px] overflow-hidden bg-slate-200">
                   <img [src]="v.image" class="w-full h-full object-cover" />
@@ -933,6 +936,7 @@ export class CoachPlanPage implements OnInit {
   sessionTitle = '';
 
   readonly sportsOptions = SPORTS;
+  readonly stepTitles = ['Choose Sport', 'Select Students', 'Choose Venue', 'Date & Time', 'Training Details', 'Equipment', 'Set Pricing', 'Review & Publish'];
   batchOptions: Array<{ id: string; label: string; sport: string; members: number; studentIds: number[] }> = [];
   venueOptions: Venue[] = [];
   studentOptions: Student[] = [];
@@ -1026,6 +1030,24 @@ export class CoachPlanPage implements OnInit {
     if (s === 5) return this.sessType !== '';
     if (s === 7) return this.getCoachFeeNumber() > 0;
     return true;
+  }
+
+  goToStep(step: number): void {
+    if (step < 1 || step > 8 || this.publishing() || this.success()) return;
+    this.step.set(step);
+    this.publishError.set('');
+  }
+
+  selectSport(sportId: string): void {
+    this.sport = sportId;
+    if (this.selectedVenue && !this.selectedVenue.courts.some(court => this.courtSupportsSelectedSport(court))) {
+      this.selectedVenue = null;
+      this.selectedCourtId = null;
+      return;
+    }
+    if (this.selectedVenue) {
+      this.selectedCourtId = this.preferredCourt(this.selectedVenue)?.id ?? null;
+    }
   }
 
   handleNext() {
@@ -1161,8 +1183,17 @@ export class CoachPlanPage implements OnInit {
   }
 
   private preferredCourt(venue: Venue): VenueCourt | undefined {
-    const sport = this.sportsOptions.find(item => item.id === this.sport)?.name.toLowerCase();
-    return venue.courts.find(court => court.sport.toLowerCase() === sport) ?? venue.courts[0];
+    return venue.courts.find(court => this.courtSupportsSelectedSport(court));
+  }
+
+  private courtSupportsSelectedSport(court: VenueCourt): boolean {
+    const selectedSport = this.sportsOptions.find(item => item.id === this.sport)?.name.toLowerCase();
+    return !!selectedSport && court.sport.trim().toLowerCase() === selectedSport;
+  }
+
+  availableVenues(): Venue[] {
+    if (!this.sport) return this.venueOptions;
+    return this.venueOptions.filter(venue => venue.courts.some(court => this.courtSupportsSelectedSport(court)));
   }
 
   getGst(): number {

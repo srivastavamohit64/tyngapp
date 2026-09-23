@@ -176,3 +176,10 @@
 - Integrated the existing venue-booking availability check with coaching reservations, preventing a standard booking from overlapping an active coaching session.
 - TypeScript compilation, PHP syntax validation, route registration, and diff whitespace checks pass locally. Local migration execution is unavailable because local MySQL is stopped; live migration and route verification are required during deployment.
 - Corrected scheduling venue images to use the Laravel media URL resolver and the Ionic media URL resolver, with a local fallback image when a venue has not uploaded a cover photo.
+
+## Completed: Coach session setup navigation — 24 September 2026
+
+- Made each of the eight progress indicators clickable, with accessible labels and current-step state, so coaches can jump directly between setup steps.
+- Kept the publish action protected by final server-side validation.
+- Prevented incompatible venues/courts from being selected for the chosen sport, and reset the court selection when the coach changes to an unsupported sport. This addresses the validation message visible on the Review step.
+- TypeScript check passes.
