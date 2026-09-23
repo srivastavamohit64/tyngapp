@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 import { CoachService } from '../../../core/services/coach.service';
+import { resolveMediaUrl } from '../../../core/utils/media-url.util';
 
 interface Sport {
   id: string;
@@ -983,7 +984,7 @@ export class CoachPlanPage implements OnInit {
           pricePerHour: Number(court.price_per_hour || 0), maxPlayers: court.max_players ? Number(court.max_players) : null,
         })).filter((court: VenueCourt) => court.id > 0);
         return {
-          id: Number(item.id), name: item.name, image: item.image || 'assets/icon/favicon.png',
+          id: Number(item.id), name: item.name, image: resolveMediaUrl(item.image) || 'assets/icon/favicon.png',
           distance: '', pricePerHour: courts[0]?.pricePerHour || 0, rating: 0,
           address: item.location || 'Location pending', sportEmojis: [], isCoachFriendly: item.partnership?.status === 'active',
           slots: this.defaultVenueSlots(item.open_time, item.close_time), courts,
