@@ -224,4 +224,4 @@
 - Removed fabricated venue amenities, payment-completed claims, assistant tips and unrelated activity from the visible session detail.
 - Added an admin-only overview API and dashboard section for Coach/Venue/Player counts, partnerships needing review, venue approval queue, player names, recent current/legacy sessions and listed session value.
 - PHP syntax/route checks and the Angular production build pass; the build reports only existing Sass deprecation, optional-chain, and style-budget warnings.
-- The local Laravel database is unavailable on 127.0.0.1:3306, so migration status/application and database-backed endpoint checks remain pending. No production server was changed.
+- The local Laravel database is unavailable on 127.0.0.1:3306, so local database checks remain pending. The migration, route registration, syntax checks and cache refresh were completed on the live server.
