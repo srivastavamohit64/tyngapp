@@ -96,3 +96,7 @@ TYNG — TODAY'S WORK SUMMARY
 
 16. DELIVERY SYNC — 23 September 2026
    - Synced all Coach workflow, chat, dashboard, profile, venue, and task-list changes made today to the application and Laravel Git branches.
+
+17. ADMIN COACH OPERATIONAL HISTORY — 23 September 2026
+   - Expanded the Laravel Admin Coach profile with student status, session/group history, requests, evaluations, private notes, booking requests, reviews, and metrics.
+   - Deployed to srv1789528, rebuilt Blade views, and pushed backend commit 3725a60 to developer.

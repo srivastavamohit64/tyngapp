@@ -124,3 +124,8 @@
 ## Delivery sync — 23 September 2026
 
 - Synced all Coach workflow, chat, dashboard, profile, venue, and task-list changes made today to the application and Laravel Git branches.
+
+## Completed: Admin Coach operational history — 23 September 2026
+
+- Expanded the Laravel Admin Coach profile to show student status, session and group-member history, coaching requests, evaluations, private notes, booking requests, reviews, and summary metrics.
+- Deployed to `srv1789528`, cleared and rebuilt Blade views, and pushed backend commit `3725a60` to `developer`.
