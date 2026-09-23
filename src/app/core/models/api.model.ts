@@ -99,6 +99,9 @@ export interface CoachDashboard {
     students: number;
     upcomingSessions: number;
     completedSessions: number;
+    completedSessionsToday: number;
+    evaluationsToday: number;
+    pendingStudentRequests: number;
     dailyGoalProgress: number;
   };
   todaySessions: CoachDashboardSession[];

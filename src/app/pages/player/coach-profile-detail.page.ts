@@ -3,6 +3,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { CoachService } from '../../core/services/coach.service';
+import { ChatService } from '../../core/services/chat.service';
 
 @Component({
   selector: 'app-coach-profile-detail',
@@ -63,9 +64,10 @@ import { CoachService } from '../../core/services/coach.service';
 
         <!-- Booking CTA -->
         <div class="cta-box mt-8">
-          <button (click)="requestToJoin()" [disabled]="requesting || requestSent" class="w-full h-12 mb-3 rounded-full border border-[var(--app-primary)] bg-white text-[#111827] font-bold disabled:opacity-60">
+          <button *ngIf="!canChat" (click)="requestToJoin()" [disabled]="requesting || requestSent" class="w-full h-12 mb-3 rounded-full border border-[var(--app-primary)] bg-white text-[#111827] font-bold disabled:opacity-60">
             {{ requestSent ? 'Coaching Request Sent' : requesting ? 'Sending Request…' : 'Request to Join as Student' }}
           </button>
+          <button *ngIf="canChat" (click)="openCoachChat()" class="w-full h-12 mb-3 rounded-full border border-[var(--app-primary)] bg-white text-[#111827] font-bold">Chat with Coach</button>
           <button (click)="bookSession()" class="w-full h-12 rounded-full bg-gradient-to-r from-[var(--app-primary)] to-[var(--app-primary-to)] text-[#111827] font-bold shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all">
             Book Coaching Session
           </button>
@@ -89,11 +91,13 @@ export class CoachProfileDetailPage implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly coachService = inject(CoachService);
+  private readonly chat = inject(ChatService);
 
   coachId: number | null = null;
   coach: any = null;
   requesting = false;
   requestSent = false;
+  canChat = false;
 
   readonly coaches = [
     { id: 1, name: 'Coach Arvind Sharma', sport: 'Cricket', experience: '12+ Yrs Exp', rating: 4.9, avatar: '🏏', distance: '1.5 km', price: '₹800/session', bio: 'Former State level cricketer focusing on batting techniques, stamina building, and match strategy for all age groups.', specialties: ['Batting Stance', 'Spin Tactics', 'Fitness Training', 'Group Scrimmage'] },
@@ -124,6 +128,15 @@ export class CoachProfileDetailPage implements OnInit {
           },
           error: () => { this.coach = null; },
         });
+        this.coachService.getMyCoachStudentRequests().subscribe({
+          next: (response) => {
+            const data: any = response.data;
+            const requests = Array.isArray(data) ? data : (data?.data || []);
+            const match = requests.find((item: any) => Number(item.coach_id) === this.coachId);
+            this.canChat = match?.status === 'accepted';
+            this.requestSent = !!match && !this.canChat;
+          },
+        });
       }
     });
   }
@@ -145,5 +158,15 @@ export class CoachProfileDetailPage implements OnInit {
       next: () => { this.requestSent = true; this.requesting = false; },
       error: (error) => { this.requesting = false; alert(error?.error?.message || 'Unable to send your coaching request.'); },
     });
+  }
+
+  async openCoachChat() {
+    if (!this.coachId || !this.coach) return;
+    const result = await this.chat.openPrivate({ id: this.coachId, name: this.coach.name, avatar: this.coach.profileImage ?? null });
+    if (result.success && result.data?.id) {
+      void this.router.navigateByUrl(`/app/chat/${encodeURIComponent(result.data.id)}`);
+      return;
+    }
+    alert(result.message || 'Unable to open chat.');
   }
 }

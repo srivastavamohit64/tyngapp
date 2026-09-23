@@ -282,7 +282,11 @@ const routes: Routes = [
       },
       {
         path: 'coach/chat',
-        loadComponent: () => import('./pages/coach/coach-chat.page').then((m) => m.CoachChatPage),
+        loadComponent: () => import('./pages/player/chat-list.page').then((m) => m.ChatListPage),
+      },
+      {
+        path: 'coach/community',
+        loadComponent: () => import('./pages/coach/coach-community.page').then((m) => m.CoachCommunityPage),
       },
       {
         path: 'coach/chat/:id',

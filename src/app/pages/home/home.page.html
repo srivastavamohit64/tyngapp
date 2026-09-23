@@ -62,7 +62,9 @@
                 <p class="text-[14px] font-black text-white">Complete Your Coach Profile</p>
                 <p class="text-[11px] text-white/50 mt-0.5">You're {{ coachProfileCompletion }}% complete</p>
               </div>
-              <button (click)="coachProfileDismissed.set(true)" class="text-white/30 text-xl font-bold w-6 h-6 flex items-center justify-center bg-transparent">�</button>
+              <button (click)="coachProfileDismissed.set(true)" aria-label="Dismiss profile reminder" class="text-white/50 text-xl font-bold w-7 h-7 flex items-center justify-center rounded-full bg-white/5">
+                <ion-icon name="close-outline"></ion-icon>
+              </button>
             </div>
             <div class="mb-3">
               <div class="h-2 bg-white/10 rounded-full overflow-hidden">
@@ -78,8 +80,8 @@
                 <span class="text-[11px] text-white/60">{{ perk }}</span>
               </div>
             </div>
-            <button (click)="go('/app/coach/complete-profile')" class="btn-orange-gradient w-full h-11 rounded-2xl text-[13px] font-black text-white">
-              Complete Profile ?
+            <button (click)="go('/app/coach/complete-profile')" class="btn-orange-gradient w-full h-11 rounded-2xl text-[13px] font-black text-white flex items-center justify-center gap-1">
+              Complete Profile <ion-icon name="arrow-forward-outline"></ion-icon>
             </button>
           </div>
         </div>
@@ -153,26 +155,27 @@
               <ion-icon name="locate-outline" class="text-[#111827] text-lg"></ion-icon>
             </div>
             <div class="flex-1">
-              <p class="text-[11px] font-black text-[#111827]/60 uppercase tracking-wider mb-0.5">AI Match</p>
-              <p class="text-[15px] font-black text-[#111827] leading-snug">8 Beginner Badminton Players Looking for a Coach</p>
-              <p class="text-[12px] text-[#111827]/60 mt-1">2 km Away � Weekend Availability</p>
+              <p class="text-[11px] font-black text-[#111827]/60 uppercase tracking-wider mb-0.5">Student Requests</p>
+              <p class="text-[15px] font-black text-[#111827] leading-snug">{{ coachStudentRequestCount }} pending coaching request{{ coachStudentRequestCount === 1 ? '' : 's' }}</p>
+              <p class="text-[12px] text-[#111827]/60 mt-1">Review requests and accept the players you want to coach.</p>
             </div>
           </div>
-          <button (click)="go('/app/coach/teams')" class="btn-orange-gradient mt-4 w-full h-10 rounded-2xl text-[13px] font-black text-white">
-            View Requests ?
+          <button (click)="go('/app/coach/students')" class="btn-orange-gradient mt-4 w-full h-10 rounded-2xl text-[13px] font-black text-white flex items-center justify-center gap-1">
+            View Student Requests <ion-icon name="arrow-forward-outline"></ion-icon>
           </button>
         </div>
 
         <!-- Student Progress -->
         <div class="section-card p-5">
           <div class="section-header-row">
-            <span class="section-title">Today's Student Progress</span>
+            <span class="section-title">Today's Coaching Progress</span>
             <button (click)="go('/app/coach/evaluate')" class="see-all-btn">Analytics <ion-icon name="chevron-forward-outline"></ion-icon></button>
           </div>
           <div class="grid grid-cols-3 gap-3">
-            <div *ngFor="let prog of [{ emoji:'??', label:'2 Students Won Matches', bg:'#FFFBEB', color:'#D97706' }, { emoji:'??', label:'5 Players Improved Rating', bg:'#F0FDF4', color:'#16A34A' }, { emoji:'?', label:'3 New Reviews Today', bg:'#F5F3FF', color:'#7C3AED' }]"
+            <div *ngFor="let prog of coachProgressCards"
               class="rounded-[18px] p-3 text-center" [style.backgroundColor]="prog.bg">
-              <span class="text-2xl">{{ prog.emoji }}</span>
+              <ion-icon [name]="prog.icon" class="text-2xl" [style.color]="prog.color"></ion-icon>
+              <p class="text-lg font-black leading-none mt-1" [style.color]="prog.color">{{ prog.value }}</p>
               <p class="text-[10px] font-semibold mt-1.5 leading-snug" [style.color]="prog.color">{{ prog.label }}</p>
             </div>
           </div>
@@ -193,6 +196,9 @@
                 <p class="text-[10px] text-[#9CA3AF] mt-0.5">{{ activity.time }}</p>
               </div>
             </div>
+            <div *ngIf="!coachDashboardLoading() && !coachActivities.length" class="py-5 text-center text-[13px] text-[#6B7280]">
+              No recent coaching activity yet.
+            </div>
           </div>
         </div>
 
@@ -207,11 +213,11 @@
           </div>
           <div class="bg-[#F9FAFB] rounded-2xl px-4 py-3.5 mb-3">
             <p class="text-[13px] text-[#6B7280] leading-relaxed">
-              <strong class="text-[#111827] font-bold">Tuesday evenings</strong> are your busiest coaching hours. Increasing availability may boost bookings by <span class="text-[var(--app-primary)] font-black">+18%</span>.
+              <strong class="text-[#111827] font-bold">{{ coachInsight.heading }}</strong> {{ coachInsight.message }}
             </p>
           </div>
-          <button (click)="go('/app/coach/insights')" class="btn-green-ghost w-full h-10 rounded-2xl text-[13px] font-bold text-[#111827]">
-            View Full Insights ?
+          <button (click)="go('/app/coach/evaluate')" class="btn-green-ghost w-full h-10 rounded-2xl text-[13px] font-bold text-[#111827] flex items-center justify-center gap-1">
+            View Evaluations <ion-icon name="arrow-forward-outline"></ion-icon>
           </button>
         </div>
 
@@ -222,7 +228,7 @@
             <button (click)="go('/app/coach/earnings')" class="see-all-btn">View All <ion-icon name="chevron-forward-outline"></ion-icon></button>
           </div>
           <div class="grid grid-cols-3 gap-3 mb-3">
-            <div *ngFor="let earn of [{ period:'Today', amount:'?1,500', trend:'+12%' }, { period:'This Week', amount:'?8,250', trend:'+8%' }, { period:'This Month', amount:'?32,000', trend:'+22%' }]"
+            <div *ngFor="let earn of coachEarningsSnapshot"
               class="bg-[#F9FAFB] rounded-2xl p-3 text-center">
               <p class="text-[10px] text-[#9CA3AF] mb-1">{{ earn.period }}</p>
               <p class="text-[14px] font-black text-[#111827]">{{ earn.amount }}</p>

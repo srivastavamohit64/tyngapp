@@ -31,6 +31,9 @@ import { SkeletonListComponent } from '../../shared/components/skeleton';
           [hasSubContent]="true"
         >
           <div actions class="header-actions">
+            <button *ngIf="isCoach()" type="button" class="icon-btn" (click)="openCoachCommunity()" aria-label="Open Coach Community">
+              <ion-icon name="people-outline"></ion-icon>
+            </button>
             <button type="button" class="icon-btn" (click)="toggleSearch()">
               <ion-icon [name]="searchOpen ? 'close-outline' : 'search-outline'"></ion-icon>
             </button>
@@ -121,16 +124,37 @@ import { SkeletonListComponent } from '../../shared/components/skeleton';
               </div>
             </div>
 
+            <div *ngIf="isCoach() && (activeTab === 'all' || activeTab === 'community')">
+              <div *ngIf="communityChats().length" class="section-header">
+                <span class="section-label">Coach Community</span>
+                <span class="section-count">{{ communityChats().length }}</span>
+                <div class="section-line"></div>
+              </div>
+
+              <div
+                *ngFor="let chat of communityChats(); let last = last"
+                class="cursor-pointer"
+                (click)="onRowClick(chat)"
+                (pointerdown)="onPressStart(chat)"
+                (pointerup)="onPressEnd()"
+                (pointerleave)="onPressEnd()"
+                (contextmenu)="onContextMenu($event, chat)"
+              >
+                <ng-container *ngTemplateOutlet="chatRow; context: { $implicit: chat }"></ng-container>
+                <div *ngIf="!last" class="row-divider"></div>
+              </div>
+            </div>
+
             <ng-template #chatRow let-chat>
               <div class="chat-row">
                 <div class="avatar-wrap">
                   <div
                     class="team-avatar"
                     [class.dm-avatar]="threadType(chat) === 'private'"
-                    [style.background]="threadType(chat) === 'game' ? 'linear-gradient(135deg,#22C55E,#16A34A)' : '#f3f4f6'"
+                    [style.background]="threadType(chat) === 'game' ? 'linear-gradient(135deg,#22C55E,#16A34A)' : threadType(chat) === 'community' ? 'linear-gradient(135deg,#7C3AED,#4F46E5)' : '#f3f4f6'"
                   >
                     <img *ngIf="chat.avatar" [src]="chat.avatar" [alt]="chat.title" (error)="chat.avatar = null" />
-                    <span *ngIf="!chat.avatar">{{ threadType(chat) === 'game' ? '⚽' : '👤' }}</span>
+                    <span *ngIf="!chat.avatar">{{ threadType(chat) === 'game' ? '⚽' : threadType(chat) === 'community' ? '🤝' : '👤' }}</span>
                   </div>
                   <span *ngIf="chat.pinned" class="pin-badge">📌</span>
                 </div>
@@ -145,7 +169,7 @@ import { SkeletonListComponent } from '../../shared/components/skeleton';
                       {{ chat.lastMessage || (threadType(chat) === 'game' ? 'No messages yet' : 'Say hello') }}
                     </p>
                     <div class="chat-meta">
-                      <div *ngIf="threadType(chat) === 'game' && memberCount(chat)" class="members">
+                      <div *ngIf="(threadType(chat) === 'game' || threadType(chat) === 'community') && memberCount(chat)" class="members">
                         <ion-icon name="people-outline"></ion-icon>
                         <span>{{ memberCount(chat) }}</span>
                       </div>
@@ -160,15 +184,15 @@ import { SkeletonListComponent } from '../../shared/components/skeleton';
               <div class="empty-icon" aria-hidden="true">💬</div>
               <h2 class="empty-title">No conversations yet</h2>
               <p class="empty-copy">
-                {{ activeTab === 'direct' ? 'Message a friend to start a private chat.' : 'Open a game chat or message a friend to get started.' }}
+                {{ isCoach() ? 'Open Coach Community to connect with other active coaches.' : (activeTab === 'direct' ? 'Message a friend to start a private chat.' : 'Open a game chat or message a friend to get started.') }}
               </p>
               <button
-                *ngIf="activeTab === 'direct' || activeTab === 'all'"
+                *ngIf="activeTab === 'direct' || activeTab === 'all' || (isCoach() && activeTab === 'community')"
                 type="button"
                 class="cta-btn"
-                (click)="openFriends()"
+                (click)="isCoach() ? openCoachCommunity() : openFriends()"
               >
-                View My Friends
+                {{ isCoach() ? 'Open Coach Community' : 'View My Friends' }}
               </button>
             </div>
           </ng-container>
@@ -480,11 +504,15 @@ export class ChatListPage implements OnInit, OnDestroy, ViewWillEnter, ViewWillL
       (t.lastMessage || '').toLowerCase().includes(q);
     const games = this.threads().filter((t) => this.threadType(t) === 'game' && matches(t)).length;
     const dms = this.threads().filter((t) => this.threadType(t) === 'private' && matches(t)).length;
-    return [
+    const community = this.threads().filter((t) => this.threadType(t) === 'community' && matches(t)).length;
+    const chips: FilterChip[] = [
       { id: 'all', label: 'All', count: games + dms },
       { id: 'team', label: 'Game Chats', count: games },
       { id: 'direct', label: 'Direct Messages', count: dms },
     ];
+    if (this.isCoach()) chips.splice(1, 0, { id: 'community', label: 'Community', count: community });
+    chips[0] = { ...chips[0], count: games + dms + community };
+    return chips;
   });
 
   readonly filteredThreads = computed(() => {
@@ -494,6 +522,8 @@ export class ChatListPage implements OnInit, OnDestroy, ViewWillEnter, ViewWillL
       list = list.filter((t) => this.threadType(t) === 'game');
     } else if (this.activeTab === 'direct') {
       list = list.filter((t) => this.threadType(t) === 'private');
+    } else if (this.activeTab === 'community') {
+      list = list.filter((t) => this.threadType(t) === 'community');
     }
     if (q) {
       list = list.filter(
@@ -510,6 +540,9 @@ export class ChatListPage implements OnInit, OnDestroy, ViewWillEnter, ViewWillL
   );
   readonly privateChats = computed(() =>
     this.filteredThreads().filter((t) => this.threadType(t) === 'private' && !t.pinned),
+  );
+  readonly communityChats = computed(() =>
+    this.filteredThreads().filter((t) => this.threadType(t) === 'community' && !t.pinned),
   );
   readonly pinnedChats = computed(() => this.filteredThreads().filter((t) => !!t.pinned));
 
@@ -545,6 +578,10 @@ export class ChatListPage implements OnInit, OnDestroy, ViewWillEnter, ViewWillL
     this.stopInbox = null;
 
     try {
+      if (this.isCoach()) {
+        const community = await this.chat.openCoachCommunity();
+        if (!community.success) throw new Error(community.message || 'Unable to open Coach Community.');
+      }
       this.stopInbox = await this.chat.listenThreads((items) => {
         this.threads.set(items);
         this.loading = false;
@@ -640,11 +677,21 @@ export class ChatListPage implements OnInit, OnDestroy, ViewWillEnter, ViewWillL
   }
 
   enterChat(id: string): void {
-    void this.navCtrl.navigateForward(`/app/chat/${encodeURIComponent(id)}`);
+    const prefix = this.isCoach() ? '/app/coach/chat' : '/app/chat';
+    void this.navCtrl.navigateForward(`${prefix}/${encodeURIComponent(id)}`);
   }
 
   openFriends(): void {
-    void this.router.navigateByUrl('/app/friends');
+    void this.router.navigateByUrl(this.isCoach() ? '/app/coach/students' : '/app/friends');
+  }
+
+  async openCoachCommunity(): Promise<void> {
+    const result = await this.chat.openCoachCommunity();
+    if (result.success && result.data?.id) {
+      this.enterChat(result.data.id);
+      return;
+    }
+    this.errorMessage = result.message || 'Unable to open Coach Community.';
   }
 
   formatTime(iso?: string | null): string {

@@ -28,7 +28,71 @@ TYNG — TODAY'S WORK SUMMARY
    - Admin can see Coach profile data, students, active-student counts, sessions, contact details, sports, location, and rating.
    - Live server deployment completed over SSH. Laravel migrations, route checks, PHP checks, and cache clears completed.
 
-NEXT RECOMMENDED ITEMS
-- Add latitude/longitude fields for real Player-to-Coach distance calculation.
-- Add full request/review/earnings reporting and filters to the Admin Coach detail page.
-- Continue replacing remaining static Coach demo content with real API data.
+6. GPS PROFILE LOCATION FOUNDATION
+   - Added latitude and longitude fields to Laravel users and deployed the live migration.
+   - API responses now include coordinate values and validate coordinate profile updates.
+   - Ionic profile saves now include the selected GPS coordinates with the address.
+   - This enables accurate Coach distance calculation once Coaches update their profile location.
+
+7. WORKSPACE DELIVERY RULES
+   - Added permanent AGENTS.md rule: every live Laravel SSH change must be verified, committed with scoped files only, and pushed to Git.
+   - Added permanent AGENTS.md rule: every completed user-requested scope must be recorded in both tasklist.md and tasklist.txt.
+
+8. DYNAMIC COACH STUDENT PROFILE — 23 September 2026
+   - Updated Coach student detail badges and icons to use a cleaner Ionic-based design.
+   - Training focus is persisted to coach_students and saves immediately.
+   - Per-skill evaluations are persisted and autosaved after slider changes.
+   - Added private student notes table and instant-save API.
+   - Timeline and achievements are generated from real enrollment, sessions, and evaluations.
+   - Live migration/API deployment verified on srv1789528; commit 31a660a pushed to developer.
+   - Angular production build passed with existing Sass/bundle-size warnings only.
+
+11. COACH NOTE PRESENTATION — 23 September 2026
+   - Refined private-note form/card design, focus state, add action, and hierarchy.
+   - Replaced raw ISO timestamps with local readable date/time labels and a time icon.
+   - Angular production build passed with existing Sass/bundle-size warnings only.
+
+10. COACH COMMUNITY CHAT — 23 September 2026
+   - Replaced static Coach Community examples with a live shared Coach-only realtime chat.
+   - Added Community inbox section/filter, direct chat action, Coach menu entry, and /app/coach/community route.
+   - Active Coaches are provisioned server-side; Players, Venues, blocked users, and inactive users cannot open the community.
+   - Community messages use Laravel persistence, notifications, unread counts, and Firebase realtime delivery.
+   - Production route verification and cache clearing completed on srv1789528; commit 44d1f25 pushed to developer.
+   - Angular production build passed with existing Sass/bundle-size warnings only.
+
+9. RELATIONSHIP-AUTHORIZED COACH CHAT — 23 September 2026
+   - Replaced static Coach chat with the live shared inbox and Coach chat-room routes.
+   - Accepting a student request automatically provisions the shared Coach/Student thread.
+   - Coach/Player chat now requires an active coach_students relationship.
+   - Venue/Player chat requires a related booking; Venue/Coach chat requires a related coaching session.
+   - Thread creation, message persistence, and initial message loading now go through Laravel; approved messages publish to realtime chat.
+   - Added Chat with Coach for accepted Players and a Coach Student-profile message action.
+   - Live Laravel verification and cache clearing completed on srv1789528; commit a6f6fad pushed to developer.
+   - Angular production build passed with existing Sass/bundle-size warnings only.
+
+12. LIVE COACH DASHBOARD METRICS — 23 September 2026
+   - Removed literal question-mark placeholders and the broken currency display from the Coach dashboard.
+   - Student requests, coaching progress, insight copy, earnings snapshot, and the recent-activity empty state now use the Laravel Coach dashboard response.
+   - Added pending student request, today evaluation, and today completed-session metrics to the Laravel dashboard API.
+   - Deployed and syntax/route-verified on srv1789528; backend commit d02b808 pushed to developer.
+   - Frontend build was started; complete the production bundle check if the local Angular builder remains slow.
+
+13. DYNAMIC COACH SESSION PLANNING — 23 September 2026
+   - Connected the Coach session wizard to live active students and approved Laravel venues.
+   - Publish now creates a real Laravel Coach session; selected active players can be stored as a group.
+   - Fixed the NaN:NaN AM end-time calculation for hour-only slot selections.
+   - Coach Book Venue catalogue now loads approved Laravel venues instead of demo cards.
+   - Live migration/API/model checks completed on srv1789528; commits 962da7c and 807df37 pushed to developer.
+
+14. DYNAMIC PREVIOUS COACH BATCHES — 23 September 2026
+   - Replaced static Previous Batch cards with real multi-student Coach sessions from Laravel.
+   - Selecting a previous batch restores its real student IDs in the wizard.
+   - Live route verified on srv1789528; commit cd00d44 pushed to developer.
+
+15. COACH VENUE CATALOGUE AND PROFILE-CARD POLISH — 23 September 2026
+   - Fixed live venue cards to avoid demo-only rating, capacity, amenities, slot, and zero-price placeholders.
+   - Removed static upcoming-reservation cards and clarified the booking action.
+   - Replaced corrupted question-mark glyphs in the dynamic Coach profile completion card with Ionic icons.
+
+16. DELIVERY SYNC — 23 September 2026
+   - Synced all Coach workflow, chat, dashboard, profile, venue, and task-list changes made today to the application and Laravel Git branches.

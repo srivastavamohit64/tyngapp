@@ -40,7 +40,7 @@ interface GameChatDetails {
             </button>
             <div class="h-10 w-10 rounded-full overflow-hidden bg-slate-100 flex items-center justify-center border border-slate-100 text-xl flex-shrink-0">
               <img *ngIf="thread?.avatar" [src]="thread?.avatar" class="w-full h-full object-cover" alt="" (error)="onAvatarError()" />
-              <span *ngIf="!thread?.avatar">{{ isGameChat ? '⚽' : '💬' }}</span>
+              <span *ngIf="!thread?.avatar">{{ isGameChat ? '⚽' : isCommunityChat ? '🤝' : '💬' }}</span>
             </div>
             <div class="min-w-0">
               <h1 class="text-sm font-extrabold text-slate-900 leading-tight truncate">
@@ -51,7 +51,7 @@ interface GameChatDetails {
                 [class.typing-status]="!!typingLabel"
                 [class.text-slate-400]="!typingLabel"
               >
-                {{ typingLabel || (isGameChat ? 'Game chat' : 'Direct message') }}
+                {{ typingLabel || (isGameChat ? 'Game chat' : isCommunityChat ? 'Coach Community' : 'Direct message') }}
               </p>
             </div>
           </div>
@@ -368,10 +368,15 @@ export class ChatRoomPage implements OnInit, OnDestroy, ViewWillEnter, ViewWillL
     return type === 'game' || type.startsWith('game_');
   }
 
+  get isCommunityChat(): boolean {
+    const type = String(this.thread?.type || this.thread?.chatType || this.chatId || '').toLowerCase();
+    return type === 'community' || this.chatId === 'coach_community';
+  }
+
   get typingLabel(): string {
     if (!this.typingUsers.length) return '';
-    if (!this.isGameChat) return 'typing…';
-    const names = this.typingUsers.map((u) => u.name || 'Player');
+    if (!this.isGameChat && !this.isCommunityChat) return 'typing…';
+    const names = this.typingUsers.map((u) => u.name || (this.isCommunityChat ? 'Coach' : 'Player'));
     if (names.length === 1) return `${names[0]} is typing…`;
     if (names.length === 2) return `${names[0]} and ${names[1]} are typing…`;
     return 'Several people are typing…';

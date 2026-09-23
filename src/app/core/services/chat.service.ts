@@ -148,76 +148,11 @@ export class ChatService implements OnDestroy {
     try {
       const me = this.requireUser();
       const peerId = typeof peer === 'object' ? String(peer.id) : String(peer);
-      const peerName = typeof peer === 'object' ? peer.name || 'Player' : 'Player';
-      const peerAvatar = typeof peer === 'object' ? peer.avatar ?? null : null;
 
       if (!peerId || peerId === String(me.id)) {
         return this.fail('Invalid chat peer.');
       }
-
-      const chatId = ChatService.privateChatId(me.id, peerId);
-      const memberIds = [String(me.id), peerId].sort((a, b) => Number(a) - Number(b));
-      const nowIso = new Date().toISOString();
-      const nowMs = Date.now();
-
-      await this.ensureDb();
-      if (!this.db) return this.fail('Firebase is unavailable.');
-
-      const metaSnap = await get(ref(this.db, `chats/${this.safeKey(chatId)}/meta`));
-      const existing = (metaSnap.val() || {}) as RtdbMeta;
-      const title = existing.title || peerName;
-
-      const updates: Record<string, unknown> = {
-        [`chats/${this.safeKey(chatId)}/meta`]: {
-          type: 'private',
-          bookingId: null,
-          memberIds,
-          title,
-          avatar: existing.avatar ?? null,
-          lastMessage: existing.lastMessage ?? null,
-          lastMessageAt: existing.lastMessageAt ?? null,
-          updatedAt: existing.updatedAt || nowIso,
-        },
-        [`userChats/${me.id}/${this.safeKey(chatId)}`]: await this.buildInboxPatch(
-          chatId,
-          'private',
-          {
-            title: peerName,
-            avatar: resolveMediaUrl(peerAvatar),
-            peer: { id: peerId, name: peerName, avatar: resolveMediaUrl(peerAvatar) },
-            memberIds,
-            existingUnread: undefined,
-            lastMessage: existing.lastMessage ?? null,
-            lastMessageAt: existing.lastMessageAt ?? null,
-            updatedAtMs: Number(existing.lastMessageAt ? Date.parse(String(existing.lastMessageAt)) : nowMs),
-          },
-          me.id,
-        ),
-        [`userChats/${peerId}/${this.safeKey(chatId)}`]: await this.buildInboxPatch(
-          chatId,
-          'private',
-          {
-            title: me.name || 'Player',
-            avatar: resolveMediaUrl(me.profileImage),
-            peer: {
-              id: String(me.id),
-              name: me.name || 'Player',
-              avatar: resolveMediaUrl(me.profileImage),
-            },
-            memberIds,
-            existingUnread: undefined,
-            lastMessage: existing.lastMessage ?? null,
-            lastMessageAt: existing.lastMessageAt ?? null,
-            updatedAtMs: Number(existing.lastMessageAt ? Date.parse(String(existing.lastMessageAt)) : nowMs),
-          },
-          peerId,
-        ),
-      };
-
-      await update(ref(this.db), updates);
-
-      const thread = await this.readThread(chatId);
-      return this.ok(thread!, 'Private chat ready.');
+      return await firstValueFrom(this.api.post<ChatThread>('/chats/private', { user_id: Number(peerId) }));
     } catch (error: any) {
       const msg = String(error?.message || '');
       if (/permission_denied|permission denied/i.test(msg)) {
@@ -229,78 +164,22 @@ export class ChatService implements OnDestroy {
     }
   }
 
+  async openCoachCommunity(): Promise<ApiResponse<ChatThread>> {
+    try {
+      this.requireUser();
+      return await firstValueFrom(this.api.post<ChatThread>('/chats/coach-community', {}));
+    } catch (error: any) {
+      return this.fail(error?.message || 'Unable to open Coach Community.');
+    }
+  }
+
   async openGame(
     bookingId: string | number,
     options: OpenGameChatOptions = {},
   ): Promise<ApiResponse<ChatThread>> {
     try {
-      const me = this.requireUser();
-      const chatId = ChatService.gameChatId(bookingId);
-      const memberIds = Array.from(
-        new Set(
-          (options.memberIds?.length ? options.memberIds : [me.id]).map((id) => String(id)),
-        ),
-      );
-      if (!memberIds.includes(String(me.id))) {
-        memberIds.push(String(me.id));
-      }
-
-      const title = options.title || `Game #${bookingId}`;
-      const avatar = options.avatar ?? null;
-      const nowIso = new Date().toISOString();
-      const nowMs = Date.now();
-
-      await this.ensureDb();
-      if (!this.db) return this.fail('Firebase is unavailable.');
-
-      const metaSnap = await get(ref(this.db, `chats/${this.safeKey(chatId)}/meta`));
-      const existing = (metaSnap.val() || {}) as RtdbMeta;
-      const mergedMembers = Array.from(
-        new Set([...(existing.memberIds || []).map(String), ...memberIds]),
-      );
-
-      const updates: Record<string, unknown> = {
-        [`chats/${this.safeKey(chatId)}/meta`]: {
-          type: 'game',
-          bookingId: String(bookingId),
-          memberIds: mergedMembers,
-          title: existing.title || title,
-          avatar: existing.avatar ?? avatar,
-          lastMessage: existing.lastMessage ?? null,
-          lastMessageAt: existing.lastMessageAt ?? null,
-          updatedAt: existing.updatedAt || nowIso,
-        },
-      };
-
-      for (const memberId of mergedMembers) {
-        updates[`userChats/${memberId}/${this.safeKey(chatId)}`] = await this.buildInboxPatch(
-          chatId,
-          'game',
-          {
-            title: existing.title || title,
-            avatar: existing.avatar ?? avatar,
-            peer: null,
-            memberIds: mergedMembers,
-            bookingId: String(bookingId),
-            existingUnread: undefined,
-            lastMessage: existing.lastMessage ?? null,
-            lastMessageAt: existing.lastMessageAt ?? null,
-            updatedAtMs: Number(existing.lastMessageAt ? Date.parse(String(existing.lastMessageAt)) : nowMs),
-          },
-          memberId,
-        );
-      }
-
-      await update(ref(this.db), updates);
-
-      try {
-        await firstValueFrom(this.api.post<ChatThread>(`/chats/game/${encodeURIComponent(String(bookingId))}`, {}));
-      } catch {
-        // Firebase inbox is the live source; MySQL membership is best-effort.
-      }
-
-      const thread = await this.readThread(chatId);
-      return this.ok(thread!, 'Game chat ready.');
+      this.requireUser();
+      return await firstValueFrom(this.api.post<ChatThread>(`/chats/game/${encodeURIComponent(String(bookingId))}`, {}));
     } catch (error: any) {
       return this.fail(error?.message || 'Unable to open game chat.');
     }
@@ -308,11 +187,7 @@ export class ChatService implements OnDestroy {
 
   async getThread(chatId: string): Promise<ApiResponse<ChatThread>> {
     try {
-      const thread = await this.readThread(chatId);
-      if (!thread) {
-        return this.fail('Chat not found.');
-      }
-      return this.ok(thread, 'Chat fetched successfully.');
+      return await firstValueFrom(this.api.get<ChatThread>(`/chats/${encodeURIComponent(chatId)}`));
     } catch (error: any) {
       return this.fail(error?.message || 'Unable to load chat.');
     }
@@ -320,12 +195,30 @@ export class ChatService implements OnDestroy {
 
   async sendMessage(chatId: string, text: string): Promise<ApiResponse<ChatMessage>> {
     try {
+      this.requireUser();
+      const trimmed = String(text || '').trim();
+      if (!trimmed) return this.fail('Message text is required.');
+      // Laravel authorizes the relationship and publishes the approved message
+      // to Firebase for the live inbox and room listeners.
+      return await firstValueFrom(
+        this.api.post<ChatMessage>(`/chats/${encodeURIComponent(chatId)}/messages`, { text: trimmed }),
+      );
+    } catch (error: any) {
+      return this.fail(error?.message || 'Unable to send message.');
+    }
+  }
+
+  private async legacyClientSendMessage(chatId: string, text: string): Promise<ApiResponse<ChatMessage>> {
+    try {
       const me = this.requireUser();
       const trimmed = String(text || '').trim();
       if (!trimmed) {
         return this.fail('Message text is required.');
       }
 
+      // Laravel authorizes membership and publishes the approved message to RTDB.
+      // Keeping the write server-side prevents clients from messaging unaccepted
+      // Coach–Student pairs or unrelated Venue participants.
       await this.ensureDb();
       if (!this.db) return this.fail('Firebase is unavailable.');
 
@@ -683,10 +576,13 @@ export class ChatService implements OnDestroy {
   }
 
   async fetchMessagesOnce(chatId: string, currentUserId: string): Promise<ChatMessage[]> {
-    await this.ensureDb();
-    if (!this.db) return [];
-    const snap = await get(ref(this.db, `chats/${this.safeKey(chatId)}/messages`));
-    return this.snapshotToMessages(snap, chatId, currentUserId);
+    const response = await firstValueFrom(this.api.get<{ items: ChatMessage[] }>(`/chats/${encodeURIComponent(chatId)}/messages`));
+    if (!response.success) return [];
+    return (response.data?.items || []).map((message) => ({
+      ...message,
+      chatId,
+      isSelf: String(message.senderId) === String(currentUserId),
+    }));
   }
 
   stopListening(): void {

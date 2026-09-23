@@ -109,6 +109,21 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
   coachDashboardLoading = signal(false);
   coachDashboardError = signal('');
   coachDailyGoalProgress = 0;
+  coachStudentRequestCount = 0;
+  coachProgressCards = [
+    { icon: 'people-outline', value: '0', label: 'Active Students', bg: '#FFFBEB', color: '#D97706' },
+    { icon: 'clipboard-outline', value: '0', label: 'Evaluations Today', bg: '#F0FDF4', color: '#16A34A' },
+    { icon: 'star-outline', value: '0', label: 'New Reviews Today', bg: '#F5F3FF', color: '#7C3AED' },
+  ];
+  coachInsight = {
+    heading: 'No sessions scheduled today',
+    message: 'Open your schedule to add availability and invite more student requests.',
+  };
+  coachEarningsSnapshot = [
+    { period: 'Today', amount: '₹0', trend: 'Expected earnings' },
+    { period: 'Upcoming', amount: '0', trend: 'Scheduled sessions' },
+    { period: 'Completed', amount: '0', trend: 'All-time sessions' },
+  ];
   coachPulseMetrics = [
     { icon: '📅', label: "Today's Sessions", value: '4', accent: 'var(--app-primary)' },
     { icon: '💰', label: 'Expected Earnings', value: '₹4,250', accent: '#FF7A00' },
@@ -268,6 +283,28 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
     // older API deployment returns a partial dashboard profile without `role`.
     this.auth.hydrateUser({ ...dashboard.profile, role: 'coach' });
     this.coachDailyGoalProgress = dashboard.stats.dailyGoalProgress;
+    this.coachStudentRequestCount = dashboard.stats.pendingStudentRequests;
+    this.coachProgressCards = [
+      { icon: 'people-outline', value: String(dashboard.stats.students), label: 'Active Students', bg: '#FFFBEB', color: '#D97706' },
+      { icon: 'clipboard-outline', value: String(dashboard.stats.evaluationsToday), label: 'Evaluations Today', bg: '#F0FDF4', color: '#16A34A' },
+      { icon: 'star-outline', value: String(dashboard.stats.newReviews), label: 'New Reviews Today', bg: '#F5F3FF', color: '#7C3AED' },
+    ];
+    this.coachInsight = dashboard.stats.todaySessions > 0
+      ? {
+          heading: `${dashboard.stats.todaySessions} session${dashboard.stats.todaySessions === 1 ? '' : 's'} scheduled today`,
+          message: `${dashboard.stats.completedSessionsToday} completed so far. Keep your schedule current so students can book available time.`,
+        }
+      : {
+          heading: 'No sessions scheduled today',
+          message: dashboard.stats.pendingStudentRequests > 0
+            ? `${dashboard.stats.pendingStudentRequests} student request${dashboard.stats.pendingStudentRequests === 1 ? ' is' : 's are'} waiting for your response.`
+            : 'Open your schedule to add availability and invite more student requests.',
+        };
+    this.coachEarningsSnapshot = [
+      { period: 'Today', amount: this.formatCurrency(dashboard.stats.expectedEarnings), trend: 'Expected earnings' },
+      { period: 'Upcoming', amount: String(dashboard.stats.upcomingSessions), trend: 'Scheduled sessions' },
+      { period: 'Completed', amount: String(dashboard.stats.completedSessions), trend: 'All-time sessions' },
+    ];
     this.coachPulseMetrics = [
       { icon: 'ðŸ“…', label: "Today's Sessions", value: String(dashboard.stats.todaySessions), accent: 'var(--app-primary)' },
       { icon: 'ðŸ’°', label: 'Expected Earnings', value: this.formatCurrency(dashboard.stats.expectedEarnings), accent: '#FF7A00' },

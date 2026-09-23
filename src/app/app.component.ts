@@ -80,6 +80,7 @@ export class AppComponent implements OnInit {
     { label: 'Wallet', sub: 'Balance, top-up & history', path: '/app/wallet', icon: 'wallet-outline' },
     { label: 'Book Venue', sub: 'Discover & reserve venues', path: '/app/coach/book-venue', icon: 'location-outline' },
     { label: 'My Students', sub: 'Manage your students', path: '/app/coach/students', icon: 'people-outline' },
+    { label: 'Coach Community', sub: 'Connect with active coaches', path: '/app/coach/community', icon: 'people-circle-outline' },
     { label: 'Earnings', sub: 'Revenue & payouts', path: '/app/coach/earnings', icon: 'cash-outline' },
     { label: 'Analytics', sub: 'Profile & booking stats', path: '/app/coach/insights', icon: 'bar-chart-outline' },
     { label: 'Settings', sub: 'Preferences & privacy', path: '/app/coach/settings', icon: 'settings-outline' },

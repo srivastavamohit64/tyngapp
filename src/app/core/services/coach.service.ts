@@ -27,6 +27,10 @@ export class CoachService {
     return this.api.post(`/coaches/${coachId}/student-requests`, payload);
   }
 
+  getMyCoachStudentRequests(): Observable<ApiResponse<any>> {
+    return this.api.get('/player/coach-student-requests');
+  }
+
   getStudentRequests(status = 'pending'): Observable<ApiResponse<any>> {
     return this.api.get(`/coach/student-requests?status=${encodeURIComponent(status)}`);
   }
@@ -41,5 +45,33 @@ export class CoachService {
 
   getStudent(id: number): Observable<ApiResponse<any>> {
     return this.api.get(`/coach/students/${id}`);
+  }
+
+  updateStudent(id: number, payload: { training_focus?: string[]; notes?: string; status?: string }): Observable<ApiResponse<any>> {
+    return this.api.patch(`/coach/students/${id}`, payload);
+  }
+
+  saveStudentEvaluation(id: number, payload: { rating: number; skill_ratings: Record<string, number> }): Observable<ApiResponse<any>> {
+    return this.api.post(`/coach/students/${id}/evaluations`, payload);
+  }
+
+  addStudentNote(id: number, note: string): Observable<ApiResponse<any>> {
+    return this.api.post(`/coach/students/${id}/notes`, { note });
+  }
+
+  getVenues(): Observable<ApiResponse<any[]>> {
+    return this.api.get<any[]>('/venues');
+  }
+
+  getCoachSessions(): Observable<ApiResponse<any>> {
+    return this.api.get('/coach/sessions');
+  }
+
+  getSessionBatches(): Observable<ApiResponse<any[]>> {
+    return this.api.get<any[]>('/coach/session-batches');
+  }
+
+  createSession(payload: Record<string, unknown>): Observable<ApiResponse<any>> {
+    return this.api.post('/coach/sessions', payload);
   }
 }

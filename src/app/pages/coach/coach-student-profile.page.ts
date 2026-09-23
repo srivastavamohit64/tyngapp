@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { CoachService } from '../../core/services/coach.service';
+import { ChatService } from '../../core/services/chat.service';
 import { resolveMediaUrl } from '../../core/utils/media-url.util';
 
 interface Student {
@@ -39,7 +40,7 @@ interface Student {
     confidence: number;
   };
   notes: { text: string; date: string }[];
-  achievements: string[];
+  achievements: any[];
   timeline: { icon: string; text: string; date: string; done: boolean }[];
   upcomingSession?: { venue: string; date: string; time: string; focus: string[]; weather: string };
 }
@@ -253,7 +254,7 @@ const ACHIEVEMENT_COLORS: Record<string, { bg: string; color: string }> = {
                 [style.backgroundColor]="selectedFocus.includes(f.id) ? 'rgba(var(--app-primary-rgb),0.12)' : '#F3F4F6'"
                 [style.color]="selectedFocus.includes(f.id) ? '#111827' : '#6B7280'"
                 [style.border]="selectedFocus.includes(f.id) ? '2px solid var(--app-primary)' : '2px solid transparent'">
-                <span>{{ f.emoji }}</span>{{ f.label }}
+                <ion-icon [name]="getFocusIcon(f.id)" class="text-sm"></ion-icon>{{ f.label }}
                 <ion-icon *ngIf="selectedFocus.includes(f.id)" name="checkmark-outline" class="text-[#16A34A] text-xs font-bold"></ion-icon>
               </button>
             </div>
@@ -264,6 +265,7 @@ const ACHIEVEMENT_COLORS: Record<string, { bg: string; color: string }> = {
               <div class="space-y-1.5">
                 <div *ngFor="let fid of selectedFocus" class="flex items-center gap-2">
                   <div class="w-1.5 h-1.5 rounded-full bg-[var(--app-primary)]"></div>
+                  <ion-icon [name]="getFocusIcon(fid)" class="text-[var(--app-primary)]"></ion-icon>
                   <p class="text-[13px] text-[#111827] font-bold m-0">{{ getFocusLabel(fid) }}</p>
                 </div>
               </div>
@@ -283,7 +285,7 @@ const ACHIEVEMENT_COLORS: Record<string, { bg: string; color: string }> = {
                   <span class="text-[13px] font-bold text-[#111827]">{{ getSkillLabel(key) }}</span>
                   <span class="text-[13px] font-black text-[var(--app-primary)]">{{ evaluation[key] }}/10</span>
                 </div>
-                <input type="range" min="1" max="10" [(ngModel)]="evaluation[key]" (input)="evalSaved = false" class="w-full range-slider" />
+                <input type="range" min="1" max="10" [(ngModel)]="evaluation[key]" (input)="scheduleEvaluationSave()" class="w-full range-slider" />
               </div>
             </div>
 
@@ -305,10 +307,10 @@ const ACHIEVEMENT_COLORS: Record<string, { bg: string; color: string }> = {
           <!-- Notes section -->
           <div class="section-card p-5 text-left">
             <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-4">Coach Notes (Private)</p>
-            <div class="mb-4">
+            <div class="mb-5">
               <textarea [(ngModel)]="newNote" placeholder="Add a private note about this student..." rows="2"
-                class="w-full p-3.5 rounded-2xl text-[13px] text-[#111827] placeholder:text-[#C4C9D4] focus:outline-none resize-none mb-2 border border-slate-100 bg-[#FAFBFC]"></textarea>
-              <button (click)="addNote()" [disabled]="!newNote.trim()" class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[12px] font-bold border-none"
+                class="w-full min-h-[96px] p-4 rounded-2xl text-[14px] text-[#111827] placeholder:text-[#AAB3C2] focus:outline-none focus:ring-2 focus:ring-[var(--app-primary)]/35 resize-none mb-3 border border-slate-200 bg-[#FAFBFC]"></textarea>
+              <button (click)="addNote()" [disabled]="!newNote.trim()" class="note-add-button flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-[13px] font-black border-none"
                 [style.backgroundColor]="newNote.trim() ? 'var(--app-primary)' : '#F3F4F6'"
                 [style.color]="newNote.trim() ? '#111827' : '#C4C9D4'">
                 <ion-icon name="add-outline"></ion-icon>Add Note
@@ -316,9 +318,11 @@ const ACHIEVEMENT_COLORS: Record<string, { bg: string; color: string }> = {
             </div>
 
             <div class="space-y-3">
-              <div *ngFor="let note of (notesExpanded ? notes : notes.slice(0, 2))" class="bg-[#F9FAFB] rounded-2xl px-4 py-3.5 border border-slate-100">
-                <p class="text-[13px] text-[#111827] leading-relaxed mb-1 m-0">"{{ note.text }}"</p>
-                <p class="text-[10px] text-[#9CA3AF] m-0 font-medium">{{ note.date }}</p>
+              <div *ngFor="let note of (notesExpanded ? notes : notes.slice(0, 2))" class="note-card bg-[#F9FAFB] rounded-2xl px-4 py-3.5 border border-slate-100">
+                <p class="text-[13px] text-[#111827] leading-relaxed mb-2 m-0">{{ note.text }}</p>
+                <p class="flex items-center gap-1.5 text-[10px] text-[#7C8798] m-0 font-bold">
+                  <ion-icon name="time-outline"></ion-icon>{{ formatNoteDate(note.date) }}
+                </p>
               </div>
               <button *ngIf="notes.length > 2" (click)="notesExpanded = !notesExpanded" class="w-full flex items-center justify-center gap-1 text-[12px] font-bold text-[var(--app-primary)] py-1 bg-transparent border-none">
                 <ion-icon [name]="notesExpanded ? 'chevron-up-outline' : 'chevron-down-outline'"></ion-icon>
@@ -339,8 +343,8 @@ const ACHIEVEMENT_COLORS: Record<string, { bg: string; color: string }> = {
                     <ion-icon *ngIf="t.done" name="checkmark-outline" style="font-size:8px;color:#111827;font-weight:bold;"></ion-icon>
                   </div>
                   <div class="text-left">
-                    <p class="text-[13px] font-bold text-[#111827] m-0">{{ t.icon }} {{ t.text }}</p>
-                    <p class="text-[10px] text-[#9CA3AF] m-0">{{ t.date }}</p>
+                    <p class="text-[13px] font-bold text-[#111827] m-0 flex items-center gap-2"><ion-icon [name]="t.icon"></ion-icon>{{ t.text }}</p>
+                    <p class="text-[10px] text-[#9CA3AF] m-0">{{ formatDate(t.date) }}</p>
                   </div>
                 </div>
               </div>
@@ -351,10 +355,10 @@ const ACHIEVEMENT_COLORS: Record<string, { bg: string; color: string }> = {
           <div class="section-card p-5">
             <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-4">Achievements</p>
             <div class="flex flex-wrap gap-2">
-              <div *ngFor="let a of student.achievements" class="flex items-center gap-1.5 px-3 py-2 rounded-full text-[12px] font-bold"
+              <div *ngFor="let a of student.achievements" class="achievement-badge flex items-center gap-1.5 px-3 py-2 rounded-full text-[12px] font-bold"
                 [style.backgroundColor]="getAchievementStyle(a).bg"
                 [style.color]="getAchievementStyle(a).color">
-                🏅 {{ a }}
+                <ion-icon [name]="a.icon"></ion-icon> {{ a.label }}
               </div>
             </div>
           </div>
@@ -392,7 +396,7 @@ const ACHIEVEMENT_COLORS: Record<string, { bg: string; color: string }> = {
             <ion-icon name="list-outline"></ion-icon>
             <span>Evaluate</span>
           </button>
-          <button (click)="go('/app/coach/chat')" class="quick-action-btn" style="background-color:rgba(56,189,248,0.08);color:#38BDF8;">
+          <button (click)="openStudentChat()" class="quick-action-btn" style="background-color:rgba(56,189,248,0.08);color:#38BDF8;">
             <ion-icon name="chatbubbles-outline"></ion-icon>
             <span>Message</span>
           </button>
@@ -471,6 +475,18 @@ const ACHIEVEMENT_COLORS: Record<string, { bg: string; color: string }> = {
       border-radius: 24px;
       box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
       border: 1px solid #F3F4F6;
+    }
+
+    .note-add-button {
+      box-shadow: 0 4px 12px rgba(var(--app-primary-rgb), 0.22);
+    }
+
+    .note-add-button:disabled {
+      box-shadow: none;
+    }
+
+    .note-card {
+      border-left: 3px solid var(--app-primary);
     }
 
     .btn-green-gradient {
@@ -582,6 +598,7 @@ export class CoachStudentProfilePage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly coach = inject(CoachService);
+  private readonly chat = inject(ChatService);
 
   student: Student | null = null;
   liked = false;
@@ -593,9 +610,11 @@ export class CoachStudentProfilePage implements OnInit {
   evaluation: any = { technique: 5, fitness: 5, gameAwareness: 5, discipline: 5, teamwork: 5, confidence: 5 };
   evalSaved = false;
   focusSaved = false;
+  saveError = '';
   newNote = '';
   notes: { text: string; date: string }[] = [];
   notesExpanded = false;
+  private evaluationTimer?: ReturnType<typeof setTimeout>;
 
   readonly Math = Math;
   readonly focusAreas = FOCUS_AREAS;
@@ -610,21 +629,20 @@ export class CoachStudentProfilePage implements OnInit {
         const sessions = data?.sessions || [];
         const evaluations = data?.evaluations || [];
         const latest = evaluations[0] || {};
+        const skillRatings = latest.skill_ratings || {};
         this.student = {
           id: Number(player.id || id), name: player.name || 'Student', age: 0,
-          photo: resolveMediaUrl(player.profile_image) || '', cover: '', sport: (player.sports || ['Coaching'])[0], emoji: '👤',
-          skillLevel: 'Beginner', sessionsCompleted: sessions.length, attendance: 0,
-          trainingFocus: player.sports || [], lastSession: '', coachSince: relation?.enrolled_at || '', membershipStatus: relation?.status === 'active' ? 'Active' : 'Inactive',
+          photo: resolveMediaUrl(player.profile_image) || 'assets/icon/favicon.png', cover: resolveMediaUrl(player.cover_image) || resolveMediaUrl(player.profile_image) || 'assets/icon/favicon.png', sport: (player.sports || ['Coaching'])[0], emoji: '',
+          skillLevel: player.level || 'Beginner', sessionsCompleted: sessions.length, attendance: 0,
+          trainingFocus: relation?.training_focus || [], lastSession: sessions[0]?.session_date || '', coachSince: relation?.enrolled_at || '', membershipStatus: relation?.status === 'active' ? 'Active' : 'Inactive',
           stats: { sessions: sessions.length, hours: 0, attendance: 0, improvement: 0, streak: 0, tournamentWins: 0, personalBest: '—' },
-          evaluation: { technique: latest.rating || 5, fitness: latest.rating || 5, gameAwareness: latest.rating || 5, discipline: latest.rating || 5, teamwork: latest.rating || 5, confidence: latest.rating || 5 },
-          notes: evaluations.map((e: any) => ({ text: e.notes || e.areas_to_improve || e.strengths || 'Evaluation saved', date: e.evaluated_at || e.created_at || '' })), achievements: [], timeline: [],
+          evaluation: { technique: skillRatings.technique || latest.rating || 5, fitness: skillRatings.fitness || latest.rating || 5, gameAwareness: skillRatings.gameAwareness || latest.rating || 5, discipline: skillRatings.discipline || latest.rating || 5, teamwork: skillRatings.teamwork || latest.rating || 5, confidence: skillRatings.confidence || latest.rating || 5 },
+          notes: (data?.notes || []).map((n: any) => ({ text: n.note, date: n.created_at || '' })), achievements: data?.achievements || [], timeline: data?.timeline || [],
         };
         if (this.student) {
           this.evaluation = { ...this.student.evaluation };
           this.notes = [...this.student.notes];
-          this.selectedFocus = this.student.trainingFocus
-            .map(f => FOCUS_AREAS.find(a => f.includes(a.label))?.id ?? '')
-            .filter(Boolean);
+          this.selectedFocus = [...this.student.trainingFocus];
         }
       }, error: () => { this.student = null; } });
     });
@@ -636,6 +654,16 @@ export class CoachStudentProfilePage implements OnInit {
 
   go(path: string) {
     this.router.navigateByUrl(path);
+  }
+
+  async openStudentChat() {
+    if (!this.student) return;
+    const result = await this.chat.openPrivate({ id: this.student.id, name: this.student.name, avatar: this.student.photo });
+    if (result.success && result.data?.id) {
+      void this.router.navigateByUrl(`/app/coach/chat/${encodeURIComponent(result.data.id)}`);
+      return;
+    }
+    this.saveError = result.message || 'Unable to open chat.';
   }
 
   getOverallRating(): string {
@@ -662,8 +690,9 @@ export class CoachStudentProfilePage implements OnInit {
     return labels[key] ?? key;
   }
 
-  getAchievementStyle(a: string) {
-    return ACHIEVEMENT_COLORS[a] ?? { bg: '#F3F4F6', color: '#6B7280' };
+  getAchievementStyle(a: string | { label: string }) {
+    const label = typeof a === 'string' ? a : (a as any).label;
+    return ACHIEVEMENT_COLORS[label] ?? { bg: '#F3F4F6', color: '#6B7280' };
   }
 
   getMetricsList() {
@@ -685,40 +714,78 @@ export class CoachStudentProfilePage implements OnInit {
       ? this.selectedFocus.filter(x => x !== id)
       : [...this.selectedFocus, id];
     this.focusSaved = false;
+    this.saveFocus();
   }
 
   getFocusLabel(id: string): string {
     const f = FOCUS_AREAS.find(a => a.id === id);
-    return f ? `${f.emoji} ${f.label}` : '';
+    return f?.label ?? '';
+  }
+
+  getFocusIcon(id: string): string {
+    const icons: Record<string, string> = {
+      serving: 'locate-outline', footwork: 'walk-outline', fitness: 'fitness-outline', awareness: 'bulb-outline',
+      accuracy: 'locate-outline', speed: 'flash-outline', teamwork: 'people-outline', defence: 'shield-outline',
+      stamina: 'flame-outline', backhand: 'tennisball-outline', batting: 'baseball-outline', goalkeeping: 'hand-left-outline'
+    };
+    return icons[id] ?? 'ellipse-outline';
+  }
+
+  formatDate(value: string): string {
+    if (!value) return 'Date unavailable';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  formatNoteDate(value: string): string {
+    if (!value) return 'Just now';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+    return date.toLocaleString('en-IN', {
+      day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true
+    });
   }
 
   saveFocus() {
-    this.focusSaved = true;
     if (this.student) {
-      this.student.trainingFocus = this.selectedFocus.map(id => {
-        const f = FOCUS_AREAS.find(a => a.id === id);
-        return f ? `${f.emoji} ${f.label}` : '';
-      }).filter(Boolean);
+      this.student.trainingFocus = [...this.selectedFocus];
+      this.coach.updateStudent(this.student.id, { training_focus: this.selectedFocus }).subscribe({
+        next: () => { this.focusSaved = true; this.saveError = ''; },
+        error: () => this.saveError = 'Training focus could not be saved.'
+      });
     }
   }
 
   saveEvaluation() {
-    this.evalSaved = true;
     if (this.student) {
-      this.student.evaluation = { ...this.evaluation };
+      const values = Object.values(this.evaluation) as number[];
+      this.coach.saveStudentEvaluation(this.student.id, { rating: Number((values.reduce((a, b) => a + b, 0) / values.length).toFixed(1)), skill_ratings: { ...this.evaluation } }).subscribe({
+        next: () => { this.evalSaved = true; this.saveError = ''; this.student!.evaluation = { ...this.evaluation }; },
+        error: () => this.saveError = 'Evaluation could not be saved.'
+      });
     }
+  }
+
+  scheduleEvaluationSave() {
+    this.evalSaved = false;
+    if (this.evaluationTimer) clearTimeout(this.evaluationTimer);
+    this.evaluationTimer = setTimeout(() => this.saveEvaluation(), 600);
   }
 
   addNote() {
     if (!this.newNote.trim()) return;
-    this.notes = [
-      { text: this.newNote.trim(), date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) },
-      ...this.notes
-    ];
-    if (this.student) {
-      this.student.notes = [...this.notes];
-    }
-    this.newNote = '';
+    if (!this.student) return;
+    const note = this.newNote.trim();
+    this.coach.addStudentNote(this.student.id, note).subscribe({
+      next: (response) => {
+        const saved = response.data;
+        this.notes = [{ text: saved.note, date: saved.created_at }, ...this.notes];
+        this.student!.notes = [...this.notes];
+        this.newNote = '';
+        this.saveError = '';
+      },
+      error: () => this.saveError = 'Note could not be saved.'
+    });
   }
 
   openQRScanner() {

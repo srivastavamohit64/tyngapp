@@ -1,8 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, signal, effect, inject } from '@angular/core';
+import { Component, signal, effect, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
+import { firstValueFrom } from 'rxjs';
+import { CoachService } from '../../../core/services/coach.service';
 
 interface Sport {
   id: string;
@@ -197,6 +199,8 @@ function buildDates() {
             <div class="step-title-block">
               <h2>Who are you coaching?</h2>
             </div>
+            <p *ngIf="loading()" class="text-[13px] text-[#6B7280] mb-3">Loading your active students…</p>
+            <p *ngIf="loadError()" class="text-[13px] text-[#DC2626] mb-3">{{ loadError() }}</p>
             <!-- Sub-tabs -->
             <div class="flex bg-[#F3F4F6] p-1 rounded-2xl mb-4">
               <button *ngFor="let t of ['my','batch','new']" (click)="studTab = t" class="flex-1 py-2 rounded-xl text-[11px] font-bold border-none"
@@ -239,11 +243,12 @@ function buildDates() {
                   </div>
                 </button>
               </div>
+              <p *ngIf="!loading() && !filterStudents().length" class="py-6 text-center text-[13px] text-[#6B7280]">No active students found. Accept a student request first.</p>
             </div>
 
             <!-- List batches -->
             <div *ngIf="studTab === 'batch'" class="space-y-3">
-              <button *ngFor="let b of batchOptions" (click)="selBatch = (selBatch === b.id ? '' : b.id)" class="batch-select-btn border-none shadow-sm"
+              <button *ngFor="let b of batchOptions" (click)="selectBatch(b)" class="batch-select-btn border-none shadow-sm"
                 [style.backgroundColor]="selBatch === b.id ? 'rgba(var(--app-primary-rgb),0.08)' : 'white'"
                 [style.border]="selBatch === b.id ? '1.5px solid var(--app-primary)' : '1.5px solid #F3F4F6'">
                 <div class="w-10 h-10 rounded-xl bg-[#F3F4F6] flex items-center justify-center">
@@ -257,6 +262,7 @@ function buildDates() {
                   <ion-icon name="checkmark-outline" style="font-size:12px;color:#111827;font-weight:bold;"></ion-icon>
                 </div>
               </button>
+              <p *ngIf="!loading() && !batchOptions.length" class="py-6 text-center text-[13px] text-[#6B7280]">No previous group sessions yet. Create a session with two or more students to save a reusable batch.</p>
             </div>
 
             <!-- Add new -->
@@ -274,6 +280,8 @@ function buildDates() {
               <h2>Select a Venue</h2>
               <p>Choose where you'll conduct the session</p>
             </div>
+            <p *ngIf="loading()" class="text-[13px] text-[#6B7280]">Loading approved venues…</p>
+            <p *ngIf="!loading() && !venueOptions.length" class="py-8 text-center text-[13px] text-[#6B7280]">No approved venues are available right now.</p>
             <div class="space-y-4">
               <button *ngFor="let v of venueOptions" (click)="selectedVenue = v" class="venue-select-btn border-none shadow-sm text-left bg-white"
                 [style.border]="selectedVenue?.id === v.id ? '2.5px solid var(--app-primary)' : '2.5px solid transparent'">
@@ -423,12 +431,20 @@ function buildDates() {
             <div>
               <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-3">Equipment Source</p>
               <div class="space-y-2.5">
-                <button *ngFor="let s of equipSourceOptions" (click)="equipSrc = s.id" class="w-full flex items-center justify-between px-4 py-4 rounded-[20px] bg-white border border-[#F3F4F6] shadow-sm hover:border-[var(--app-primary)]"
+                <button *ngFor="let s of equipSourceOptions" (click)="equipSrc = s.id" class="equipment-source-option"
                   [style.backgroundColor]="equipSrc === s.id ? 'rgba(var(--app-primary-rgb),0.08)' : 'white'"
                   [style.borderColor]="equipSrc === s.id ? 'var(--app-primary)' : '#F3F4F6'">
-                  <p class="text-[14px] font-bold text-[#111827] m-0">{{ s.label }}</p>
-                  <div *ngIf="equipSrc === s.id" class="w-6 h-6 rounded-full bg-[var(--app-primary)] flex items-center justify-center">
-                    <ion-icon name="checkmark-outline" style="font-size:12px;color:#111827;font-weight:bold;"></ion-icon>
+                  <div class="flex items-center gap-3">
+                    <div class="equipment-source-icon" [style.backgroundColor]="equipSrc === s.id ? 'var(--app-primary)' : '#F3F4F6'">
+                      <ion-icon [name]="s.id === 'venue' ? 'business-outline' : s.id === 'coach' ? 'whistle-outline' : 'people-outline'" [style.color]="equipSrc === s.id ? '#111827' : '#6B7280'"></ion-icon>
+                    </div>
+                    <div class="text-left">
+                      <p class="text-[14px] font-black text-[#111827] m-0">{{ s.label }}</p>
+                      <p class="text-[11px] text-[#9CA3AF] m-0 mt-0.5">{{ s.id === 'venue' ? 'Confirm availability with the venue' : s.id === 'coach' ? 'Bring equipment for this session' : 'Ask students to bring their own' }}</p>
+                    </div>
+                  </div>
+                  <div class="equipment-source-radio" [class.equipment-source-radio-selected]="equipSrc === s.id">
+                    <ion-icon *ngIf="equipSrc === s.id" name="checkmark-outline"></ion-icon>
                   </div>
                 </button>
               </div>
@@ -584,13 +600,14 @@ function buildDates() {
               </div>
             </ng-template>
 
-            <button (click)="handleNext()" [disabled]="!canProceed()" class="flex-1 h-12 rounded-2xl text-[15px] font-black flex items-center justify-center gap-2 border-none"
+            <button (click)="handleNext()" [disabled]="!canProceed() || publishing()" class="flex-1 h-12 rounded-2xl text-[15px] font-black flex items-center justify-center gap-2 border-none"
               [style.background]="canProceed() ? 'linear-gradient(135deg,#FF7A00,#FF9A40)' : '#F3F4F6'"
               [style.color]="canProceed() ? 'white' : '#C4C9D4'">
-              {{ step() === 8 ? 'Publish Session' : 'Continue' }}
+              {{ step() === 8 ? (publishing() ? 'Publishing…' : 'Publish Session') : 'Continue' }}
               <ion-icon name="chevron-forward-outline"></ion-icon>
             </button>
           </div>
+          <p *ngIf="publishError()" class="mt-2 text-center text-[12px] text-[#DC2626]">{{ publishError() }}</p>
         </div>
       </div>
     </ion-content>
@@ -776,6 +793,23 @@ function buildDates() {
       border: 1.5px solid var(--app-primary);
     }
 
+    .equipment-source-option {
+      width: 100%; min-height: 72px; display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 14px; border: 1.5px solid #E5E7EB; border-radius: 18px;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, .04); transition: all .18s ease;
+    }
+    .equipment-source-option:active { transform: scale(.985); }
+    .equipment-source-icon {
+      width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;
+      border-radius: 13px; font-size: 18px; flex-shrink: 0;
+    }
+    .equipment-source-radio {
+      width: 22px; height: 22px; border: 2px solid #D1D5DB; border-radius: 50%; display: flex;
+      align-items: center; justify-content: center; color: #111827; flex-shrink: 0;
+    }
+    .equipment-source-radio-selected { background: var(--app-primary); border-color: var(--app-primary); }
+    .equipment-source-radio ion-icon { font-size: 13px; font-weight: 900; }
+
     .btn-green-gradient {
       background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to));
       box-shadow: 0 2px 8px rgba(var(--app-primary-rgb),0.38);
@@ -843,9 +877,14 @@ function buildDates() {
     }
   `]
 })
-export class CoachPlanPage {
+export class CoachPlanPage implements OnInit {
   readonly Math = Math;
   private readonly router = inject(Router);
+  private readonly coachService = inject(CoachService);
+  loading = signal(false);
+  publishing = signal(false);
+  loadError = signal('');
+  publishError = signal('');
 
   // Flow step State
   step = signal(1);
@@ -876,8 +915,9 @@ export class CoachPlanPage {
   sessionTitle = '';
 
   readonly sportsOptions = SPORTS;
-  readonly batchOptions = PREV_BATCHES;
-  readonly venueOptions = COACH_VENUES;
+  batchOptions: Array<{ id: string; label: string; sport: string; members: number; studentIds: number[] }> = [];
+  venueOptions: Venue[] = [];
+  studentOptions: Student[] = [];
   readonly durationsOptions = DURATIONS;
   readonly sessionTypeOptions = SESSION_TYPES;
   readonly focusOptions = TRAINING_FOCUS;
@@ -890,12 +930,59 @@ export class CoachPlanPage {
       const sp = this.sportsOptions.find(s => s.id === this.sport);
       const vName = this.selectedVenue?.name.split(' ')[0] ?? 'Training';
       const label = this.selStudents.length === 1
-        ? MOCK_STUDENTS.find(s => s.id === this.selStudents[0])?.name ?? 'Student'
+        ? this.studentOptions.find(s => s.id === this.selStudents[0])?.name ?? 'Student'
         : this.selStudents.length > 1 ? `Group (${this.selStudents.length})` : 'New Session';
       if (sp) {
         this.sessionTitle = `${vName} ${sp.name} Training – ${label}`;
       }
     });
+  }
+
+  ngOnInit(): void {
+    void this.loadPlanningData();
+  }
+
+  private async loadPlanningData(): Promise<void> {
+    this.loading.set(true);
+    this.loadError.set('');
+    try {
+      const [studentsResponse, venuesResponse, batchesResponse] = await Promise.all([
+        firstValueFrom(this.coachService.getStudents()),
+        firstValueFrom(this.coachService.getVenues()),
+        firstValueFrom(this.coachService.getSessionBatches()),
+      ]);
+      const students = studentsResponse.data?.data ?? studentsResponse.data ?? [];
+      const venues = venuesResponse.data ?? [];
+      this.studentOptions = students.map((item: any) => ({
+        id: Number(item.student?.id ?? item.student_id),
+        name: item.student?.name ?? 'Student',
+        photo: item.student?.profile_image || 'assets/icon/favicon.png',
+        skill: item.student?.level || 'Player',
+        attendance: 0,
+      })).filter((item: Student) => item.id > 0);
+      this.venueOptions = venues.map((item: any) => ({
+        id: Number(item.id), name: item.name, image: item.profileImage || 'assets/icon/favicon.png',
+        distance: item.distance || '', pricePerHour: Number(item.price || 0), rating: Number(item.rating || 0),
+        address: item.location || item.city || 'Location pending', sportEmojis: [], isCoachFriendly: true,
+        slots: this.defaultVenueSlots(item.openTime, item.closeTime),
+      })).filter((item: Venue) => item.id > 0);
+      this.batchOptions = (batchesResponse.data || []).map((item: any) => ({
+        id: String(item.id), label: item.label || 'Previous group session', sport: item.sport || 'Training',
+        members: Number(item.members || 0), studentIds: (item.studentIds || []).map(Number),
+      }));
+    } catch {
+      this.loadError.set('Could not load your students and venues. Please try again.');
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
+  private defaultVenueSlots(openTime?: string, closeTime?: string): string[] {
+    const open = this.toMinutes(openTime || '06:00');
+    const close = this.toMinutes(closeTime || '22:00');
+    const slots: string[] = [];
+    for (let minute = open; minute < close; minute += 60) slots.push(this.displayTime(minute));
+    return slots;
   }
 
   handleBack() {
@@ -921,7 +1008,7 @@ export class CoachPlanPage {
     if (this.step() < 8) {
       this.step.update(s => s + 1);
     } else {
-      this.success.set(true);
+      void this.publishSession();
     }
   }
 
@@ -931,31 +1018,81 @@ export class CoachPlanPage {
       : [...this.selStudents, id];
   }
 
+  selectBatch(batch: { id: string; studentIds: number[] }): void {
+    const isSelected = this.selBatch === batch.id;
+    this.selBatch = isSelected ? '' : batch.id;
+    this.selStudents = isSelected ? [] : batch.studentIds;
+  }
+
   getStudentPhoto(id: number) {
-    return MOCK_STUDENTS.find(s => s.id === id)?.photo ?? '';
+    return this.studentOptions.find(s => s.id === id)?.photo ?? 'assets/icon/favicon.png';
   }
 
   getStudentName(id: number) {
-    return MOCK_STUDENTS.find(s => s.id === id)?.name.split(' ')[0] ?? 'Student';
+    return this.studentOptions.find(s => s.id === id)?.name.split(' ')[0] ?? 'Student';
   }
 
   filterStudents() {
-    if (!this.searchQ) return MOCK_STUDENTS;
-    return MOCK_STUDENTS.filter(s => s.name.toLowerCase().includes(this.searchQ.toLowerCase()));
+    if (!this.searchQ) return this.studentOptions;
+    return this.studentOptions.filter(s => s.name.toLowerCase().includes(this.searchQ.toLowerCase()));
   }
 
   getEndTime(): string {
     if (!this.time) return '';
     const dur = this.durationsOptions.find(d => d.id === this.duration);
     const hrs = dur?.hrs ?? 1;
-    const [hm, ampm] = this.time.split(' ');
-    const [h, m] = hm.split(':').map(Number);
-    let total = (ampm === 'PM' && h !== 12 ? h + 12 : h === 12 && ampm === 'AM' ? 0 : h) * 60 + m + hrs * 60;
-    const eh = Math.floor(total / 60) % 24;
-    const em = total % 60;
-    const eAmpm = eh >= 12 ? 'PM' : 'AM';
-    const dh = eh > 12 ? eh - 12 : eh === 0 ? 12 : eh;
-    return `${dh}:${em.toString().padStart(2, '0')} ${eAmpm}`;
+    return this.displayTime(this.toMinutes(this.time) + hrs * 60);
+  }
+
+  private toMinutes(value: string): number {
+    const match = String(value).trim().match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?$/i);
+    if (!match) return 0;
+    let hour = Number(match[1]);
+    const minutes = Number(match[2] || 0);
+    const meridiem = match[3]?.toUpperCase();
+    if (meridiem === 'PM' && hour < 12) hour += 12;
+    if (meridiem === 'AM' && hour === 12) hour = 0;
+    return hour * 60 + minutes;
+  }
+
+  private displayTime(total: number): string {
+    const normalized = ((total % 1440) + 1440) % 1440;
+    const hour = Math.floor(normalized / 60);
+    const minutes = normalized % 60;
+    return `${hour % 12 || 12}:${minutes.toString().padStart(2, '0')} ${hour >= 12 ? 'PM' : 'AM'}`;
+  }
+
+  private timeForApi(display: string): string {
+    const minutes = this.toMinutes(display);
+    return `${Math.floor(minutes / 60).toString().padStart(2, '0')}:${(minutes % 60).toString().padStart(2, '0')}`;
+  }
+
+  private sessionDate(): string {
+    const date = new Date();
+    date.setDate(date.getDate() + this.dateIdx);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  }
+
+  private async publishSession(): Promise<void> {
+    if (this.publishing()) return;
+    this.publishError.set('');
+    this.publishing.set(true);
+    try {
+      const response = await firstValueFrom(this.coachService.createSession({
+        title: this.sessionTitle.trim(), sport: this.sportsOptions.find(s => s.id === this.sport)?.name || this.sport,
+        student_ids: this.selStudents, venue_id: this.selectedVenue?.id,
+        session_date: this.sessionDate(), start_time: this.timeForApi(this.time), end_time: this.timeForApi(this.getEndTime()),
+        price: this.getCoachFeeNumber(),
+        description: `Type: ${this.sessType}; Focus: ${this.trainingFocus.join(', ') || 'General'}; Equipment: ${this.equip.join(', ') || 'None'} (${this.equipSrc}).`,
+        notes: this.notes || null,
+      }));
+      if (!response.success) throw new Error(response.message || 'Unable to create the session.');
+      this.success.set(true);
+    } catch (error: any) {
+      this.publishError.set(error?.error?.message || error?.message || 'Unable to create the session. Please review the selected time and try again.');
+    } finally {
+      this.publishing.set(false);
+    }
   }
 
   toggleFocus(f: string) {

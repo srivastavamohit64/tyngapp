@@ -1,8 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, signal, computed, inject } from '@angular/core';
+import { Component, signal, computed, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
+import { firstValueFrom } from 'rxjs';
+import { CoachService } from '../../core/services/coach.service';
 
 interface Venue {
   id: string;
@@ -141,9 +143,10 @@ const FILTERS = [
         <div class="px-5 pt-4 space-y-5">
           <!-- Results Count -->
           <div class="flex items-center justify-between px-1">
-            <p class="text-[13px] font-bold text-[#6B7280] m-0">{{ filteredVenues().length }} venues in Lucknow</p>
+            <p class="text-[13px] font-bold text-[#6B7280] m-0">{{ loading() ? 'Loading venues…' : filteredVenues().length + ' approved venues' }}</p>
             <button *ngIf="selectedFilter() !== 'All Sports'" (click)="selectedFilter.set('All Sports')" class="text-[12px] font-bold text-[#EF4444] bg-transparent border-none">Clear</button>
           </div>
+          <p *ngIf="loadError()" class="text-[13px] text-[#DC2626] text-center">{{ loadError() }}</p>
 
           <!-- List of Venues -->
           <div *ngIf="filteredVenues().length === 0" class="py-16 text-center">
@@ -166,8 +169,8 @@ const FILTERS = [
 
               <!-- Pricing pill -->
               <div class="absolute top-3 right-3 bg-white/95 backdrop-blur-sm px-2.5 py-1.5 rounded-xl text-center border border-slate-100 shadow-sm">
-                <p class="text-[13px] font-black text-[#111827] m-0 leading-none">₹{{ v.pricePerHour.toLocaleString() }}</p>
-                <p class="text-[9px] text-[#9CA3AF] m-0 font-bold mt-0.5">per hour</p>
+                <p class="text-[13px] font-black text-[#111827] m-0 leading-none">{{ v.pricePerHour > 0 ? '₹' + v.pricePerHour.toLocaleString() : 'Ask venue' }}</p>
+                <p class="text-[9px] text-[#9CA3AF] m-0 font-bold mt-0.5">{{ v.pricePerHour > 0 ? 'per hour' : 'for pricing' }}</p>
               </div>
 
               <!-- Title -->
@@ -182,22 +185,23 @@ const FILTERS = [
             <!-- body details -->
             <div class="px-4 pt-3.5 pb-4">
               <div class="flex items-center gap-3 mb-2 flex-wrap">
-                <div class="flex items-center gap-1 text-[11px] font-bold text-[#111827]">
+                <div *ngIf="v.rating > 0" class="flex items-center gap-1 text-[11px] font-bold text-[#111827]">
                   <ion-icon name="star" class="text-[#F59E0B]"></ion-icon>
                   <span>{{ v.rating }}</span>
-                  <span class="text-[#9CA3AF]">({{ v.reviews }})</span>
                 </div>
-                <div class="w-1 h-1 rounded-full bg-[#E5E7EB]"></div>
+                <div *ngIf="v.rating > 0" class="w-1 h-1 rounded-full bg-[#E5E7EB]"></div>
                 <div class="flex items-center gap-1 text-[11px] text-[#9CA3AF] font-bold">
                   <ion-icon name="location-outline"></ion-icon>
                   <span>{{ v.address.split(',')[0] }}</span>
                 </div>
-                <div class="w-1 h-1 rounded-full bg-[#E5E7EB]"></div>
-                <span class="text-[11px] text-[#9CA3AF] font-bold">{{ v.distance }}</span>
+                <ng-container *ngIf="v.distance">
+                  <div class="w-1 h-1 rounded-full bg-[#E5E7EB]"></div>
+                  <span class="text-[11px] text-[#9CA3AF] font-bold">{{ v.distance }}</span>
+                </ng-container>
               </div>
 
               <!-- Amenities chips -->
-              <div class="flex gap-1.5 overflow-x-auto no-scrollbar mb-3 pb-0.5">
+              <div *ngIf="v.amenities.length" class="flex gap-1.5 overflow-x-auto no-scrollbar mb-3 pb-0.5">
                 <div *ngFor="let a of v.amenities.slice(0, 5)" class="flex items-center gap-1 bg-[#F3F4F6] px-2.5 py-1 rounded-full flex-shrink-0">
                   <ion-icon [name]="getAmenityIcon(a)" class="text-[#6B7280] text-[10px]"></ion-icon>
                   <span class="text-[9px] text-[#6B7280] font-bold">{{ a }}</span>
@@ -206,7 +210,7 @@ const FILTERS = [
               </div>
 
               <!-- Available slots row -->
-              <div class="flex items-center gap-2 mb-3 text-[11px] text-[#9CA3AF] font-bold">
+              <div *ngIf="v.slots.length" class="flex items-center gap-2 mb-3 text-[11px] text-[#9CA3AF] font-bold">
                 <ion-icon name="time-outline" class="text-sm"></ion-icon>
                 <span>{{ v.slots.slice(0, 4).join(' · ') }}</span>
                 <span *ngIf="v.slots.length > 4" class="text-[var(--app-primary)] font-black">+{{ v.slots.length - 4 }}</span>
@@ -214,7 +218,7 @@ const FILTERS = [
 
               <div class="flex items-center gap-2 border-t border-slate-50 pt-3 mt-1">
                 <div class="flex items-center gap-1 text-[11px] text-[#9CA3AF] font-bold">
-                  <ion-icon name="people-outline" class="text-sm"></ion-icon>Up to {{ v.capacity }} students
+                  <ion-icon name="calendar-outline" class="text-sm"></ion-icon>Choose a date and time next
                 </div>
                 <div class="flex-1"></div>
                 <button (click)="bookVenue(v)" class="px-5 py-2.5 rounded-2xl text-[13px] font-black btn-green-gradient text-[#111827] border-none">
@@ -225,7 +229,7 @@ const FILTERS = [
           </div>
 
           <!-- Upcoming Reservations list -->
-          <div class="pt-4 text-left">
+          <div *ngIf="upcomingBookings.length" class="pt-4 text-left">
             <p class="text-[14px] font-black text-[#111827] mb-3 m-0">Upcoming Venue Reservations</p>
             <div class="space-y-3">
               <div *ngFor="let b of upcomingBookings" class="bg-white rounded-[20px] p-4 shadow-sm border border-slate-100">
@@ -285,21 +289,25 @@ const FILTERS = [
     }
   `]
 })
-export class CoachBookVenuePage {
+export class CoachBookVenuePage implements OnInit {
   private readonly router = inject(Router);
+  private readonly coachService = inject(CoachService);
 
   searchOpen = signal(false);
   searchQ = '';
   selectedFilter = signal('All Sports');
+  venues = signal<Venue[]>([]);
+  loading = signal(false);
+  loadError = signal('');
 
   readonly filterOptions = FILTERS;
-  readonly upcomingBookings = UPCOMING_BOOKINGS;
+  readonly upcomingBookings: typeof UPCOMING_BOOKINGS = [];
 
   filteredVenues = computed(() => {
     const q = this.searchQ.toLowerCase().trim();
     const filter = this.selectedFilter();
 
-    let result = COACH_VENUES;
+    let result = this.venues();
 
     if (q) {
       result = result.filter(v => v.name.toLowerCase().includes(q) || v.address.toLowerCase().includes(q));
@@ -317,6 +325,30 @@ export class CoachBookVenuePage {
 
     return result;
   });
+
+  ngOnInit(): void {
+    void this.loadVenues();
+  }
+
+  private async loadVenues(): Promise<void> {
+    this.loading.set(true);
+    this.loadError.set('');
+    try {
+      const response = await firstValueFrom(this.coachService.getVenues());
+      if (!response.success) throw new Error(response.message || 'Unable to load venues.');
+      this.venues.set((response.data || []).map((item: any) => ({
+        id: String(item.id), name: item.name, address: item.location || item.city || 'Location pending',
+        distance: item.distance || '', rating: Number(item.rating || 0), reviews: 0,
+        pricePerHour: Number(item.price || 0), sports: item.sports || [], sportEmojis: [],
+        image: item.profileImage || 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=900&h=500&fit=crop&auto=format', slots: [], amenities: [],
+        isCoachFriendly: false, isIndoor: false, capacity: 0, isOpenNow: false,
+      })));
+    } catch {
+      this.loadError.set('Could not load venues from the server. Please try again.');
+    } finally {
+      this.loading.set(false);
+    }
+  }
 
   back() {
     this.router.navigateByUrl('/app/coach/dashboard');
