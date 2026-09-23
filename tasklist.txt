@@ -292,3 +292,8 @@ TYNG — TODAY'S WORK SUMMARY
 48. CLIENT TASK-LIST DELIVERY SUMMARY - 24 September 2026
    - Rebuilt `tasklistnew.txt` from completed task-list items 20–47 only, excluding planning and review work that did not create a user-facing change.
    - Grouped the delivered changes into Coach, Player, Venue Staff, Admin and All App Users using client-friendly language.
+
+49. REPOSITORY UPDATE STATUS - 24 September 2026
+   - Pushed the outstanding Angular Wallet, Coach Profile and task-list updates to `master` as `93ac795`.
+   - The live Laravel Admin Bookings repair remains pushed on `developer` as `e67aaa9`.
+   - Left the local Laravel checkout unchanged: it has existing modified/untracked files, one local-only commit and 25 remote commits to receive, so automatic synchronization could risk mixing unrelated work.
