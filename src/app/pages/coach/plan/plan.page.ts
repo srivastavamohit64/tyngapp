@@ -318,7 +318,7 @@ function buildDates() {
             <div *ngIf="selectedVenue" class="mt-5">
               <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-3">Select Facility</p>
               <div class="grid grid-cols-1 gap-2">
-                <button *ngFor="let court of selectedVenue.courts" type="button" (click)="chooseCourt(court)" class="rounded-2xl px-4 py-3 text-left border-none bg-white shadow-sm"
+                <button *ngFor="let court of availableCourts()" type="button" (click)="chooseCourt(court)" class="rounded-2xl px-4 py-3 text-left border-none bg-white shadow-sm"
                   [style.border]="selectedCourtId === court.id ? '2px solid var(--app-primary)' : '2px solid #F3F4F6'">
                   <div class="flex items-center justify-between gap-3">
                     <div><p class="text-[13px] font-black text-[#111827] m-0">{{ court.name }}</p><p class="text-[11px] text-[#9CA3AF] m-0">{{ court.sport }}<span *ngIf="court.maxPlayers"> · Up to {{ court.maxPlayers }} players</span></p></div>
@@ -1194,6 +1194,11 @@ export class CoachPlanPage implements OnInit {
   availableVenues(): Venue[] {
     if (!this.sport) return this.venueOptions;
     return this.venueOptions.filter(venue => venue.courts.some(court => this.courtSupportsSelectedSport(court)));
+  }
+
+  availableCourts(): VenueCourt[] {
+    if (!this.selectedVenue || !this.sport) return [];
+    return this.selectedVenue.courts.filter(court => this.courtSupportsSelectedSport(court));
   }
 
   getGst(): number {

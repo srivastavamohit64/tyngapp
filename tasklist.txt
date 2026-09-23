@@ -161,3 +161,4 @@ TYNG — TODAY'S WORK SUMMARY
 26. COACH SESSION SETUP NAVIGATION — 24 September 2026
    - Coaches can now tap any progress dot to jump directly to that step in session setup.
    - The chosen sport now filters venues and courts to compatible facilities, preventing an invalid court selection at review.
+   - Venue selection now displays only courts that support the chosen sport.

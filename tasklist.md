@@ -183,3 +183,8 @@
 - Kept the publish action protected by final server-side validation.
 - Prevented incompatible venues/courts from being selected for the chosen sport, and reset the court selection when the coach changes to an unsupported sport. This addresses the validation message visible on the Review step.
 - TypeScript check passes.
+
+## Completed: Sport-specific venue facilities — 24 September 2026
+
+- The venue list and the selected venue's facility list now both show only facilities that support the sport chosen in step 1.
+- This prevents unrelated facilities (for example, tennis courts in a cricket session) from appearing in venue selection.
