@@ -96,6 +96,10 @@ export class CoachService {
     return this.api.get(`/coach/booking-requests?status=${encodeURIComponent(status)}`);
   }
 
+  respondToCoachBookingRequest(id: number, status: 'accepted' | 'declined'): Observable<ApiResponse<any>> {
+    return this.api.post(`/coach/booking-requests/${id}/respond`, { status });
+  }
+
   getSessionBatches(): Observable<ApiResponse<any[]>> {
     return this.api.get<any[]>('/coach/session-batches');
   }

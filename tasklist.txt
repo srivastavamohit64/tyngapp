@@ -162,3 +162,7 @@ TYNG — TODAY'S WORK SUMMARY
    - Coaches can now tap any progress dot to jump directly to that step in session setup.
    - The chosen sport now filters venues and courts to compatible facilities, preventing an invalid court selection at review.
    - Venue selection now displays only courts that support the chosen sport.
+
+27. RESPONDING TO PLAYER SESSION REQUESTS — 24 September 2026
+   - Coaches can accept or decline a player's session request from the request card.
+   - Accepted players are added to the coach's student list, and the player receives an update to coordinate a session time with the coach.

@@ -188,3 +188,9 @@
 
 - The venue list and the selected venue's facility list now both show only facilities that support the sport chosen in step 1.
 - This prevents unrelated facilities (for example, tennis courts in a cricket session) from appearing in venue selection.
+
+## Completed: Coach response to player session requests — 24 September 2026
+
+- Added Accept and Decline actions to pending player booking requests.
+- Added a coach-owned response endpoint with pending-state locking, duplicate-response protection, and player notification.
+- Accepting adds the player to the coach's active student list; the player is told to message the coach to confirm a date and time because the original request does not reserve a time slot.

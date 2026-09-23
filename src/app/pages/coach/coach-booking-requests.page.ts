@@ -34,6 +34,7 @@ type RequestFilter = 'pending' | 'all';
           </div>
 
           <div *ngIf="error()" class="notice error-notice" role="alert">{{ error() }}</div>
+          <div *ngIf="successMessage()" class="notice success-notice" role="status">{{ successMessage() }}</div>
           <div *ngIf="loading() && requests().length === 0" class="loading-state">
             <ion-spinner name="crescent"></ion-spinner><span>Loading booking requests…</span>
           </div>
@@ -53,7 +54,7 @@ type RequestFilter = 'pending' | 'all';
                   <p *ngIf="request.player?.username" class="username">@{{ request.player.username }}</p>
                   <p class="request-date">{{ request.created_at | date:'d MMM y, h:mm a' }}</p>
                 </div>
-                <span class="status-pill" [class.pending]="request.status === 'pending'">{{ request.status || 'pending' }}</span>
+                <span class="status-pill" [class.pending]="request.status === 'pending'" [class.accepted]="request.status === 'accepted'" [class.declined]="request.status === 'declined'">{{ request.status || 'pending' }}</span>
               </div>
 
               <div class="request-meta">
@@ -65,7 +66,20 @@ type RequestFilter = 'pending' | 'all';
 
               <p *ngIf="request.message" class="request-message">“{{ request.message }}”</p>
 
-              <button type="button" class="chat-button" [disabled]="openingChat() === request.player_id" (click)="openChat(request)">
+              <div *ngIf="request.status === 'pending'" class="response-actions">
+                <button type="button" class="accept-button" [disabled]="respondingId() === request.id" (click)="respond(request, 'accepted')">
+                  <ion-spinner *ngIf="respondingId() === request.id && respondingStatus() === 'accepted'" name="crescent"></ion-spinner>
+                  <ion-icon *ngIf="respondingId() !== request.id || respondingStatus() !== 'accepted'" name="checkmark-circle-outline"></ion-icon>
+                  <span>{{ respondingId() === request.id && respondingStatus() === 'accepted' ? 'Accepting…' : 'Accept request' }}</span>
+                </button>
+                <button type="button" class="decline-button" [disabled]="respondingId() === request.id" (click)="respond(request, 'declined')">
+                  <ion-spinner *ngIf="respondingId() === request.id && respondingStatus() === 'declined'" name="crescent"></ion-spinner>
+                  <ion-icon *ngIf="respondingId() !== request.id || respondingStatus() !== 'declined'" name="close-circle-outline"></ion-icon>
+                  <span>{{ respondingId() === request.id && respondingStatus() === 'declined' ? 'Declining…' : 'Decline' }}</span>
+                </button>
+              </div>
+
+              <button type="button" class="chat-button" [disabled]="openingChat() === request.player_id || respondingId() === request.id" (click)="openChat(request)">
                 <ion-spinner *ngIf="openingChat() === request.player_id" name="crescent"></ion-spinner>
                 <ion-icon *ngIf="openingChat() !== request.player_id" name="chatbubble-ellipses-outline"></ion-icon>
                 <span>{{ openingChat() === request.player_id ? 'Opening chat…' : 'Message player' }}</span>
@@ -95,10 +109,18 @@ type RequestFilter = 'pending' | 'all';
     .username,.request-date { margin:3px 0 0; color:#8a94a6; font-size:11px; }
     .status-pill { flex:0 0 auto; padding:5px 8px; border-radius:20px; background:#f1f3f6; color:#667085; font-size:10px; font-weight:800; text-transform:capitalize; }
     .status-pill.pending { background:#fff5dc; color:#ad6b00; }
+    .status-pill.accepted { background:#ecfdf3; color:#16803c; }
+    .status-pill.declined { background:#fff1f0; color:#b42318; }
     .request-meta { display:flex; flex-wrap:wrap; gap:7px; margin-top:14px; }
     .meta-chip { display:inline-flex; align-items:center; gap:5px; min-height:27px; padding:4px 8px; border-radius:9px; background:#f7f9fc; color:#5f6b7e; font-size:10px; }
     .meta-chip ion-icon { color:#16a34a; font-size:14px; }
     .request-message { margin:12px 0 0; padding:10px 12px; border-left:3px solid #a3e635; border-radius:0 10px 10px 0; background:#f8fbea; color:#536071; font-size:12px; line-height:1.5; overflow-wrap:anywhere; }
+    .response-actions { display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-top:13px; }
+    .response-actions button { display:flex; align-items:center; justify-content:center; gap:7px; min-height:42px; border:0; border-radius:12px; font-size:12px; font-weight:800; }
+    .response-actions button:disabled { opacity:.6; }
+    .response-actions ion-icon { font-size:17px; }
+    .accept-button { background:#73d900; color:#14210a; }
+    .decline-button { background:#f2f4f7; color:#596579; }
     .chat-button { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; min-height:42px; margin-top:14px; border:0; border-radius:13px; background:#73d900; color:#14210a; font-size:13px; font-weight:800; }
     .chat-button:disabled { opacity:.65; }
     .chat-button ion-icon { font-size:17px; }
@@ -108,6 +130,7 @@ type RequestFilter = 'pending' | 'all';
     .empty-state p { max-width:290px; margin:0; font-size:12px; line-height:1.5; }
     .notice { max-width:720px; margin:0 auto 12px; padding:10px 12px; border-radius:12px; font-size:12px; }
     .error-notice { background:#fff1f0; color:#b42318; }
+    .success-notice { background:#ecfdf3; color:#16803c; }
     @media (min-width:700px) { .booking-requests-page { padding:28px 28px 120px; } .page-heading h1 { font-size:27px; } }
   `],
 })
@@ -118,8 +141,11 @@ export class CoachBookingRequestsPage implements OnInit {
   readonly requests = signal<any[]>([]);
   readonly loading = signal(false);
   readonly error = signal('');
+  readonly successMessage = signal('');
   readonly filter = signal<RequestFilter>('pending');
   readonly openingChat = signal<number | null>(null);
+  readonly respondingId = signal<number | null>(null);
+  readonly respondingStatus = signal<'accepted' | 'declined' | null>(null);
 
   ngOnInit(): void { this.load(); }
 
@@ -140,6 +166,34 @@ export class CoachBookingRequestsPage implements OnInit {
       error: () => {
         this.error.set('Could not load booking requests. Please try again.');
         this.loading.set(false);
+      },
+    });
+  }
+
+  respond(request: any, status: 'accepted' | 'declined'): void {
+    const requestId = Number(request.id);
+    if (!requestId || this.respondingId() !== null) return;
+    this.error.set('');
+    this.successMessage.set('');
+    this.respondingId.set(requestId);
+    this.respondingStatus.set(status);
+    this.coach.respondToCoachBookingRequest(requestId, status).subscribe({
+      next: response => {
+        this.respondingId.set(null);
+        this.respondingStatus.set(null);
+        if (!response.success) {
+          this.error.set(response.message || 'Could not update this request. Please try again.');
+          return;
+        }
+        this.successMessage.set(status === 'accepted'
+          ? 'Request accepted. The player is now in your students list; message them to confirm a date and time.'
+          : 'Request declined. The player has been notified.');
+        this.load();
+      },
+      error: error => {
+        this.respondingId.set(null);
+        this.respondingStatus.set(null);
+        this.error.set(error?.error?.message || 'Could not update this request. Please try again.');
       },
     });
   }
