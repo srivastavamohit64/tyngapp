@@ -78,7 +78,7 @@ const PICKER_MAP_STYLES: google.maps.MapTypeStyle[] = [
         width: 100%;
         height: 100%;
         min-height: inherit;
-        background: #e8eef5;
+        background: var(--app-surface-subtle);
         overflow: hidden;
       }
 
@@ -109,12 +109,12 @@ const PICKER_MAP_STYLES: google.maps.MapTypeStyle[] = [
         width: 30px;
         height: 30px;
         background: #e11d48;
-        border: 2.5px solid #ffffff;
+        border: 2.5px solid var(--app-surface);
         border-radius: 50% 50% 50% 0;
         transform: rotate(-45deg);
-        box-shadow: 0 6px 14px rgba(17, 24, 39, 0.28);
+        box-shadow: var(--app-shadow-float);
         transform-origin: center center;
-        transition: transform 0.18s ease;
+        transition: transform var(--app-motion-base) var(--app-motion-ease);
       }
 
       .pin-dot {
@@ -125,7 +125,7 @@ const PICKER_MAP_STYLES: google.maps.MapTypeStyle[] = [
         height: 9px;
         margin: -4.5px 0 0 -4.5px;
         border-radius: 50%;
-        background: #ffffff;
+        background: var(--app-surface);
         transform: rotate(45deg);
       }
 
@@ -143,7 +143,7 @@ const PICKER_MAP_STYLES: google.maps.MapTypeStyle[] = [
         margin-top: 8px;
         border-radius: 50%;
         background: rgba(17, 24, 39, 0.3);
-        transition: transform 0.18s ease, opacity 0.18s ease;
+        transition: transform var(--app-motion-base) var(--app-motion-ease), opacity var(--app-motion-base) ease;
       }
 
       .center-pin.is-moving .pin-shadow {

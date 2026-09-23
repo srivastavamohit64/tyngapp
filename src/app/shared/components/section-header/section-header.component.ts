@@ -21,14 +21,14 @@ import { IonicModule } from '@ionic/angular';
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-bottom: 16px;
+        margin-bottom: 14px;
       }
 
       h3 {
         margin: 0;
         font-size: 20px;
         font-weight: 500;
-        color: #111827;
+        color: var(--app-foreground);
         line-height: 1.3;
       }
 
@@ -44,7 +44,7 @@ import { IonicModule } from '@ionic/angular';
         align-items: center;
         gap: 2px;
         background: transparent;
-        color: var(--app-primary);
+        color: var(--app-primary-ink);
         font-size: 14px;
         font-weight: 500;
         min-height: unset;

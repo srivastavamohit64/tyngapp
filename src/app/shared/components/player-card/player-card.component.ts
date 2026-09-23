@@ -7,7 +7,7 @@ import { Player } from '../../models/app.models';
   standalone: true,
   imports: [IonicModule],
   template: `
-    <article class="rounded-[20px] border border-white/10 bg-card p-4">
+    <article class="rounded-[20px] border border-border bg-card p-4 text-foreground shadow-soft">
       <div class="flex gap-4">
         <div class="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-gradient-to-br from-primary to-secondary text-3xl">
           {{ player?.avatar }}
@@ -15,12 +15,12 @@ import { Player } from '../../models/app.models';
         <div class="min-w-0 flex-1">
           <div class="mb-2 flex items-start justify-between gap-2">
             <div>
-              <h3 class="font-semibold text-white">{{ player?.name }}</h3>
-              <p class="text-sm text-slate-400">{{ player?.sport }}</p>
+              <h3 class="font-semibold text-foreground">{{ player?.name }}</h3>
+              <p class="text-sm text-foreground-secondary">{{ player?.sport }}</p>
             </div>
             <span class="rounded-lg bg-accent/20 px-2 py-1 text-sm text-accent">★ {{ player?.rating }}</span>
           </div>
-          <div class="mb-3 flex flex-wrap gap-3 text-sm text-slate-400">
+          <div class="mb-3 flex flex-wrap gap-3 text-sm text-foreground-secondary">
             <span>{{ player?.skill }}</span>
             <span>{{ player?.distance }}</span>
             <span>{{ player?.gamesPlayed }} games</span>

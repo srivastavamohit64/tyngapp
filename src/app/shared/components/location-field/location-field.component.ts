@@ -152,11 +152,11 @@ type GpsRead = { center: NativeMapCoordinate } | { error: unknown };
       .field {
         display: block;
         position: relative;
-        background: #f9fafb;
-        border: 2px solid #f3f4f6;
-        border-radius: 16px;
+        background: var(--app-input);
+        border: 1.5px solid var(--app-border-subtle);
+        border-radius: var(--app-radius-input);
         padding: 14px 16px;
-        transition: border-color 0.15s ease, background 0.15s ease, padding 0.15s ease;
+        transition: border-color var(--app-motion-fast) ease, background var(--app-motion-fast) ease, box-shadow var(--app-motion-fast) ease, padding var(--app-motion-fast) ease;
         cursor: text;
       }
 
@@ -165,8 +165,9 @@ type GpsRead = { center: NativeMapCoordinate } | { error: unknown };
       }
 
       .field.focused {
-        background: #ffffff;
+        background: var(--app-surface);
         border-color: var(--app-primary);
+        box-shadow: var(--app-focus-ring);
       }
 
       .field.disabled {
@@ -178,7 +179,7 @@ type GpsRead = { center: NativeMapCoordinate } | { error: unknown };
         display: block;
         font-size: 15px;
         font-weight: 500;
-        color: #9ca3af;
+        color: var(--app-foreground-muted);
         line-height: 1.2;
         pointer-events: none;
         transition: font-size 0.15s ease, color 0.15s ease, margin 0.15s ease;
@@ -188,14 +189,14 @@ type GpsRead = { center: NativeMapCoordinate } | { error: unknown };
       .field.floating .float-label {
         font-size: 11px;
         font-weight: 600;
-        color: #9ca3af;
+        color: var(--app-foreground-muted);
         text-transform: uppercase;
         letter-spacing: 0.04em;
         margin-bottom: 4px;
       }
 
       .field.focused.floating .float-label {
-        color: var(--app-primary);
+        color: var(--app-primary-ink);
       }
 
       .field-row {
@@ -218,12 +219,12 @@ type GpsRead = { center: NativeMapCoordinate } | { error: unknown };
 
       .field-icon {
         font-size: 17px;
-        color: #9ca3af;
+        color: var(--app-foreground-muted);
         flex-shrink: 0;
       }
 
       .field.focused .field-icon {
-        color: var(--app-primary);
+        color: var(--app-primary-ink);
       }
 
       input {
@@ -235,7 +236,7 @@ type GpsRead = { center: NativeMapCoordinate } | { error: unknown };
         outline: none;
         font-size: 15px;
         font-weight: 500;
-        color: #111827;
+        color: var(--app-foreground);
         padding: 0;
         margin: 0;
         min-height: 22px;
@@ -244,7 +245,7 @@ type GpsRead = { center: NativeMapCoordinate } | { error: unknown };
       }
 
       input::placeholder {
-        color: #c4c9d4;
+        color: var(--app-foreground-muted);
         font-weight: 500;
       }
 
@@ -258,7 +259,7 @@ type GpsRead = { center: NativeMapCoordinate } | { error: unknown };
         padding: 0;
         font-size: 13px;
         font-weight: 700;
-        color: #2563eb;
+        color: var(--app-primary-ink);
         cursor: pointer;
       }
 
@@ -269,11 +270,11 @@ type GpsRead = { center: NativeMapCoordinate } | { error: unknown };
       .maps-hint {
         margin: 0;
         font-size: 12px;
-        color: #9ca3af;
+        color: var(--app-foreground-muted);
       }
 
       .map-modal-content {
-        --background: #fafbfc;
+        --background: var(--app-background);
       }
 
       .map-stage {
@@ -281,7 +282,7 @@ type GpsRead = { center: NativeMapCoordinate } | { error: unknown };
         width: 100%;
         height: 55vh;
         min-height: 280px;
-        background: #e8eef5;
+        background: var(--app-surface-subtle);
       }
 
       .map-overlay {
@@ -290,8 +291,8 @@ type GpsRead = { center: NativeMapCoordinate } | { error: unknown };
         display: flex;
         align-items: center;
         justify-content: center;
-        background: #e8eef5;
-        color: #6b7280;
+        background: var(--app-surface-subtle);
+        color: var(--app-foreground-secondary);
         font-size: 14px;
         font-weight: 600;
         z-index: 2;
@@ -306,12 +307,12 @@ type GpsRead = { center: NativeMapCoordinate } | { error: unknown };
         height: 44px;
         border: none;
         border-radius: 50%;
-        background: #ffffff;
-        color: #111827;
+        background: var(--app-surface);
+        color: var(--app-foreground);
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 4px 14px rgba(17, 24, 39, 0.18);
+        box-shadow: var(--app-shadow-float);
         cursor: pointer;
       }
 
@@ -335,7 +336,7 @@ type GpsRead = { center: NativeMapCoordinate } | { error: unknown };
         margin: 0;
         font-size: 14px;
         font-weight: 600;
-        color: #111827;
+        color: var(--app-foreground);
         line-height: 1.4;
       }
 
@@ -343,31 +344,37 @@ type GpsRead = { center: NativeMapCoordinate } | { error: unknown };
       .map-status {
         margin: 0;
         font-size: 13px;
-        color: #6b7280;
+        color: var(--app-foreground-secondary);
       }
 
       .map-error {
         margin: 0;
         font-size: 13px;
-        color: #dc2626;
+        color: #b42318;
       }
 
       .confirm-btn {
         width: 100%;
         border: none;
-        border-radius: 999px;
+        border-radius: var(--app-radius-button);
         padding: 14px 20px;
         background: var(--app-primary);
-        color: #111827;
+        color: var(--app-foreground);
         font-size: 15px;
         font-weight: 800;
         cursor: pointer;
-        box-shadow: 0 4px 14px rgba(var(--app-primary-rgb), 0.35);
+        box-shadow: 0 6px 18px rgba(var(--app-primary-rgb), 0.28);
+        transition: transform var(--app-motion-fast) var(--app-motion-ease), box-shadow var(--app-motion-fast) ease;
       }
 
       .confirm-btn:disabled {
         opacity: 0.5;
         cursor: not-allowed;
+      }
+
+      .confirm-btn:active:not(:disabled) {
+        transform: translateY(1px) scale(0.99);
+        box-shadow: 0 2px 8px rgba(var(--app-primary-rgb), 0.24);
       }
     `,
   ],

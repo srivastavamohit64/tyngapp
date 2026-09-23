@@ -6,17 +6,19 @@
 
 .event-card {
   width: 100%;
-  border-radius: 20px;
+  border-radius: var(--app-radius-card);
   border: 1px solid var(--app-border) !important;
   background-color: var(--app-card);
   padding: 16px;
   text-align: left;
   color: var(--app-foreground);
-  transition: all 0.2s ease-in-out;
+  box-shadow: var(--app-shadow-xs);
+  transition: transform var(--app-motion-fast) var(--app-motion-ease), box-shadow var(--app-motion-base) ease;
   cursor: pointer;
 
   &:active {
-    transform: scale(0.98);
+    transform: translateY(1px) scale(0.99);
+    box-shadow: none;
   }
 }
 
@@ -39,10 +41,10 @@
 
 .status-badge {
   border-radius: 9999px;
-  background-color: rgba(56, 189, 248, 0.2);
+  background-color: var(--app-info-surface);
   padding: 2px 8px;
   font-size: 12px;
-  color: #38bdf8;
+  color: #0369a1;
 }
 
 .event-time {
@@ -56,10 +58,10 @@
   align-items: center;
   gap: 4px;
   border-radius: 9999px;
-  background-color: rgba(255, 122, 0, 0.2);
+  background-color: var(--app-warning-surface);
   padding: 4px 12px;
   font-size: 14px;
-  color: #ff7a00;
+  color: var(--app-secondary-ink);
   white-space: nowrap;
 }
 

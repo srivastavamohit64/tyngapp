@@ -14,10 +14,13 @@ import { ForegroundNotificationService } from '../../../core/services/foreground
       role="status"
       aria-live="polite"
     >
-      <button
-        type="button"
+      <div
         class="fg-notif-card"
+        role="button"
+        tabindex="0"
         (click)="fg.onBannerTap()"
+        (keydown.enter)="$event.target === $event.currentTarget && fg.onBannerTap()"
+        (keydown.space)="$event.preventDefault(); $event.target === $event.currentTarget && fg.onBannerTap()"
       >
         <div class="fg-notif-accent"></div>
         <div class="fg-notif-icon" aria-hidden="true">
@@ -38,7 +41,7 @@ import { ForegroundNotificationService } from '../../../core/services/foreground
         >
           <ion-icon name="close-outline"></ion-icon>
         </button>
-      </button>
+      </div>
     </div>
   `,
   styles: [
@@ -61,10 +64,11 @@ import { ForegroundNotificationService } from '../../../core/services/foreground
         gap: 12px;
         position: relative;
         text-align: left;
-        border: 1.5px solid rgba(255, 122, 0, 0.22);
-        border-radius: 18px;
+        border: 1.5px solid rgba(var(--app-secondary-rgb), 0.24);
+        border-radius: var(--app-radius-md);
         background: #fffcf8;
-        box-shadow: 0 10px 36px rgba(17, 24, 39, 0.16);
+        background: color-mix(in srgb, var(--app-surface) 92%, #fff6ed);
+        box-shadow: var(--app-shadow-float);
         padding: 14px 40px 14px 14px;
         cursor: pointer;
         -webkit-tap-highlight-color: transparent;
@@ -76,15 +80,15 @@ import { ForegroundNotificationService } from '../../../core/services/foreground
         top: 0;
         bottom: 0;
         width: 3px;
-        border-radius: 18px 0 0 18px;
-        background: #ff7a00;
+        border-radius: var(--app-radius-md) 0 0 var(--app-radius-md);
+        background: var(--app-secondary);
       }
 
       .fg-notif-icon {
         width: 44px;
         height: 44px;
-        border-radius: 14px;
-        background: #f3f4f6;
+        border-radius: var(--app-radius-input);
+        background: var(--app-muted);
         display: grid;
         place-items: center;
         flex-shrink: 0;
@@ -106,14 +110,14 @@ import { ForegroundNotificationService } from '../../../core/services/foreground
       .fg-notif-title {
         font-size: 14px;
         font-weight: 800;
-        color: #111827;
+        color: var(--app-foreground);
         line-height: 1.25;
       }
 
       .fg-notif-time {
         font-size: 10px;
         font-weight: 700;
-        color: #9ca3af;
+        color: var(--app-foreground-muted);
         flex-shrink: 0;
         padding-top: 2px;
       }
@@ -122,7 +126,7 @@ import { ForegroundNotificationService } from '../../../core/services/foreground
         margin-top: 4px;
         font-size: 12px;
         font-weight: 500;
-        color: #6b7280;
+        color: var(--app-foreground-secondary);
         line-height: 1.4;
         display: -webkit-box;
         -webkit-line-clamp: 2;
@@ -139,7 +143,7 @@ import { ForegroundNotificationService } from '../../../core/services/foreground
         border: none;
         border-radius: 999px;
         background: transparent;
-        color: #9ca3af;
+        color: var(--app-foreground-muted);
         display: grid;
         place-items: center;
         font-size: 18px;

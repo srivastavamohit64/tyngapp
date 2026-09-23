@@ -194,3 +194,12 @@
 - Added Accept and Decline actions to pending player booking requests.
 - Added a coach-owned response endpoint with pending-state locking, duplicate-response protection, and player notification.
 - Accepting adds the player to the coach's active student list; the player is told to message the coach to confirm a date and time because the original request does not reserve a time slot.
+
+## Completed: Application-wide mobile UI quality refinement â€” 24 September 2026
+
+- Completed a source-based audit of every routed Player, Coach, Venue, Admin, authentication, onboarding, profile, booking, finance, map and chat screen. Findings and priorities are recorded in `UI_UX_AUDIT.md`.
+- Added a semantic visual foundation for consistent surfaces, borders, elevation, responsive control heights, readable brand text, focus rings and reduced-motion support.
+- Polished shared headers, tab chrome, cards, primary/secondary actions, form controls, search, filters, segments, badges, skeletons, empty states, notification banners, map controls, booking cards and venue cards.
+- Added graceful image fallbacks for reusable venue cards, avatars and image carousels so absent media does not render as a broken browser image.
+- Preserved all routes, navigation, page layouts, data bindings, service calls and business workflows; this pass changes presentation and interaction feedback only.
+- `npx ngc -p tsconfig.app.json` and `npm run build` pass. The build retains pre-existing Sass import deprecation, optional-chain advisory and style-budget warnings. A connected-browser/device visual regression pass remains the recommended release check because no in-app browser was available in this workspace.

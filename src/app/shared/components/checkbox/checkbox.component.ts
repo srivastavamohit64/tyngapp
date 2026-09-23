@@ -52,30 +52,31 @@ import { IonicModule } from '@ionic/angular';
         width: 20px;
         height: 20px;
         min-width: 20px;
-        border-radius: 6px;
-        border: 2px solid #d1d5db;
-        background: #ffffff;
+        border-radius: var(--app-radius-xs);
+        border: 2px solid var(--app-border-strong);
+        background: var(--app-surface);
         display: grid;
         place-items: center;
         margin-top: 2px;
-        transition: background 0.15s ease, border-color 0.15s ease;
+        transition: background var(--app-motion-fast) ease, border-color var(--app-motion-fast) ease, box-shadow var(--app-motion-fast) ease;
       }
 
       .box.on {
         background: var(--app-primary);
         border-color: var(--app-primary);
+        box-shadow: 0 2px 7px rgba(var(--app-primary-rgb), 0.28);
       }
 
       .tick {
         font-size: 12px;
-        color: #111827;
+        color: var(--app-foreground);
         font-weight: 900;
       }
 
       .label {
         flex: 1;
         font-size: 12.5px;
-        color: #6b7280;
+        color: var(--app-foreground-secondary);
         line-height: 1.5;
       }
     `,

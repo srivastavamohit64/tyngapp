@@ -27,13 +27,14 @@ import { IonicModule } from '@ionic/angular';
       .skel-list { display: flex; flex-direction: column; gap: 10px; }
       .skel-row {
         display: flex; align-items: center; gap: 12px;
-        padding: 12px; border-radius: 18px;
-        background: #fff; border: 1px solid #eef0f3;
+        padding: 12px; border-radius: var(--app-radius-md);
+        background: var(--app-surface); border: 1px solid var(--app-border-subtle);
+        box-shadow: var(--app-shadow-xs);
       }
       .skel-avatar {
         flex-shrink: 0; margin: 0;
         width: var(--w, 40px); height: var(--h, 40px);
-        border-radius: 14px;
+        border-radius: var(--app-radius-input);
       }
       .skel-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
       .skel-line { height: 12px; border-radius: 999px; margin: 0; }

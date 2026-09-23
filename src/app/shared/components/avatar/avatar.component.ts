@@ -7,7 +7,7 @@ import { Component, Input } from '@angular/core';
   imports: [CommonModule],
   template: `
     <div class="avatar" [style.width.px]="size" [style.height.px]="size" [style.font-size.px]="size * 0.42">
-      <img *ngIf="src" [src]="src" [alt]="alt" />
+      <img *ngIf="src" [src]="src" [alt]="alt" (error)="src = ''" />
       <span *ngIf="!src">{{ emoji || initials || '👤' }}</span>
     </div>
   `,
@@ -16,11 +16,12 @@ import { Component, Input } from '@angular/core';
       .avatar {
         border-radius: 50%;
         overflow: hidden;
-        background: #f3f4f6;
+        background: var(--app-muted);
+        border: 1px solid var(--app-border-subtle);
         display: grid;
         place-items: center;
         flex-shrink: 0;
-        color: #111827;
+        color: var(--app-foreground);
         font-weight: 700;
       }
 

@@ -92,10 +92,11 @@ export type AppHeaderVariant = 'brand' | 'page' | 'venue';
         position: sticky;
         top: 0;
         z-index: 40;
-        background: rgba(255, 255, 255, 0.97);
+        background: var(--app-surface);
+        background: color-mix(in srgb, var(--app-surface) 96%, transparent);
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
-        border-bottom: 1px solid #f3f4f6;
+        border-bottom: 1px solid var(--app-border-subtle);
         /* Inset as padding — keeps .app-header-inner height consistent */
         padding-top: var(--safe-area-top);
       }
@@ -121,14 +122,15 @@ export type AppHeaderVariant = 'brand' | 'page' | 'venue';
         display: grid;
         place-items: center;
         background: transparent;
-        color: #111827;
+        color: var(--app-foreground);
         padding: 0;
         margin: 0;
         flex-shrink: 0;
       }
 
       .hdr-btn:active {
-        transform: scale(0.88);
+        background: var(--app-muted);
+        transform: scale(0.92);
       }
 
       .hamburger {
@@ -143,7 +145,7 @@ export type AppHeaderVariant = 'brand' | 'page' | 'venue';
       .bar {
         display: block;
         height: 2.5px;
-        background: #111827;
+        background: var(--app-foreground);
         border-radius: 999px;
       }
 
@@ -168,7 +170,7 @@ export type AppHeaderVariant = 'brand' | 'page' | 'venue';
         font-size: 22px;
         font-weight: 900;
         letter-spacing: -0.04em;
-        color: #111827;
+        color: var(--app-foreground);
         background: transparent;
         min-height: unset;
         padding: 0;
@@ -185,7 +187,7 @@ export type AppHeaderVariant = 'brand' | 'page' | 'venue';
 
       .bell-icon {
         font-size: 21px;
-        color: #111827;
+        color: var(--app-foreground);
       }
 
       .badge-dot {
@@ -194,14 +196,14 @@ export type AppHeaderVariant = 'brand' | 'page' | 'venue';
         right: 10px;
         width: 8px;
         height: 8px;
-        background: #ff7a00;
+        background: var(--app-secondary);
         border-radius: 50%;
-        border: 1.5px solid #ffffff;
+        border: 1.5px solid var(--app-surface);
       }
 
       .back-icon {
         font-size: 24px;
-        color: #111827;
+        color: var(--app-foreground);
       }
 
       .title-block {
@@ -230,7 +232,7 @@ export type AppHeaderVariant = 'brand' | 'page' | 'venue';
         margin: 2px 0 0;
         font-size: 12px;
         font-weight: 500;
-        color: #9ca3af;
+        color: var(--app-foreground-muted);
         line-height: 1;
       }
 

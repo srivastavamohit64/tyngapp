@@ -5,6 +5,8 @@
   --color-background: var(--app-background);
   --color-card: var(--app-card);
   --color-foreground: var(--app-foreground);
+  --color-foreground-secondary: var(--app-foreground-secondary);
+  --color-foreground-muted: var(--app-foreground-muted);
   --color-muted: var(--app-muted);
   --color-border: var(--app-border);
   --color-primary: var(--app-primary);
@@ -38,6 +40,7 @@ ion-app {
   line-height: 1.45;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 /* One mobile typography baseline for Player, Coach, Venue and Admin views. */
@@ -55,6 +58,8 @@ ion-select {
 button,
 ion-button {
   letter-spacing: inherit;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 ion-content {
@@ -336,6 +341,51 @@ button {
   box-sizing: border-box;
 }
 
+/* Reusable, opt-in building blocks for pages still using inline component styles. */
+.app-surface-card {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border-subtle);
+  border-radius: var(--app-radius-card);
+  box-shadow: var(--app-shadow-card);
+}
+
+.app-list-row {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border-subtle);
+  border-radius: var(--app-radius-md);
+  box-shadow: var(--app-shadow-xs);
+}
+
+.app-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border-radius: var(--app-radius-md);
+  padding: 12px 14px;
+  border: 1px solid transparent;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.app-notice--error {
+  color: #b42318;
+  background: var(--app-error-surface);
+  border-color: rgba(239, 68, 68, 0.24);
+}
+
+.app-notice--warning {
+  color: var(--app-secondary-ink);
+  background: var(--app-warning-surface);
+  border-color: rgba(var(--app-secondary-rgb), 0.25);
+}
+
+.app-notice--success {
+  color: var(--app-primary-ink);
+  background: var(--app-success-surface);
+  border-color: rgba(var(--app-primary-rgb), 0.34);
+}
+
 /* Horizontal pill buttons — prevent label clipping in scroll rows */
 .scroll-pills button,
 button.action-pill {
@@ -372,10 +422,39 @@ ion-input,
   border-radius: var(--app-radius-input);
 }
 
-button:focus,
-button:active,
-.button-native:focus {
-  outline: none !important;
+/* Do not hide the focus indicator. It is intentionally visible only for
+   keyboard/switch navigation, so ordinary mobile taps retain the existing look. */
+button:focus:not(:focus-visible),
+.button-native:focus:not(:focus-visible),
+a:focus:not(:focus-visible) {
+  outline: none;
+}
+
+button:focus-visible,
+.button-native:focus-visible,
+a:focus-visible,
+[role='button']:focus-visible {
+  outline: 3px solid rgba(var(--app-primary-rgb), 0.72) !important;
+  outline-offset: 3px;
+}
+
+ion-button::part(native):focus-visible {
+  outline: 3px solid rgba(var(--app-primary-rgb), 0.72);
+  outline-offset: 3px;
+}
+
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid rgba(var(--app-primary-rgb), 0.72) !important;
+  outline-offset: 2px;
+}
+
+button:disabled,
+input:disabled,
+textarea:disabled,
+select:disabled {
+  cursor: not-allowed;
 }
 
 .border,
@@ -429,8 +508,43 @@ body > .tyng-drawer-root .tyng-drawer {
 
 .pac-container {
   z-index: 100000 !important;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  border-radius: var(--app-radius-sm);
+  border: 1px solid var(--app-border);
+  box-shadow: var(--app-shadow-float);
   font-family: Lato, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* Keep platform surfaces aligned with the card system without imposing layout. */
+ion-card {
+  --background: var(--app-surface);
+  --color: var(--app-foreground);
+  border: 1px solid var(--app-border-subtle);
+  border-radius: var(--app-radius-card);
+  box-shadow: var(--app-shadow-card);
+  overflow: hidden;
+}
+
+ion-modal {
+  --backdrop-opacity: 0.42;
+}
+
+ion-modal::part(content) {
+  border-radius: var(--app-radius-lg) var(--app-radius-lg) 0 0;
+  box-shadow: var(--app-shadow-float);
+}
+
+ion-skeleton-text {
+  --background: var(--app-border-subtle);
+  --background-rgb: 237, 240, 244;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
+  }
 }

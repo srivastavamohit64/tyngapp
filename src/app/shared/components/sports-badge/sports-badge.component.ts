@@ -6,11 +6,28 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <span class="inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+    <span class="sport-badge">
       <span *ngIf="emoji">{{ emoji }}</span>
       {{ label }}
     </span>
   `,
+  styles: [
+    `
+      .sport-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        border: 1px solid rgba(var(--app-primary-rgb), .34);
+        border-radius: 999px;
+        padding: 5px 10px;
+        background: rgba(var(--app-primary-rgb), .12);
+        color: var(--app-primary-ink);
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1.2;
+      }
+    `,
+  ],
 })
 export class SportsBadgeComponent {
   @Input() label = '';

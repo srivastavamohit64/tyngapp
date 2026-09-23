@@ -35,9 +35,9 @@ export interface SegmentOption {
       .segment-track {
         position: relative;
         display: flex;
-        background: #f3f4f6;
+        background: var(--app-muted);
         padding: 4px;
-        border-radius: 16px;
+        border-radius: var(--app-radius-md);
       }
 
       .segment-pill {
@@ -46,10 +46,10 @@ export interface SegmentOption {
         bottom: 4px;
         left: 4px;
         width: calc(50% - 4px);
-        background: #ffffff;
-        border-radius: 12px;
-        box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
-        transition: transform 0.25s cubic-bezier(0.34, 1.2, 0.64, 1);
+        background: var(--app-surface);
+        border-radius: var(--app-radius-sm);
+        box-shadow: var(--app-shadow-sm);
+        transition: transform var(--app-motion-slow) var(--app-motion-ease);
         pointer-events: none;
       }
 
@@ -62,13 +62,13 @@ export interface SegmentOption {
         border: none;
         font-size: 14px;
         font-weight: 700;
-        color: #9ca3af;
+        color: var(--app-foreground-muted);
         min-height: unset;
-        transition: color 0.2s ease;
+        transition: color var(--app-motion-base) ease;
       }
 
       .segment-btn.active {
-        color: #111827;
+        color: var(--app-foreground);
       }
 
       .seg-count {
@@ -77,13 +77,13 @@ export interface SegmentOption {
         font-weight: 900;
         padding: 2px 6px;
         border-radius: 999px;
-        background: #e5e7eb;
-        color: #9ca3af;
+        background: var(--app-border);
+        color: var(--app-foreground-muted);
       }
 
       .seg-count--active {
         background: var(--app-primary);
-        color: #111827;
+        color: var(--app-foreground);
       }
     `,
   ],

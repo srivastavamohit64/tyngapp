@@ -48,8 +48,11 @@ import { IonicModule } from '@ionic/angular';
         position: sticky;
         top: 0;
         z-index: 30;
-        background: #ffffff;
-        border-bottom: 1px solid #f3f4f6;
+        background: var(--app-surface);
+        background: color-mix(in srgb, var(--app-surface) 96%, transparent);
+        border-bottom: 1px solid var(--app-border-subtle);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
         /* 0 under brand chrome via --app-chrome-top-inset */
         padding-top: var(--app-chrome-top-inset, var(--safe-area-top));
       }
@@ -80,21 +83,21 @@ import { IonicModule } from '@ionic/angular';
         display: grid;
         place-items: center;
         background: transparent;
-        color: #111827;
+        color: var(--app-foreground);
         font-size: 22px;
         padding: 0;
         margin-left: -4px;
       }
 
       .back-btn:active {
-        background: #f3f4f6;
+        background: var(--app-muted);
       }
 
       .title {
         margin: 0;
         font-size: 26px;
         font-weight: 900;
-        color: #111827;
+        color: var(--app-foreground);
         letter-spacing: -0.02em;
         line-height: 1.1;
       }
@@ -112,8 +115,9 @@ import { IonicModule } from '@ionic/angular';
         height: 22px;
         padding: 0 6px;
         border-radius: 999px;
-        background: #ff7a00;
-        color: #ffffff;
+        background: var(--app-secondary);
+        color: var(--app-foreground);
+        box-shadow: var(--app-shadow-xs);
         font-size: 11px;
         font-weight: 900;
         display: inline-flex;

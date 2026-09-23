@@ -45,24 +45,28 @@ export interface FilterChip {
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        padding: 8px 16px;
+        min-height: 36px;
+        padding: 8px 14px;
         border-radius: 999px;
         font-size: 12px;
         font-weight: 700;
         white-space: nowrap;
         flex-shrink: 0;
-        background: #f3f4f6;
-        color: #6b7280;
-        border: none;
+        background: var(--app-muted);
+        color: var(--app-foreground-secondary);
+        border: 1px solid transparent;
         min-height: unset;
-        transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+        transition: background var(--app-motion-fast) ease, color var(--app-motion-fast) ease, border-color var(--app-motion-fast) ease, box-shadow var(--app-motion-fast) ease, transform var(--app-motion-fast) var(--app-motion-ease);
       }
 
       .chip.active {
         background: var(--app-primary);
-        color: #111827;
-        box-shadow: 0 2px 8px rgba(var(--app-primary-rgb), 0.3);
+        color: var(--app-foreground);
+        border-color: rgba(var(--app-primary-rgb), 0.5);
+        box-shadow: 0 3px 10px rgba(var(--app-primary-rgb), 0.25);
       }
+
+      .chip:active { transform: scale(0.97); }
 
       .badge {
         min-width: 16px;
@@ -74,13 +78,13 @@ export interface FilterChip {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        background: #ff7a00;
-        color: #ffffff;
+        background: var(--app-secondary);
+        color: var(--app-foreground);
       }
 
       .badge.badge-active {
-        background: #111827;
-        color: #ffffff;
+        background: var(--app-foreground);
+        color: var(--app-surface);
       }
     `,
   ],

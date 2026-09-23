@@ -47,11 +47,11 @@ import { IonicModule } from '@ionic/angular';
       .field {
         display: block;
         position: relative;
-        background: #f9fafb;
-        border: 2px solid #f3f4f6;
-        border-radius: 16px;
+        background: var(--app-input);
+        border: 1.5px solid var(--app-border-subtle);
+        border-radius: var(--app-radius-input);
         padding: 14px 16px;
-        transition: border-color 0.15s ease, background 0.15s ease, padding 0.15s ease;
+        transition: border-color var(--app-motion-fast) ease, background var(--app-motion-fast) ease, box-shadow var(--app-motion-fast) ease, padding var(--app-motion-fast) ease;
         cursor: text;
       }
 
@@ -60,8 +60,9 @@ import { IonicModule } from '@ionic/angular';
       }
 
       .field.focused {
-        background: #ffffff;
+        background: var(--app-surface);
         border-color: var(--app-primary);
+        box-shadow: var(--app-focus-ring);
       }
 
       .field.disabled {
@@ -73,7 +74,7 @@ import { IonicModule } from '@ionic/angular';
         display: block;
         font-size: 15px;
         font-weight: 500;
-        color: #9ca3af;
+        color: var(--app-foreground-muted);
         line-height: 1.2;
         pointer-events: none;
         transition: font-size 0.15s ease, color 0.15s ease, margin 0.15s ease;
@@ -83,14 +84,14 @@ import { IonicModule } from '@ionic/angular';
       .field.floating .float-label {
         font-size: 11px;
         font-weight: 600;
-        color: #9ca3af;
+        color: var(--app-foreground-muted);
         text-transform: uppercase;
         letter-spacing: 0.04em;
         margin-bottom: 4px;
       }
 
       .field.focused.floating .float-label {
-        color: var(--app-primary);
+        color: var(--app-primary-ink);
       }
 
       .field-row {
@@ -113,12 +114,12 @@ import { IonicModule } from '@ionic/angular';
 
       .field-icon {
         font-size: 17px;
-        color: #9ca3af;
+        color: var(--app-foreground-muted);
         flex-shrink: 0;
       }
 
       .field.focused .field-icon {
-        color: var(--app-primary);
+        color: var(--app-primary-ink);
       }
 
       input {
@@ -130,7 +131,7 @@ import { IonicModule } from '@ionic/angular';
         outline: none;
         font-size: 15px;
         font-weight: 500;
-        color: #111827;
+        color: var(--app-foreground);
         padding: 0;
         margin: 0;
         min-height: 22px;
@@ -139,7 +140,7 @@ import { IonicModule } from '@ionic/angular';
       }
 
       input::placeholder {
-        color: #c4c9d4;
+        color: var(--app-foreground-muted);
         font-weight: 500;
       }
     `,

@@ -39,23 +39,28 @@ export interface SportTab {
       }
 
       .sport-tab {
-        padding: 8px 16px;
-        border-radius: 8px;
+        min-height: 36px;
+        padding: 8px 14px;
+        border-radius: var(--app-radius-sm);
         font-size: 14px;
         font-weight: 600;
         white-space: nowrap;
         flex-shrink: 0;
-        background: #ffffff;
-        color: #6b7280;
-        border: none;
+        background: var(--app-surface);
+        color: var(--app-foreground-secondary);
+        border: 1px solid var(--app-border-subtle);
         min-height: unset;
-        transition: background 0.15s ease, color 0.15s ease;
+        transition: background var(--app-motion-fast) ease, color var(--app-motion-fast) ease, border-color var(--app-motion-fast) ease, transform var(--app-motion-fast) var(--app-motion-ease);
       }
 
       .sport-tab.active {
         background: var(--app-primary);
-        color: #111827;
+        color: var(--app-foreground);
+        border-color: rgba(var(--app-primary-rgb), 0.5);
+        box-shadow: 0 3px 10px rgba(var(--app-primary-rgb), 0.2);
       }
+
+      .sport-tab:active { transform: scale(0.97); }
     `,
   ],
 })

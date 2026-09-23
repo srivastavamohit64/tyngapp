@@ -23,11 +23,11 @@ import { IonicModule } from '@ionic/angular';
       }
 
       .rating-badge--pill {
-        background: #ffffff;
+        background: var(--app-surface);
         padding: 6px 12px;
         border-radius: 999px;
-        border: 1px solid #f3f4f6;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        border: 1px solid var(--app-border-subtle);
+        box-shadow: var(--app-shadow-xs);
       }
 
       .star-icon {
@@ -42,12 +42,12 @@ import { IonicModule } from '@ionic/angular';
       .rating-val {
         font-size: 13px;
         font-weight: 700;
-        color: #111827;
+        color: var(--app-foreground);
       }
 
       .rating-count {
         font-size: 11px;
-        color: #9ca3af;
+        color: var(--app-foreground-muted);
         font-weight: 500;
       }
     `,

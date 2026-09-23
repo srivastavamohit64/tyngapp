@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, signal, SimpleChanges } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 
 @Component({
@@ -14,11 +14,19 @@ import { IonicModule } from '@ionic/angular';
         (touchstart)="onTouchStart($event)"
         (touchend)="onTouchEnd($event)"
       >
-        <img 
+        <img
+          *ngIf="hasCurrentImage; else imageFallback"
           [src]="images[current()]" 
           alt="Venue visual" 
-          class="carousel-img" 
+          class="carousel-img"
+          (error)="imageFailed = true"
         />
+        <ng-template #imageFallback>
+          <div class="carousel-fallback" aria-label="Image unavailable">
+            <ion-icon name="image-outline"></ion-icon>
+            <span>Image unavailable</span>
+          </div>
+        </ng-template>
         <div class="carousel-overlay"></div>
       </div>
 
@@ -47,12 +55,12 @@ import { IonicModule } from '@ionic/angular';
       </button>
 
       <!-- Image counter -->
-      <div class="carousel-counter">
+      <div *ngIf="images.length" class="carousel-counter">
         <span>{{ current() + 1 }}/{{ images.length }}</span>
       </div>
 
       <!-- Pagination dots -->
-      <div class="carousel-dots">
+      <div *ngIf="images.length > 1" class="carousel-dots">
         <button
           *ngFor="let img of images; let idx = index"
           type="button"
@@ -86,6 +94,22 @@ import { IonicModule } from '@ionic/angular';
         animation: fadeIn 0.3s ease-out;
       }
 
+      .carousel-fallback {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        color: rgba(255, 255, 255, 0.8);
+        background: linear-gradient(145deg, #334155, #111827);
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .carousel-fallback ion-icon { font-size: 30px; }
+
       .carousel-overlay {
         position: absolute;
         inset: 0;
@@ -110,11 +134,11 @@ import { IonicModule } from '@ionic/angular';
         cursor: pointer;
         padding: 0;
         outline: none;
-        transition: transform 0.1s ease;
+        transition: transform var(--app-motion-fast) var(--app-motion-ease), background var(--app-motion-fast) ease;
       }
 
       .carousel-btn:active {
-        transform: scale(0.9);
+        transform: scale(0.94);
       }
 
       .btn-left {
@@ -172,7 +196,7 @@ import { IonicModule } from '@ionic/angular';
         padding: 0;
         cursor: pointer;
         outline: none;
-        transition: width 0.22s ease, background-color 0.22s ease;
+        transition: width var(--app-motion-base) var(--app-motion-ease), background-color var(--app-motion-base) ease;
       }
 
       .carousel-dot-active {
@@ -187,7 +211,7 @@ import { IonicModule } from '@ionic/angular';
     `,
   ],
 })
-export class ImageCarouselComponent {
+export class ImageCarouselComponent implements OnChanges {
   @Input() images: string[] = [];
   @Input() showBack = true;
   @Input() showFavourite = true;
@@ -197,11 +221,24 @@ export class ImageCarouselComponent {
 
   readonly current = signal(0);
   readonly favourited = signal(false);
+  imageFailed = false;
+
+  get hasCurrentImage(): boolean {
+    return !this.imageFailed && !!this.images[this.current()];
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['images']) {
+      this.current.set(Math.max(0, Math.min(this.current(), Math.max(0, this.images.length - 1))));
+      this.imageFailed = false;
+    }
+  }
 
   private touchStartX = 0;
 
   setCurrent(idx: number) {
     this.current.set(idx);
+    this.imageFailed = false;
   }
 
   toggleFavourite() {
@@ -219,6 +256,7 @@ export class ImageCarouselComponent {
   }
 
   onTouchEnd(event: TouchEvent) {
+    if (this.images.length < 2) return;
     const touchEndX = event.changedTouches[0].clientX;
     const diff = this.touchStartX - touchEndX;
 

@@ -120,7 +120,7 @@ export type PageSkeletonVariant =
         padding: 8px 0 16px;
       }
       .dark-card {
-        border-radius: 24px; padding: 16px;
+        border-radius: var(--app-radius-lg); padding: 16px;
         background: linear-gradient(160deg, #111827 0%, #1e293b 70%);
       }
       .dark-card.warm {
@@ -133,19 +133,19 @@ export type PageSkeletonVariant =
       .line.short { height: 10px; margin-bottom: 0; }
       .hero { height: 28px; margin: 4px 0 14px; --background: rgba(255,255,255,.18); }
       .hero.sm { height: 22px; }
-      .btn { height: 44px; border-radius: 12px; margin-top: 10px; --background: rgba(255,255,255,.12); }
+      .btn { height: 44px; border-radius: var(--app-radius-sm); margin-top: 10px; --background: rgba(255,255,255,.12); }
       .bar { height: 8px; margin-top: 12px; --background: rgba(255,255,255,.12); }
       .stat-grid { display: grid; gap: 8px; }
       .stat-grid.two { grid-template-columns: 1fr 1fr; }
       .stat-grid.three { grid-template-columns: 1fr 1fr 1fr; }
       .stat {
-        height: 54px; border-radius: 12px; margin: 0;
+        height: 54px; border-radius: var(--app-radius-sm); margin: 0;
         --background: rgba(255,255,255,.08);
       }
-      .stat.tall { height: 78px; border-radius: 16px; }
+      .stat.tall { height: 78px; border-radius: var(--app-radius-md); }
       .card-block {
-        height: 96px; border-radius: 18px; margin: 0;
-        --background: #eef0f3;
+        height: 96px; border-radius: var(--app-radius-md); margin: 0;
+        --background: var(--app-border-subtle);
       }
       .card-block.flat {
         height: 72px; margin-bottom: 10px; --background: #eef0f3;
@@ -155,23 +155,23 @@ export type PageSkeletonVariant =
         padding: 8px 0 6px;
       }
       .avatar-lg {
-        width: 72px; height: 72px; border-radius: 24px; flex-shrink: 0;
-        --background: #e5e7eb;
+        width: 72px; height: 72px; border-radius: var(--app-radius-lg); flex-shrink: 0;
+        --background: var(--app-border);
       }
       .profile-meta { flex: 1; display: flex; flex-direction: column; gap: 10px; }
-      .profile-meta .line { --background: #e5e7eb; margin: 0; }
+      .profile-meta .line { --background: var(--app-border); margin: 0; }
       .hero-banner {
         width: 100%; height: 210px; border-radius: 0;
-        --background: #e5e7eb;
+        --background: var(--app-border);
       }
       .pad { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
-      .pad .line { --background: #e5e7eb; margin: 0; }
+      .pad .line { --background: var(--app-border); margin: 0; }
       .chip-row { display: flex; gap: 8px; overflow: hidden; padding: 0 0 4px; }
-      .chip { width: 84px; height: 34px; border-radius: 999px; flex-shrink: 0; --background: #e5e7eb; }
+      .chip { width: 84px; height: 34px; border-radius: 999px; flex-shrink: 0; --background: var(--app-border); }
       .chat-bubbles { display: flex; flex-direction: column; gap: 12px; padding: 8px 0; }
       .bubble {
         width: 68%; height: 54px; border-radius: 18px;
-        --background: #e5e7eb;
+        --background: var(--app-border);
       }
       .bubble.left { align-self: flex-start; }
       .bubble.right { align-self: flex-end; width: 58%; }

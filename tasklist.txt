@@ -166,3 +166,11 @@ TYNG — TODAY'S WORK SUMMARY
 27. RESPONDING TO PLAYER SESSION REQUESTS — 24 September 2026
    - Coaches can accept or decline a player's session request from the request card.
    - Accepted players are added to the coach's student list, and the player receives an update to coordinate a session time with the coach.
+
+28. APP-WIDE VISUAL FINISHING â€” 24 September 2026
+   - Reviewed the full mobile app, including Player, Coach, Venue, Admin, sign-in, booking, chat and profile screens.
+   - Made cards, buttons, forms, search, filters, tabs, status labels, loading views and messages look and behave more consistently.
+   - Improved readability, touch feedback, keyboard focus, colours, spacing, shadows and mobile-safe spacing.
+   - Added friendly fallback displays when a venue photo, profile photo or gallery image is unavailable.
+   - Kept all existing screens, navigation and user actions working the same way.
+   - The app build completed successfully. A final visual check on real mobile devices is recommended before release.

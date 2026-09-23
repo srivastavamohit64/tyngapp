@@ -23,26 +23,35 @@ import { PrimaryButtonComponent } from '../primary-button/primary-button.compone
         flex-direction: column;
         align-items: center;
         text-align: center;
-        padding: 48px 24px;
+        padding: 44px 24px;
+        color: var(--app-foreground-secondary);
       }
 
       .emoji {
         font-size: 48px;
-        margin-bottom: 16px;
+        margin-bottom: 14px;
+        width: 72px;
+        height: 72px;
+        display: grid;
+        place-items: center;
+        border-radius: var(--app-radius-lg);
+        background: var(--app-surface-subtle);
+        border: 1px solid var(--app-border-subtle);
       }
 
       h3 {
         margin: 0 0 8px;
         font-size: 18px;
         font-weight: 700;
-        color: #111827;
+        color: var(--app-foreground);
       }
 
       p {
         margin: 0 0 20px;
         font-size: 14px;
-        color: #6b7280;
+        color: var(--app-foreground-secondary);
         max-width: 280px;
+        line-height: 1.5;
       }
     `,
   ],

@@ -13,9 +13,11 @@ import { Component, Input } from '@angular/core';
   styles: [
     `
       .card {
-        background: #ffffff;
-        border-radius: 20px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+        background: var(--app-surface);
+        border: 1px solid var(--app-border-subtle);
+        border-radius: var(--app-radius-card);
+        box-shadow: var(--app-shadow-card);
+        transition: transform var(--app-motion-fast) var(--app-motion-ease), box-shadow var(--app-motion-base) ease;
       }
 
       .card.padded {
@@ -23,8 +25,8 @@ import { Component, Input } from '@angular/core';
       }
 
       .card.bordered {
-        border: 1px solid #e5e7eb;
-        box-shadow: none;
+        border-color: var(--app-border);
+        box-shadow: var(--app-shadow-xs);
       }
     `,
   ],

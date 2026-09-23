@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { RatingBadgeComponent } from '../rating-badge/rating-badge.component';
 
@@ -31,7 +31,17 @@ export interface VenueCardData {
     <div class="venue-card-outer">
       <!-- Hero image -->
       <div class="card-hero">
-        <img [src]="data.image" [alt]="data.courtName" class="card-img" />
+        <img
+          *ngIf="!imageFailed"
+          [src]="data.image"
+          [alt]="data.courtName"
+          class="card-img"
+          (error)="onImageError()"
+        />
+        <div *ngIf="imageFailed" class="card-image-fallback" aria-label="Venue photo unavailable">
+          <ion-icon name="image-outline"></ion-icon>
+          <span>Venue photo unavailable</span>
+        </div>
         <div class="card-gradient"></div>
 
         <!-- Indoor/Outdoor badge + Open Now -->
@@ -123,18 +133,19 @@ export interface VenueCardData {
   styles: [
     `
       .venue-card-outer {
-        background: #ffffff;
-        border-radius: 24px;
-        border: 1px solid #f3f4f6;
-        box-shadow: 0 2px 16px rgba(0, 0, 0, 0.07), 0 1px 4px rgba(0, 0, 0, 0.04);
+        background: var(--app-surface);
+        border-radius: var(--app-radius-lg);
+        border: 1px solid var(--app-border-subtle);
+        box-shadow: var(--app-shadow-card);
         overflow: hidden;
         text-align: left;
+        transition: transform var(--app-motion-base) var(--app-motion-ease), box-shadow var(--app-motion-base) ease;
       }
 
       .card-hero {
         position: relative;
         height: 180px;
-        background: #e5e7eb;
+        background: var(--app-muted);
         overflow: hidden;
       }
 
@@ -142,11 +153,32 @@ export interface VenueCardData {
         width: 100%;
         height: 100%;
         object-fit: cover;
-        transition: transform 0.4s ease;
+        transition: transform var(--app-motion-slow) var(--app-motion-ease);
       }
+
+      .card-image-fallback {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        color: rgba(255, 255, 255, 0.88);
+        background: linear-gradient(145deg, #64748b, #334155);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .card-image-fallback ion-icon { font-size: 28px; }
 
       .venue-card-outer:hover .card-img {
         transform: scale(1.04);
+      }
+
+      .venue-card-outer:active {
+        transform: scale(0.992);
+        box-shadow: var(--app-shadow-sm);
       }
 
       .card-gradient {
@@ -180,7 +212,7 @@ export interface VenueCardData {
         font-size: 10px;
         font-weight: 700;
         background: var(--app-primary);
-        color: #111827;
+        color: var(--app-foreground);
         padding: 4px 10px;
         border-radius: 999px;
       }
@@ -189,27 +221,28 @@ export interface VenueCardData {
         position: absolute;
         top: 12px;
         right: 12px;
-        background: rgba(255, 255, 255, 0.95);
+        background: var(--app-surface);
+        background: color-mix(in srgb, var(--app-surface) 95%, transparent);
         backdrop-filter: blur(4px);
         -webkit-backdrop-filter: blur(4px);
         padding: 6px 10px;
-        border-radius: 12px;
+        border-radius: var(--app-radius-sm);
         text-align: center;
         z-index: 2;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        box-shadow: var(--app-shadow-sm);
       }
 
       .price-val {
         font-size: 14px;
         font-weight: 900;
-        color: #111827;
+        color: var(--app-foreground);
         margin: 0;
         line-height: 1;
       }
 
       .price-lbl {
         font-size: 9px;
-        color: #9ca3af;
+        color: var(--app-foreground-muted);
         margin: 2px 0 0;
         line-height: 1;
       }
@@ -255,7 +288,7 @@ export interface VenueCardData {
         width: 4px;
         height: 4px;
         border-radius: 50%;
-        background: #e5e7eb;
+        background: var(--app-border);
         flex-shrink: 0;
       }
 
@@ -264,7 +297,7 @@ export interface VenueCardData {
         align-items: center;
         gap: 4px;
         font-size: 11px;
-        color: #9ca3af;
+        color: var(--app-foreground-muted);
         font-weight: 600;
         line-height: 1;
       }
@@ -285,7 +318,7 @@ export interface VenueCardData {
         display: flex;
         align-items: center;
         gap: 4px;
-        background: #f3f4f6;
+        background: var(--app-muted);
         padding: 4px 10px;
         border-radius: 999px;
         line-height: 1;
@@ -293,18 +326,18 @@ export interface VenueCardData {
 
       .amenity-icon {
         font-size: 11px;
-        color: #6b7280;
+        color: var(--app-foreground-secondary);
       }
 
       .amenity-chip span {
         font-size: 9px;
-        color: #6b7280;
+        color: var(--app-foreground-secondary);
         font-weight: 700;
       }
 
       .amenities-more {
         font-size: 9px;
-        color: #9ca3af;
+        color: var(--app-foreground-muted);
         font-weight: 700;
       }
 
@@ -351,7 +384,7 @@ export interface VenueCardData {
         display: flex;
         align-items: center;
         gap: 4px;
-        background: #f3f4f6;
+        background: var(--app-muted);
         padding: 4px 10px;
         border-radius: 999px;
         line-height: 1;
@@ -360,40 +393,41 @@ export interface VenueCardData {
       .games-val {
         font-size: 10px;
         font-weight: 900;
-        color: #6b7280;
+        color: var(--app-foreground-secondary);
       }
 
       .games-lbl {
         font-size: 9px;
-        color: #9ca3af;
+        color: var(--app-foreground-muted);
         font-weight: 700;
       }
 
       .book-btn {
         height: 40px;
-        border-radius: 16px;
+        border-radius: var(--app-radius-md);
         padding: 0 16px;
         font-size: 13px;
         font-weight: 900;
-        color: #ffffff;
+        color: var(--app-foreground);
         border: none;
         background: linear-gradient(135deg, #ff7a00 0%, #ff9a40 100%);
-        box-shadow: 0 3px 12px rgba(255, 122, 0, 0.38);
+        box-shadow: 0 4px 14px rgba(var(--app-secondary-rgb), 0.3);
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: transform 0.1s ease;
+        transition: transform var(--app-motion-fast) var(--app-motion-ease), box-shadow var(--app-motion-fast) ease;
         outline: none;
       }
 
       .book-btn:active {
-        transform: scale(0.95);
+        transform: translateY(1px) scale(0.98);
+        box-shadow: 0 2px 8px rgba(var(--app-secondary-rgb), 0.24);
       }
     `,
   ],
 })
-export class VenueCardComponent {
+export class VenueCardComponent implements OnChanges {
   @Input() data!: VenueCardData;
   @Output() book = new EventEmitter<void>();
 
@@ -405,6 +439,18 @@ export class VenueCardComponent {
     cafeteria: { icon: 'cafe-outline', label: 'Café' },
     changing: { icon: 'shirt-outline', label: 'Changing' },
   };
+
+  imageFailed = false;
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['data']) {
+      this.imageFailed = false;
+    }
+  }
+
+  onImageError(): void {
+    this.imageFailed = true;
+  }
 
   onBookClick() {
     this.book.emit();

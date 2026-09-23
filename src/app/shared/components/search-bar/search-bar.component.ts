@@ -40,31 +40,34 @@ import { IonicModule } from '@ionic/angular';
         position: absolute;
         left: 16px;
         font-size: 18px;
-        color: #9ca3af;
+        color: var(--app-foreground-muted);
         pointer-events: none;
       }
 
       input {
         width: 100%;
         padding: 14px 16px 14px 44px;
-        background: #f3f4f6 !important;
+        background: var(--app-muted) !important;
         border: none !important;
-        border-radius: 16px !important;
+        border-radius: var(--app-radius-input) !important;
         font-size: 14px;
         font-weight: 500;
-        color: #111827 !important;
+        color: var(--app-foreground) !important;
         box-shadow: none !important;
         outline: none;
-        min-height: 48px;
+        min-height: var(--app-control-height);
+        border: 1px solid transparent !important;
+        transition: background var(--app-motion-fast) ease, box-shadow var(--app-motion-fast) ease, border-color var(--app-motion-fast) ease;
       }
 
       input::placeholder {
-        color: #9ca3af;
+        color: var(--app-foreground-muted);
       }
 
       .search.focused input {
-        background: #ffffff !important;
-        box-shadow: 0 0 0 2px rgba(var(--app-primary-rgb), 0.4) !important;
+        background: var(--app-surface) !important;
+        border-color: var(--app-primary) !important;
+        box-shadow: var(--app-focus-ring) !important;
       }
     `,
   ],

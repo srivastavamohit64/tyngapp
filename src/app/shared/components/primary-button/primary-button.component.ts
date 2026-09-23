@@ -27,15 +27,15 @@ import { IonicModule } from '@ionic/angular';
         align-items: center;
         justify-content: center;
         gap: 8px;
-        min-height: 52px;
+        min-height: var(--app-control-height-lg);
         padding: 0 20px;
         border-radius: 16px;
         font-size: 16px;
         font-weight: 700;
         background: linear-gradient(135deg, var(--app-primary) 0%, var(--app-primary-to) 100%);
-        color: #111827;
-        box-shadow: 0 4px 20px rgba(var(--app-primary-rgb), 0.35);
-        transition: transform 0.12s ease, opacity 0.12s ease;
+        color: var(--app-button-contrast);
+        box-shadow: 0 6px 18px rgba(var(--app-primary-rgb), 0.28);
+        transition: transform var(--app-motion-fast) var(--app-motion-ease), box-shadow var(--app-motion-base) ease, filter var(--app-motion-fast) ease;
       }
 
       .btn.block {
@@ -43,32 +43,37 @@ import { IonicModule } from '@ionic/angular';
       }
 
       .btn:active:not(:disabled) {
-        transform: scale(0.97);
+        transform: translateY(1px) scale(0.985);
+        box-shadow: 0 2px 8px rgba(var(--app-primary-rgb), 0.24);
       }
 
       .btn:disabled {
-        background: #f3f4f6;
-        color: #9ca3af;
+        background: var(--app-muted);
+        color: var(--app-foreground-muted);
         box-shadow: none;
       }
 
       .btn.secondary {
         background: linear-gradient(135deg, #ff7a00 0%, #ff9a40 100%);
-        color: #ffffff;
-        box-shadow: 0 4px 20px rgba(255, 122, 0, 0.3);
+        color: var(--app-foreground);
+        box-shadow: 0 6px 18px rgba(var(--app-secondary-rgb), 0.27);
       }
 
       .btn.secondary:disabled {
-        background: #f3f4f6;
-        color: #9ca3af;
+        background: var(--app-muted);
+        color: var(--app-foreground-muted);
         box-shadow: none;
       }
 
       .btn.outline {
-        background: #ffffff;
-        color: #111827;
-        border: 1.5px solid #e5e7eb;
+        background: var(--app-surface);
+        color: var(--app-foreground);
+        border: 1.5px solid var(--app-border-strong);
         box-shadow: none;
+      }
+
+      .btn.outline:active:not(:disabled) {
+        background: var(--app-surface-subtle);
       }
 
       .btn-icon {

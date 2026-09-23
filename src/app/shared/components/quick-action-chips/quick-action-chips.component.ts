@@ -18,7 +18,7 @@ export interface QuickAction {
         type="button"
         *ngFor="let action of actions"
         class="quick-action-chip"
-        [style.backgroundColor]="action.color || '#F3F4F6'"
+        [style.backgroundColor]="action.color || 'var(--app-muted)'"
         (click)="actionClick.emit(action)"
       >
         <span class="chip-icon" aria-hidden="true">{{ action.icon }}</span>
@@ -44,11 +44,12 @@ export interface QuickAction {
         display: inline-flex;
         align-items: center;
         gap: 6px;
+        min-height: 38px;
         padding: 8px 14px;
-        border-radius: 16px;
-        border: 1px solid #f3f4f6;
-        background: #f3f4f6;
-        color: #6b7280;
+        border-radius: var(--app-radius-md);
+        border: 1px solid var(--app-border-subtle);
+        background: var(--app-muted);
+        color: var(--app-foreground-secondary);
         font-size: 12px;
         font-weight: 600;
         line-height: 1.25;
@@ -62,10 +63,12 @@ export interface QuickAction {
         box-sizing: border-box;
         cursor: pointer;
         -webkit-tap-highlight-color: transparent;
+        transition: transform var(--app-motion-fast) var(--app-motion-ease), box-shadow var(--app-motion-fast) ease, border-color var(--app-motion-fast) ease;
       }
 
       .quick-action-chip:active {
-        transform: scale(0.97);
+        transform: translateY(1px) scale(0.98);
+        box-shadow: var(--app-shadow-xs);
       }
 
       .chip-icon {

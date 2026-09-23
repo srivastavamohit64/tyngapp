@@ -42,19 +42,20 @@ import { TabItem } from '../../models/app.models';
       }
 
       .tab-bar-pill {
-        background: #ffffff;
+        background: var(--app-surface);
+        background: color-mix(in srgb, var(--app-surface) 96%, transparent);
         display: flex;
         align-items: center;
         justify-content: space-around;
         padding: 0 12px;
         height: 72px;
         border-radius: 40px;
-        border: 1px solid rgba(17, 24, 39, 0.08);
+        border: 1px solid var(--app-border-subtle);
         box-shadow:
-          0 1px 0 rgba(255, 255, 255, 0.95) inset,
+          0 1px 0 rgba(255, 255, 255, 0.72) inset,
           0 0 0 1px rgba(var(--app-primary-rgb), 0.12),
-          0 4px 12px rgba(17, 24, 39, 0.08),
-          0 12px 36px rgba(17, 24, 39, 0.14),
+          0 4px 12px rgba(17, 24, 39, 0.07),
+          0 12px 36px rgba(17, 24, 39, 0.12),
           0 20px 48px rgba(var(--app-primary-rgb), 0.10);
         pointer-events: auto;
         max-width: 440px;
@@ -71,7 +72,6 @@ import { TabItem } from '../../models/app.models';
         background: transparent;
         padding: 0;
         cursor: pointer;
-        outline: none;
         color: inherit;
         font-family: inherit;
       }
@@ -85,7 +85,7 @@ import { TabItem } from '../../models/app.models';
         align-items: center;
         justify-content: center;
         background: transparent;
-        transition: background 0.2s ease, box-shadow 0.2s ease;
+        transition: background var(--app-motion-base) ease, box-shadow var(--app-motion-base) ease, transform var(--app-motion-fast) var(--app-motion-ease);
       }
 
       .tab-icon-wrap.tab-icon-active {
@@ -95,12 +95,12 @@ import { TabItem } from '../../models/app.models';
 
       .tab-icon {
         font-size: 20px;
-        color: #6B7280;
-        transition: color 0.2s ease;
+        color: var(--app-foreground-secondary);
+        transition: color var(--app-motion-base) ease;
       }
 
       .tab-icon-wrap.tab-icon-active .tab-icon {
-        color: #111827;
+        color: var(--app-foreground);
       }
 
       .tab-badge {
@@ -112,25 +112,25 @@ import { TabItem } from '../../models/app.models';
         padding: 0 4px;
         border-radius: 999px;
         background: #ef4444;
-        color: #fff;
+        color: var(--app-surface);
         font-size: 9px;
         font-weight: 800;
         line-height: 16px;
         text-align: center;
-        box-shadow: 0 0 0 2px #fff;
+        box-shadow: 0 0 0 2px var(--app-surface);
       }
 
       .tab-label {
         font-size: 10px;
         font-weight: 600;
-        color: #9CA3AF;
+        color: var(--app-foreground-muted);
         white-space: nowrap;
-        transition: color 0.2s ease, font-weight 0.2s ease;
+        transition: color var(--app-motion-base) ease, font-weight var(--app-motion-base) ease;
         line-height: 1;
       }
 
       .tab-label.tab-label-active {
-        color: #111827;
+        color: var(--app-foreground);
         font-weight: 700;
       }
     `,

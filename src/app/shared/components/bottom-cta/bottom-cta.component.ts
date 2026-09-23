@@ -46,10 +46,13 @@ import { IonicModule } from '@ionic/angular';
          */
         bottom: var(--app-bottom-chrome-offset, 0px);
         z-index: 30;
-        background: #ffffff;
+        background: var(--app-surface);
+        background: color-mix(in srgb, var(--app-surface) 97%, transparent);
         padding: 16px 20px calc(16px + var(--app-bottom-chrome-pad, var(--safe-area-bottom)));
-        box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.09);
-        border-top: 1px solid #f3f4f6;
+        box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.08);
+        border-top: 1px solid var(--app-border-subtle);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
         max-width: 440px;
         margin: 0 auto;
         box-sizing: border-box;
@@ -69,7 +72,7 @@ import { IonicModule } from '@ionic/angular';
 
       .price-kicker {
         font-size: 11px;
-        color: #9ca3af;
+        color: var(--app-foreground-muted);
         display: block;
         line-height: 1;
         margin-bottom: 2px;
@@ -78,7 +81,7 @@ import { IonicModule } from '@ionic/angular';
       .price-main {
         font-size: 20px;
         font-weight: 900;
-        color: #111827;
+        color: var(--app-foreground);
         margin: 0;
         line-height: 1.15;
       }
@@ -86,17 +89,17 @@ import { IonicModule } from '@ionic/angular';
       .price-unit {
         font-size: 12px;
         font-weight: 500;
-        color: #9ca3af;
+        color: var(--app-foreground-muted);
       }
 
       .cta-btn {
         flex: 1;
-        height: 56px;
+        height: var(--app-control-height-xl);
         border: none;
         border-radius: 16px;
         background: linear-gradient(135deg, #ff7a00 0%, #ff9a40 100%);
         box-shadow: 0 4px 20px rgba(255, 122, 0, 0.42);
-        color: #ffffff;
+        color: var(--app-foreground);
         font-size: 16px;
         font-weight: 900;
         display: flex;
@@ -107,11 +110,12 @@ import { IonicModule } from '@ionic/angular';
         padding: 0 16px;
         outline: none;
         box-sizing: border-box;
-        transition: transform 0.1s ease;
+        transition: transform var(--app-motion-fast) var(--app-motion-ease), box-shadow var(--app-motion-base) ease;
       }
 
       .cta-btn:active {
-        transform: scale(0.97);
+        transform: translateY(1px) scale(0.985);
+        box-shadow: 0 2px 10px rgba(var(--app-secondary-rgb), 0.32);
       }
 
       .cta-btn--full {
@@ -125,7 +129,7 @@ import { IonicModule } from '@ionic/angular';
       .cta-footnote {
         text-align: center;
         font-size: 10px;
-        color: #9ca3af;
+        color: var(--app-foreground-muted);
         margin: 0;
         font-weight: 500;
       }
