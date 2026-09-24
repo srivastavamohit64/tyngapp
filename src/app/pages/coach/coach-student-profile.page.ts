@@ -42,6 +42,7 @@ interface Student {
   notes: { text: string; date: string }[];
   achievements: any[];
   timeline: { icon: string; text: string; date: string; done: boolean }[];
+  managedProfile?: any;
   upcomingSession?: { venue: string; date: string; time: string; focus: string[]; weather: string };
 }
 
@@ -227,6 +228,20 @@ const ACHIEVEMENT_COLORS: Record<string, { bg: string; color: string }> = {
         </div>
 
         <div class="px-5 space-y-4">
+          <div *ngIf="student.managedProfile as profile" class="section-card p-5">
+            <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-4">Managed Profile Details</p>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="rounded-2xl bg-[#F9FAFB] p-3"><span class="text-[10px] text-[#98A2B3]">Guardian</span><p class="text-[12px] font-bold m-0 mt-1">{{ profile.guardian_name || 'Not set' }}</p></div>
+              <div class="rounded-2xl bg-[#F9FAFB] p-3"><span class="text-[10px] text-[#98A2B3]">Contact</span><p class="text-[12px] font-bold m-0 mt-1">{{ profile.guardian_phone || 'Not set' }}</p></div>
+              <div class="rounded-2xl bg-[#F9FAFB] p-3"><span class="text-[10px] text-[#98A2B3]">Membership</span><p class="text-[12px] font-bold m-0 mt-1">{{ profile.membership_type || 'Not set' }}</p></div>
+              <div class="rounded-2xl bg-[#F9FAFB] p-3"><span class="text-[10px] text-[#98A2B3]">Batch</span><p class="text-[12px] font-bold m-0 mt-1">{{ profile.batch_session?.title || 'No batch' }}</p></div>
+            </div>
+            <div *ngIf="profile.medical_conditions || profile.current_injuries || profile.allergies?.length" class="mt-3 rounded-2xl bg-[#FFF7ED] p-3">
+              <p class="text-[10px] font-black text-[#C2410C] uppercase tracking-wider m-0 mb-1">Safety information</p>
+              <p class="text-[11px] text-[#7C2D12] m-0 leading-relaxed">{{ managedSafety(profile) }}</p>
+            </div>
+          </div>
+
           <!-- Metrics dashboard cards -->
           <div class="section-card p-5">
             <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-4">Performance Dashboard</p>
@@ -625,16 +640,17 @@ export class CoachStudentProfilePage implements OnInit {
       this.coach.getStudent(id).subscribe({ next: (response) => {
         const data: any = response.data;
         const relation = data?.relationship;
+        const managedProfile = relation?.profile;
         const player = relation?.student || {};
         const sessions = data?.sessions || [];
         const evaluations = data?.evaluations || [];
         const latest = evaluations[0] || {};
         const skillRatings = latest.skill_ratings || {};
         this.student = {
-          id: Number(player.id || id), name: player.name || 'Student', age: 0,
+          id: Number(player.id || id), name: player.name || 'Student', age: this.ageFromDob(player.dob),
           photo: resolveMediaUrl(player.profile_image) || 'assets/icon/favicon.png', cover: resolveMediaUrl(player.cover_image) || resolveMediaUrl(player.profile_image) || 'assets/icon/favicon.png', sport: (player.sports || ['Coaching'])[0], emoji: '',
-          skillLevel: player.level || 'Beginner', sessionsCompleted: sessions.length, attendance: 0,
-          trainingFocus: relation?.training_focus || [], lastSession: sessions[0]?.session_date || '', coachSince: relation?.enrolled_at || '', membershipStatus: relation?.status === 'active' ? 'Active' : 'Inactive',
+          skillLevel: managedProfile?.skill_level || 'Beginner', sessionsCompleted: sessions.length, attendance: 0,
+          trainingFocus: relation?.training_focus || [], lastSession: sessions[0]?.session_date || '', coachSince: relation?.enrolled_at || '', membershipStatus: relation?.status === 'active' ? 'Active' : 'Inactive', managedProfile,
           stats: { sessions: sessions.length, hours: 0, attendance: 0, improvement: 0, streak: 0, tournamentWins: 0, personalBest: '—' },
           evaluation: { technique: skillRatings.technique || latest.rating || 5, fitness: skillRatings.fitness || latest.rating || 5, gameAwareness: skillRatings.gameAwareness || latest.rating || 5, discipline: skillRatings.discipline || latest.rating || 5, teamwork: skillRatings.teamwork || latest.rating || 5, confidence: skillRatings.confidence || latest.rating || 5 },
           notes: (data?.notes || []).map((n: any) => ({ text: n.note, date: n.created_at || '' })), achievements: data?.achievements || [], timeline: data?.timeline || [],
@@ -680,6 +696,25 @@ export class CoachStudentProfilePage implements OnInit {
     if (level === 'Advanced') return { bg: '#FFFBEB', color: '#D97706' };
     if (level === 'Intermediate') return { bg: '#EFF6FF', color: '#1D4ED8' };
     return { bg: '#F0FDF4', color: '#16A34A' };
+  }
+
+  ageFromDob(value: string | null | undefined): number {
+    if (!value) return 0;
+    const dob = new Date(value);
+    if (Number.isNaN(dob.getTime())) return 0;
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    if (today.getMonth() < dob.getMonth() || (today.getMonth() === dob.getMonth() && today.getDate() < dob.getDate())) age--;
+    return Math.max(age, 0);
+  }
+
+  managedSafety(profile: any): string {
+    const values = [
+      profile.allergies?.length ? 'Allergies: ' + profile.allergies.join(', ') : null,
+      profile.medical_conditions ? 'Conditions: ' + profile.medical_conditions : null,
+      profile.current_injuries ? 'Injuries: ' + profile.current_injuries : null,
+    ];
+    return values.filter(Boolean).join(' · ');
   }
 
   getSkillLabel(key: string): string {

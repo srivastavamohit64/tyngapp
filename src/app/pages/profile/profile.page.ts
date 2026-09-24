@@ -1,6 +1,6 @@
 import { CommonModule, Location } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { IonicModule, MenuController, ViewWillEnter } from '@ionic/angular';
 import { AuthService } from '../../core/services/auth.service';
 import { XpService, XpSummary } from '../../core/services/xp.service';
@@ -17,6 +17,7 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
 export class ProfilePage implements ViewWillEnter {
   readonly auth = inject(AuthService);
   readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly location = inject(Location);
   private readonly menu = inject(MenuController);
   private readonly xpApi = inject(XpService);
@@ -98,11 +99,11 @@ export class ProfilePage implements ViewWillEnter {
   }
 
   goBack() {
-    if (typeof window !== 'undefined' && window.history.length > 1) {
-      this.location.back();
+    if (this.route.snapshot.queryParamMap.get('from') === 'complete-profile') {
+      void this.router.navigateByUrl('/app/coach/dashboard', { replaceUrl: true });
       return;
     }
-    void this.router.navigateByUrl('/app/coach/dashboard');
+    this.location.back();
   }
 
   async openMenu() {

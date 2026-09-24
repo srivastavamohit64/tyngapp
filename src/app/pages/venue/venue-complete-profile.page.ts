@@ -428,7 +428,7 @@ const STEP_TITLES = [
               <p class="text-[12px] text-[#9CA3AF] m-0 mt-1">Go back and add courts first — pricing is set per facility.</p>
             </div>
 
-            <div *ngFor="let f of facilities(); let idx = index" class="bg-white rounded-[24px] p-5 space-y-4 border border-[#F3F4F6] shadow-sm">
+            <div *ngFor="let f of facilities(); let idx = index; trackBy: trackFacility" class="bg-white rounded-[24px] p-5 space-y-4 border border-[#F3F4F6] shadow-sm">
               <div class="flex items-center gap-3">
                 <span class="text-2xl leading-none">{{ f.emoji }}</span>
                 <div class="min-w-0">

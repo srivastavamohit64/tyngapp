@@ -5,7 +5,7 @@ import { IonicModule, MenuController, Platform, ViewWillEnter, ViewWillLeave } f
 import { PluginListenerHandle } from '@capacitor/core';
 import { App } from '@capacitor/app';
 import { Subscription, firstValueFrom } from 'rxjs';
-import { BookingRecord, CoachDashboard, HomeAd } from '../../core/models/api.model';
+import { BookingRecord, CoachDashboard, CoachDashboardMilestone, CoachDashboardWeather, HomeAd } from '../../core/models/api.model';
 import { AdService } from '../../core/services/ad.service';
 import { AuthService } from '../../core/services/auth.service';
 import { BookingService } from '../../core/services/booking.service';
@@ -91,6 +91,10 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
     return (this.auth.user()?.name || '').trim() || 'Player';
   }
 
+  get playerPoints(): string {
+    return (this.auth.user()?.tpPoints ?? 0).toLocaleString('en-IN');
+  }
+
   get isCurrentSelected(): boolean {
     return this.selectedAddressId === CURRENT_LOCATION_ID;
   }
@@ -148,16 +152,20 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
     { id: 4, icon: '💰', bg: '#F0FDF4', color: '#16A34A', text: '₹1,200 Payment Received', time: '5 hrs ago' },
     { id: 5, icon: '📅', bg: '#EFF6FF', color: '#3B82F6', text: 'Session Rescheduled — Priya moved to 7 PM', time: 'Yesterday' },
   ];
-  readonly coachVenues = [
-    { id: 1, name: 'Ekana Cricket Stadium', image: 'https://images.unsplash.com/photo-1593341646782-e0b495cff86d?w=300&h=200&fit=crop&auto=format', distance: '2.1 km', slots: 3 },
-    { id: 2, name: 'Phoenix Sports Hub', image: 'https://images.unsplash.com/photo-1722087642932-9b070e9a066e?w=300&h=200&fit=crop&auto=format', distance: '3.8 km', slots: 5 },
-    { id: 3, name: 'Sports Authority Complex', image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=300&h=200&fit=crop&auto=format', distance: '4.5 km', slots: 2 },
-  ];
-  readonly coachCommunity = [
-    { id: 1, title: 'Coach Workshop', sub: 'This Saturday · 4 PM', image: 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=300&h=160&fit=crop&auto=format', tag: 'Workshop' },
-    { id: 2, title: 'NIS Certification', sub: 'Registrations Open', image: 'https://images.unsplash.com/photo-1529699211952-734e80c4d42b?w=300&h=160&fit=crop&auto=format', tag: 'Certification' },
-    { id: 3, title: 'Sports Seminar', sub: 'Next Wed · Online', image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=300&h=160&fit=crop&auto=format', tag: 'Seminar' },
-  ];
+  coachVenueLoading = signal(false);
+  coachVenueError = signal('');
+  coachVenues: Array<{ id: number; name: string; image: string; meta: string; slots: number; price: number }> = [];
+  coachCommunity: Array<{ id: number; title: string; sub: string; image: string; tag: string }> = [];
+  coachMilestone: CoachDashboardMilestone = {
+    completedSessions: 0, achievedTarget: 0, nextTarget: 1,
+    title: 'Your first coaching milestone awaits',
+    description: 'Complete your first coaching session to begin your journey.',
+  };
+  coachWeather: CoachDashboardWeather = {
+    available: false, location: null, temperature: null,
+    condition: 'Weather unavailable', icon: 'cloud-offline-outline',
+    outdoorSuitable: false, outdoorLabel: 'Add location',
+  };
   coachReviews = [
     { name: 'Ananya Patel', photo: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=80&h=80&fit=crop&auto=format', rating: 5, text: 'Excellent coaching session. My cricket technique improved dramatically in just 3 weeks.' },
     { name: 'Rahul Sharma', photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&auto=format', rating: 5, text: 'My batting improved significantly after just 5 sessions. Highly recommended!' },
@@ -214,8 +222,11 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
   ];
 
   constructor() {
-    const hour = new Date().getHours();
-    this.greeting = hour < 12 ? 'Good Morning,' : hour < 17 ? 'Good Afternoon,' : hour < 21 ? 'Good Evening,' : 'Good Night,';
+    this.coachPulseMetrics = this.coachPulseMetrics.map((metric) => ({
+      ...metric,
+      value: metric.label === 'Expected Earnings' ? '₹0' : '0',
+    }));
+    this.refreshGreeting();
     const role = this.auth.user()?.role;
     if (role === 'admin') {
       void this.router.navigateByUrl('/app/admin/dashboard', { replaceUrl: true });
@@ -238,6 +249,7 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
   }
 
   ionViewWillEnter() {
+    this.refreshGreeting();
     const role = this.auth.user()?.role;
     if (role === 'coach') {
       void this.loadCoachDashboard();
@@ -254,6 +266,17 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
     return this.auth.user()?.name?.trim() || 'Coach';
   }
 
+  private refreshGreeting(): void {
+    const hour = new Date().getHours();
+    this.greeting = hour < 12
+      ? 'Good Morning,'
+      : hour < 17
+        ? 'Good Afternoon,'
+        : hour < 21
+          ? 'Good Evening,'
+          : 'Good Night,';
+  }
+
   get coachProfileCompletion(): number {
     return this.auth.user()?.profileCompletion ?? 0;
   }
@@ -264,6 +287,7 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
     this.coachSessions = [];
     this.coachReviews = [];
     this.coachActivities = [];
+    void this.loadCoachVenues();
     try {
       const response = await firstValueFrom(this.coachService.getDashboard());
       const dashboard = response.data;
@@ -322,7 +346,7 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
       time: `${this.formatClock(session.startTime)} â€“ ${this.formatClock(session.endTime)}`,
       type: session.studentCount === 1 ? 'One-on-One' : 'Training',
       status: session.status,
-      startsIn: session.status === 'scheduled' ? this.startsIn(session.startTime) : null,
+      startsIn: ['scheduled', 'confirmed'].includes(session.status) ? this.startsIn(session.startTime) : null,
     }));
     this.coachReviews = dashboard.recentReviews.map((review) => ({
       name: review.name,
@@ -338,6 +362,102 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
       text: activity.text,
       time: this.relativeTime(activity.at),
     }));
+    this.coachCommunity = (dashboard.communityEvents || []).map((event) => ({
+      id: Number(event.id),
+      title: event.title,
+      sub: this.communityEventMeta(event.eventDate, event.startTime, event.venueName, event.registrations),
+      image: event.image || 'assets/icon/favicon.png',
+      tag: event.tag,
+    }));
+    this.coachMilestone = dashboard.milestone || this.milestoneFromCompleted(dashboard.stats.completedSessions);
+    this.coachWeather = dashboard.weather || {
+      available: false,
+      location: dashboard.profile.location,
+      temperature: null,
+      condition: 'Weather unavailable',
+      icon: 'cloud-offline-outline',
+      outdoorSuitable: false,
+      outdoorLabel: 'Add location',
+    };
+  }
+
+  async loadCoachVenues(): Promise<void> {
+    this.coachVenueLoading.set(true);
+    this.coachVenueError.set('');
+    try {
+      const response = await firstValueFrom(this.coachService.getSchedulingVenues());
+      const rows = (Array.isArray(response.data) ? response.data : []).slice(0, 6);
+      const date = this.localDateValue(new Date());
+      this.coachVenues = await Promise.all(rows.map(async (venue: any) => {
+        const courts = Array.isArray(venue.courts) ? venue.courts : [];
+        const availability = await Promise.all(courts.map(async (court: any) => {
+          try {
+            const result = await firstValueFrom(this.coachService.getVenueAvailability(venue.id, court.id, date, 60));
+            return Array.isArray((result.data as any)?.slots) ? (result.data as any).slots.length : 0;
+          } catch {
+            return 0;
+          }
+        }));
+        const prices = courts.map((court: any) => Number(court.price_per_hour || 0)).filter((price: number) => price > 0);
+        return {
+          id: Number(venue.id),
+          name: String(venue.name || 'Venue'),
+          image: String(venue.image || courts.find((court: any) => court.image)?.image || 'assets/icon/favicon.png'),
+          meta: this.venueDistanceOrLocation(venue),
+          slots: availability.reduce((sum, count) => sum + count, 0),
+          price: prices.length ? Math.min(...prices) : 0,
+        };
+      }));
+    } catch (error: any) {
+      this.coachVenues = [];
+      this.coachVenueError.set(error?.error?.message || 'Venue availability could not be loaded.');
+    } finally {
+      this.coachVenueLoading.set(false);
+    }
+  }
+
+  bookCoachVenue(venueId: number): void {
+    void this.router.navigate(['/app/coach/venue-booking'], { queryParams: { venue: venueId } });
+  }
+
+  private venueDistanceOrLocation(venue: any): string {
+    const coachLatitude = Number(this.auth.user()?.latitude);
+    const coachLongitude = Number(this.auth.user()?.longitude);
+    const venueLatitude = Number(venue.latitude);
+    const venueLongitude = Number(venue.longitude);
+    if ([coachLatitude, coachLongitude, venueLatitude, venueLongitude].every(Number.isFinite)
+      && (coachLatitude !== 0 || coachLongitude !== 0) && (venueLatitude !== 0 || venueLongitude !== 0)) {
+      const earthRadius = 6371;
+      const radians = (value: number) => value * Math.PI / 180;
+      const latitudeDelta = radians(venueLatitude - coachLatitude);
+      const longitudeDelta = radians(venueLongitude - coachLongitude);
+      const a = Math.sin(latitudeDelta / 2) ** 2
+        + Math.cos(radians(coachLatitude)) * Math.cos(radians(venueLatitude)) * Math.sin(longitudeDelta / 2) ** 2;
+      return `${(earthRadius * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))).toFixed(1)} km`;
+    }
+    return String(venue.city || venue.location || 'Location unavailable').split(',')[0].trim();
+  }
+
+  private communityEventMeta(date?: string | null, time?: string | null, venue?: string | null, registrations = 0): string {
+    const parts: string[] = [];
+    if (date) parts.push(new Date(`${date}T00:00:00`).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' }));
+    if (time) parts.push(this.formatClock(String(time).slice(0, 5)));
+    if (venue) parts.push(venue);
+    if (!parts.length && registrations > 0) parts.push(`${registrations} registered`);
+    return parts.join(' · ') || 'Details coming soon';
+  }
+
+  private milestoneFromCompleted(completed: number): CoachDashboardMilestone {
+    const targets = [1, 10, 25, 50, 100, 250, 500, 1000];
+    const achieved = [...targets].reverse().find((target) => target <= completed) || 0;
+    const next = targets.find((target) => target > completed) || null;
+    return completed === 0
+      ? { completedSessions: 0, achievedTarget: 0, nextTarget: 1, title: 'Your first coaching milestone awaits', description: 'Complete your first coaching session to begin your journey.' }
+      : { completedSessions: completed, achievedTarget: achieved, nextTarget: next, title: `${achieved} Coaching Session${achieved === 1 ? '' : 's'} Completed!`, description: next ? `${next - completed} more session${next - completed === 1 ? '' : 's'} to reach ${next}.` : 'An exceptional coaching journey built on real completed sessions.' };
+  }
+
+  private localDateValue(date: Date): string {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
   }
 
   coachFocusSessions(): string { return this.coachPulseMetrics[0]?.value || '0'; }

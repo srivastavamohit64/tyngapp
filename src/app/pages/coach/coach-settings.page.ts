@@ -212,34 +212,6 @@ const STATUSES: StatusItem[] = [
                 </button>
               </div>
             </div>
-            <div class="py-3.5 border-b border-[#F9FAFB]">
-              <div class="flex items-center gap-2.5 mb-2.5">
-                <div class="w-9 h-9 rounded-xl bg-[#38BDF8]/15 flex items-center justify-center">
-                  <ion-icon name="globe-outline" class="text-[#38BDF8] text-base"></ion-icon>
-                </div>
-                <p class="text-[14px] font-semibold text-[#111827] m-0">App Language</p>
-              </div>
-              <div class="grid grid-cols-3 gap-2">
-                <button *ngFor="let l of ['English','Hindi','Tamil']" (click)="language = l" class="lang-btn border-none"
-                  [class.lang-btn--active]="language === l">{{ l }}</button>
-              </div>
-            </div>
-            <div class="pt-3.5">
-              <div class="flex items-center gap-2.5 mb-3">
-                <div class="w-9 h-9 rounded-xl bg-[#7C3AED]/15 flex items-center justify-center">
-                  <ion-icon name="calendar-outline" class="text-[#7C3AED] text-base"></ion-icon>
-                </div>
-                <p class="text-[14px] font-semibold text-[#111827] m-0">Calendar Sync</p>
-              </div>
-              <div class="flex bg-[#F3F4F6] p-1 rounded-2xl">
-                <button *ngFor="let opt of ['Google Calendar','Apple Calendar','None']" (click)="calSync = opt" class="segment-pill-btn border-none flex-1"
-                  [style.backgroundColor]="calSync === opt ? 'white' : 'transparent'"
-                  [style.color]="calSync === opt ? '#111827' : '#9CA3AF'"
-                  [style.boxShadow]="calSync === opt ? '0 1px 4px rgba(0,0,0,0.08)' : 'none'">
-                  {{ opt }}
-                </button>
-              </div>
-            </div>
           </div>
 
           <!-- Privacy & Security -->
@@ -273,24 +245,6 @@ const STATUSES: StatusItem[] = [
               </div>
               <ion-icon name="chevron-forward-outline" class="text-[#D1D5DB] text-sm"></ion-icon>
             </button>
-          </div>
-
-          <!-- Connected Accounts -->
-          <div class="section-card p-5 bg-white text-left">
-            <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-4 m-0">Connected Accounts</p>
-            <div *ngFor="let acc of connectedAccounts" class="flex items-center gap-3 py-3.5 border-b border-[#F9FAFB] last:border-none">
-              <div class="w-9 h-9 rounded-xl bg-[#F3F4F6] flex items-center justify-center text-lg">{{ acc.emoji }}</div>
-              <div class="flex-1">
-                <p class="text-[14px] font-semibold text-[#111827] m-0">{{ acc.label }}</p>
-                <p class="text-[11px] m-0" [style.color]="connected[acc.id] ? '#16A34A' : '#9CA3AF'">
-                  {{ connected[acc.id] ? '✓ Connected' : 'Not connected' }}
-                </p>
-              </div>
-              <button (click)="toggleConnected(acc.id)" class="connect-btn border-none"
-                [class.connect-btn--connected]="connected[acc.id]">
-                {{ connected[acc.id] ? 'Disconnect' : 'Connect' }}
-              </button>
-            </div>
           </div>
 
           <!-- Help & Support -->
@@ -554,12 +508,9 @@ export class CoachSettingsPage {
   readonly coachPrefKeys = ['showInSearch', 'showOnlineStatus', 'allowMessages', 'weekendSessions', 'holidayCamps', 'opportunityAlerts'];
 
   appPrefs: Record<string, boolean> = {
-    darkMode: false, locationPerms: true, cameraPerms: true, micPerms: false,
+    locationPerms: true, cameraPerms: true, micPerms: false,
   };
-  readonly appPrefKeys = ['darkMode', 'locationPerms', 'cameraPerms', 'micPerms'];
-  language = 'English';
-  calSync = 'Google Calendar';
-
+  readonly appPrefKeys = ['locationPerms', 'cameraPerms', 'micPerms'];
   privacy: Record<string, boolean> = {
     showPhone: false, showEmail: false, allowDMs: true, twoFA: false,
   };
@@ -626,10 +577,6 @@ export class CoachSettingsPage {
     this.privacy[key] = !this.privacy[key];
   }
 
-  toggleConnected(id: string) {
-    this.connected[id] = !this.connected[id];
-  }
-
   getCoachPrefLabel(key: string): string {
     const labels: Record<string, string> = {
       showInSearch: 'Show Profile in Search', showOnlineStatus: 'Show Online Status',
@@ -650,7 +597,7 @@ export class CoachSettingsPage {
 
   getAppPrefLabel(key: string): string {
     const labels: Record<string, string> = {
-      darkMode: 'Dark Mode', locationPerms: 'Location Permissions',
+      locationPerms: 'Location Permissions',
       cameraPerms: 'Camera Permissions', micPerms: 'Microphone Permissions',
     };
     return labels[key] ?? key;
@@ -658,7 +605,7 @@ export class CoachSettingsPage {
 
   getAppPrefSub(key: string): string {
     const subs: Record<string, string> = {
-      darkMode: 'System setting override', locationPerms: 'Required for nearby features',
+      locationPerms: 'Required for nearby features',
       cameraPerms: 'Profile photos & QR scanning', micPerms: 'Voice notes in chat',
     };
     return subs[key] ?? '';

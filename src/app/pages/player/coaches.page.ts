@@ -5,6 +5,7 @@ import { IonicModule } from '@ionic/angular';
 import { FilterChip, FilterChipsComponent } from '../../shared/components/filter-chips/filter-chips.component';
 import { FormsModule } from '@angular/forms';
 import { CoachService } from '../../core/services/coach.service';
+import { resolveMediaUrl } from '../../core/utils/media-url.util';
 
 @Component({
   selector: 'app-coaches',
@@ -44,10 +45,11 @@ import { CoachService } from '../../core/services/coach.service';
             class="coach-card p-4 rounded-2xl border border-border bg-card flex gap-4 hover:border-primary transition-all cursor-pointer"
             (click)="viewCoach(coach.id)"
           >
-            <div class="avatar-box h-16 w-16 rounded-xl bg-slate-100 flex items-center justify-center text-3xl shadow-sm">
-              {{ coach.avatar }}
+            <div class="avatar-box h-16 w-16 rounded-xl bg-slate-100 flex items-center justify-center text-3xl shadow-sm overflow-hidden">
+              <img *ngIf="coach.profileImage; else coachPlaceholder" [src]="photo(coach.profileImage)" [alt]="coach.name" class="h-full w-full object-cover" />
+              <ng-template #coachPlaceholder><ion-icon name="person-outline" class="text-slate-500"></ion-icon></ng-template>
             </div>
-            <div class="flex-1">
+            <div class="flex-1 min-w-0">
               <div class="flex justify-between items-start mb-1">
                 <h3 class="font-bold text-base text-slate-900 leading-tight">{{ coach.name }}</h3>
                 <span class="rating flex items-center gap-1 text-xs font-bold text-secondary">
@@ -57,9 +59,9 @@ import { CoachService } from '../../core/services/coach.service';
               </div>
               <p class="text-xs font-bold text-primary mb-2 uppercase tracking-wide">{{ coach.sport }} • {{ coach.experience }}</p>
               <p class="text-xs text-slate-500 leading-normal line-clamp-2 mb-3">{{ coach.bio }}</p>
-              <div class="flex justify-between items-center text-xs">
-                <span class="text-slate-400"><ion-icon name="location-outline"></ion-icon> {{ coach.distance }}</span>
-                <span class="font-bold text-slate-900">{{ coach.price }}</span>
+              <div class="flex justify-between items-end gap-3 text-xs">
+                <span class="coach-location min-w-0 flex-1 text-slate-400"><ion-icon name="location-outline"></ion-icon> {{ coach.distance }}</span>
+                <span class="coach-price flex-shrink-0 whitespace-nowrap font-bold text-slate-900">{{ coach.price }}</span>
               </div>
             </div>
           </div>
@@ -77,6 +79,29 @@ import { CoachService } from '../../core/services/coach.service';
       }
       .rating ion-icon {
         color: #FF7A00;
+      }
+      .avatar-box {
+        flex: 0 0 4rem;
+        width: 4rem;
+        height: 4rem;
+      }
+      .avatar-box img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .coach-card {
+        align-items: flex-start;
+        min-width: 0;
+      }
+      .coach-card .rating {
+        flex-shrink: 0;
+        white-space: nowrap;
+      }
+      .coach-location {
+        overflow-wrap: anywhere;
+        line-height: 1.35;
       }
     `
   ]
@@ -125,6 +150,10 @@ export class CoachesPage implements OnInit {
 
   filteredCoaches() {
     return this.coaches;
+  }
+
+  photo(url?: string | null): string | null {
+    return resolveMediaUrl(url);
   }
 
   viewCoach(id: number) {

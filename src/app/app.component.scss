@@ -351,6 +351,29 @@ ion-menu ion-content {
   background: linear-gradient(160deg, rgba(var(--app-primary-rgb),0.10) 0%, #FFFFFF 60%);
 }
 
+.coach-header-logout {
+  position: absolute;
+  top: calc(16px + var(--safe-area-top));
+  right: 18px;
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid #FECACA;
+  border-radius: 13px;
+  display: grid;
+  place-items: center;
+  background: #FFF7F7;
+  color: #E5484D;
+  font-size: 19px;
+  box-shadow: 0 3px 10px rgba(229, 72, 77, .10);
+  cursor: pointer;
+  transition: transform .15s ease, background-color .15s ease;
+}
+
+.coach-header-logout:active { transform: scale(.95); background:#FEF2F2; }
+.coach-header-logout:focus-visible { outline:2px solid #EF4444; outline-offset:2px; }
+
 .drawer-verified-badge {
   position: absolute;
   bottom: -4px;
@@ -624,6 +647,7 @@ ion-menu ion-content {
 .venue-drawer-header {
   padding: calc(48px + var(--safe-area-top, env(safe-area-inset-top, 0px))) 24px 20px;
   background: linear-gradient(160deg, rgba(var(--app-primary-rgb), 0.1) 0%, #fff 60%);
+  position: relative;
 }
 
 .venue-drawer-identity {

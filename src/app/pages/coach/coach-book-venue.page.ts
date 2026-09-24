@@ -1,379 +1,201 @@
 import { CommonModule } from '@angular/common';
-import { Component, signal, computed, inject, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 import { CoachService } from '../../core/services/coach.service';
 
-interface Venue {
-  id: string;
+interface CoachVenueCourt {
+  id: number;
   name: string;
-  address: string;
-  distance: string;
-  rating: number;
-  reviews: number;
+  sport: string;
   pricePerHour: number;
-  sports: string[];
-  sportEmojis: string[];
-  image: string;
-  slots: string[];
-  amenities: string[];
-  isCoachFriendly: boolean;
+  maxPlayers: number;
   isIndoor: boolean;
-  capacity: number;
-  isOpenNow: boolean;
+  image: string;
 }
 
-const COACH_VENUES: Venue[] = [
-  {
-    id: 'cv1',
-    name: 'Elite Sports Academy',
-    address: 'Gomti Nagar Extension, Lucknow',
-    distance: '2.1 km',
-    rating: 4.9, reviews: 156,
-    pricePerHour: 1500,
-    sports: ['Cricket', 'Football', 'Badminton'],
-    sportEmojis: ['🏏', '⚽', '🏸'],
-    image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=700&h=420&fit=crop&auto=format',
-    slots: ['6 AM', '7 AM', '8 AM', '4 PM', '5 PM', '6 PM', '7 PM'],
-    amenities: ['Parking', 'Floodlights', 'Washrooms', 'Equipment', 'Café', 'Changing Rooms', 'Water'],
-    isCoachFriendly: true, isIndoor: false, capacity: 50,
-    isOpenNow: true,
-  },
-  {
-    id: 'cv2',
-    name: 'Cricket Training Ground',
-    address: 'Gomti Nagar Extension (Ekana), Lucknow',
-    distance: '4.5 km',
-    rating: 4.8, reviews: 128,
-    pricePerHour: 2000,
-    sports: ['Cricket'],
-    sportEmojis: ['🏏'],
-    image: 'https://images.unsplash.com/photo-1593341646782-e0b495cff86d?w=700&h=420&fit=crop&auto=format',
-    slots: ['6 AM', '7 AM', '5 PM', '6 PM', '7 PM'],
-    amenities: ['Parking', 'Floodlights', 'Washrooms', 'Equipment', 'Changing Rooms', 'Water'],
-    isCoachFriendly: true, isIndoor: false, capacity: 30,
-    isOpenNow: true,
-  },
-  {
-    id: 'cv3',
-    name: 'Phoenix Sports Hub',
-    address: 'Aliganj, Lucknow',
-    distance: '5.2 km',
-    rating: 4.7, reviews: 94,
-    pricePerHour: 1200,
-    sports: ['Tennis', 'Badminton', 'Basketball'],
-    sportEmojis: ['🎾', '🏸', '🏀'],
-    image: 'https://images.unsplash.com/photo-1722087642932-9b070e9a066e?w=700&h=420&fit=crop&auto=format',
-    slots: ['7 AM', '8 AM', '4 PM', '5 PM', '6 PM', '7 PM', '8 PM'],
-    amenities: ['Parking', 'Floodlights', 'Washrooms', 'Equipment', 'AC Indoor', 'Water', 'Lockers'],
-    isCoachFriendly: true, isIndoor: true, capacity: 20,
-    isOpenNow: true,
-  },
-  {
-    id: 'cv4',
-    name: 'City Sports Complex',
-    address: 'Hazratganj, Lucknow',
-    distance: '3.8 km',
-    rating: 4.5, reviews: 72,
-    pricePerHour: 800,
-    sports: ['Football', 'Basketball', 'Volleyball'],
-    sportEmojis: ['⚽', '🏀', '🏐'],
-    image: 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=700&h=420&fit=crop&auto=format',
-    slots: ['6 AM', '7 AM', '8 AM', '5 PM', '6 PM', '7 PM'],
-    amenities: ['Parking', 'Washrooms', 'Equipment', 'Water'],
-    isCoachFriendly: false, isIndoor: false, capacity: 40,
-    isOpenNow: false,
-  },
-];
-
-const UPCOMING_BOOKINGS = [
-  { id: 'ub1', venue: 'Elite Sports Academy', date: 'Today', time: '6:00 PM', students: 12, amount: 4500, status: 'Confirmed' },
-  { id: 'ub2', venue: 'Cricket Training Ground', date: 'Thu 3 Jul', time: '7:00 AM', students: 8, amount: 6000, status: 'Upcoming' },
-];
-
-const FILTERS = [
-  'All Sports', 'Nearby', 'Price: Low', 'Indoor', 'Outdoor',
-  'Available Today', 'Floodlights', 'Parking', 'Equipment', 'AC Indoor',
-];
+export interface CoachVenue {
+  id: number;
+  name: string;
+  address: string;
+  city: string;
+  rating: number;
+  sports: string[];
+  image: string;
+  amenities: string[];
+  rentalEquipment: any[];
+  openTime: string;
+  closeTime: string;
+  isOpenNow: boolean;
+  autoConfirm: boolean;
+  courts: CoachVenueCourt[];
+  minPrice: number;
+  maxCapacity: number;
+  hasIndoor: boolean;
+  hasOutdoor: boolean;
+}
 
 @Component({
   selector: 'app-coach-book-venue',
   standalone: true,
   imports: [CommonModule, IonicModule, FormsModule],
   template: `
-    <ion-content [fullscreen]="true">
-      <div class="book-venue-page pb-32">
-        <!-- Sticky Header -->
-        <div class="sticky-header bg-white border-b border-[#F3F4F6]">
-          <div class="flex items-center justify-between px-5 h-14">
-            <button (click)="back()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
-              <ion-icon name="chevron-back-outline" class="text-xl text-[#111827]"></ion-icon>
-            </button>
-            <p class="text-[17px] font-black text-[#111827] m-0">Book Venue</p>
-            <div class="flex gap-1.5">
-              <button (click)="searchOpen.set(!searchOpen())" class="w-9 h-9 flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
-                <ion-icon [name]="searchOpen() ? 'close-outline' : 'search-outline'" class="text-[#111827] text-lg"></ion-icon>
+    <ion-content [fullscreen]="true" class="page-shell">
+      <main class="venue-page">
+        <header class="topbar">
+          <button type="button" (click)="back()" aria-label="Back"><ion-icon name="chevron-back-outline"></ion-icon></button>
+          <h1>Book Venue</h1>
+          <div class="header-actions">
+            <button type="button" (click)="searchOpen.set(!searchOpen())" aria-label="Search venues"><ion-icon [name]="searchOpen() ? 'close-outline' : 'search-outline'"></ion-icon></button>
+            <button type="button" [class.active]="filtersOpen()" (click)="filtersOpen.set(!filtersOpen())" aria-label="Venue filters"><ion-icon name="options-outline"></ion-icon></button>
+          </div>
+        </header>
+
+        <section *ngIf="searchOpen()" class="search-wrap">
+          <label class="search-box">
+            <ion-icon name="search-outline"></ion-icon>
+            <input [ngModel]="searchQ()" (ngModelChange)="searchQ.set($event)" placeholder="Search venue, sport, court or area" autocomplete="off" />
+            <button *ngIf="searchQ()" type="button" (click)="searchQ.set('')" aria-label="Clear search"><ion-icon name="close-circle"></ion-icon></button>
+          </label>
+        </section>
+
+        <section class="chips" aria-label="Venue filters">
+          <button *ngFor="let filter of primaryFilters()" type="button" [class.selected]="selectedFilter() === filter" (click)="selectFilter(filter)">{{ filter }}</button>
+        </section>
+        <section *ngIf="filtersOpen()" class="more-filters">
+          <div><strong>More filters</strong><button type="button" (click)="clearFilters()">Clear</button></div>
+          <section class="chips inner">
+            <button *ngFor="let filter of secondaryFilters()" type="button" [class.selected]="selectedFilter() === filter" (click)="selectFilter(filter)">{{ filter }}</button>
+          </section>
+        </section>
+
+        <div class="content">
+          <div class="results-title">
+            <span>{{ loading() ? 'Loading approved venues…' : filteredVenues().length + ' approved venue' + (filteredVenues().length === 1 ? '' : 's') }}</span>
+            <button *ngIf="selectedFilter() !== 'All' || searchQ()" type="button" (click)="clearFilters()">Reset</button>
+          </div>
+
+          <div *ngIf="loading()" class="state"><ion-spinner name="crescent"></ion-spinner><p>Finding bookable venues…</p></div>
+          <div *ngIf="!loading() && error()" class="state error">
+            <ion-icon name="cloud-offline-outline"></ion-icon><strong>Venues could not be loaded</strong><p>{{ error() }}</p><button type="button" (click)="load()">Try again</button>
+          </div>
+          <div *ngIf="!loading() && !error() && !filteredVenues().length" class="state">
+            <ion-icon name="location-outline"></ion-icon><strong>No matching venues</strong><p>Try another search or remove a filter.</p><button type="button" (click)="clearFilters()">Show all venues</button>
+          </div>
+
+          <section *ngIf="!loading() && !error()" class="venue-list">
+            <article *ngFor="let venue of filteredVenues(); trackBy: trackVenue" class="venue-card">
+              <button type="button" class="venue-cover" (click)="bookVenue(venue)" [attr.aria-label]="'Book ' + venue.name">
+                <img [src]="venue.image || fallbackImage" alt="" />
+                <span class="shade"></span>
+                <span *ngIf="venue.isOpenNow" class="open-badge">Open now</span>
+                <span class="price"><b>{{ venue.minPrice ? ('₹' + (venue.minPrice | number:'1.0-0')) : 'Ask venue' }}</b><small>{{ venue.minPrice ? 'per hour' : 'for pricing' }}</small></span>
+                <span class="venue-name"><b>{{ venue.name }}</b><small>{{ venue.sports.join(' · ') || 'Multi-sport venue' }}</small></span>
               </button>
-              <button class="w-9 h-9 flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
-                <ion-icon name="options-outline" class="text-[#111827] text-lg"></ion-icon>
-              </button>
-            </div>
-          </div>
+              <div class="venue-info">
+                <div class="meta">
+                  <span *ngIf="venue.rating"><ion-icon name="star"></ion-icon>{{ venue.rating | number:'1.1-1' }}</span>
+                  <span><ion-icon name="location-outline"></ion-icon>{{ venue.address || venue.city || 'Address not provided' }}</span>
+                </div>
+                <div class="amenities" *ngIf="venue.amenities.length">
+                  <span *ngFor="let amenity of venue.amenities.slice(0,4)">{{ amenity }}</span><span *ngIf="venue.amenities.length > 4">+{{ venue.amenities.length - 4 }}</span>
+                </div>
+                <div class="booking-row">
+                  <span class="hours"><ion-icon name="time-outline"></ion-icon><b>{{ venue.openTime || 'Hours unavailable' }}<ng-container *ngIf="venue.closeTime"> – {{ venue.closeTime }}</ng-container></b><small>Choose a court, date and available time</small></span>
+                  <button type="button" (click)="bookVenue(venue)">Book venue<ion-icon name="chevron-forward-outline"></ion-icon></button>
+                </div>
+              </div>
+            </article>
+          </section>
 
-          <!-- Search input box -->
-          <div *ngIf="searchOpen()" class="px-5 pb-3">
-            <div class="flex items-center gap-2 bg-[#F3F4F6] rounded-2xl px-4 h-11 border border-slate-100 shadow-sm">
-              <ion-icon name="search-outline" class="text-[#9CA3AF] text-sm"></ion-icon>
-              <input [(ngModel)]="searchQ" placeholder="Search venues, turfs or academies..." class="flex-1 bg-transparent text-[14px] text-[#111827] focus:outline-none min-h-0 border-none" />
-            </div>
-          </div>
-
-          <!-- Filters Chips track -->
-          <div class="flex gap-2 px-5 pb-4 pt-2 overflow-x-auto no-scrollbar">
-            <button *ngFor="let f of filterOptions" (click)="selectedFilter.set(f)" class="flex-shrink-0 px-3.5 py-2 rounded-full text-[11px] font-bold border-none transition-all"
-              [style.backgroundColor]="selectedFilter() === f ? 'var(--app-primary)' : '#F3F4F6'"
-              [style.color]="selectedFilter() === f ? '#111827' : '#6B7280'">
-              {{ f }}
-            </button>
-          </div>
+          <section *ngIf="upcoming().length" class="upcoming">
+            <div class="section-title"><div><h2>Upcoming reservations</h2><p>Your coaching venue requests</p></div><button type="button" (click)="go('/app/coach/schedule')">View all</button></div>
+            <article *ngFor="let session of upcoming().slice(0,3)">
+              <span class="calendar-icon"><ion-icon name="calendar-outline"></ion-icon></span>
+              <div><b>{{ session.venue || 'Venue session' }}</b><span>{{ session.starts_at | date:'EEE, d MMM · h:mm a' }} · {{ session.court || 'Court' }}</span></div>
+              <i [class.pending]="session.status === 'pending_venue_approval'">{{ session.status === 'pending_venue_approval' ? 'Pending' : 'Confirmed' }}</i>
+            </article>
+          </section>
         </div>
-
-        <div class="px-5 pt-4 space-y-5">
-          <!-- Results Count -->
-          <div class="flex items-center justify-between px-1">
-            <p class="text-[13px] font-bold text-[#6B7280] m-0">{{ loading() ? 'Loading venues…' : filteredVenues().length + ' approved venues' }}</p>
-            <button *ngIf="selectedFilter() !== 'All Sports'" (click)="selectedFilter.set('All Sports')" class="text-[12px] font-bold text-[#EF4444] bg-transparent border-none">Clear</button>
-          </div>
-          <p *ngIf="loadError()" class="text-[13px] text-[#DC2626] text-center">{{ loadError() }}</p>
-
-          <!-- List of Venues -->
-          <div *ngIf="filteredVenues().length === 0" class="py-16 text-center">
-            <div class="text-5xl mb-3">🏟️</div>
-            <p class="text-[16px] font-bold text-[#111827] mb-1 m-0">No venues found</p>
-            <p class="text-[13px] text-[#9CA3AF] m-0 font-medium">Try adjusting your filters</p>
-          </div>
-
-          <div *ngFor="let v of filteredVenues()" class="section-card bg-white overflow-hidden shadow-sm border border-slate-100 text-left">
-            <!-- image cover -->
-            <div class="relative h-[160px] overflow-hidden bg-gray-200">
-              <img [src]="v.image" class="w-full h-full object-cover" />
-              <div class="absolute inset-0 bg-gradient-to-t from-black/55 to-transparent"></div>
-
-              <!-- Top badges -->
-              <div class="absolute top-3 left-3 flex gap-1.5">
-                <span *ngIf="v.isOpenNow" class="text-[10px] font-bold bg-[var(--app-primary)] text-[#111827] px-2.5 py-1 rounded-full shadow-sm">Open Now</span>
-                <span *ngIf="v.isCoachFriendly" class="text-[10px] font-bold bg-[#FF7A00] text-white px-2.5 py-1 rounded-full shadow-sm">Coach Friendly 🏋️</span>
-              </div>
-
-              <!-- Pricing pill -->
-              <div class="absolute top-3 right-3 bg-white/95 backdrop-blur-sm px-2.5 py-1.5 rounded-xl text-center border border-slate-100 shadow-sm">
-                <p class="text-[13px] font-black text-[#111827] m-0 leading-none">{{ v.pricePerHour > 0 ? '₹' + v.pricePerHour.toLocaleString() : 'Ask venue' }}</p>
-                <p class="text-[9px] text-[#9CA3AF] m-0 font-bold mt-0.5">{{ v.pricePerHour > 0 ? 'per hour' : 'for pricing' }}</p>
-              </div>
-
-              <!-- Title -->
-              <div class="absolute bottom-3 left-3 right-3">
-                <div class="flex items-center gap-1.5 mb-1">
-                  <span *ngFor="let emoji of v.sportEmojis" class="text-lg leading-none">{{ emoji }}</span>
-                </div>
-                <p class="text-white font-black text-[15px] m-0 drop-shadow-md leading-none">{{ v.name }}</p>
-              </div>
-            </div>
-
-            <!-- body details -->
-            <div class="px-4 pt-3.5 pb-4">
-              <div class="flex items-center gap-3 mb-2 flex-wrap">
-                <div *ngIf="v.rating > 0" class="flex items-center gap-1 text-[11px] font-bold text-[#111827]">
-                  <ion-icon name="star" class="text-[#F59E0B]"></ion-icon>
-                  <span>{{ v.rating }}</span>
-                </div>
-                <div *ngIf="v.rating > 0" class="w-1 h-1 rounded-full bg-[#E5E7EB]"></div>
-                <div class="flex items-center gap-1 text-[11px] text-[#9CA3AF] font-bold">
-                  <ion-icon name="location-outline"></ion-icon>
-                  <span>{{ v.address.split(',')[0] }}</span>
-                </div>
-                <ng-container *ngIf="v.distance">
-                  <div class="w-1 h-1 rounded-full bg-[#E5E7EB]"></div>
-                  <span class="text-[11px] text-[#9CA3AF] font-bold">{{ v.distance }}</span>
-                </ng-container>
-              </div>
-
-              <!-- Amenities chips -->
-              <div *ngIf="v.amenities.length" class="flex gap-1.5 overflow-x-auto no-scrollbar mb-3 pb-0.5">
-                <div *ngFor="let a of v.amenities.slice(0, 5)" class="flex items-center gap-1 bg-[#F3F4F6] px-2.5 py-1 rounded-full flex-shrink-0">
-                  <ion-icon [name]="getAmenityIcon(a)" class="text-[#6B7280] text-[10px]"></ion-icon>
-                  <span class="text-[9px] text-[#6B7280] font-bold">{{ a }}</span>
-                </div>
-                <span *ngIf="v.amenities.length > 5" class="text-[10px] text-[#9CA3AF] font-bold align-middle self-center">+{{ v.amenities.length - 5 }}</span>
-              </div>
-
-              <!-- Available slots row -->
-              <div *ngIf="v.slots.length" class="flex items-center gap-2 mb-3 text-[11px] text-[#9CA3AF] font-bold">
-                <ion-icon name="time-outline" class="text-sm"></ion-icon>
-                <span>{{ v.slots.slice(0, 4).join(' · ') }}</span>
-                <span *ngIf="v.slots.length > 4" class="text-[var(--app-primary)] font-black">+{{ v.slots.length - 4 }}</span>
-              </div>
-
-              <div class="flex items-center gap-2 border-t border-slate-50 pt-3 mt-1">
-                <div class="flex items-center gap-1 text-[11px] text-[#9CA3AF] font-bold">
-                  <ion-icon name="calendar-outline" class="text-sm"></ion-icon>Choose a date and time next
-                </div>
-                <div class="flex-1"></div>
-                <button (click)="bookVenue(v)" class="px-5 py-2.5 rounded-2xl text-[13px] font-black btn-green-gradient text-[#111827] border-none">
-                  Book Venue
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Upcoming Reservations list -->
-          <div *ngIf="upcomingBookings.length" class="pt-4 text-left">
-            <p class="text-[14px] font-black text-[#111827] mb-3 m-0">Upcoming Venue Reservations</p>
-            <div class="space-y-3">
-              <div *ngFor="let b of upcomingBookings" class="bg-white rounded-[20px] p-4 shadow-sm border border-slate-100">
-                <div class="flex items-start justify-between mb-3">
-                  <div>
-                    <p class="text-[14px] font-bold text-[#111827] m-0">{{ b.venue }}</p>
-                    <p class="text-[12px] text-[#9CA3AF] m-0 mt-0.5">{{ b.date }} · {{ b.time }} · {{ b.students }} students</p>
-                  </div>
-                  <div class="text-right">
-                    <p class="text-[14px] font-black text-[#111827] m-0">₹{{ b.amount.toLocaleString() }}</p>
-                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                      [style.backgroundColor]="b.status === 'Confirmed' ? '#F0FDF4' : '#EFF6FF'"
-                      [style.color]="b.status === 'Confirmed' ? '#16A34A' : '#1D4ED8'">{{ b.status }}</span>
-                  </div>
-                </div>
-                <div class="flex gap-2">
-                  <button class="flex-grow py-2 rounded-xl bg-[#F9FAFB] text-[12px] font-bold text-[#6B7280] border border-[#F3F4F6]">View Details</button>
-                  <button class="flex-grow py-2 rounded-xl bg-[#FEF2F2] text-[12px] font-bold text-[#DC2626] border border-[#FCA5A5]">Cancel</button>
-                  <button (click)="go('/app/coach/chat')" class="flex-grow py-2 rounded-xl text-[12px] font-bold text-[#111827] bg-[var(--app-primary)]/12 border border-[var(--app-primary)]/30 border-2">Chat</button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
+      </main>
     </ion-content>
   `,
   styles: [`
-    .book-venue-page {
-      background: #FAFBFC;
-      min-height: 100%;
-    }
-
-    .sticky-header {
-      position: sticky;
-      top: 0;
-      z-index: 30;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
-    }
-
-    .section-card {
-      border-radius: 24px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
-    }
-
-    .btn-green-gradient {
-      background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to));
-      box-shadow: 0 4px 16px rgba(var(--app-primary-rgb),0.30);
-    }
-
-    .no-scrollbar {
-      scrollbar-width: none;
-      &::-webkit-scrollbar {
-        display: none;
-      }
-    }
-  `]
+    :host{display:block;--lime:var(--app-primary,#7cf000);--ink:#101828;--muted:#667085;--line:#e8ecf0}.page-shell{--background:#f7f9fb}.venue-page{min-height:100%;padding-bottom:calc(30px + env(safe-area-inset-bottom));color:var(--ink);background:#f7f9fb}.topbar{position:sticky;top:0;z-index:30;height:calc(58px + env(safe-area-inset-top));padding:env(safe-area-inset-top) 14px 0;display:grid;grid-template-columns:80px 1fr 80px;align-items:center;border-bottom:1px solid var(--line);background:rgba(255,255,255,.96);backdrop-filter:blur(14px)}.topbar>button,.header-actions button{width:38px;height:38px;padding:0;border:0;border-radius:13px;display:grid;place-items:center;color:var(--ink);background:#f2f4f7;font-size:19px}.topbar h1{margin:0;text-align:center;font-size:17px;font-weight:850}.header-actions{display:flex;justify-content:flex-end;gap:5px}.header-actions button.active{color:#315200;background:#eaffd3}.search-wrap{position:sticky;top:calc(58px + env(safe-area-inset-top));z-index:29;padding:10px 14px 4px;background:rgba(255,255,255,.96)}.search-box{height:47px;padding:0 13px;border:1px solid var(--line);border-radius:15px;display:flex;align-items:center;gap:9px;background:#f8fafb}.search-box>ion-icon{color:#98a2b3}.search-box input{min-width:0;flex:1;border:0;outline:0;background:transparent;font:inherit;font-size:12px}.search-box button{padding:0;border:0;color:#98a2b3;background:transparent;font-size:18px}.chips{padding:9px 14px;display:flex;gap:7px;overflow-x:auto;background:#fff;scrollbar-width:none}.chips::-webkit-scrollbar{display:none}.chips button{height:34px;padding:0 13px;flex:0 0 auto;border:1px solid transparent;border-radius:999px;color:#667085;background:#f2f4f7;font:inherit;font-size:10.5px;font-weight:750}.chips button.selected{border-color:#75df0d;color:#1c3000;background:var(--lime)}.more-filters{padding:11px 14px 5px;border-top:1px solid #f2f4f7;background:#fff}.more-filters>div{display:flex;justify-content:space-between}.more-filters strong{font-size:11px}.more-filters>div button,.results-title button,.section-title button{border:0;color:#4f9900;background:transparent;font-size:10px;font-weight:800}.chips.inner{padding:8px 0 5px;flex-wrap:wrap}.content{width:min(100%,460px);margin:0 auto;padding:14px;box-sizing:border-box}.results-title{margin:0 3px 11px;display:flex;justify-content:space-between;color:#667085;font-size:11px;font-weight:750}.state{min-height:280px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;color:var(--muted)}.state>ion-icon{color:#6bd20a;font-size:38px}.state ion-spinner{color:var(--lime)}.state strong{color:var(--ink);font-size:15px}.state p{max-width:280px;margin:0;font-size:11px;line-height:1.45}.state button{margin-top:4px;padding:10px 15px;border:0;border-radius:12px;background:var(--lime);font-weight:800}.state.error>ion-icon{color:#f04438}.venue-list{display:grid;gap:14px}.venue-card{overflow:hidden;border:1px solid var(--line);border-radius:22px;background:#fff;box-shadow:0 5px 18px rgba(16,24,40,.045)}.venue-cover{position:relative;width:100%;height:164px;padding:0;border:0;display:block;overflow:hidden;background:#e8ecf0;text-align:left}.venue-cover img{width:100%;height:100%;object-fit:cover}.shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.02) 35%,rgba(0,0,0,.72))}.open-badge{position:absolute;top:11px;left:11px;padding:5px 9px;border-radius:999px;color:#1f3200;background:var(--lime);font-size:9px;font-weight:850}.price{position:absolute;top:10px;right:10px;min-width:62px;padding:8px;border-radius:12px;display:grid;gap:2px;background:rgba(255,255,255,.95);text-align:center}.price b{font-size:11px}.price small{color:#98a2b3;font-size:7.5px}.venue-name{position:absolute;right:13px;bottom:12px;left:13px;display:grid;gap:4px;color:#fff}.venue-name b{font-size:15px}.venue-name small{font-size:9px;opacity:.78}.venue-info{padding:12px}.meta{display:flex;align-items:center;gap:10px}.meta span{min-width:0;display:flex;align-items:center;gap:4px;color:#667085;font-size:9.5px}.meta span:last-child{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.meta ion-icon{flex:0 0 auto;color:#98a2b3}.meta span:first-child ion-icon{color:#f79009}.amenities{margin-top:10px;display:flex;gap:5px;overflow:hidden}.amenities span{padding:5px 7px;flex:0 0 auto;border-radius:999px;color:#667085;background:#f2f4f7;font-size:8px;font-weight:700}.booking-row{margin-top:11px;padding-top:11px;border-top:1px solid #f1f3f5;display:flex;align-items:center;gap:10px}.hours{min-width:0;flex:1;display:grid;grid-template-columns:15px 1fr;column-gap:4px}.hours ion-icon{grid-row:1/3;color:#98a2b3}.hours b{overflow:hidden;color:#475467;font-size:9.5px;text-overflow:ellipsis;white-space:nowrap}.hours small{margin-top:2px;color:#98a2b3;font-size:7.5px}.booking-row>button{height:38px;padding:0 13px;border:0;border-radius:13px;display:flex;align-items:center;gap:4px;color:#193000;background:var(--lime);font-size:10px;font-weight:850}.upcoming{margin-top:24px}.section-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}.section-title h2{margin:0;font-size:14px}.section-title p{margin:2px 0 0;color:#98a2b3;font-size:9px}.upcoming article{margin-bottom:8px;padding:11px;border:1px solid var(--line);border-radius:16px;display:grid;grid-template-columns:38px minmax(0,1fr) auto;gap:10px;align-items:center;background:#fff}.calendar-icon{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;color:#4d9600;background:#efffdc}.upcoming article div{min-width:0;display:grid;gap:3px}.upcoming article b,.upcoming article span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.upcoming article b{font-size:11px}.upcoming article div span{color:#667085;font-size:8.5px}.upcoming i{padding:4px 7px;border-radius:999px;color:#067647;background:#ecfdf3;font-size:7.5px;font-style:normal;font-weight:800}.upcoming i.pending{color:#b54708;background:#fffaeb}@media(min-width:700px){.topbar{grid-template-columns:80px minmax(0,300px) 80px;justify-content:center}}
+  `],
 })
 export class CoachBookVenuePage implements OnInit {
   private readonly router = inject(Router);
-  private readonly coachService = inject(CoachService);
+  private readonly coach = inject(CoachService);
+  readonly fallbackImage = 'assets/icon/favicon.png';
+  readonly loading = signal(true);
+  readonly error = signal('');
+  readonly venues = signal<CoachVenue[]>([]);
+  readonly upcoming = signal<any[]>([]);
+  readonly searchOpen = signal(false);
+  readonly filtersOpen = signal(false);
+  readonly searchQ = signal('');
+  readonly selectedFilter = signal('All');
 
-  searchOpen = signal(false);
-  searchQ = '';
-  selectedFilter = signal('All Sports');
-  venues = signal<Venue[]>([]);
-  loading = signal(false);
-  loadError = signal('');
-
-  readonly filterOptions = FILTERS;
-  readonly upcomingBookings: typeof UPCOMING_BOOKINGS = [];
-
-  filteredVenues = computed(() => {
-    const q = this.searchQ.toLowerCase().trim();
+  readonly primaryFilters = computed(() => ['All', ...this.sports().slice(0, 4)]);
+  readonly secondaryFilters = computed(() => ['Open now', 'Price: Low', 'Indoor', 'Outdoor', ...this.sports().slice(4), ...this.amenities().slice(0, 5)]);
+  readonly sports = computed(() => [...new Set(this.venues().reduce<string[]>((items, venue) => items.concat(venue.sports), []))].sort());
+  readonly amenities = computed(() => [...new Set(this.venues().reduce<string[]>((items, venue) => items.concat(venue.amenities), []))].sort());
+  readonly filteredVenues = computed(() => {
+    const query = this.searchQ().trim().toLowerCase();
     const filter = this.selectedFilter();
-
-    let result = this.venues();
-
-    if (q) {
-      result = result.filter(v => v.name.toLowerCase().includes(q) || v.address.toLowerCase().includes(q));
-    }
-
-    if (filter === 'Indoor') result = result.filter(v => v.isIndoor);
-    else if (filter === 'Outdoor') result = result.filter(v => !v.isIndoor);
-    else if (filter === 'Available Today') result = result.filter(v => v.isOpenNow);
-    else if (filter === 'Nearby') result = [...result].sort((a, b) => parseFloat(a.distance) - parseFloat(b.distance));
-    else if (filter === 'Price: Low') result = [...result].sort((a, b) => a.pricePerHour - b.pricePerHour);
-    else if (filter === 'Floodlights') result = result.filter(v => v.amenities.includes('Floodlights'));
-    else if (filter === 'Parking') result = result.filter(v => v.amenities.includes('Parking'));
-    else if (filter === 'Equipment') result = result.filter(v => v.amenities.includes('Equipment'));
-    else if (filter === 'AC Indoor') result = result.filter(v => v.amenities.includes('AC Indoor'));
-
-    return result;
+    let rows = this.venues().filter(venue => !query || [venue.name, venue.address, venue.city, ...venue.sports, ...venue.courts.map(court => court.name)].join(' ').toLowerCase().includes(query));
+    if (filter === 'Open now') rows = rows.filter(venue => venue.isOpenNow);
+    else if (filter === 'Indoor') rows = rows.filter(venue => venue.hasIndoor);
+    else if (filter === 'Outdoor') rows = rows.filter(venue => venue.hasOutdoor);
+    else if (filter === 'Price: Low') rows = [...rows].sort((a, b) => (a.minPrice || Number.MAX_SAFE_INTEGER) - (b.minPrice || Number.MAX_SAFE_INTEGER));
+    else if (this.sports().includes(filter)) rows = rows.filter(venue => venue.sports.includes(filter));
+    else if (this.amenities().includes(filter)) rows = rows.filter(venue => venue.amenities.includes(filter));
+    return rows;
   });
 
-  ngOnInit(): void {
-    void this.loadVenues();
-  }
+  ngOnInit(): void { void this.load(); }
 
-  private async loadVenues(): Promise<void> {
-    this.loading.set(true);
-    this.loadError.set('');
+  async load(): Promise<void> {
+    this.loading.set(true); this.error.set('');
     try {
-      const response = await firstValueFrom(this.coachService.getVenues());
-      if (!response.success) throw new Error(response.message || 'Unable to load venues.');
-      this.venues.set((response.data || []).map((item: any) => ({
-        id: String(item.id), name: item.name, address: item.location || item.city || 'Location pending',
-        distance: item.distance || '', rating: Number(item.rating || 0), reviews: 0,
-        pricePerHour: Number(item.price || 0), sports: item.sports || [], sportEmojis: [],
-        image: item.profileImage || 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=900&h=500&fit=crop&auto=format', slots: [], amenities: [],
-        isCoachFriendly: false, isIndoor: false, capacity: 0, isOpenNow: false,
-      })));
-    } catch {
-      this.loadError.set('Could not load venues from the server. Please try again.');
-    } finally {
-      this.loading.set(false);
-    }
+      const [venuesResponse, sessionsResponse] = await Promise.all([
+        firstValueFrom(this.coach.getSchedulingVenues()),
+        firstValueFrom(this.coach.getSchedulingSessions(new Date().toISOString().slice(0, 10))),
+      ]);
+      const rows = Array.isArray(venuesResponse.data) ? venuesResponse.data : [];
+      this.venues.set(rows.map(item => this.mapVenue(item)).filter(venue => venue.courts.length > 0));
+      this.upcoming.set(Array.isArray(sessionsResponse.data) ? sessionsResponse.data.filter((item: any) => ['confirmed', 'pending_venue_approval'].includes(item.status)) : []);
+    } catch (error: any) {
+      this.error.set(error?.error?.message || 'Check your connection and try again.');
+    } finally { this.loading.set(false); }
   }
 
-  back() {
-    this.router.navigateByUrl('/app/coach/dashboard');
-  }
-
-  go(path: string) {
-    this.router.navigateByUrl(path);
-  }
-
-  bookVenue(v: Venue) {
-    this.router.navigate(['/app/coach/venue-booking'], { state: { venue: v } });
-  }
-
-  getAmenityIcon(a: string): string {
-    const icons: Record<string, string> = {
-      Parking: 'car-outline',
-      Floodlights: 'flash-outline',
-      Washrooms: 'water-outline',
-      Café: 'cafe-outline',
-      Equipment: 'cube-outline',
-      'Changing Rooms': 'shirt-outline',
-      Water: 'water-outline',
-      'AC Indoor': 'snow-outline',
-      Lockers: 'lock-closed-outline'
+  private mapVenue(item: any): CoachVenue {
+    const courts: CoachVenueCourt[] = (Array.isArray(item.courts) ? item.courts : []).map((court: any) => ({
+      id: Number(court.id), name: String(court.name || 'Court'), sport: this.titleCase(court.sport || 'Sport'),
+      pricePerHour: Number(court.price_per_hour || 0), maxPlayers: Number(court.max_players || 1),
+      isIndoor: !!court.is_indoor, image: String(court.image || ''),
+    }));
+    return {
+      id: Number(item.id), name: String(item.name || 'Venue'), address: String(item.location || ''), city: String(item.city || ''),
+      rating: Number(item.rating || 0), sports: (Array.isArray(item.sports) ? item.sports : courts.map(court => court.sport)).map((sport: any) => this.titleCase(sport)),
+      image: String(item.image || courts.find(court => court.image)?.image || ''), amenities: Array.isArray(item.amenities) ? item.amenities.map(String) : [],
+      rentalEquipment: Array.isArray(item.rental_equipment) ? item.rental_equipment : [], openTime: String(item.open_time || ''), closeTime: String(item.close_time || ''),
+      isOpenNow: !!item.is_open_now, autoConfirm: !!item.auto_confirm, courts,
+      minPrice: courts.length ? Math.min(...courts.map(court => court.pricePerHour)) : 0,
+      maxCapacity: courts.length ? Math.max(...courts.map(court => court.maxPlayers || 1)) : 1,
+      hasIndoor: courts.some(court => court.isIndoor), hasOutdoor: courts.some(court => !court.isIndoor),
     };
-    return icons[a] || 'cube-outline';
   }
+
+  selectFilter(filter: string): void { this.selectedFilter.set(filter); }
+  clearFilters(): void { this.selectedFilter.set('All'); this.searchQ.set(''); }
+  trackVenue(_index: number, venue: CoachVenue): number { return venue.id; }
+  bookVenue(venue: CoachVenue): void { void this.router.navigate(['/app/coach/venue-booking'], { queryParams: { venue: venue.id }, state: { venue } }); }
+  titleCase(value: unknown): string { return String(value || '').replace(/[-_]/g, ' ').replace(/\b\w/g, char => char.toUpperCase()); }
+  back(): void { void this.router.navigateByUrl('/app/coach/dashboard'); }
+  go(path: string): void { void this.router.navigateByUrl(path); }
 }

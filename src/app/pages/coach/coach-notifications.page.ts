@@ -2,8 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { AlertController, IonicModule } from '@ionic/angular';
-import { ChatService } from '../../core/services/chat.service';
+import { IonicModule } from '@ionic/angular';
 import {
   AppNotification,
   NotificationFeedService,
@@ -363,8 +362,6 @@ const FILTERS = [
 export class CoachNotificationsPage implements OnInit {
   private readonly router = inject(Router);
   private readonly feed = inject(NotificationFeedService);
-  private readonly chat = inject(ChatService);
-  private readonly alertCtrl = inject(AlertController);
 
   readonly items = this.feed.items;
   readonly loading = this.feed.loading;
@@ -434,22 +431,7 @@ export class CoachNotificationsPage implements OnInit {
       return;
     }
     if (n.title.toLowerCase().includes('booking request') || n.data?.bookingRequestId) {
-      const playerId = n.data?.playerId;
-      if (playerId) {
-        const thread = await this.chat.openPrivate(playerId);
-        if (thread.success && thread.data?.id) {
-          this.go(`/app/coach/chat/${encodeURIComponent(thread.data.id)}`);
-          return;
-        }
-        const alert = await this.alertCtrl.create({
-          header: 'Chat unavailable',
-          message: thread.message || 'This booking request chat could not be opened. Please try again.',
-          buttons: ['OK'],
-        });
-        await alert.present();
-        return;
-      }
-      this.go(n.route && n.route !== '/app/coach/notifications' ? n.route : '/app/coach/dashboard');
+      this.go('/app/coach/booking-requests');
       return;
     }
     if (n.route) {

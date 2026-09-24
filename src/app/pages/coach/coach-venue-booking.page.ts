@@ -1,775 +1,394 @@
 import { CommonModule } from '@angular/common';
-import { Component, signal, computed, inject } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
+import { firstValueFrom } from 'rxjs';
+import { CoachService } from '../../core/services/coach.service';
 
-export interface Venue {
-  id: string;
+interface Court {
+  id: number;
+  name: string;
+  sport: string;
+  pricePerHour: number;
+  maxPlayers: number;
+  isIndoor: boolean;
+  image: string;
+}
+
+interface Venue {
+  id: number;
   name: string;
   address: string;
-  distance: string;
-  rating: number;
-  reviews: number;
-  pricePerHour: number;
-  sports: string[];
-  sportEmojis: string[];
   image: string;
-  slots: string[];
+  openTime: string;
+  closeTime: string;
+  autoConfirm: boolean;
   amenities: string[];
-  isCoachFriendly: boolean;
-  isIndoor: boolean;
-  capacity: number;
-  isOpenNow: boolean;
+  rentalEquipment: RentalItem[];
+  courts: Court[];
 }
 
-const COACH_VENUES: Venue[] = [
-  {
-    id: 'cv1',
-    name: 'Elite Sports Academy',
-    address: 'Gomti Nagar Extension, Lucknow',
-    distance: '2.1 km',
-    rating: 4.9, reviews: 156,
-    pricePerHour: 1500,
-    sports: ['Cricket', 'Football', 'Badminton'],
-    sportEmojis: ['🏏', '⚽', '🏸'],
-    image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=700&h=420&fit=crop&auto=format',
-    slots: ['6 AM', '7 AM', '8 AM', '4 PM', '5 PM', '6 PM', '7 PM'],
-    amenities: ['Parking', 'Floodlights', 'Washrooms', 'Equipment', 'Café', 'Changing Rooms', 'Water'],
-    isCoachFriendly: true, isIndoor: false, capacity: 50,
-    isOpenNow: true,
-  },
-  {
-    id: 'cv2',
-    name: 'Cricket Training Ground',
-    address: 'Gomti Nagar Extension (Ekana), Lucknow',
-    distance: '4.5 km',
-    rating: 4.8, reviews: 128,
-    pricePerHour: 2000,
-    sports: ['Cricket'],
-    sportEmojis: ['🏏'],
-    image: 'https://images.unsplash.com/photo-1593341646782-e0b495cff86d?w=700&h=420&fit=crop&auto=format',
-    slots: ['6 AM', '7 AM', '5 PM', '6 PM', '7 PM'],
-    amenities: ['Parking', 'Floodlights', 'Washrooms', 'Equipment', 'Changing Rooms', 'Water'],
-    isCoachFriendly: true, isIndoor: false, capacity: 30,
-    isOpenNow: true,
-  },
-  {
-    id: 'cv3',
-    name: 'Phoenix Sports Hub',
-    address: 'Aliganj, Lucknow',
-    distance: '5.2 km',
-    rating: 4.7, reviews: 94,
-    pricePerHour: 1200,
-    sports: ['Tennis', 'Badminton', 'Basketball'],
-    sportEmojis: ['🎾', '🏸', '🏀'],
-    image: 'https://images.unsplash.com/photo-1722087642932-9b070e9a066e?w=700&h=420&fit=crop&auto=format',
-    slots: ['7 AM', '8 AM', '4 PM', '5 PM', '6 PM', '7 PM', '8 PM'],
-    amenities: ['Parking', 'Floodlights', 'Washrooms', 'Equipment', 'AC Indoor', 'Water', 'Lockers'],
-    isCoachFriendly: true, isIndoor: true, capacity: 20,
-    isOpenNow: true,
-  },
-  {
-    id: 'cv4',
-    name: 'City Sports Complex',
-    address: 'Hazratganj, Lucknow',
-    distance: '3.8 km',
-    rating: 4.5, reviews: 72,
-    pricePerHour: 800,
-    sports: ['Football', 'Basketball', 'Volleyball'],
-    sportEmojis: ['⚽', '🏀', '🏐'],
-    image: 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=700&h=420&fit=crop&auto=format',
-    slots: ['6 AM', '7 AM', '8 AM', '5 PM', '6 PM', '7 PM'],
-    amenities: ['Parking', 'Washrooms', 'Equipment', 'Water'],
-    isCoachFriendly: false, isIndoor: false, capacity: 40,
-    isOpenNow: false,
-  },
-];
-
-interface SportCard {
-  id: string;
-  name: string;
-  emoji: string;
-  image: string;
-}
-
-interface DurationOption {
-  id: string;
-  label: string;
-  hrs: number;
-}
-
-interface TrainingType {
+interface RentalItem {
   id: string;
   label: string;
   emoji: string;
-}
-
-interface EquipmentOption {
-  id: string;
-  label: string;
+  qty: number;
   price: number;
-  emoji: string;
 }
 
-const SPORTS_CARDS: SportCard[] = [
-  { id: 'cricket', name: 'Cricket', emoji: '🏏', image: 'https://images.unsplash.com/photo-1593341646782-e0b495cff86d?w=300&h=400&fit=crop&auto=format' },
-  { id: 'football', name: 'Football', emoji: '⚽', image: 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=300&h=400&fit=crop&auto=format' },
-  { id: 'basketball', name: 'Basketball', emoji: '🏀', image: 'https://images.unsplash.com/photo-1608245449230-4ac19066d2d0?w=300&h=400&fit=crop&auto=format' },
-  { id: 'badminton', name: 'Badminton', emoji: '🏸', image: 'https://images.unsplash.com/photo-1722087642932-9b070e9a066e?w=300&h=400&fit=crop&auto=format' },
-  { id: 'tennis', name: 'Tennis', emoji: '🎾', image: 'https://images.unsplash.com/photo-1761156896762-2ef13f932004?w=300&h=400&fit=crop&auto=format' },
-  { id: 'volleyball', name: 'Volleyball', emoji: '🏐', image: 'https://images.unsplash.com/photo-1601512986351-9b0e01780eef?w=300&h=400&fit=crop&auto=format' },
-];
+interface Slot {
+  startTime: string;
+  endTime: string;
+  label: string;
+  endLabel: string;
+  period: string;
+}
 
-const DURATIONS: DurationOption[] = [
-  { id: '30min', label: '30 Minutes', hrs: 0.5 },
-  { id: '60min', label: '60 Minutes', hrs: 1 },
-  { id: '90min', label: '90 Minutes', hrs: 1.5 },
-  { id: '2hrs', label: '2 Hours', hrs: 2 },
-];
-
-const TRAINING_TYPES: TrainingType[] = [
-  { id: 'individual', label: 'Individual', emoji: '👤' },
-  { id: 'small-group', label: 'Small Group', emoji: '👥' },
-  { id: 'academy', label: 'Academy Batch', emoji: '🏫' },
-  { id: 'private', label: 'Private Class', emoji: '🔒' },
-  { id: 'corporate', label: 'Corporate', emoji: '🏢' },
-  { id: 'camp', label: 'Sports Camp', emoji: '⛺' },
-];
-
-const EQUIPMENT: EquipmentOption[] = [
-  { id: 'footballs', label: 'Footballs', price: 200, emoji: '⚽' },
-  { id: 'cricket-kits', label: 'Cricket Kits', price: 500, emoji: '🏏' },
-  { id: 'basketballs', label: 'Basketballs', price: 150, emoji: '🏀' },
-  { id: 'shuttlecocks', label: 'Shuttlecocks', price: 100, emoji: '🏸' },
-  { id: 'racquets', label: 'Racquets', price: 200, emoji: '🎾' },
-  { id: 'cones', label: 'Training Cones', price: 100, emoji: '🔺' },
-];
+interface Student {
+  id: number;
+  name: string;
+  photo: string;
+  sport: string;
+}
 
 interface DateOption {
-  idx: number;
+  value: string;
   day: string;
-  dateNum: number;
-  monthShort: string;
-  isToday: boolean;
+  number: number;
+  month: string;
+  today: boolean;
 }
 
-function buildDates(): DateOption[] {
-  const today = new Date();
-  return Array.from({ length: 14 }, (_, i) => {
-    const d = new Date(today);
-    d.setDate(today.getDate() + i);
-    return {
-      idx: i,
-      day: d.toLocaleDateString('en-US', { weekday: 'short' }),
-      dateNum: d.getDate(),
-      monthShort: d.toLocaleDateString('en-US', { month: 'short' }),
-      isToday: i === 0
-    };
-  });
-}
+const DURATIONS = [
+  { minutes: 60, label: '1 hour' },
+  { minutes: 90, label: '1.5 hours' },
+  { minutes: 120, label: '2 hours' },
+  { minutes: 180, label: '3 hours' },
+];
 
 @Component({
   selector: 'app-coach-venue-booking',
   standalone: true,
   imports: [CommonModule, IonicModule, FormsModule],
   template: `
-    <ion-content [fullscreen]="true">
-      <!-- SUCCESS SCREEN -->
-      <div *ngIf="isSuccess()" class="min-h-screen bg-[#FAFBFC] flex flex-col items-center justify-center px-6 text-center py-10">
-        <div class="w-24 h-24 rounded-full bg-[var(--app-primary)] flex items-center justify-center mx-auto mb-5 shadow-lg shadow-[var(--app-primary)]/40">
-          <ion-icon name="checkmark-outline" class="text-[#111827] text-4xl font-black"></ion-icon>
-        </div>
-        <h1 class="text-[26px] font-black text-[#111827] mb-2 m-0">Venue Booked Successfully! 🎉</h1>
-        <p class="text-[14px] text-[#9CA3AF] m-0 mb-6">Your coaching session is ready.</p>
+    <ion-content [fullscreen]="true" class="page-shell">
+      <main *ngIf="!success(); else successScreen" class="booking-page">
+        <header class="topbar">
+          <button type="button" (click)="previous()" aria-label="Back"><ion-icon name="chevron-back-outline"></ion-icon></button>
+          <div><h1>{{ venue()?.name || 'Venue booking' }}</h1><p>Step {{ step() }} of 6</p></div>
+          <button type="button" class="close" (click)="close()" aria-label="Close"><ion-icon name="close-outline"></ion-icon></button>
+        </header>
+        <div class="progress"><span *ngFor="let item of steps" [class.done]="step() > item" [class.current]="step() === item"></span></div>
 
-        <!-- Automation Tasks status card -->
-        <div class="w-full max-w-sm bg-white rounded-[24px] p-5 mb-6 text-left shadow-md border border-slate-50">
-          <div *ngFor="let a of getAutomationSuccessLogs(); let idx = index" class="flex items-center gap-3 py-2.5 border-b border-[#F9FAFB] last:border-none">
-            <div class="w-6 h-6 rounded-full bg-[var(--app-primary)] flex items-center justify-center flex-shrink-0">
-              <ion-icon name="checkmark-outline" class="text-[#111827] text-xs font-black"></ion-icon>
-            </div>
-            <span class="text-[13px] font-bold text-[#111827]">{{ a }}</span>
-          </div>
-        </div>
+        <div *ngIf="loadingVenue()" class="state full"><ion-spinner name="crescent"></ion-spinner><p>Loading venue details…</p></div>
+        <div *ngIf="!loadingVenue() && loadError()" class="state full error"><ion-icon name="alert-circle-outline"></ion-icon><strong>Booking cannot be started</strong><p>{{ loadError() }}</p><button type="button" (click)="load()">Try again</button></div>
 
-        <!-- Dashboard shortcuts grid -->
-        <div class="w-full max-w-sm grid grid-cols-2 gap-2.5">
-          <button (click)="go('/app/coach/students')" class="flex flex-col items-center gap-2 py-4 bg-white rounded-[20px] text-[12px] font-black text-[#111827] border border-slate-100 shadow-sm">
-            <ion-icon name="people-outline" class="text-[var(--app-primary)] text-xl"></ion-icon>
-            Manage Students
-          </button>
-          <button (click)="go('/app/coach/chat')" class="flex flex-col items-center gap-2 py-4 bg-white rounded-[20px] text-[12px] font-black text-[#111827] border border-slate-100 shadow-sm">
-            <ion-icon name="chatbubble-ellipses-outline" class="text-[var(--app-primary)] text-xl"></ion-icon>
-            Session Chat
-          </button>
-          <button (click)="go('/app/coach/schedule')" class="flex flex-col items-center gap-2 py-4 bg-white rounded-[20px] text-[12px] font-black text-[#111827] border border-slate-100 shadow-sm">
-            <ion-icon name="calendar-outline" class="text-[var(--app-primary)] text-xl"></ion-icon>
-            View Schedule
-          </button>
-          <button (click)="go('/app/coach/dashboard')" class="flex flex-col items-center gap-2 py-4 bg-white rounded-[20px] text-[12px] font-black text-[#111827] border border-slate-100 shadow-sm">
-            <ion-icon name="home-outline" class="text-[var(--app-primary)] text-xl"></ion-icon>
-            Home Dashboard
-          </button>
-        </div>
-      </div>
+        <section *ngIf="venue() as selectedVenue" class="body">
+          <div *ngIf="error()" class="error-banner"><ion-icon name="alert-circle-outline"></ion-icon><span>{{ error() }}</span><button type="button" (click)="error.set('')"><ion-icon name="close-outline"></ion-icon></button></div>
 
-      <!-- MAIN BOOKING STEPS FLOW -->
-      <div *ngIf="!isSuccess()" class="min-h-screen bg-[#FAFBFC] pb-36 text-left">
-        <!-- Sticky steps indicator top header -->
-        <div class="sticky-header bg-white border-b border-[#F3F4F6]">
-          <div class="flex items-center justify-between px-5 h-14">
-            <button (click)="handlePrev()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
-              <ion-icon name="chevron-back-outline" class="text-xl text-[#111827]"></ion-icon>
-            </button>
-            <div class="text-center">
-              <p class="text-[14px] font-black text-[#111827] m-0">{{ selectedVenue.name }}</p>
-              <p class="text-[11px] text-[#9CA3AF] m-0 font-bold">Step {{ step() }} of 8</p>
-            </div>
-            <div class="w-10"></div>
-          </div>
-
-          <!-- Progress dots track -->
-          <div class="flex justify-center items-center gap-1 px-6 pb-3 pt-1">
-            <div *ngFor="let idx of [0,1,2,3,4,5,6,7]" class="flex items-center">
-              <div class="h-[7px] rounded-full transition-all duration-300"
-                [style.width]="step() === (idx + 1) ? '20px' : '7px'"
-                [style.backgroundColor]="step() > (idx + 1) ? '#FF7A00' : step() === (idx + 1) ? 'var(--app-primary)' : '#E5E7EB'">
-              </div>
-              <div *ngIf="idx < 7" class="w-2.5 h-[1.5px] mx-0.5"
-                [style.backgroundColor]="step() > (idx + 1) ? '#FF7A00' : '#E5E7EB'">
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Steps Views content -->
-        <div class="px-5 pt-5">
-          <!-- STEP 1: CHOOSE SPORT -->
-          <div *ngIf="step() === 1">
-            <h2 class="text-[20px] font-black text-[#111827] mb-1 m-0">Choose Sport</h2>
-            <p class="text-[13px] text-[#9CA3AF] mb-5 m-0 font-medium">What sport will you be coaching?</p>
-            <div class="grid grid-cols-3 gap-3">
-              <button *ngFor="let s of sports" (click)="sport.set(s.id)" class="relative rounded-[20px] overflow-hidden focus:outline-none border-none p-0"
-                [style.aspectRatio]="'3/4'"
-                [style.border]="sport() === s.id ? '2.5px solid var(--app-primary)' : '2.5px solid transparent'"
-                [style.boxShadow]="sport() === s.id ? '0 0 0 3px rgba(var(--app-primary-rgb),0.20)' : 'none'">
-                <img [src]="s.image" class="absolute inset-0 w-full h-full object-cover" />
-                <div class="absolute inset-0 bg-gradient-to-t from-black/75 to-transparent"></div>
-                <div *ngIf="sport() === s.id" class="absolute inset-0 bg-[rgba(var(--app-primary-rgb),0.15)]"></div>
-                <div *ngIf="sport() === s.id" class="absolute top-2 right-2 w-6 h-6 rounded-full bg-[var(--app-primary)] flex items-center justify-center">
-                  <ion-icon name="checkmark-outline" class="text-[#111827] text-xs font-black"></ion-icon>
-                </div>
-                <p class="absolute bottom-2 left-2 right-2 text-white font-black text-[11px] m-0 text-left">{{ s.name }}</p>
+          <ng-container *ngIf="step() === 1">
+            <div class="heading"><p>COURT &amp; SPORT</p><h2>Choose a playing area</h2><span>Only active courts that this venue accepts for booking are shown.</span></div>
+            <div class="court-list">
+              <button *ngFor="let court of selectedVenue.courts" type="button" [class.selected]="courtId() === court.id" (click)="selectCourt(court)">
+                <span class="court-image"><img *ngIf="court.image" [src]="court.image" alt="" /><ion-icon *ngIf="!court.image" name="football-outline"></ion-icon></span>
+                <span class="court-copy"><b>{{ court.name }}</b><small>{{ court.sport }} · {{ court.isIndoor ? 'Indoor' : 'Outdoor' }} · Up to {{ court.maxPlayers }} players</small></span>
+                <span class="court-price"><b>₹{{ court.pricePerHour | number:'1.0-0' }}</b><small>/hour</small></span>
+                <ion-icon class="check" [name]="courtId() === court.id ? 'checkmark-circle' : 'ellipse-outline'"></ion-icon>
               </button>
             </div>
-          </div>
+          </ng-container>
 
-          <!-- STEP 2: SELECT DATE -->
-          <div *ngIf="step() === 2">
-            <h2 class="text-[20px] font-black text-[#111827] mb-1 m-0">Select Date</h2>
-            <p class="text-[13px] text-[#9CA3AF] mb-5 m-0 font-medium">When do you want to book?</p>
-            <div class="flex gap-2.5 overflow-x-auto pb-2 no-scrollbar">
-              <button *ngFor="let d of dates" (click)="dateIdx.set(d.idx)" class="flex-shrink-0 flex flex-col items-center px-4 py-3 rounded-2xl min-w-[58px] border-none transition-all"
-                [style.backgroundColor]="dateIdx() === d.idx ? 'rgba(var(--app-primary-rgb),0.12)' : 'white'"
-                [style.border]="dateIdx() === d.idx ? '2px solid var(--app-primary)' : '2px solid #F3F4F6'"
-                [style.boxShadow]="dateIdx() === d.idx ? '0 2px 12px rgba(var(--app-primary-rgb),0.22)' : '0 1px 4px rgba(0,0,0,0.06)'">
-                <span class="text-[10px] font-bold" [style.color]="dateIdx() === d.idx ? 'var(--app-primary)' : '#9CA3AF'">{{ d.isToday ? 'Today' : d.day }}</span>
-                <span class="text-[18px] font-black text-[#111827] mt-0.5">{{ d.dateNum }}</span>
-                <span class="text-[9px] font-bold" [style.color]="dateIdx() === d.idx ? '#9CA3AF' : '#C4C9D4'">{{ d.monthShort }}</span>
+          <ng-container *ngIf="step() === 2">
+            <div class="heading"><p>SESSION DATE</p><h2>Select a date</h2><span>Choose any date in the next two weeks.</span></div>
+            <div class="date-strip">
+              <button *ngFor="let date of dates" type="button" [class.selected]="selectedDate() === date.value" (click)="chooseDate(date.value)">
+                <small>{{ date.today ? 'Today' : date.day }}</small><b>{{ date.number }}</b><span>{{ date.month }}</span>
               </button>
             </div>
-          </div>
+            <article class="info-card"><ion-icon name="calendar-outline"></ion-icon><div><b>{{ selectedDate() | date:'EEEE, d MMMM y' }}</b><span>Availability will be checked live before you continue.</span></div></article>
+          </ng-container>
 
-          <!-- STEP 3: SELECT TIME SLOT -->
-          <div *ngIf="step() === 3">
-            <h2 class="text-[20px] font-black text-[#111827] mb-1 m-0">Select Time Slot</h2>
-            <p class="text-[13px] text-[#9CA3AF] mb-5 m-0 font-medium">Available slots at {{ selectedVenue.name }}</p>
-            <div class="grid grid-cols-3 gap-2.5">
-              <button *ngFor="let slot of selectedVenue.slots" (click)="time.set(slot)" class="py-3.5 rounded-2xl text-center border-none transition-all"
-                [style.backgroundColor]="time() === slot ? 'var(--app-primary)' : 'white'"
-                [style.border]="time() === slot ? '2px solid var(--app-primary)' : '2px solid #F3F4F6'"
-                [style.boxShadow]="time() === slot ? '0 2px 10px rgba(var(--app-primary-rgb),0.35)' : '0 1px 4px rgba(0,0,0,0.06)'">
-                <p class="text-[14px] font-black m-0" [style.color]="time() === slot ? '#111827' : '#6B7280'">{{ slot }}</p>
+          <ng-container *ngIf="step() === 3">
+            <div class="heading"><p>LIVE AVAILABILITY</p><h2>Select duration and time</h2><span>Times already reserved by games or coaching sessions are removed automatically.</span></div>
+            <label class="field-label">Session duration</label>
+            <div class="duration-grid">
+              <button *ngFor="let option of durations" type="button" [class.selected]="durationMinutes() === option.minutes" (click)="chooseDuration(option.minutes)">{{ option.label }}</button>
+            </div>
+            <div class="availability-line"><span><ion-icon name="time-outline"></ion-icon>{{ selectedVenue.openTime }} – {{ selectedVenue.closeTime }}</span><button type="button" (click)="loadAvailability()"><ion-icon name="refresh-outline"></ion-icon>Refresh</button></div>
+            <div *ngIf="loadingSlots()" class="state slots"><ion-spinner name="crescent"></ion-spinner><p>Checking available times…</p></div>
+            <div *ngIf="!loadingSlots() && slotError()" class="state slots error"><ion-icon name="cloud-offline-outline"></ion-icon><p>{{ slotError() }}</p><button type="button" (click)="loadAvailability()">Try again</button></div>
+            <div *ngIf="!loadingSlots() && !slotError() && !slots().length" class="state slots"><ion-icon name="calendar-clear-outline"></ion-icon><strong>No times available</strong><p>Choose another date, duration, or court.</p><button type="button" (click)="step.set(2)">Change date</button></div>
+            <div *ngIf="!loadingSlots() && slots().length" class="slot-groups">
+              <section *ngFor="let period of slotPeriods()">
+                <h3>{{ period }}</h3>
+                <div class="slot-grid">
+                  <button *ngFor="let slot of slotsFor(period)" type="button" [class.selected]="selectedTime() === slot.startTime" (click)="selectedTime.set(slot.startTime)"><b>{{ slot.label }}</b><small>to {{ slot.endLabel }}</small></button>
+                </div>
+              </section>
+            </div>
+          </ng-container>
+
+          <ng-container *ngIf="step() === 4">
+            <div class="heading"><p>PARTICIPANTS</p><h2>Select your students</h2><span>Choose active students who should receive this session invitation.</span></div>
+            <div class="selection-summary"><span>{{ selectedStudentIds().length }} selected</span><small>Maximum {{ selectedCourt()?.maxPlayers || 1 }}</small></div>
+            <div *ngIf="loadingStudents()" class="state slots"><ion-spinner name="crescent"></ion-spinner><p>Loading students…</p></div>
+            <div *ngIf="!loadingStudents() && !students().length" class="state slots"><ion-icon name="people-outline"></ion-icon><strong>No active students</strong><p>Enrol or accept a student before creating a venue session.</p><button type="button" (click)="go('/app/coach/enroll-student')">Enrol student</button></div>
+            <div class="student-list">
+              <button *ngFor="let student of students(); trackBy: trackStudent" type="button" [class.selected]="isStudentSelected(student.id)" (click)="toggleStudent(student.id)">
+                <span class="avatar"><img *ngIf="student.photo" [src]="student.photo" alt="" /><b *ngIf="!student.photo">{{ initials(student.name) }}</b></span>
+                <span><b>{{ student.name }}</b><small>{{ student.sport || 'Player' }}</small></span>
+                <ion-icon [name]="isStudentSelected(student.id) ? 'checkmark-circle' : 'ellipse-outline'"></ion-icon>
               </button>
             </div>
-          </div>
+          </ng-container>
 
-          <!-- STEP 4: SESSION DURATION -->
-          <div *ngIf="step() === 4">
-            <h2 class="text-[20px] font-black text-[#111827] mb-1 m-0">Session Duration</h2>
-            <p class="text-[13px] text-[#9CA3AF] mb-5 m-0 font-medium">How long is your coaching session?</p>
-            <div class="space-y-3">
-              <button *ngFor="let d of durations" (click)="duration.set(d.id)" class="w-full flex items-center justify-between px-5 py-4 rounded-[22px] border-none transition-all text-left"
-                [style.backgroundColor]="duration() === d.id ? 'rgba(var(--app-primary-rgb),0.08)' : 'white'"
-                [style.border]="duration() === d.id ? '2.5px solid var(--app-primary)' : '2px solid #F3F4F6'"
-                [style.boxShadow]="duration() === d.id ? '0 4px 16px rgba(var(--app-primary-rgb),0.18)' : '0 1px 6px rgba(0,0,0,0.06)'">
-                <p class="text-[16px] font-black text-[#111827] m-0">{{ d.label }}</p>
-                <div class="flex items-center gap-2">
-                  <p class="text-[13px] text-[#9CA3AF] font-bold m-0">₹{{ (selectedVenue.pricePerHour * d.hrs).toLocaleString() }}</p>
-                  <div *ngIf="duration() === d.id" class="w-6 h-6 rounded-full bg-[var(--app-primary)] flex items-center justify-center">
-                    <ion-icon name="checkmark-outline" class="text-[#111827] text-xs font-black"></ion-icon>
-                  </div>
-                </div>
-              </button>
+          <ng-container *ngIf="step() === 5">
+            <div class="heading"><p>SESSION DETAILS</p><h2>Finish the setup</h2><span>Add a title, training focus, and any equipment supplied by the venue.</span></div>
+            <div class="form-card">
+              <label>Session title<input [(ngModel)]="sessionTitle" maxlength="160" placeholder="e.g. Saturday batting practice" /></label>
+              <label>Training focus<textarea [(ngModel)]="description" maxlength="4000" rows="3" placeholder="Goals or instructions for the students"></textarea></label>
             </div>
-          </div>
+            <section *ngIf="selectedVenue.rentalEquipment.length" class="equipment-section">
+              <div><h3>Rental equipment</h3><p>Optional · charged once per session</p></div>
+              <article *ngFor="let item of selectedVenue.rentalEquipment">
+                <span class="equipment-icon">{{ item.emoji || '🎽' }}</span><span class="equipment-copy"><b>{{ item.label }}</b><small>₹{{ item.price | number:'1.0-0' }} each · {{ item.qty }} available</small></span>
+                <span class="stepper"><button type="button" (click)="changeEquipment(item,-1)">−</button><b>{{ equipmentQty(item.id) }}</b><button type="button" (click)="changeEquipment(item,1)">+</button></span>
+              </article>
+            </section>
+          </ng-container>
 
-          <!-- STEP 5: TRAINING TYPE -->
-          <div *ngIf="step() === 5">
-            <h2 class="text-[20px] font-black text-[#111827] mb-1 m-0">Training Type</h2>
-            <p class="text-[13px] text-[#9CA3AF] mb-5 m-0 font-medium">What type of coaching session?</p>
-            <div class="grid grid-cols-2 gap-3">
-              <button *ngFor="let t of trainingTypes" (click)="trainType.set(t.id)" class="flex flex-col items-center py-5 rounded-[22px] border-none transition-all"
-                [style.backgroundColor]="trainType() === t.id ? 'rgba(var(--app-primary-rgb),0.10)' : 'white'"
-                [style.border]="trainType() === t.id ? '2.5px solid var(--app-primary)' : '2px solid #F3F4F6'"
-                [style.boxShadow]="trainType() === t.id ? '0 4px 16px rgba(var(--app-primary-rgb),0.18)' : '0 1px 6px rgba(0,0,0,0.06)'">
-                <span class="text-3xl mb-2">{{ t.emoji }}</span>
-                <p class="text-[13px] font-black text-[#111827] m-0">{{ t.label }}</p>
-                <div *ngIf="trainType() === t.id" class="w-5 h-5 rounded-full bg-[var(--app-primary)] flex items-center justify-center mt-2">
-                  <ion-icon name="checkmark-outline" class="text-[#111827] text-[10px] font-black"></ion-icon>
-                </div>
-              </button>
-            </div>
-          </div>
+          <ng-container *ngIf="step() === 6">
+            <div class="heading"><p>REVIEW</p><h2>Confirm venue request</h2><span>Check the details before reserving this court.</span></div>
+            <article class="review-card">
+              <div class="review-venue"><span><ion-icon name="location-outline"></ion-icon></span><div><b>{{ selectedVenue.name }}</b><small>{{ selectedVenue.address }}</small></div></div>
+              <dl>
+                <div><dt>Court</dt><dd>{{ selectedCourt()?.name }} · {{ selectedCourt()?.sport }}</dd></div>
+                <div><dt>Date</dt><dd>{{ selectedDate() | date:'EEE, d MMM y' }}</dd></div>
+                <div><dt>Time</dt><dd>{{ selectedSlot()?.label }} – {{ selectedSlot()?.endLabel }}</dd></div>
+                <div><dt>Students</dt><dd>{{ selectedStudentIds().length }}</dd></div>
+                <div><dt>Approval</dt><dd>{{ selectedVenue.autoConfirm ? 'Instant confirmation' : 'Venue approval required' }}</dd></div>
+              </dl>
+            </article>
+            <article class="price-card">
+              <h3>Price breakdown</h3>
+              <div><span>Court ({{ durationMinutes() / 60 | number:'1.0-1' }}h)</span><b>₹{{ courtCost() | number:'1.0-0' }}</b></div>
+              <div *ngIf="equipmentCost()"><span>Equipment</span><b>₹{{ equipmentCost() | number:'1.0-0' }}</b></div>
+              <div><span>Platform fee</span><b>₹49</b></div>
+              <div><span>GST (18%)</span><b>₹{{ taxCost() | number:'1.0-0' }}</b></div>
+              <div class="total"><span>Total session cost</span><b>₹{{ totalCost() | number:'1.0-0' }}</b></div>
+              <small>₹{{ perStudentCost() | number:'1.0-0' }} per selected student</small>
+            </article>
+            <p class="approval-note"><ion-icon name="shield-checkmark-outline"></ion-icon>{{ selectedVenue.autoConfirm ? 'This venue confirms bookings automatically.' : 'The court is held while the venue reviews your request. Student invitations are sent after approval.' }}</p>
+          </ng-container>
+        </section>
 
-          <!-- STEP 6: NUMBER OF STUDENTS -->
-          <div *ngIf="step() === 6">
-            <h2 class="text-[20px] font-black text-[#111827] mb-1 m-0">Number of Students</h2>
-            <p class="text-[13px] text-[#9CA3AF] mb-8 m-0 font-medium">Venue capacity: {{ selectedVenue.capacity }} students</p>
+        <footer *ngIf="venue() && !loadingVenue()" class="bottom-bar">
+          <div><small>{{ footerLabel() }}</small><b>{{ footerValue() }}</b></div>
+          <button type="button" [disabled]="!canContinue() || saving()" (click)="next()"><ion-spinner *ngIf="saving()" name="crescent"></ion-spinner><span>{{ saving() ? 'Reserving…' : (step() === 6 ? 'Confirm booking' : 'Continue') }}</span><ion-icon *ngIf="!saving()" name="chevron-forward-outline"></ion-icon></button>
+        </footer>
+      </main>
 
-            <div class="bg-white rounded-[24px] p-8 flex flex-col items-center border border-slate-100 shadow-sm text-center">
-              <div class="flex items-center gap-8">
-                <button (click)="students.set(Math.max(1, students() - 1))" class="w-14 h-14 rounded-full bg-[#F3F4F6] flex items-center justify-center border-2 border-[#E5E7EB] border-none">
-                  <ion-icon name="remove-outline" class="text-xl text-[#6B7280] font-bold"></ion-icon>
-                </button>
-                <div>
-                  <p class="text-[56px] font-black text-[#111827] leading-none m-0">{{ students() }}</p>
-                  <p class="text-[12px] text-[#9CA3AF] mt-1 m-0 font-bold">students</p>
-                </div>
-                <button (click)="students.set(Math.min(selectedVenue.capacity, students() + 1))" class="w-14 h-14 rounded-full flex items-center justify-center border-none btn-green-gradient">
-                  <ion-icon name="add-outline" class="text-xl text-[#111827] font-bold"></ion-icon>
-                </button>
-              </div>
-              <div class="mt-6 w-full text-left">
-                <input type="range" min="1" [max]="selectedVenue.capacity" [(ngModel)]="studentsVal" class="w-full range-slider-input" (input)="onSliderChange($event)" />
-                <div class="flex justify-between text-[10px] text-[#9CA3AF] mt-1 font-bold">
-                  <span>1</span><span>Max {{ selectedVenue.capacity }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- STEP 7: EQUIPMENT RENTALS -->
-          <div *ngIf="step() === 7">
-            <h2 class="text-[20px] font-black text-[#111827] mb-1 m-0">Equipment Rental</h2>
-            <p class="text-[13px] text-[#9CA3AF] mb-5 m-0 font-medium">Select equipment needed for your session</p>
-            <div class="space-y-2.5">
-              <div *ngFor="let e of equipment" class="bg-white rounded-[20px] px-4 py-3.5 flex items-center gap-3 border border-slate-100 shadow-sm">
-                <div class="w-10 h-10 rounded-xl bg-[#F3F4F6] flex items-center justify-center flex-shrink-0">
-                  <span class="text-xl">{{ e.emoji }}</span>
-                </div>
-                <div class="flex-1">
-                  <p class="text-[13px] font-bold text-[#111827] m-0">{{ e.label }}</p>
-                  <p class="text-[11px] text-[#9CA3AF] m-0 mt-0.5 font-bold">₹{{ e.price }}/session <span *ngIf="getEquipQty(e.id) > 0" class="text-[var(--app-primary)] font-black">= ₹{{ e.price * getEquipQty(e.id) }}</span></p>
-                </div>
-                <div class="flex items-center gap-2.5">
-                  <button (click)="decEquip(e.id)" class="w-8 h-8 rounded-full flex items-center justify-center border border-[#E5E7EB] bg-white border-none shadow-sm">
-                    <ion-icon name="remove-outline" class="text-[#6B7280] text-xs font-bold"></ion-icon>
-                  </button>
-                  <span class="w-4 text-center text-[15px] font-black text-[#111827]">{{ getEquipQty(e.id) }}</span>
-                  <button (click)="incEquip(e.id)" class="w-8 h-8 rounded-full flex items-center justify-center border-none btn-green-gradient shadow-sm">
-                    <ion-icon name="add-outline" class="text-[#111827] text-xs font-bold"></ion-icon>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- STEP 8: SUMMARY & AUTOMATIONS CHECKOUT -->
-          <div *ngIf="step() === 8" class="space-y-4">
-            <h2 class="text-[20px] font-black text-[#111827] m-0">Booking Summary</h2>
-
-            <!-- Smart Automation Accordion Toggle Card -->
-            <div class="bg-white rounded-[24px] overflow-hidden border-[var(--app-primary)]/22 border-2 shadow-md">
-              <div class="px-5 pt-5 pb-4">
-                <div class="flex items-start gap-3">
-                  <div class="w-10 h-10 rounded-2xl bg-[var(--app-primary)]/15 flex items-center justify-center flex-shrink-0">
-                    <ion-icon name="sparkles-outline" class="text-[var(--app-primary)] text-lg font-bold"></ion-icon>
-                  </div>
-                  <div class="flex-1">
-                    <p class="text-[15px] font-black text-[#111827] m-0">Automate Coaching Session</p>
-                    <p class="text-[11px] text-[#9CA3AF] m-0 font-medium mt-0.5">TYNG can automatically create your session after booking.</p>
-                  </div>
-                  <button (click)="automate.set(!automate())" class="toggle-btn" [class.toggle-on]="automate()">
-                    <div class="toggle-thumb" [class.toggle-thumb-on]="automate()"></div>
-                  </button>
-                </div>
-
-                <div *ngIf="automate()" class="flex items-center gap-2 bg-[var(--app-primary)]/8 rounded-xl px-3 py-2.5 mt-3">
-                  <ion-icon name="checkmark-circle" class="text-[#16A34A] text-base"></ion-icon>
-                  <span class="text-[12px] font-bold text-[#111827]">Invite Students After Booking</span>
-                </div>
-              </div>
-
-              <!-- Expanded automation checklist details -->
-              <div *ngIf="automate()" class="border-t border-[#F3F4F6] px-5 pb-5 pt-4 space-y-4">
-                <div>
-                  <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-3 m-0">Choose Participants</p>
-                  <div class="space-y-2.5">
-                    <button *ngFor="let opt of [{ id:'existing', icon:'👥', label:'Select Existing Students', sub:'Choose from your student list' }, { id:'batch', icon:'📚', label:'Select Previous Batch', sub:'Reuse a coaching batch' }, { id:'new', icon:'➕', label:'Add New Participants', sub:'Search by name or TYNG ID' }]"
-                      (click)="participantType.set(opt.id)" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl border-none text-left"
-                      [style.backgroundColor]="participantType() === opt.id ? 'rgba(var(--app-primary-rgb),0.08)' : '#F9FAFB'"
-                      [style.border]="participantType() === opt.id ? '2px solid var(--app-primary)' : '2px solid transparent'">
-                      <span class="text-2xl">{{ opt.icon }}</span>
-                      <div class="flex-grow">
-                        <p class="text-[13px] font-bold text-[#111827] m-0">{{ opt.label }}</p>
-                        <p class="text-[11px] text-[#9CA3AF] m-0 font-medium mt-0.5">{{ opt.sub }}</p>
-                      </div>
-                      <ion-icon *ngIf="participantType() === opt.id" name="checkmark-circle" class="text-[var(--app-primary)] text-lg"></ion-icon>
-                    </button>
-                  </div>
-                </div>
-
-                <div class="bg-[#111827] rounded-2xl p-4 text-white">
-                  <div class="flex items-center gap-2 mb-3">
-                    <ion-icon name="flash-outline" class="text-[var(--app-primary)] text-base"></ion-icon>
-                    <p class="text-[12px] font-black text-[var(--app-primary)] uppercase tracking-wider m-0">TYNG Will Automatically</p>
-                  </div>
-                  <div *ngFor="let a of ['Create a coaching session','Add it to your schedule','Add to student\\'s calendar','Create dedicated session chat','Generate unique attendance QR Code']"
-                    class="flex items-center gap-2 py-1.5 border-b border-white/5 last:border-none">
-                    <div class="w-4 h-4 rounded-full bg-[var(--app-primary)] flex items-center justify-center flex-shrink-0">
-                      <ion-icon name="checkmark-outline" class="text-[#111827] text-[10px] font-black"></ion-icon>
-                    </div>
-                    <span class="text-[11px] text-white/70 font-medium">{{ a }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Coupon Code input validation -->
-            <div class="bg-white rounded-[24px] p-5 shadow-sm border border-slate-100">
-              <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-3 m-0">Coupon Code</p>
-              <div *ngIf="appliedCoupon()" class="flex items-center gap-3 bg-[#F0FDF4] rounded-2xl px-4 py-3 border border-[var(--app-primary)]/15">
-                <ion-icon name="checkmark-outline" class="text-[#22C55E] text-base"></ion-icon>
-                <div class="flex-grow">
-                  <p class="text-[13px] font-black text-[#111827] m-0">{{ appliedCoupon()?.code }}</p>
-                  <p class="text-[11px] text-[#16A34A] m-0 font-bold">You save ₹{{ appliedCoupon()?.discount }}</p>
-                </div>
-                <button (click)="removeCoupon()" class="text-[#9CA3AF] bg-transparent border-none"><ion-icon name="close-outline" class="text-lg"></ion-icon></button>
-              </div>
-
-              <div *ngIf="!appliedCoupon()">
-                <div class="flex gap-2">
-                  <input [(ngModel)]="couponInput" placeholder="Enter coupon code..." class="flex-grow bg-[#F3F4F6] rounded-2xl px-4 h-11 text-[14px] font-bold text-[#111827] uppercase border-none focus:outline-none outline-none" />
-                  <button (click)="applyCoupon()" [disabled]="!couponInput.trim()" class="h-11 px-5 rounded-2xl text-[13px] font-black border-none"
-                    [style.backgroundColor]="couponInput.trim() ? 'var(--app-primary)' : '#F3F4F6'"
-                    [style.color]="couponInput.trim() ? '#111827' : '#C4C9D4'">
-                    Apply
-                  </button>
-                </div>
-                <p *ngIf="couponErr()" class="text-[11px] text-[#EF4444] mt-1.5 m-0 font-bold">{{ couponErr() }}</p>
-                <p class="text-[10px] text-[#9CA3AF] mt-1 m-0 font-bold">Try: COACH20</p>
-              </div>
-            </div>
-
-            <!-- Price breaks receipt invoice -->
-            <div class="bg-white rounded-[24px] p-5 shadow-sm border border-slate-100">
-              <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-3 m-0">Price Breakdown</p>
-              <div class="space-y-0.5">
-                <div class="flex justify-between items-start py-3 border-b border-[#F9FAFB]">
-                  <div>
-                    <p class="text-[13px] font-bold text-[#6B7280] m-0">Venue Charges</p>
-                    <p class="text-[10px] text-[#C4C9D4] m-0 font-bold">{{ getHrs() }}h × ₹{{ selectedVenue.pricePerHour.toLocaleString() }}</p>
-                  </div>
-                  <p class="text-[13px] font-black text-[#111827] m-0">₹{{ getVenueCost().toLocaleString() }}</p>
-                </div>
-
-                <div *ngIf="getEquipCost() > 0" class="flex justify-between items-start py-3 border-b border-[#F9FAFB]">
-                  <div>
-                    <p class="text-[13px] font-bold text-[#6B7280] m-0">Equipment Rental</p>
-                    <p class="text-[10px] text-[#C4C9D4] m-0 font-bold">Selected items</p>
-                  </div>
-                  <p class="text-[13px] font-black text-[#111827] m-0">₹{{ getEquipCost().toLocaleString() }}</p>
-                </div>
-
-                <div class="flex justify-between items-start py-3 border-b border-[#F9FAFB]">
-                  <div>
-                    <p class="text-[13px] font-bold text-[#6B7280] m-0">GST (18%)</p>
-                    <p class="text-[10px] text-[#C4C9D4] m-0 font-bold">Standard government tax</p>
-                  </div>
-                  <p class="text-[13px] font-black text-[#111827] m-0">₹{{ getGST().toLocaleString() }}</p>
-                </div>
-
-                <div class="flex justify-between items-start py-3 border-b border-[#F9FAFB]">
-                  <div>
-                    <p class="text-[13px] font-bold text-[#6B7280] m-0">Platform Fee</p>
-                    <p class="text-[10px] text-[#C4C9D4] m-0 font-bold">Processing charge</p>
-                  </div>
-                  <p class="text-[13px] font-black text-[#111827] m-0">₹49</p>
-                </div>
-
-                <div *ngIf="appliedCoupon()" class="flex justify-between items-start py-3 border-b border-[#F9FAFB]">
-                  <div>
-                    <p class="text-[13px] font-bold text-[#22C55E] m-0">Coupon: {{ appliedCoupon()?.code }}</p>
-                    <p class="text-[10px] text-[#C4C9D4] m-0 font-bold">Discount applied</p>
-                  </div>
-                  <p class="text-[13px] font-black text-[#22C55E] m-0">−₹{{ appliedCoupon()?.discount?.toLocaleString() }}</p>
-                </div>
-              </div>
-
-              <!-- Total Payable -->
-              <div class="mt-3 bg-[#111827] rounded-2xl px-5 py-4 flex items-center justify-between">
-                <div class="text-left">
-                  <p class="text-[11px] text-white/50 uppercase tracking-wider m-0">Total Payable</p>
-                  <p class="text-[10px] text-white/30 m-0">Incl. GST & fees</p>
-                </div>
-                <p class="text-[28px] font-black text-[var(--app-primary)] m-0">₹{{ getTotal().toLocaleString() }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Sticky continue bottom bar CTA -->
-        <div class="fixed bottom-0 left-0 right-0 z-30 bg-white max-w-md mx-auto px-5 pt-3 pb-8 shadow-2xl border-t border-[#F3F4F6]">
-          <div class="flex items-center gap-4">
-            <div class="flex-shrink-0 text-left">
-              <p class="text-[10px] text-[#9CA3AF] m-0 font-bold">Total Amount</p>
-              <p class="text-[20px] font-black text-[#111827] m-0">₹{{ getTotal().toLocaleString() }}</p>
-            </div>
-            <button (click)="handleNext()" [disabled]="!canProceed()" class="flex-grow h-13 py-3.5 rounded-2xl text-[15px] font-black flex items-center justify-center gap-1 border-none transition-all"
-              [style.background]="canProceed() ? 'linear-gradient(135deg,#FF7A00,#FF9A40)' : '#F3F4F6'"
-              [style.color]="canProceed() ? 'white' : '#C4C9D4'"
-              [style.boxShadow]="canProceed() ? '0 4px 16px rgba(255,122,0,0.35)' : 'none'">
-              <span>{{ step() === 8 ? 'Confirm Booking' : 'Continue' }}</span>
-              <ion-icon name="chevron-forward-outline" class="text-lg"></ion-icon>
-            </button>
-          </div>
-        </div>
-      </div>
+      <ng-template #successScreen>
+        <main class="success-page">
+          <span class="success-icon"><ion-icon name="checkmark-outline"></ion-icon></span>
+          <p>VENUE REQUEST SAVED</p><h1>{{ confirmationTitle() }}</h1><span>{{ confirmationMessage() }}</span>
+          <article><div *ngFor="let item of confirmationItems()"><ion-icon name="checkmark-circle"></ion-icon><span>{{ item }}</span></div></article>
+          <button type="button" class="primary" (click)="go('/app/coach/schedule')">View my schedule</button>
+          <button type="button" class="secondary" (click)="go('/app/coach/dashboard')">Go to dashboard</button>
+        </main>
+      </ng-template>
     </ion-content>
   `,
   styles: [`
-    .sticky-header {
-      position: sticky;
-      top: 0;
-      z-index: 30;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
-    }
-
-    .no-scrollbar {
-      scrollbar-width: none;
-      &::-webkit-scrollbar {
-        display: none;
-      }
-    }
-
-    .btn-green-gradient {
-      background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to));
-      box-shadow: 0 4px 14px rgba(var(--app-primary-rgb),0.30);
-      color: #111827;
-    }
-
-    .toggle-btn {
-      width: 48px; height: 26px;
-      border-radius: 999px;
-      background: #E5E7EB;
-      border: none;
-      position: relative;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .toggle-on {
-      background: var(--app-primary);
-    }
-
-    .toggle-thumb {
-      position: absolute;
-      top: 3px; left: 3px;
-      width: 20px; height: 20px;
-      border-radius: 50%;
-      background: white;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
-      transition: transform 0.2s;
-    }
-
-    .toggle-thumb-on {
-      transform: translateX(22px);
-    }
-
-    .range-slider-input {
-      -webkit-appearance: none;
-      width: 100%;
-      height: 6px;
-      border-radius: 999px;
-      background: #E5E7EB;
-      outline: none;
-
-      &::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        width: 22px;
-        height: 22px;
-        border-radius: 50%;
-        background: var(--app-primary);
-        cursor: pointer;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-      }
-    }
-  `]
+    :host{display:block;--lime:var(--app-primary,#7cf000);--ink:#101828;--muted:#667085;--line:#e7ebef}.page-shell{--background:#f8fafb}.booking-page{min-height:100%;padding-bottom:calc(92px + env(safe-area-inset-bottom));color:var(--ink);background:#f8fafb}.topbar{position:sticky;top:0;z-index:30;height:calc(58px + env(safe-area-inset-top));padding:env(safe-area-inset-top) 16px 0;display:grid;grid-template-columns:42px minmax(0,1fr) 42px;align-items:center;border-bottom:1px solid var(--line);background:rgba(255,255,255,.97);backdrop-filter:blur(14px)}.topbar button{width:38px;height:38px;padding:0;border:0;border-radius:13px;display:grid;place-items:center;color:var(--ink);background:#f2f4f7;font-size:20px}.topbar .close{justify-self:end}.topbar div{text-align:center;min-width:0}.topbar h1{margin:0;overflow:hidden;font-size:14px;font-weight:850;text-overflow:ellipsis;white-space:nowrap}.topbar p{margin:2px 0 0;color:#98a2b3;font-size:9px;font-weight:750}.progress{position:sticky;top:calc(58px + env(safe-area-inset-top));z-index:29;height:30px;display:flex;align-items:center;justify-content:center;gap:5px;border-bottom:1px solid #f1f3f5;background:rgba(255,255,255,.97)}.progress span{width:8px;height:6px;border-radius:999px;background:#e4e7ec;transition:.18s}.progress span.done{background:#ff7a00}.progress span.current{width:27px;background:var(--lime)}.body{width:min(100%,440px);margin:0 auto;padding:22px 16px;box-sizing:border-box}.heading{margin-bottom:18px}.heading>p{margin:0 0 5px;color:#6bd000;font-size:9px;font-weight:900;letter-spacing:.11em}.heading h2{margin:0 0 5px;font-size:23px;line-height:1.15;font-weight:900;letter-spacing:-.4px}.heading>span{display:block;color:var(--muted);font-size:11px;line-height:1.45}.error-banner{margin-bottom:15px;padding:10px 11px;border-radius:13px;display:grid;grid-template-columns:18px 1fr 24px;gap:7px;color:#b42318;background:#fef3f2;font-size:10px;line-height:1.4}.error-banner button{padding:0;border:0;color:inherit;background:transparent}.state{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--muted);text-align:center}.state.full{min-height:480px;padding:24px}.state.slots{min-height:180px}.state ion-spinner{color:var(--lime)}.state>ion-icon{color:#6bd20a;font-size:34px}.state.error>ion-icon{color:#f04438}.state strong{color:var(--ink);font-size:14px}.state p{max-width:270px;margin:0;font-size:10.5px;line-height:1.45}.state button{padding:10px 14px;border:0;border-radius:11px;color:#203600;background:var(--lime);font-size:10px;font-weight:800}.court-list,.student-list{display:grid;gap:9px}.court-list>button{position:relative;width:100%;min-height:78px;padding:10px 38px 10px 10px;border:1.5px solid var(--line);border-radius:18px;display:grid;grid-template-columns:54px minmax(0,1fr) auto;gap:11px;align-items:center;color:var(--ink);background:#fff;text-align:left}.court-list>button.selected{border-color:var(--lime);background:#f7ffed}.court-image{width:54px;height:54px;border-radius:14px;overflow:hidden;display:grid;place-items:center;color:#68ca08;background:#eefbdc;font-size:24px}.court-image img{width:100%;height:100%;object-fit:cover}.court-copy{min-width:0;display:grid;gap:4px}.court-copy b{font-size:12px}.court-copy small{color:var(--muted);font-size:8.5px;line-height:1.35}.court-price{display:grid;text-align:right}.court-price b{font-size:11px}.court-price small{color:#98a2b3;font-size:7px}.court-list .check{position:absolute;top:8px;right:8px;color:#69d000;font-size:18px}.date-strip{display:flex;gap:8px;overflow-x:auto;padding:2px 1px 8px;scrollbar-width:none}.date-strip::-webkit-scrollbar{display:none}.date-strip button{min-width:62px;height:74px;padding:7px;border:1.5px solid var(--line);border-radius:17px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--ink);background:#fff}.date-strip button.selected{border-color:var(--lime);background:#f3ffe5;box-shadow:0 4px 14px rgba(107,208,0,.13)}.date-strip small,.date-strip span{color:#98a2b3;font-size:8px;font-weight:750}.date-strip b{margin:3px 0;font-size:20px}.date-strip button.selected small{color:#58b800}.info-card{margin-top:18px;padding:13px;border:1px solid var(--line);border-radius:16px;display:flex;gap:10px;align-items:center;background:#fff}.info-card>ion-icon{width:35px;height:35px;padding:8px;box-sizing:border-box;border-radius:11px;color:#5ebc00;background:#edffdc}.info-card div{display:grid;gap:3px}.info-card b{font-size:11px}.info-card span{color:#98a2b3;font-size:8.5px}.field-label{display:block;margin-bottom:8px;color:#475467;font-size:10px;font-weight:800}.duration-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.duration-grid button{height:43px;border:1.5px solid var(--line);border-radius:13px;color:#667085;background:#fff;font:inherit;font-size:10.5px;font-weight:750}.duration-grid button.selected{border-color:var(--lime);color:#233b00;background:#f1ffdf}.availability-line{margin:17px 0 10px;display:flex;justify-content:space-between;align-items:center;color:#667085;font-size:9px}.availability-line span,.availability-line button{display:flex;align-items:center;gap:5px}.availability-line button{border:0;color:#4c9400;background:transparent;font-size:9px;font-weight:800}.slot-groups{display:grid;gap:16px}.slot-groups h3{margin:0 0 8px;color:#475467;font-size:10px}.slot-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.slot-grid button{min-width:0;height:51px;padding:5px;border:1.5px solid var(--line);border-radius:14px;display:grid;place-content:center;gap:3px;color:#475467;background:#fff;font:inherit}.slot-grid button.selected{border-color:var(--lime);color:#203600;background:var(--lime);box-shadow:0 4px 12px rgba(109,208,0,.2)}.slot-grid b{font-size:10.5px}.slot-grid small{font-size:7px;opacity:.72}.selection-summary{margin-bottom:9px;display:flex;justify-content:space-between;color:#667085;font-size:9px;font-weight:750}.student-list button{width:100%;height:64px;padding:8px 11px;border:1.5px solid var(--line);border-radius:17px;display:grid;grid-template-columns:43px minmax(0,1fr) 22px;gap:10px;align-items:center;color:var(--ink);background:#fff;text-align:left}.student-list button.selected{border-color:var(--lime);background:#f6ffeb}.avatar{width:43px;height:43px;border-radius:50%;overflow:hidden;display:grid;place-items:center;color:#315300;background:#eaffcf;font-size:11px}.avatar img{width:100%;height:100%;object-fit:cover}.student-list button>span:nth-child(2){min-width:0;display:grid;gap:3px}.student-list button>span b,.student-list button>span small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.student-list button>span b{font-size:11px}.student-list button>span small{color:#667085;font-size:8.5px}.student-list button>ion-icon{color:#6bd000;font-size:20px}.form-card{padding:14px;border:1px solid var(--line);border-radius:18px;display:grid;gap:14px;background:#fff}.form-card label{display:grid;gap:6px;color:#475467;font-size:9.5px;font-weight:800}.form-card input,.form-card textarea{width:100%;box-sizing:border-box;border:1px solid #eaecf0;border-radius:12px;outline:0;color:var(--ink);background:#f9fafb;font:inherit;font-size:11px}.form-card input{height:43px;padding:0 12px}.form-card textarea{padding:11px 12px;resize:vertical}.form-card input:focus,.form-card textarea:focus{border-color:var(--lime)}.equipment-section{margin-top:14px;padding:14px;border:1px solid var(--line);border-radius:18px;background:#fff}.equipment-section>div h3{margin:0;font-size:12px}.equipment-section>div p{margin:2px 0 10px;color:#98a2b3;font-size:8px}.equipment-section article{min-height:51px;border-top:1px solid #f2f4f7;display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:9px;align-items:center}.equipment-icon{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:#f2f4f7}.equipment-copy{min-width:0;display:grid;gap:2px}.equipment-copy b{font-size:10px}.equipment-copy small{color:#98a2b3;font-size:7.5px}.stepper{display:flex;align-items:center;gap:8px}.stepper button{width:28px;height:28px;padding:0;border:0;border-radius:9px;color:#345600;background:#eaffd1;font-size:17px}.stepper b{width:12px;text-align:center;font-size:10px}.review-card,.price-card{padding:15px;border:1px solid var(--line);border-radius:19px;background:#fff}.review-venue{display:flex;align-items:center;gap:10px;padding-bottom:12px;border-bottom:1px solid #f1f3f5}.review-venue>span{width:39px;height:39px;border-radius:12px;display:grid;place-items:center;color:#58ae00;background:#ecffda}.review-venue div{min-width:0;display:grid;gap:3px}.review-venue b,.review-venue small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.review-venue b{font-size:12px}.review-venue small{color:#667085;font-size:8px}.review-card dl{margin:11px 0 0;display:grid;gap:8px}.review-card dl div{display:flex;justify-content:space-between;gap:15px}.review-card dt{color:#98a2b3;font-size:9px}.review-card dd{margin:0;font-size:9px;font-weight:750;text-align:right}.price-card{margin-top:11px}.price-card h3{margin:0 0 8px;font-size:12px}.price-card>div{padding:7px 0;display:flex;justify-content:space-between;color:#667085;font-size:9px}.price-card>div b{color:#344054}.price-card .total{margin-top:5px;padding-top:12px;border-top:1px solid #eaecf0;color:var(--ink);font-size:11px;font-weight:850}.price-card .total b{color:#55ae00;font-size:16px}.price-card>small{display:block;color:#98a2b3;font-size:8px;text-align:right}.approval-note{margin:11px 0 0;padding:11px;border-radius:13px;display:flex;gap:7px;color:#526938;background:#f2fbe8;font-size:9px;line-height:1.4}.approval-note ion-icon{flex:0 0 auto;font-size:16px}.bottom-bar{position:fixed;right:0;bottom:0;left:0;z-index:30;padding:11px 16px calc(11px + env(safe-area-inset-bottom));border-top:1px solid var(--line);display:flex;align-items:center;gap:13px;background:rgba(255,255,255,.97);box-shadow:0 -7px 20px rgba(16,24,40,.06);backdrop-filter:blur(13px)}.bottom-bar>div{min-width:73px;display:grid;gap:2px}.bottom-bar small{color:#98a2b3;font-size:8px}.bottom-bar b{overflow:hidden;font-size:13px;text-overflow:ellipsis;white-space:nowrap}.bottom-bar>button{min-width:0;height:49px;flex:1;border:0;border-radius:15px;display:flex;align-items:center;justify-content:center;gap:6px;color:#fff;background:linear-gradient(135deg,#ff7800,#ff9b43);font:inherit;font-size:12px;font-weight:850;box-shadow:0 6px 15px rgba(255,122,0,.24)}.bottom-bar>button:disabled{color:#98a2b3;background:#eaecf0;box-shadow:none}.bottom-bar ion-spinner{width:17px;height:17px}.success-page{width:min(100%,430px);min-height:100%;margin:0 auto;padding:calc(50px + env(safe-area-inset-top)) 20px calc(28px + env(safe-area-inset-bottom));box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--ink);background:#f8fafb;text-align:center}.success-icon{width:82px;height:82px;border-radius:50%;display:grid;place-items:center;color:#213700;background:var(--lime);font-size:38px;box-shadow:0 12px 30px rgba(105,205,0,.23)}.success-page>p{margin:21px 0 5px;color:#67c900;font-size:9px;font-weight:900;letter-spacing:.12em}.success-page h1{margin:0;font-size:24px}.success-page>span:not(.success-icon){max-width:330px;margin:8px 0 18px;color:#667085;font-size:11px;line-height:1.5}.success-page article{width:100%;padding:8px 13px;box-sizing:border-box;border:1px solid var(--line);border-radius:18px;background:#fff;text-align:left}.success-page article div{min-height:40px;border-bottom:1px solid #f2f4f7;display:flex;align-items:center;gap:8px;font-size:10px;font-weight:750}.success-page article div:last-child{border:0}.success-page article ion-icon{color:#5fc200;font-size:17px}.success-page>button{width:100%;height:49px;border-radius:15px;font:inherit;font-size:11px;font-weight:850}.success-page .primary{margin-top:13px;border:0;color:#1d3100;background:var(--lime)}.success-page .secondary{margin-top:8px;border:1px solid var(--line);color:#475467;background:#fff}@media(min-width:700px){.topbar{grid-template-columns:42px minmax(0,350px) 42px;justify-content:center}.bottom-bar{justify-content:center}.bottom-bar>div{width:90px}.bottom-bar>button{max-width:330px}}
+  `],
 })
-export class CoachVenueBookingPage {
+export class CoachVenueBookingPage implements OnInit {
   private readonly router = inject(Router);
-
-  selectedVenue = COACH_VENUES[0];
-
-  step = signal(1);
-  isSuccess = signal(false);
-
-  sport = signal('');
-  dateIdx = signal(0);
-  time = signal('');
-  duration = signal('');
-  trainType = signal('');
-  students = signal(10);
-  studentsVal = 10;
-  equip = signal<Record<string, number>>({});
-
-  automate = signal(true);
-  participantType = signal<string>('existing');
-  sessionTitle = '';
-
-  couponInput = '';
-  appliedCoupon = signal<{ code: string; discount: number } | null>(null);
-  couponErr = signal('');
-
-  readonly sports = SPORTS_CARDS;
-  readonly dates = buildDates();
+  private readonly route = inject(ActivatedRoute);
+  private readonly coach = inject(CoachService);
+  private readonly navigationVenue = this.router.getCurrentNavigation()?.extras?.state?.['venue'];
+  readonly steps = [1, 2, 3, 4, 5, 6];
   readonly durations = DURATIONS;
-  readonly trainingTypes = TRAINING_TYPES;
-  readonly equipment = EQUIPMENT;
-  readonly Math = Math;
+  readonly dates = this.buildDates();
+  readonly step = signal(1);
+  readonly venue = signal<Venue | null>(null);
+  readonly loadingVenue = signal(true);
+  readonly loadError = signal('');
+  readonly courtId = signal<number | null>(null);
+  readonly selectedDate = signal(this.dates[0].value);
+  readonly durationMinutes = signal(60);
+  readonly slots = signal<Slot[]>([]);
+  readonly loadingSlots = signal(false);
+  readonly slotError = signal('');
+  readonly selectedTime = signal('');
+  readonly students = signal<Student[]>([]);
+  readonly loadingStudents = signal(true);
+  readonly selectedStudentIds = signal<number[]>([]);
+  readonly equipment = signal<Record<string, number>>({});
+  readonly saving = signal(false);
+  readonly error = signal('');
+  readonly success = signal(false);
+  readonly confirmation = signal<any | null>(null);
+  readonly confirmationMessage = signal('');
+  sessionTitle = '';
+  description = '';
 
-  constructor() {
-    // Read state from navigate
-    const state = this.router.getCurrentNavigation()?.extras?.state as { venue?: Venue } | undefined;
-    if (state?.venue) {
-      this.selectedVenue = state.venue;
-    }
+  readonly selectedCourt = computed(() => this.venue()?.courts.find(court => court.id === this.courtId()) || null);
+  readonly selectedSlot = computed(() => this.slots().find(slot => slot.startTime === this.selectedTime()) || null);
+  readonly slotPeriods = computed(() => [...new Set(this.slots().map(slot => slot.period))]);
+
+  ngOnInit(): void { void this.load(); }
+
+  async load(): Promise<void> {
+    this.loadingVenue.set(true); this.loadError.set(''); this.loadingStudents.set(true);
+    try {
+      const venueId = Number(this.route.snapshot.queryParamMap.get('venue') || this.navigationVenue?.id || 0);
+      const [venuesResponse, studentsResponse] = await Promise.all([
+        firstValueFrom(this.coach.getSchedulingVenues()),
+        firstValueFrom(this.coach.getStudents()),
+      ]);
+      const venueRows = Array.isArray(venuesResponse.data) ? venuesResponse.data : [];
+      const rawVenue = this.navigationVenue || venueRows.find((item: any) => Number(item.id) === venueId);
+      if (!rawVenue) throw new Error('Choose a venue from the Book Venue page.');
+      const mappedVenue = this.mapVenue(rawVenue);
+      if (!mappedVenue.courts.length) throw new Error('This venue has no active courts available for booking.');
+      this.venue.set(mappedVenue);
+      this.selectCourt(mappedVenue.courts[0], false);
+      const data: any = studentsResponse.data;
+      const rows = Array.isArray(data) ? data : data?.data || [];
+      this.students.set(rows.filter((row: any) => row.status === 'active' && row.student).map((row: any) => ({
+        id: Number(row.student.id), name: String(row.student.name || 'Student'), photo: String(row.student.profile_image || ''),
+        sport: Array.isArray(row.student.sports) ? row.student.sports.join(', ') : String(row.student.sports || ''),
+      })));
+      await this.loadAvailability();
+    } catch (error: any) {
+      this.loadError.set(error?.error?.message || error?.message || 'Unable to load the booking flow.');
+    } finally { this.loadingVenue.set(false); this.loadingStudents.set(false); }
   }
 
-  onSliderChange(e: Event) {
-    const val = parseInt((e.target as HTMLInputElement).value) || 1;
-    this.students.set(val);
+  async loadAvailability(): Promise<void> {
+    const venue = this.venue(); const court = this.selectedCourt();
+    if (!venue || !court) return;
+    this.loadingSlots.set(true); this.slotError.set(''); this.selectedTime.set('');
+    try {
+      const response = await firstValueFrom(this.coach.getVenueAvailability(venue.id, court.id, this.selectedDate(), this.durationMinutes()));
+      const payload: any = response.data || {};
+      this.slots.set(Array.isArray(payload.slots) ? payload.slots : []);
+    } catch (error: any) {
+      this.slots.set([]); this.slotError.set(this.apiError(error, 'Available times could not be loaded.'));
+    } finally { this.loadingSlots.set(false); }
   }
 
-  getHrs(): number {
-    const durObj = DURATIONS.find(d => d.id === this.duration());
-    return durObj?.hrs ?? 1;
+  selectCourt(court: Court, reload = true): void {
+    this.courtId.set(court.id); this.selectedStudentIds.set([]); this.selectedTime.set('');
+    if (!this.sessionTitle) this.sessionTitle = `${court.sport} coaching session`;
+    if (reload) void this.loadAvailability();
+  }
+  chooseDate(value: string): void { this.selectedDate.set(value); void this.loadAvailability(); }
+  chooseDuration(minutes: number): void { this.durationMinutes.set(minutes); void this.loadAvailability(); }
+  slotsFor(period: string): Slot[] { return this.slots().filter(slot => slot.period === period); }
+  isStudentSelected(id: number): boolean { return this.selectedStudentIds().includes(id); }
+  toggleStudent(id: number): void {
+    const current = this.selectedStudentIds();
+    if (current.includes(id)) { this.selectedStudentIds.set(current.filter(item => item !== id)); return; }
+    const maximum = this.selectedCourt()?.maxPlayers || 1;
+    if (current.length >= maximum) { this.error.set(`This court allows up to ${maximum} players.`); return; }
+    this.selectedStudentIds.set([...current, id]); this.error.set('');
+  }
+  trackStudent(_index: number, student: Student): number { return student.id; }
+  initials(name: string): string { return name.split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join('').toUpperCase(); }
+  equipmentQty(id: string): number { return this.equipment()[id] || 0; }
+  changeEquipment(item: RentalItem, delta: number): void {
+    const next = Math.max(0, Math.min(item.qty || 0, this.equipmentQty(item.id) + delta));
+    this.equipment.update(current => ({ ...current, [item.id]: next }));
   }
 
-  getVenueCost(): number {
-    return this.selectedVenue.pricePerHour * this.getHrs();
+  canContinue(): boolean {
+    if (this.step() === 1) return !!this.selectedCourt();
+    if (this.step() === 2) return !!this.selectedDate();
+    if (this.step() === 3) return !!this.selectedSlot() && !this.loadingSlots();
+    if (this.step() === 4) return this.selectedStudentIds().length > 0;
+    if (this.step() === 5) return this.sessionTitle.trim().length >= 3;
+    return !this.saving();
   }
 
-  getEquipQty(id: string): number {
-    return this.equip()[id] ?? 0;
+  async next(): Promise<void> {
+    this.error.set('');
+    if (!this.canContinue()) return;
+    if (this.step() < 6) { this.step.update(value => value + 1); return; }
+    await this.submit();
+  }
+  previous(): void { if (this.step() > 1) this.step.update(value => value - 1); else this.close(); }
+  close(): void { void this.router.navigateByUrl('/app/coach/book-venue'); }
+  go(path: string): void { void this.router.navigateByUrl(path); }
+
+  private async submit(): Promise<void> {
+    const venue = this.venue(); const court = this.selectedCourt(); const slot = this.selectedSlot();
+    if (!venue || !court || !slot) return;
+    this.saving.set(true);
+    try {
+      const selectedEquipment = venue.rentalEquipment.filter(item => this.equipmentQty(item.id) > 0).map(item => ({ id: item.id, qty: this.equipmentQty(item.id) }));
+      const response = await firstValueFrom(this.coach.createSession({
+        title: this.sessionTitle.trim(), sport: court.sport, description: this.description.trim() || null,
+        venue_court_id: court.id, student_ids: this.selectedStudentIds(), session_date: this.selectedDate(),
+        start_time: slot.startTime, end_time: slot.endTime, time_zone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata',
+        coach_fee: 0, equipment: selectedEquipment,
+      }));
+      this.confirmation.set(response.data); this.confirmationMessage.set(response.message || 'Your venue session has been created.'); this.success.set(true);
+    } catch (error: any) {
+      this.error.set(this.apiError(error, 'The venue could not be reserved. Please check availability and try again.'));
+      if (error?.status === 422) { await this.loadAvailability(); this.step.set(3); }
+    } finally { this.saving.set(false); }
   }
 
-  incEquip(id: string) {
-    this.equip.update(e => ({ ...e, [id]: (e[id] ?? 0) + 1 }));
+  courtCost(): number { return (this.selectedCourt()?.pricePerHour || 0) * (this.durationMinutes() / 60); }
+  equipmentCost(): number { const venue = this.venue(); return venue ? venue.rentalEquipment.reduce((sum, item) => sum + item.price * this.equipmentQty(item.id), 0) : 0; }
+  taxCost(): number { return Math.round((this.courtCost() + this.equipmentCost() + 49) * .18); }
+  totalCost(): number { return Math.round(this.courtCost() + this.equipmentCost() + 49 + this.taxCost()); }
+  perStudentCost(): number { return Math.round(this.totalCost() / Math.max(1, this.selectedStudentIds().length)); }
+  footerLabel(): string { return this.step() === 3 ? 'Available times' : this.step() === 4 ? 'Students selected' : this.step() === 6 ? 'Total session cost' : 'Current selection'; }
+  footerValue(): string {
+    if (this.step() === 1) return this.selectedCourt()?.sport || 'Choose court';
+    if (this.step() === 2) return new Date(this.selectedDate() + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+    if (this.step() === 3) return this.slots().length + ' slots';
+    if (this.step() === 4) return this.selectedStudentIds().length + ' students';
+    if (this.step() === 5) return '₹' + this.equipmentCost().toLocaleString('en-IN');
+    return '₹' + this.totalCost().toLocaleString('en-IN');
+  }
+  confirmationTitle(): string { return this.confirmation()?.status === 'confirmed' ? 'Booking confirmed!' : 'Request sent to venue'; }
+  confirmationItems(): string[] {
+    const confirmed = this.confirmation()?.status === 'confirmed';
+    return [confirmed ? 'Court reserved and confirmed' : 'Court held while venue reviews', `${this.selectedStudentIds().length} student invitation${this.selectedStudentIds().length === 1 ? '' : 's'} prepared`, 'Session added to your coach schedule', 'Live availability updated'];
   }
 
-  decEquip(id: string) {
-    this.equip.update(e => {
-      const copy = { ...e };
-      if ((copy[id] ?? 0) > 0) {
-        copy[id]--;
-      }
-      return copy;
+  private mapVenue(item: any): Venue {
+    const courts: Court[] = (Array.isArray(item.courts) ? item.courts : []).map((court: any) => ({
+      id: Number(court.id), name: String(court.name || 'Court'), sport: this.titleCase(court.sport || 'Sport'), pricePerHour: Number(court.price_per_hour ?? court.pricePerHour ?? 0),
+      maxPlayers: Math.max(1, Number(court.max_players ?? court.maxPlayers ?? 1)), isIndoor: !!(court.is_indoor ?? court.isIndoor), image: String(court.image || ''),
+    }));
+    const rentalEquipment: RentalItem[] = (Array.isArray(item.rental_equipment ?? item.rentalEquipment) ? (item.rental_equipment ?? item.rentalEquipment) : []).map((equipment: any) => ({
+      id: String(equipment.id), label: String(equipment.label || equipment.name || 'Equipment'), emoji: String(equipment.emoji || '🎽'), qty: Math.max(0, Number(equipment.qty || equipment.quantity || 0)), price: Math.max(0, Number(equipment.price || 0)),
+    })).filter((item: RentalItem) => item.id && item.qty > 0);
+    return { id: Number(item.id), name: String(item.name || 'Venue'), address: String(item.address || item.location || ''), image: String(item.image || ''), openTime: String(item.open_time || item.openTime || '6:00 AM'), closeTime: String(item.close_time || item.closeTime || '10:00 PM'), autoConfirm: !!(item.auto_confirm ?? item.autoConfirm), amenities: Array.isArray(item.amenities) ? item.amenities.map(String) : [], rentalEquipment, courts };
+  }
+  private buildDates(): DateOption[] {
+    const today = new Date();
+    return Array.from({ length: 14 }, (_, index) => {
+      const date = new Date(today.getFullYear(), today.getMonth(), today.getDate() + index);
+      const value = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+      return { value, day: date.toLocaleDateString('en-IN', { weekday: 'short' }), number: date.getDate(), month: date.toLocaleDateString('en-IN', { month: 'short' }), today: index === 0 };
     });
   }
-
-  getEquipCost(): number {
-    return Object.entries(this.equip()).reduce((sum, [id, qty]) => {
-      const meta = EQUIPMENT.find(eq => eq.id === id);
-      return sum + (meta ? meta.price * qty : 0);
-    }, 0);
-  }
-
-  getSubtotal(): number {
-    return this.getVenueCost() + this.getEquipCost();
-  }
-
-  getGST(): number {
-    return Math.round(this.getSubtotal() * 0.18);
-  }
-
-  getTotal(): number {
-    const disc = this.appliedCoupon()?.discount ?? 0;
-    return this.getSubtotal() + this.getGST() + 49 - disc;
-  }
-
-  canProceed = computed(() => {
-    const s = this.step();
-    if (s === 1) return this.sport() !== '';
-    if (s === 2) return true; // Date defaults to 0
-    if (s === 3) return this.time() !== '';
-    if (s === 4) return this.duration() !== '';
-    if (s === 5) return this.trainType() !== '';
-    if (s === 6) return this.students() > 0;
-    return true;
-  });
-
-  handleNext() {
-    if (this.step() < 8) {
-      this.step.update(s => s + 1);
-    } else {
-      this.isSuccess.set(true);
+  private titleCase(value: unknown): string { return String(value || '').replace(/[-_]/g, ' ').replace(/\b\w/g, char => char.toUpperCase()); }
+  private apiError(error: any, fallback: string): string {
+    const errors = error?.error?.errors;
+    if (errors && typeof errors === 'object') {
+      const values = Object.values(errors) as unknown[];
+      const first = values.reduce<unknown[]>((messages, value) => messages.concat(Array.isArray(value) ? value : [value]), [])[0];
+      if (first) return String(first);
     }
-  }
-
-  handlePrev() {
-    if (this.step() === 1) {
-      this.back();
-    } else {
-      this.step.update(s => s - 1);
-    }
-  }
-
-  applyCoupon() {
-    const code = this.couponInput.toUpperCase().trim();
-    if (code === 'COACH20') {
-      const disc = Math.round(this.getSubtotal() * 0.20);
-      this.appliedCoupon.set({ code: 'COACH20', discount: disc });
-      this.couponErr.set('');
-      this.couponInput = '';
-    } else {
-      this.couponErr.set('Invalid code. Try COACH20');
-    }
-  }
-
-  removeCoupon() {
-    this.appliedCoupon.set(null);
-  }
-
-  getAutomationSuccessLogs(): string[] {
-    if (!this.automate()) return ['Venue Reserved'];
-    return [
-      'Venue Reserved',
-      'Coaching Session Created',
-      'Student Invitations Sent',
-      'Session Chat Created',
-      'Added to My Schedule',
-      'Attendance QR Generated',
-    ];
-  }
-
-  back() {
-    this.router.navigateByUrl('/app/coach/book-venue');
-  }
-
-  go(path: string) {
-    this.router.navigateByUrl(path);
+    return error?.error?.message || error?.message || fallback;
   }
 }

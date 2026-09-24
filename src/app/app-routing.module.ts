@@ -156,6 +156,10 @@ const routes: Routes = [
         loadComponent: () => import('./pages/coach/evaluate/evaluate.page').then((m) => m.CoachEvaluatePage),
       },
       {
+        path: 'coach-invite/:token',
+        loadComponent: () => import('./pages/player/coach-invite.page').then((m) => m.CoachInvitePage),
+      },
+      {
         path: 'coach/plan',
         loadComponent: () => import('./pages/coach/plan/plan.page').then((m) => m.CoachPlanPage),
       },

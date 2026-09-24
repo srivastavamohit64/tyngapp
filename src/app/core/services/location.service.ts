@@ -71,6 +71,7 @@ type LocationPermissionValue = PermissionStatus['location'];
 @Injectable({ providedIn: 'root' })
 export class LocationService {
   private geocoder?: google.maps.Geocoder;
+  private currentPositionRequest?: Promise<Position>;
   private lastPermissionRequestTime = 0;
   private readonly PERMISSION_REQUEST_COOLDOWN = 5000; // 5 seconds
   private readonly savedAddresses = inject(SavedAddressesService);
@@ -169,13 +170,25 @@ export class LocationService {
    * browser permission prompt — do not pre-fail as permanently denied.
    */
   async getCurrentPosition(): Promise<Position> {
-    const servicesEnabled = await this.areLocationServicesEnabled();
-    if (!servicesEnabled) {
-      throw new LocationError(
-        LocationErrorType.GPS_DISABLED,
-        'Location services are disabled. Please enable GPS to continue.'
-      );
+    // Share one native/browser request between callers. This avoids multiple
+    // permission prompts and competing GPS reads when a map opens while
+    // another location-aware view is still resolving.
+    if (this.currentPositionRequest) {
+      return this.currentPositionRequest;
     }
+
+    const request = this.resolveCurrentPosition();
+    this.currentPositionRequest = request;
+    try {
+      return await request;
+    } finally {
+      if (this.currentPositionRequest === request) {
+        this.currentPositionRequest = undefined;
+      }
+    }
+  }
+
+  private async resolveCurrentPosition(): Promise<Position> {
 
     const isWeb = Capacitor.getPlatform() === 'web';
     if (!isWeb) {
@@ -200,8 +213,10 @@ export class LocationService {
     try {
       return await Geolocation.getCurrentPosition({
         enableHighAccuracy: true,
-        timeout: 15000,
-        maximumAge: 0,
+        // A recent OS fix is both faster and more reliable than forcing a GPS
+        // cold start every time. The map can still be adjusted manually.
+        timeout: 12000,
+        maximumAge: 120000,
       });
     } catch (error) {
       const err = error as { message?: string; code?: number };
@@ -219,10 +234,12 @@ export class LocationService {
           'Location request timed out. Please try again.'
         );
       }
-      if (err.code === 2) {
+      if (err.code === 2 || /location.*service.*disabled|gps.*disabled/i.test(message)) {
         throw new LocationError(
-          LocationErrorType.POSITION_UNAVAILABLE,
-          'Unable to determine location. Please check your device settings.'
+          /disabled/i.test(message) ? LocationErrorType.GPS_DISABLED : LocationErrorType.POSITION_UNAVAILABLE,
+          /disabled/i.test(message)
+            ? 'Location services are disabled. Please enable GPS to continue.'
+            : 'Unable to determine location. Please check your device settings.'
         );
       }
       throw new LocationError(

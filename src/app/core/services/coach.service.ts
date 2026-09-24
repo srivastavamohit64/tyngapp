@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ApiResponse, CoachDashboard } from '../models/api.model';
+import { ApiResponse, CoachDashboard, CoachInsightsPayload, CoachInsightsPeriod } from '../models/api.model';
 import { ApiService } from './api.service';
 
 @Injectable({ providedIn: 'root' })
@@ -9,6 +9,11 @@ export class CoachService {
 
   getDashboard(): Observable<ApiResponse<CoachDashboard>> {
     return this.api.get<CoachDashboard>('/coach/dashboard');
+  }
+
+  getInsights(date: string, period: CoachInsightsPeriod): Observable<ApiResponse<CoachInsightsPayload>> {
+    const params = new URLSearchParams({ date, period });
+    return this.api.get(`/coach/insights?${params.toString()}`);
   }
 
   getEarnings(period: 'today' | 'week' | 'month' | 'year' = 'month'): Observable<ApiResponse<any>> {
@@ -93,17 +98,52 @@ export class CoachService {
     return this.api.get('/coach/students');
   }
 
+  searchEnrollmentPlayers(query: string): Observable<ApiResponse<any[]>> {
+    return this.api.get<any[]>(`/coach/enrollment/players?query=${encodeURIComponent(query.trim())}`);
+  }
+
+  enrollExistingStudent(studentId: number, notes?: string): Observable<ApiResponse<any>> {
+    return this.api.post('/coach/students/enroll', { mode: 'existing', student_id: studentId, notes: notes?.trim() || null });
+  }
+
+  enrollManagedStudent(form: FormData): Observable<ApiResponse<any>> {
+    if (!form.has('mode')) form.append('mode', 'managed');
+    return this.api.postForm('/coach/students/enroll', form);
+  }
+
+  inviteStudent(payload: { name: string; phone: string; email?: string }): Observable<ApiResponse<any>> {
+    return this.api.post('/coach/student-invitations', payload);
+  }
+
+  getStudentInvitations(): Observable<ApiResponse<any[]>> {
+    return this.api.get<any[]>('/coach/student-invitations');
+  }
+
+  getCoachInvitation(token: string): Observable<ApiResponse<any>> {
+    return this.api.get(`/player/coach-invitations/${encodeURIComponent(token)}`);
+  }
+
+  respondCoachInvitation(token: string, status: 'accepted' | 'declined'): Observable<ApiResponse<any>> {
+    return this.api.post(`/player/coach-invitations/${encodeURIComponent(token)}/respond`, { status });
+  }
+
   getStudent(id: number): Observable<ApiResponse<any>> {
     return this.api.get(`/coach/students/${id}`);
+  }
+
+  getStudentPreview(id: number): Observable<ApiResponse<any>> {
+    return this.api.get(`/coach/students/${id}/preview`);
   }
 
   updateStudent(id: number, payload: { training_focus?: string[]; notes?: string; status?: string }): Observable<ApiResponse<any>> {
     return this.api.patch(`/coach/students/${id}`, payload);
   }
 
-  getEvaluations(studentId?: number): Observable<ApiResponse<any>> {
-    const query = studentId ? `?student_id=${encodeURIComponent(studentId)}` : '';
-    return this.api.get(`/coach/evaluations${query}`);
+  getEvaluations(studentId?: number, page = 1): Observable<ApiResponse<any>> {
+    const params = new URLSearchParams();
+    if (studentId) params.set('student_id', String(studentId));
+    params.set('page', String(Math.max(1, page)));
+    return this.api.get(`/coach/evaluations?${params.toString()}`);
   }
 
   saveStudentEvaluation(id: number, payload: { rating: number; skill_ratings: Record<string, number>; strengths?: string; areas_to_improve?: string; session_id?: number }): Observable<ApiResponse<any>> {
@@ -120,6 +160,16 @@ export class CoachService {
 
   getSchedulingVenues(): Observable<ApiResponse<any[]>> {
     return this.api.get<any[]>('/coach/scheduling/venues');
+  }
+
+  getVenueAvailability(venueId: number | string, courtId: number | string, date: string, durationMinutes = 60): Observable<ApiResponse<any>> {
+    const params = new URLSearchParams({
+      venue_id: String(venueId),
+      court_id: String(courtId),
+      date,
+      duration_minutes: String(durationMinutes),
+    });
+    return this.api.get(`/coach/scheduling/availability?${params.toString()}`);
   }
 
   getSchedulingSessions(from?: string, to?: string): Observable<ApiResponse<any[]>> {

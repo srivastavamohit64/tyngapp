@@ -53,3 +53,43 @@ ALL APP USERS
 - Enjoy clearer cards, buttons, forms, search, filters, tabs, messages and loading screens across the app.
 - See more consistent spacing, colours, labels and touch feedback on mobile screens.
 - See a friendly fallback image or initials when a profile, venue or gallery photo is unavailable.
+
+NEW WORK COMPLETED AFTER 24 SEPTEMBER 2026, 10:21 PM
+25 September 2026
+
+COACH
+
+- See Coach Insights in a polished mobile layout, choose a date or reporting period, and review real activity such as sessions, bookings, earnings, student progress, reviews and retention.
+- See honest zero values when there is no activity, instead of a made-up growth score.
+- Open player evaluations in a clear rating form, save feedback, and browse past evaluations from the history button.
+- Find all available TYNG players when opening Enroll Student; search the list or invite someone who is new to TYNG.
+- Save more information for coach-managed students, including their training, membership and relevant care details.
+- Share an invitation through WhatsApp, messages, email or other available apps. Invitees can join TYNG, accept the invitation and appear in the coach's student list.
+- Customize the invitation message, including the student's name, coach's name and invitation link.
+- Find an approved venue, search and filter venues, check available court times, choose students and equipment, and submit a real booking request.
+- See venue availability, upcoming events, recent reviews, milestones and local weather on the Coach Dashboard when that information is available.
+- Use one Analytics entry in the side menu instead of seeing a duplicate Coach Insights item.
+- Log out from a top-right icon in the side menu.
+
+PLAYER
+
+- Log out from the top-right icon in the side menu.
+
+VENUE STAFF
+
+- Log out from the top-right icon in the side menu.
+- Open the venue map quickly when choosing a location. The map uses the current device location when available and can still be moved by hand.
+- Enter venue prices without the number keypad closing after each digit.
+
+ALL APP USERS
+
+- Get a quicker, more reliable current-location map, with a clear fallback when device location is unavailable.
+- Keep the Coach venue-booking screen available after refreshing the app.
+
+Writing rule: Whenever work is finished, add a short note here explaining in everyday words what changed and how it helps players, coaches, or administrators. Write for someone who does not work in software. Avoid programming terms, internal names, and tool names. Describe what the person can now do.
+
+RECENT IMPROVEMENTS - 23 SEPTEMBER 2026
+
+- Coaches can write player evaluations, rate key skills, and save helpful feedback. Administrators can review player evaluation history and search for a player or coach.
+- The coach booking request now starts a chat with the coach and includes the request as the first message, so both people can continue the conversation in one place.
+- The coach home screen now shows sessions, requests, and expected earnings in a clear, easy-to-read summary that wraps neatly on small phones.

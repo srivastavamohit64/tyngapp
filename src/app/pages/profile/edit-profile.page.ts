@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { Component, ElementRef, inject, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -493,6 +493,7 @@ export class EditProfilePage implements OnInit {
 
   readonly auth = inject(AuthService);
   readonly router = inject(Router);
+  private readonly navigationLocation = inject(Location);
   private readonly actionSheetCtrl = inject(ActionSheetController);
   private readonly mediaPicker = inject(NativeMediaPickerService);
   private readonly savedAddressesService = inject(SavedAddressesService);
@@ -863,7 +864,7 @@ export class EditProfilePage implements OnInit {
   }
 
   back() {
-    void this.router.navigateByUrl(this.auth.user()?.role === 'coach' ? '/app/coach/profile' : '/app/profile');
+    this.navigationLocation.back();
   }
 
   async save() {

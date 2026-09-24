@@ -968,10 +968,11 @@ export class CoachPlanPage implements OnInit {
     this.loading.set(true);
     this.loadError.set('');
     try {
-      const [studentsResponse, venuesResponse, batchesResponse] = await Promise.all([
+      const [studentsResponse, venuesResponse, batchesResponse, profileResponse] = await Promise.all([
         firstValueFrom(this.coachService.getStudents()),
         firstValueFrom(this.coachService.getSchedulingVenues()),
         firstValueFrom(this.coachService.getSessionBatches()),
+        firstValueFrom(this.coachService.getMyCoachProfileDetails()),
       ]);
       const students = studentsResponse.data?.data ?? studentsResponse.data ?? [];
       const venues = venuesResponse.data ?? [];
@@ -998,6 +999,9 @@ export class CoachPlanPage implements OnInit {
         id: String(item.id), label: item.label || 'Previous group session', sport: item.sport || 'Training',
         members: Number(item.members || 0), studentIds: (item.studentIds || []).map(Number),
       }));
+      if (!this.coachFee) {
+        this.coachFee = String(profileResponse.data?.feeOptions?.['individual'] ?? '');
+      }
     } catch {
       this.loadError.set('Could not load your students and venues. Please try again.');
     } finally {

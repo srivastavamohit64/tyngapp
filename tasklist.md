@@ -1,5 +1,125 @@
 # TYNG — Today’s Work and Progress
 
+## Completed: Onboarding profile return path (25 September 2026)
+
+- When Preview My Profile is opened from Coach onboarding, the Profile back button now returns directly to the Coach dashboard.
+- Profile entries from other screens retain their normal history-based back behavior.
+- Verified the TypeScript application check passes.
+
+## Completed: Coach profile preview action (25 September 2026)
+
+- Fixed **Preview My Profile** on Coach profile completion so it opens `/app/coach/profile` instead of incorrectly calling the dashboard back action.
+- Added a loading spinner and disabled state while the profile screen opens.
+- Verified with the Angular development build; existing Sass and unrelated template warnings remain only.
+
+## Completed: Profile and Edit Profile back-loop fix (24 September 2026)
+
+- Updated both Coach Profile and Edit Profile back buttons to return through navigation history.
+- Removed the hard-coded Edit Profile → Coach Profile redirect that caused the two pages to loop.
+- Verified the TypeScript application check passes.
+
+## Completed: Coach Profile back navigation (24 September 2026)
+
+- Coach Profile’s back button now returns to the page that opened it using app navigation history.
+- Verified the TypeScript application check and diff validation.
+
+## Completed: Coach cards and gallery layout (24 September 2026)
+
+- Reduced Coach Profile gallery image size and spacing for a lighter mobile layout.
+- Fixed Coach listing cards so long locations wrap inside the card and no longer overlap the profile action.
+- Kept avatar, rating, and action areas at stable sizes.
+- Verified the TypeScript application check and diff validation.
+
+## Completed: Coach location suffix removal (24 September 2026)
+
+- Removed the “away” text entirely from the Coach Profile location value.
+- Verified the TypeScript application check passes.
+
+## Completed: Coach location label cleanup (24 September 2026)
+
+- Coach Profile now shows “Location not set” without incorrectly appending “away.”
+- The “away” suffix appears only when a real Coach location is available.
+- Verified the TypeScript application check and diff validation.
+
+## Completed: Coach listing image layout (24 September 2026)
+
+- Fixed Coach listing avatars so every profile image stays in a consistent 64×64 rounded square instead of shrinking beside long text.
+- Added a matching person icon fallback when a Coach has no uploaded image.
+- Verified the TypeScript check and diff validation pass.
+
+## Completed: Coach profile image display (24 September 2026)
+
+- Coach listings and Coach detail now render the API profile image instead of always showing the placeholder emoji.
+- Added the shared media URL conversion and retained a fallback avatar when no image exists.
+- Verified with the Angular development build; existing Sass and unrelated template warnings remain only.
+
+## Completed: Coach Settings dark mode cleanup (24 September 2026)
+
+- Removed the Dark Mode preference from Coach Settings and kept the remaining app permissions available.
+- Verified the TypeScript application check passes.
+
+## Completed: Coach Settings preferences cleanup (24 September 2026)
+
+- Removed the App Language and Calendar Sync controls from Coach Settings as requested.
+- Verified the TypeScript application check passes.
+
+## Completed: Coach Settings cleanup (24 September 2026)
+
+- Removed the unused **Connected Accounts** card from Coach Settings, including its Google, Apple, and WhatsApp controls.
+- Verified the TypeScript application check passes.
+
+## Completed: Coach student profile preview (24 September 2026)
+
+- Tapping a student or pending-request profile photo now opens a student profile preview instead of leaving the page.
+- The preview opens immediately with a loading spinner, then securely fetches the latest profile, request message, and coaching progress from the API.
+- Coaches can still tap an active student card to open the complete student workspace.
+- Verified with Laravel syntax and route checks plus the Angular development build.
+- Deployed the preview API to `tyngpeople.com` and pushed the scoped Laravel change on the production `developer` branch.
+
+## Completed: Coach students refresh on entry (24 September 2026)
+
+- Coach **My Students** now refreshes active students and pending requests every time the page is opened, including from a notification, tab, direct link, or back navigation.
+
+## Completed: Dynamic Coach Today’s Focus earnings (24 September 2026)
+
+- Updated Coach Today’s Focus to include sessions created through the current Coach planning flow, not only older session records.
+- Expected earnings now total the Coach fee from today’s confirmed sessions; completed sessions and session counts also include both session systems.
+- The session planner now uses the Individual rate set in Coach Edit Profile as the starting fee for a new session. Existing session prices remain unchanged.
+- Removed placeholder focus amounts, so the card never briefly shows mock values while live dashboard data loads.
+
+## Completed: Coach notification routing (24 September 2026)
+
+- Fixed Coach notification actions so a coaching booking request opens **Session requests**, while a student request opens **My Students**.
+- Removed the incorrect automatic redirect from booking-request notifications to Chat.
+- New backend notifications now retain their intended in-app destination.
+
+## Completed: Coach time-based greeting refresh (24 September 2026)
+
+- The Coach dashboard now refreshes its greeting whenever the dashboard opens, showing Good Morning, Good Afternoon, Good Evening, or Good Night based on the current time.
+
+## Completed: Dashboard header restoration (24 September 2026)
+
+- Restored the TYNG navigation header (menu, logo, and notifications) on both Player and Coach dashboards.
+- The dashboard greeting and role-specific content remain below the shared header.
+
+## Completed: Player and Coach dashboard header alignment (24 September 2026)
+
+- Rebuilt the Player dashboard greeting to use the reference layout: profile photo, online status, welcome text, points shortcut, and compact location control.
+- Removed the unrelated brand header from both dashboard role views so Player and Coach screens begin with their dashboard information.
+- Kept each role’s relevant information while making the two openings feel like one product family.
+
+## Completed: Coach dashboard screenshot alignment (24 September 2026)
+
+- Matched the Coach dashboard opening viewport to the supplied screenshot by removing the brand header from the Coach view only.
+- Tuned the greeting and Today’s Focus card spacing, border, shadow, and sizing for the reference layout.
+- Player home keeps its existing brand header.
+
+## Completed: Coach student search fix (24 September 2026)
+
+- Fixed the Coach **My Students** search so the list updates while typing.
+- Search now matches student names and sports and shows a clear message when there are no matches.
+- Verified with the Angular development build; build completed successfully with existing Sass deprecation warnings only.
+
 ## Completed: Coach role navigation and dashboard
 
 - Added role-aware routing so a signed-in Coach is kept inside `/app/coach/*` routes.
@@ -351,3 +471,134 @@
 - Confirmed the live Laravel server is on `developer` commit `e67aaa9`, matching its remote branch, and preserved its unrelated working files in named Git stashes before cleaning the checkout.
 - Preserved the local Laravel checkout's prior working files in a named stash and its local-only commit on `backup/local-developer-presync-2026-09-24`.
 - Aligned the local Laravel `developer` branch with `origin/developer`; local, live server and remote now point to `e67aaa9` with no ahead/behind commits.
+# Completed: Coach Insights date-driven dashboard - 25 September 2026
+
+- Refined the Coach Insights page with consistent chips, metric cards, action states and responsive styling.
+- Added a header calendar popup so coaches can select a date and refresh the insight metrics for that day.
+- Connected the page to the existing dashboard, sessions, schedule and booking-request APIs, including loading, retry and error states.
+- Verified the Angular TypeScript compilation and Git diff checks successfully.
+# Completed: Coach Insights filter chip design - 25 September 2026
+
+- Restyled the insight period chips with consistent sizing, spacing, active-state emphasis, focus styling and mobile horizontal scrolling.
+- Preserved the existing period selection behavior and added accessible tab semantics.
+# Completed: Fully dynamic Coach Insights data - 25 September 2026
+
+- Removed the artificial `50` growth-index baseline; coaches with no measurable activity now see `0`.
+- Added and deployed `GET /api/coach/insights`, supporting selected date and period filters with real sessions, booking requests, students, evaluations, reviews, earnings, completion, acceptance and retention metrics.
+- Connected the full Insights page sections to the API, including growth, performance cards, business metrics, student growth, retention, review highlights, funnel and sparklines.
+- Verified live host `srv1789528`, cleared Laravel caches, committed and pushed Laravel changes on `developer` as `7c368b7`.
+- Verified PHP syntax, route registration, Angular TypeScript compilation and production Angular build. Existing Sass deprecation and unrelated optional-chain warnings remain.
+# Completed: Coach Insights analytics and mobile polish - 25 September 2026
+
+- Rebuilt Coach Insights as a typed, API-driven mobile screen with compact Playo-inspired hierarchy, responsive cards, readable labels, sticky filters, honest empty states and a calendar bottom sheet.
+- Made all period chips reload real data and removed the unused hardcoded fallback metrics.
+- Added explainable analytics for profile views, bookings, acceptance, completion, earnings, student evaluations, improvement, retention, reviews, funnel conversion and server-generated sparklines.
+- Added daily coach-profile view tracking with a new migration and replaced unavailable tournament/referral claims with measurable active-student and evaluation coverage metrics.
+- Added `docs/coach-insights-plan.md` documenting metric formulas, API contract, mobile rules and verification.
+- Local Laravel feature tests passed (3 tests, 8 assertions); Angular TypeScript and development production-style build passed with existing unrelated warnings.
+- Deployed migration and API changes to `srv1789528`, verified a real service payload, cleared caches, and pushed live Laravel commit `fa923cf` on `developer`. The server test runner lacks the SQLite PDO extension, so the same passing feature suite could not execute on the server.
+
+# Completed: Coach player evaluation redesign - 25 September 2026
+
+- Rebuilt the Coach Player Evaluation screen to match the supplied mobile reference and the `E:\\TYNG APP` implementation: compact header, visible player cards, four 1-5 rating rows, feedback fields and a lime save action.
+- Kept the screen dynamic with accepted students from the coach API, real profile images and sport fallbacks, evaluation saving, validation, loading, empty, retry, success and error states.
+- Added responsive sizing, selected/rating feedback, accessible controls and safe back navigation.
+- Verified Angular TypeScript compilation, the development Angular build and Git diff checks successfully.
+
+# Completed: Dynamic coach student enrolment flow - 25 September 2026
+
+- Rebuilt `/app/coach/enroll-student` as a fully API-driven mobile wizard for existing TYNG players, shareable player invitations and coach-managed student profiles.
+- Added real debounced player search, live reusable batch loading, native/web profile-photo selection, server validation, loading/error states and dynamic success summaries.
+- Existing-user enrolment now lists every eligible TYNG player by default; typing filters the list and clearing search restores all available players.
+- Persisted managed student, guardian, medical, coaching, membership and training data; selected batches now link the student to matching upcoming sessions.
+- Added secure invitation records, matching-player validation, player accept/decline screen, deep-link return after login or first-time onboarding, and pending invitation sharing from My Students.
+- Updated My Students and student profile pages to show pending invitations and saved managed-profile details.
+- Local Laravel feature tests passed (3 tests, 25 assertions); Angular TypeScript and development builds passed. Local MySQL migration was unavailable because the local MySQL service was stopped, while the isolated test database ran the migration successfully.
+- Deployed the Laravel API and migration to live host `srv1789528`, verified protected HTTP routes, cleared caches, and committed/pushed live backend commits `22394c5`, `0e69a0e` and `7aba941` on `developer`.
+
+# Completed: Player evaluation history archive - 25 September 2026
+
+- Restored the clipboard action in the Player Evaluation header and connected it to the persisted coach-evaluation API.
+- Added a mobile history sheet showing each saved date, overall score, four skill ratings, strengths, improvement areas and coach notes for the selected player.
+- Added retry, empty, loading and paginated “load older” states so every past evaluation remains accessible rather than showing only recent records.
+- Verified Angular TypeScript compilation, the Angular development build and Git diff checks successfully.
+
+# Completed: Shareable off-platform student invitations - 25 September 2026
+
+- Updated Invite to TYNG so saving a new-player invitation immediately opens sharing choices for WhatsApp, Messages, email, native social apps and copy.
+- Added a mobile joining guide for coaches and recipients: use the invited phone/email, create or sign in to a Player account, complete onboarding, accept, and appear automatically in My Students.
+- Added an admin-editable invitation message under Laravel Admin Settings with `{student_name}`, `{coach_name}` and `{invite_url}` placeholders; the secure URL is always included.
+- Added the absolute share URL, customized message, recipient status and joining steps to the invitation API, while retaining secure phone/email matching before acceptance.
+- Verified Angular TypeScript and development builds, PHP syntax, Blade compilation, protected live routes and 4 local Laravel tests (36 assertions). The live CLI test runner lacks SQLite support, so its feature suite could not start there.
+- Deployed migration batch 29 to `srv1789528`, cleared Laravel caches, and committed/pushed backend commit `9ab1a7a` on `developer`.
+
+# Completed: Evaluation history icon visibility - 25 September 2026
+
+- Restored the Player Evaluation top-right history action as an always-visible green clipboard button with a reliable inline SVG.
+- Removed the selection-dependent disabled appearance; the action now uses the selected player or the first available player and keeps the existing evaluation-history sheet functionality.
+- Verified Angular TypeScript compilation and Git diff checks successfully.
+
+# Completed: Dynamic coach venue booking flow - 25 September 2026
+
+- Rebuilt `/app/coach/book-venue` with real approved venues, courts, pricing, hours, images, sports, amenities, search, filters, retry/empty states and upcoming reservations.
+- Rebuilt `/app/coach/venue-booking` as a six-step mobile flow for court, date, duration and available time, active students, session details, rental equipment, live pricing, review and confirmation.
+- Added `GET /api/coach/scheduling/availability`; available times now respect venue operating days/hours, slot intervals, elapsed times, existing games, legacy sessions, confirmed reservations and active approval holds.
+- Connected confirmation to the real scheduling API so it persists the coach session, court reservation, student invitations, equipment selections and price snapshot, with duplicate-slot protection and validation against closed/unapproved venues.
+- Local Laravel tests passed (2 tests, 19 assertions); Angular TypeScript and production builds passed with existing unrelated Sass and template warnings.
+- Deployed the Laravel API to live host `srv1789528`, verified syntax, route registration, cache clearing and protected HTTP behavior, then committed/pushed backend commit `e404381` on `developer`.
+
+# Completed: Dynamic coach dashboard discovery sections - 25 September 2026
+
+- Replaced the Coach Dashboard's sample venue cards with approved venues, real media/location data and live one-hour availability counts across each venue's active courts for today.
+- Connected each venue card directly to its selected booking flow and corrected See All to open the coach venue catalogue.
+- Replaced sample community cards with upcoming published public venue events, including real dates, times, venues, registrations and cover images; empty data now has an honest coach-community action.
+- Kept recent reviews driven by published coach reviews, changed View All to Coach Insights, and added a real empty state.
+- Made the milestone card derive from completed session totals and added cached coordinate-based current weather with honest missing-location/provider fallbacks.
+- Corrected Need Help to open Coach Chat instead of Settings and added polished loading, retry and empty states.
+- Local Laravel tests passed (4 tests, 43 assertions); Angular TypeScript and production builds passed with existing unrelated warnings.
+- Deployed and verified the API on `srv1789528`, including live weather-provider connectivity, then committed/pushed backend commit `9607d6d` on `developer`.
+
+# Completed: Coach menu analytics deduplication - 25 September 2026
+
+- Removed the duplicate Coach Insights entry from the coach side menu.
+- Retained the Analytics menu entry and the `/app/coach/insights` route so dashboard analytics links continue to work.
+- Verified Angular TypeScript compilation successfully.
+
+# Completed: Coach menu header logout - 25 September 2026
+
+- Moved the coach logout action from the bottom of the side menu into a compact top-right header icon.
+- Preserved the existing logout confirmation dialog and added accessible label, focus and pressed states.
+- Removed the duplicate bottom logout row from the coach menu only; venue and player menus remain unchanged.
+
+# Completed: Reliable venue profile current location - 25 September 2026
+
+- Corrected the shared location service so simultaneous callers reuse one GPS request instead of launching competing native reads and permission prompts.
+- Removed the redundant GPS availability probe, allowed a recent two-minute OS location fix, and retained clear permission, disabled-GPS, unavailable and timeout errors.
+- Made Choose from map display its picker in about 0.7 seconds using a saved/default fallback, then automatically recenter and resolve the address when the current GPS fix arrives.
+- Moved existing-address geocoding into the background so a slow Google response no longer blocks the map, while protecting a location the user has already moved manually.
+- Confirmed Android coarse/fine location permissions, Angular TypeScript compilation, the Angular development build and Git diff checks.
+
+# Completed: Venue pricing numeric keyboard stability - 25 September 2026
+
+- Fixed the Edit Venue Profile pricing inputs dismissing the mobile numeric keyboard after each digit.
+- Added stable facility-ID tracking to the Step 5 pricing-card loop so hourly, peak, weekend and cancellation price updates no longer destroy and recreate the focused input.
+- Verified Angular TypeScript compilation, the Angular development build and Git diff checks successfully.
+
+# Completed: Coach venue-booking dev-server compilation recovery - 25 September 2026
+
+- Confirmed `coach-venue-booking.page.ts` exists, remains tracked, and is reachable from the lazy route; no source or `tsconfig` restoration was required.
+- Removed the stale/overlapping webpack development processes and restarted one clean Angular server on port 8100.
+- Verified the app root returns HTTP 200 and the generated coach venue-booking lazy bundle returns HTTP 200 with the current component code.
+
+# Completed: Player and venue drawer header logout - 25 September 2026
+
+- Added the same top-right logout icon used by the coach drawer to the player and venue drawer headers.
+- Removed the bottom logout controls from the player and venue drawers while retaining the shared logout confirmation flow.
+- Reused accessible label, title, styling, and focus/tap states for all three roles.
+
+# Completed: Client-facing summary updated after 24 September 2026, 10:21 PM
+
+- Restored the existing plain-language feature summary in `tasklistnew.txt` and preserved its writing rule.
+- Added the completed post-cutoff Coach, Player, Venue Staff and app-wide changes, including insights, evaluations, enrolment/invitations, venue booking/dashboard, logout icons, current-location selection and stable price entry.
+- Kept the summary focused on what app users can do and left out internal implementation and server details.
+- Checked the three task-list files for whitespace errors.

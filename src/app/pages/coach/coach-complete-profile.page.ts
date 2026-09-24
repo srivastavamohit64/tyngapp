@@ -60,8 +60,9 @@ const ALL_SECTIONS = [
           <button (click)="finishOnboarding()" class="btn-orange-gradient w-full h-14 rounded-[24px] text-[16px] font-black text-white">
             Go to Coach Dashboard
           </button>
-          <button (click)="back()" class="w-full h-12 rounded-[24px] text-[14px] font-bold text-[#6B7280] bg-white border-none shadow-sm">
-            Preview My Profile
+          <button (click)="previewProfile()" [disabled]="previewing()" class="w-full h-12 rounded-[24px] text-[14px] font-bold text-[#6B7280] bg-white border-none shadow-sm disabled:opacity-60">
+            <ion-spinner *ngIf="previewing()" name="crescent" class="mr-2 align-middle"></ion-spinner>
+            {{ previewing() ? 'Opening profile...' : 'Preview My Profile' }}
           </button>
         </div>
       </div>
@@ -975,6 +976,7 @@ export class CoachCompleteProfilePage implements DoCheck, OnInit {
   readonly achievementOptions = ACHIEVEMENTS;
 
   showDone = signal(false);
+  previewing = signal(false);
   expandedSection = signal<string | null>('languages');
 
   // Completed arrays
@@ -1343,6 +1345,13 @@ export class CoachCompleteProfilePage implements DoCheck, OnInit {
 
   finishOnboarding() {
     void this.router.navigateByUrl('/app/coach/dashboard');
+  }
+
+  async previewProfile() {
+    if (this.previewing()) return;
+    this.previewing.set(true);
+    const navigated = await this.router.navigateByUrl('/app/coach/profile?from=complete-profile');
+    if (!navigated) this.previewing.set(false);
   }
 
   back() {

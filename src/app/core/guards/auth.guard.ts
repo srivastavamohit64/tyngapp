@@ -15,7 +15,9 @@ export const authGuard: CanActivateFn = (_route, state) => {
   return auth.ensureSession().pipe(
     map((ok) => {
       if (!ok || !auth.user()) {
-        return router.createUrlTree(['/login']);
+        const returnUrl = state.url.startsWith('/app/coach-invite/') ? state.url : undefined;
+        if (returnUrl) sessionStorage.setItem('tyng-post-auth-return-url', returnUrl);
+        return router.createUrlTree(['/login'], returnUrl ? { queryParams: { returnUrl } } : undefined);
       }
 
       const user = auth.user()!;

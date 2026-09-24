@@ -5,6 +5,7 @@ import { AlertController, IonicModule } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 import { CoachService } from '../../core/services/coach.service';
 import { ChatService } from '../../core/services/chat.service';
+import { resolveMediaUrl } from '../../core/utils/media-url.util';
 
 @Component({
   selector: 'app-coach-profile-detail',
@@ -25,8 +26,9 @@ import { ChatService } from '../../core/services/chat.service';
 
         <!-- Profile Detail Card -->
         <div class="bg-card border border-border rounded-2xl p-6 mb-6 flex flex-col items-center text-center">
-          <div class="h-24 w-24 rounded-full bg-slate-100 flex items-center justify-center text-5xl shadow-md mb-4 animate-bounce">
-            {{ coach.avatar }}
+          <div class="h-24 w-24 rounded-full bg-slate-100 flex items-center justify-center text-5xl shadow-md mb-4 animate-bounce overflow-hidden">
+            <img *ngIf="coach.profileImage; else coachDetailPlaceholder" [src]="photo(coach.profileImage)" [alt]="coach.name" class="h-full w-full object-cover" />
+            <ng-template #coachDetailPlaceholder>{{ coach.avatar }}</ng-template>
           </div>
           <h2 class="text-xl font-bold text-slate-900 mb-1">{{ coach.name }}</h2>
           <p class="text-xs font-bold text-primary mb-3 uppercase tracking-wide">{{ coach.sport }} • {{ coach.experience }}</p>
@@ -42,7 +44,7 @@ import { ChatService } from '../../core/services/chat.service';
             </div>
             <div class="text-center">
               <p class="text-xs text-slate-400">Location</p>
-              <p class="text-base font-bold text-slate-900 mt-0.5">{{ coach.distance }} away</p>
+              <p class="text-base font-bold text-slate-900 mt-0.5">{{ coach.distance }}</p>
             </div>
           </div>
         </div>
@@ -93,10 +95,10 @@ import { ChatService } from '../../core/services/chat.service';
       .rating ion-icon {
         color: #FF7A00;
       }
-      .coach-gallery-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
-      .coach-gallery-item { display:block; overflow:hidden; min-height:120px; border-radius:16px; background:#f3f4f6; }
-      .coach-gallery-item img,.coach-gallery-item video { width:100%; height:140px; display:block; object-fit:cover; }
-      .coach-certificate { min-height:120px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; color:#2563eb; font-size:12px; font-weight:700; }
+      .coach-gallery-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+      .coach-gallery-item { display:block; overflow:hidden; min-height:96px; border-radius:12px; background:#f3f4f6; }
+      .coach-gallery-item img,.coach-gallery-item video { width:100%; height:104px; display:block; object-fit:cover; }
+      .coach-certificate { min-height:96px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; color:#2563eb; font-size:11px; font-weight:700; }
       .coach-certificate ion-icon { font-size:28px; }
       button.bg-gradient-to-r {
         background: linear-gradient(to right, var(--app-primary), var(--app-primary-to)) !important;
@@ -164,6 +166,10 @@ export class CoachProfileDetailPage implements OnInit {
 
   back() {
     this.router.navigateByUrl('/app/coaches');
+  }
+
+  photo(url?: string | null): string | null {
+    return resolveMediaUrl(url);
   }
 
   async bookSession() {

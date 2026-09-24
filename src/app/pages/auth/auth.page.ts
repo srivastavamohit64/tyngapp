@@ -582,7 +582,12 @@ export class AuthPage implements OnInit {
   setMode(mode: 'signup' | 'login') {
     this.mode = mode;
     // /auth defaults to login; signup uses ?mode=signup
-    const url = mode === 'signup' ? '/auth?mode=signup' : '/auth';
+    const current = this.router.parseUrl(this.router.url);
+    const returnUrl = current.queryParams['returnUrl'];
+    const params = new URLSearchParams();
+    if (mode === 'signup') params.set('mode', 'signup');
+    if (returnUrl) params.set('returnUrl', returnUrl);
+    const url = '/auth' + (params.toString() ? '?' + params.toString() : '');
     void this.router.navigateByUrl(url, { replaceUrl: true });
   }
 
@@ -608,6 +613,7 @@ export class AuthPage implements OnInit {
         phone: this.phone,
         password: this.password,
       }));
+      if (this.navigateToInvitation(user)) return;
       this.auth.navigateAfterAuth(user);
     } catch (error) {
       this.errorMessage = String(error);
@@ -624,5 +630,13 @@ export class AuthPage implements OnInit {
     const tree = this.router.parseUrl(this.router.url);
     const modeParam = tree.queryParams['mode'];
     this.mode = modeParam === 'signup' ? 'signup' : 'login';
+  }
+
+  private navigateToInvitation(user: { role: string; isOnboarded: boolean }): boolean {
+    const returnUrl = this.router.parseUrl(this.router.url).queryParams['returnUrl'] || sessionStorage.getItem('tyng-post-auth-return-url');
+    if (user.role !== 'player' || !user.isOnboarded || typeof returnUrl !== 'string' || !returnUrl.startsWith('/app/coach-invite/')) return false;
+    sessionStorage.removeItem('tyng-post-auth-return-url');
+    void this.router.navigateByUrl(returnUrl, { replaceUrl: true });
+    return true;
   }
 }

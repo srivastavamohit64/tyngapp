@@ -5,8 +5,21 @@
 }
 
 .coach-focus-bar {
-  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.06);
-  border: 1.5px solid rgba(var(--app-primary-rgb), 0.18);
+  box-shadow: 0 2px 10px rgba(19, 35, 58, 0.06);
+  border: 1px solid rgba(var(--app-primary-rgb), 0.24);
+  min-height: 57px;
+  box-sizing: border-box;
+}
+
+.coach-dashboard-heading {
+  padding-top: 20px;
+  padding-bottom: 16px;
+}
+
+.coach-dashboard-heading h1 {
+  font-size: 25px;
+  letter-spacing: -0.03em;
+  text-transform: capitalize;
 }
 
 .coach-focus-content {
@@ -232,6 +245,27 @@
 .coach-weather-outdoor { padding:6px 9px; border-radius:12px; background:#EFFAF0; text-align:center; }
 .coach-weather-outdoor p { margin:0; color:#159447; font-size:8px; font-weight:900; letter-spacing:.06em; text-transform:uppercase; }
 .coach-weather-outdoor span { color:#22A653; font-size:8px; font-weight:650; white-space:nowrap; }
+.coach-weather-outdoor.caution { background:#F3F4F6; }
+.coach-weather-outdoor.caution p,.coach-weather-outdoor.caution span { color:#697487; }
+
+.coach-dashboard-inline-state {
+  min-height: 82px;
+  padding: 14px;
+  border: 1px solid #EDF1F5;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #fff;
+  color: #7B8494;
+  font-size: 10px;
+  text-align: center;
+}
+
+.coach-dashboard-inline-state ion-spinner { width:18px; height:18px; color:var(--app-primary); }
+.coach-dashboard-inline-state button { padding:6px 9px; border:0; border-radius:9px; background:#ECFFD7; color:#315B00; font-size:9px; font-weight:800; }
+.coach-dashboard-inline-state.error { color:#B42318; background:#FFF9F8; }
 
 .coach-support-card {
   display:flex;
@@ -326,13 +360,104 @@
 /* ── Player Home (Figma HomeScreen) ─────────────────────── */
 .player-home {
   background: #fafbfc;
-  padding: 20px 20px 24px;
+  padding: 18px 8px 24px;
   color: #111827;
 }
 
-.home-hello {
-  margin: 0 0 16px;
-  text-align: left;
+.player-dashboard-heading {
+  margin: 0 0 14px;
+}
+
+.player-profile-row {
+  display: flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 10px;
+}
+
+.player-avatar {
+  position: relative;
+  display: grid;
+  flex: 0 0 36px;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  margin: 0 9px 0 0;
+  padding: 0;
+  overflow: visible;
+  border: 2px solid var(--app-primary);
+  border-radius: 50%;
+  background: #eef1f4;
+  color: #687386;
+}
+
+.player-avatar img {
+  width: 35px;
+  height: 35px;
+  max-width: 35px;
+  min-width: 35px;
+  max-width: 35px;
+  max-height: 35px;
+  border-radius: inherit;
+  object-fit: cover;
+}
+
+.player-avatar ion-icon {
+  font-size: 20px;
+}
+
+.player-online-dot {
+  position: absolute;
+  right: -2px;
+  bottom: -1px;
+  width: 9px;
+  height: 9px;
+  border: 1.5px solid #fff;
+  border-radius: 50%;
+  background: var(--app-primary);
+}
+
+.player-welcome-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.player-welcome-copy h1 {
+  margin: 0;
+  color: #111827;
+  font-size: 17px;
+  font-weight: 900;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+}
+
+.player-welcome-copy p {
+  margin: 1px 0 0;
+  color: #718096;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.player-points-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 45px;
+  height: 28px;
+  margin-left: 10px;
+  padding: 0 10px;
+  border: 1px solid #fed7aa;
+  border-radius: 999px;
+  background: #fffaf5;
+  color: #f97316;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.player-points-pill ion-icon {
+  font-size: 13px;
 }
 
 .home-hello-wish {
@@ -355,12 +480,15 @@
 .home-location-trigger {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  margin-top: 6px;
+  gap: 5px;
+  height: 40px;
+  margin: 9px 0 0;
+  padding: 0 12px;
   max-width: 100%;
-  border: none;
-  background: transparent;
-  padding: 0;
+  border: 1px solid #edf0f2;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 4px 10px rgba(19, 35, 58, 0.08);
   cursor: pointer;
   color: #4b5563;
 }
@@ -372,9 +500,9 @@
 }
 
 .home-location-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: #4b5563;
+  font-size: 11px;
+  font-weight: 700;
+  color: #172033;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

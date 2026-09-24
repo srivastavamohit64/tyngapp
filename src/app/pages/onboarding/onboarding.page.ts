@@ -198,6 +198,12 @@ export class OnboardingPage implements OnInit {
     } catch {
       // Continue navigation if API sync fails
     }
+    const returnUrl = sessionStorage.getItem('tyng-post-auth-return-url');
+    if (returnUrl?.startsWith('/app/coach-invite/')) {
+      sessionStorage.removeItem('tyng-post-auth-return-url');
+      void this.router.navigateByUrl(returnUrl, { replaceUrl: true });
+      return;
+    }
     void this.router.navigateByUrl('/app/home');
   }
 }

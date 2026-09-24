@@ -27,8 +27,8 @@ import {
 } from '../native-google-map/native-google-map.component';
 
 const DEFAULT_CENTER: NativeMapCoordinate = { lat: 26.8467, lng: 80.9462 };
-/** Wait this long for GPS before showing a fallback center, then pan if GPS arrives. */
-const GPS_OPEN_WAIT_MS = 3000;
+/** Open quickly with a fallback; a later GPS fix automatically recenters the map. */
+const GPS_OPEN_WAIT_MS = 700;
 
 type GpsRead = { center: NativeMapCoordinate } | { error: unknown };
 
@@ -592,8 +592,6 @@ export class LocationFieldComponent implements ControlValueAccessor, AfterViewIn
   }
 
   private async preparePicker(seq: number, gpsTask: Promise<GpsRead>) {
-    const fallbackTask = this.resolveFallbackCenter();
-
     try {
       const quick = await Promise.race([
         gpsTask.then((result) => ({ kind: 'gps' as const, result })),
@@ -613,7 +611,7 @@ export class LocationFieldComponent implements ControlValueAccessor, AfterViewIn
         return;
       }
 
-      const fallback = await fallbackTask;
+      const fallback = this.immediateFallbackCenter();
       if (seq !== this.openSeq) {
         return;
       }
@@ -626,6 +624,7 @@ export class LocationFieldComponent implements ControlValueAccessor, AfterViewIn
         );
         this.locating = false;
         this.mountPicker();
+        void this.recenterOnExistingAddress(seq, fallback.center);
         return;
       }
 
@@ -646,6 +645,7 @@ export class LocationFieldComponent implements ControlValueAccessor, AfterViewIn
         await this.pickerMap?.animateTo(gps.center, 16);
       } else {
         this.mapHint = this.permissionMessage(gps.error);
+        void this.recenterOnExistingAddress(seq, fallback.center);
       }
     } catch (e) {
       if (seq !== this.openSeq) {
@@ -673,22 +673,10 @@ export class LocationFieldComponent implements ControlValueAccessor, AfterViewIn
     }
   }
 
-  private async resolveFallbackCenter(): Promise<{
+  private immediateFallbackCenter(): {
     center: NativeMapCoordinate;
     zoom: number;
-  }> {
-    const existing = this.value.trim();
-    if (existing) {
-      try {
-        const geocoded = await this.googleMaps.geocode(existing, DEFAULT_CENTER);
-        if (geocoded) {
-          return { center: geocoded, zoom: 15 };
-        }
-      } catch {
-        // Fall through to saved / default.
-      }
-    }
-
+  } {
     const saved = this.locationService.getSavedLocation();
     if (saved && Number.isFinite(saved.latitude) && Number.isFinite(saved.longitude)) {
       return {
@@ -698,6 +686,33 @@ export class LocationFieldComponent implements ControlValueAccessor, AfterViewIn
     }
 
     return { center: DEFAULT_CENTER, zoom: 13 };
+  }
+
+  /**
+   * If GPS is unavailable, resolve the venue's existing address without
+   * blocking the map from opening. Do not override a point the user moved to.
+   */
+  private async recenterOnExistingAddress(seq: number, initialCenter: NativeMapCoordinate) {
+    const existing = this.value.trim();
+    if (!existing) {
+      return;
+    }
+
+    try {
+      const geocoded = await this.googleMaps.geocode(existing, DEFAULT_CENTER);
+      if (
+        !geocoded ||
+        seq !== this.openSeq ||
+        (this.pendingCenter && !this.sameCoordinate(this.pendingCenter, initialCenter))
+      ) {
+        return;
+      }
+      this.pickerCenter = geocoded;
+      this.pickerZoom = 15;
+      await this.pickerMap?.animateTo(geocoded, 15);
+    } catch {
+      // Keep the already-visible saved/default center.
+    }
   }
 
   private applyPickerCenter(center: NativeMapCoordinate, zoom: number, hint: string) {

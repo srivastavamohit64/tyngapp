@@ -3,7 +3,10 @@
   <ion-content>
     <!-- Coach drawer -->
     <div class="drawer-shell" *ngIf="auth.user()?.role === 'coach'; else venueOrPlayerDrawer">
-        <div class="drawer-profile-header coach-drawer-header">
+      <div class="drawer-profile-header coach-drawer-header">
+        <button type="button" class="coach-header-logout" (click)="requestLogout()" aria-label="Log out" title="Log out">
+          <ion-icon name="log-out-outline"></ion-icon>
+        </button>
         <div class="drawer-avatar-wrap" (click)="navigateTo('/app/coach/profile')">
           <div class="drawer-avatar">
             <img *ngIf="avatarUrl(); else coachEmoji" [src]="avatarUrl()" [alt]="displayName()" class="drawer-avatar-img" />
@@ -60,12 +63,6 @@
           <ion-icon *ngIf="!coachMenuBadge(item)" name="chevron-forward-outline" class="menu-chevron"></ion-icon>
         </button>
 
-        <div class="menu-divider"></div>
-
-        <button class="logout-btn" (click)="requestLogout()">
-          <div class="logout-icon"><ion-icon name="log-out-outline"></ion-icon></div>
-          <span class="logout-text">Log Out</span>
-        </button>
       </div>
     </div>
 
@@ -73,6 +70,9 @@
     <ng-template #venueOrPlayerDrawer>
       <div class="drawer-shell" *ngIf="auth.user()?.role === 'venue'; else playerDrawer">
         <div class="venue-drawer-header">
+          <button type="button" class="coach-header-logout" (click)="requestLogout()" aria-label="Log out" title="Log out">
+            <ion-icon name="log-out-outline"></ion-icon>
+          </button>
           <div class="venue-drawer-identity">
             <div class="venue-drawer-icon" [class.has-photo]="!!avatarUrl()">
               <img *ngIf="avatarUrl(); else venueEmoji" [src]="avatarUrl()!" [alt]="venueDisplayName()" class="venue-drawer-avatar-img" />
@@ -119,12 +119,6 @@
             <ion-icon *ngIf="!item.badge" name="chevron-forward-outline" class="menu-chevron"></ion-icon>
           </button>
 
-          <div class="menu-divider"></div>
-
-          <button class="logout-btn" (click)="requestLogout()">
-            <div class="logout-icon"><ion-icon name="log-out-outline"></ion-icon></div>
-            <span class="logout-text">Log Out</span>
-          </button>
         </div>
       </div>
 
@@ -132,6 +126,9 @@
     <ng-template #playerDrawer>
       <div class="drawer-shell">
         <div class="drawer-profile-header">
+          <button type="button" class="coach-header-logout" (click)="requestLogout()" aria-label="Log out" title="Log out">
+            <ion-icon name="log-out-outline"></ion-icon>
+          </button>
           <div class="drawer-avatar-wrap" (click)="navigateTo('/app/profile')">
             <div class="drawer-avatar">
               <img *ngIf="avatarUrl(); else playerEmoji" [src]="avatarUrl()" [alt]="displayName()" class="drawer-avatar-img" />
@@ -245,12 +242,6 @@
           </button>
         </div>
 
-        <div class="drawer-logout">
-          <button class="logout-btn" (click)="requestLogout()">
-            <div class="logout-icon"><ion-icon name="log-out-outline"></ion-icon></div>
-            <span class="logout-text">Log Out</span>
-          </button>
-        </div>
       </div>
     </ng-template>
     </ng-template>

@@ -88,6 +88,35 @@ export interface CoachDashboardActivity {
   at?: string | null;
 }
 
+export interface CoachDashboardCommunityEvent {
+  id: number;
+  title: string;
+  tag: string;
+  image?: string | null;
+  eventDate?: string | null;
+  startTime?: string | null;
+  venueName?: string | null;
+  registrations: number;
+}
+
+export interface CoachDashboardMilestone {
+  completedSessions: number;
+  achievedTarget: number;
+  nextTarget?: number | null;
+  title: string;
+  description: string;
+}
+
+export interface CoachDashboardWeather {
+  available: boolean;
+  location?: string | null;
+  temperature?: number | null;
+  condition: string;
+  icon: string;
+  outdoorSuitable: boolean;
+  outdoorLabel: string;
+}
+
 export interface CoachDashboard {
   profile: AuthUser;
   focus: { todaySessions: number; pendingRequests: number; expectedEarnings: number };
@@ -107,6 +136,48 @@ export interface CoachDashboard {
   todaySessions: CoachDashboardSession[];
   recentReviews: CoachDashboardReview[];
   recentActivity: CoachDashboardActivity[];
+  communityEvents?: CoachDashboardCommunityEvent[];
+  milestone?: CoachDashboardMilestone;
+  weather?: CoachDashboardWeather;
+}
+
+export type CoachInsightsPeriod = 'last_7_days' | 'last_30_days' | 'this_month' | 'this_year';
+
+export interface CoachInsightMetric {
+  id: string;
+  label: string;
+  value: string;
+  change: string;
+  positive: boolean;
+}
+
+export interface CoachInsightsPayload {
+  date: string;
+  period: CoachInsightsPeriod;
+  range: { from: string; to: string; label: string };
+  growth: {
+    index: number;
+    level: string;
+    summary: string;
+    breakdown: Record<string, number>;
+  };
+  quickStats: Array<{ icon: string; label: string; value: string }>;
+  performance: CoachInsightMetric[];
+  businessMetrics: Array<{ id: string; label: string; value: string; sub: string; pct: number; color: string }>;
+  studentGrowth: { activeStudents: number; evaluatedStudents: number; improvedStudents: number; averageImprovement: number };
+  studentHighlights: Array<{ icon: string; label: string; name: string; sub: string; badgeIcon: string }>;
+  retention: {
+    repeatRate: number;
+    renewalRate: number;
+    satisfaction: number;
+    evaluationCoverage: number;
+    duration: string;
+    returningStudents: number;
+  };
+  reviewTags: Array<{ label: string; count: number }>;
+  reviewSummary: string;
+  sparklines: Record<string, number[]>;
+  funnel: Array<{ label: string; value: string; pct: number; conversionTo: string | null }>;
 }
 
 export interface LoginPayload {
