@@ -492,3 +492,9 @@ TYNG — TODAY'S WORK SUMMARY
    - Added the completed post-cutoff Coach, Player, Venue Staff and app-wide changes, including insights, evaluations, enrolment/invitations, venue booking/dashboard, logout icons, current-location selection and stable price entry.
    - Kept the summary focused on what app users can do and left out internal implementation and server details.
    - Checked the three task-list files for whitespace errors.
+69. APP AND LARAVEL GIT/PRODUCTION SYNCHRONIZATION - 25 September 2026
+   - Pushed the Angular app updates and task documentation to master as ffdaf1f.
+   - Fast-forwarded local Laravel developer to the existing remote feature commits, then committed and pushed the notification destination fix as c24f4f0.
+   - Updated live host srv1789528 at /var/www/tyng to c24f4f0; the server and GitHub branch are aligned and the live worktree is clean.
+   - Cleared Laravel caches, confirmed notification resource PHP syntax, and verified all three September migrations are already applied.
+   - Preserved the pre-existing local Laravel safety stash codex-presync-local-2026-09-24.
