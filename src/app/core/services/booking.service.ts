@@ -11,6 +11,32 @@ import {
 } from '../models/api.model';
 import { ApiService } from './api.service';
 
+export interface HomeSportGameCard {
+  id: string;
+  isHost: boolean;
+  sport: string;
+  title: string;
+  bookingDate?: string | null;
+  startTime: string;
+  costPerPlayer: number;
+  currentPlayers: number;
+  availableSlots: number;
+  host: { name: string; gamesPlayed: number };
+  venue: { name: string; location: string };
+  players: Array<{ user: { name: string } }>;
+}
+
+export interface HomeSportGamesPage {
+  items: HomeSportGameCard[];
+  pagination: {
+    currentPage: number;
+    lastPage: number;
+    perPage: number;
+    total: number;
+    hasMore: boolean;
+  };
+}
+
 @Injectable({ providedIn: 'root' })
 export class BookingService {
   private readonly api = inject(ApiService);
@@ -25,6 +51,12 @@ export class BookingService {
     if (options?.location) params.set('location', options.location);
     if (options?.q) params.set('q', options.q);
     return this.api.get<BookingRecord[]>(`/nearby-games?${params.toString()}`);
+  }
+
+  getHomeSportGames(sport: string, page = 1, location?: string): Observable<ApiResponse<HomeSportGamesPage>> {
+    const params = new URLSearchParams({ sport, page: String(page) });
+    if (location) params.set('location', location);
+    return this.api.get<HomeSportGamesPage>(`/home/sport-games?${params.toString()}`);
   }
 
   search(query: string, limit = 8): Observable<ApiResponse<DirectorySearchResult>> {

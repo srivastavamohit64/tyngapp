@@ -124,6 +124,10 @@ const routes: Routes = [
         loadComponent: () => import('./pages/player/wallet.page').then((m) => m.WalletPage),
       },
       {
+        path: 'tp/history',
+        loadComponent: () => import('./pages/player/tp-history.page').then((m) => m.TpHistoryPage),
+      },
+      {
         path: 'coach/dashboard',
         loadComponent: () => import('./pages/home/home.page').then((m) => m.HomePage),
       },

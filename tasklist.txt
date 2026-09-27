@@ -498,3 +498,214 @@ TYNG — TODAY'S WORK SUMMARY
    - Updated live host srv1789528 at /var/www/tyng to c24f4f0; the server and GitHub branch are aligned and the live worktree is clean.
    - Cleared Laravel caches, confirmed notification resource PHP syntax, and verified all three September migrations are already applied.
    - Preserved the pre-existing local Laravel safety stash codex-presync-local-2026-09-24.
+70. PLAYER HOME REDESIGN REFERENCE AUDIT AND IMPLEMENTATION PLAN - 26 September 2026
+   - Reviewed all eight client screenshots and all 22 supplied SVG sport icons for the redesigned Player Home and expanded sports selector.
+   - Traced /app/home to the active standalone pages/home/home.page files, identified the legacy pages/player/player-home.page files that must not be edited, and mapped the existing location, nearby-game, ad, venue, coach, routing and bottom-tab foundations.
+   - Defined the implementation scope for the reference header/search, sport rail, promotional carousel, Play/Book/Train actions, nearby games and venues, tournaments, top coaches, floating Create Game action, reference-style tab bar and categorized More Sports view.
+   - Added the sport-rail interaction requirement: tapping a sport icon will open a mobile bottom drawer filtered to that sport's ongoing/nearby games, using horizontally scrollable host/game cards with host identity, game title, schedule, venue/distance, participant stack, remaining spots and Join price/action as shown in the client reference.
+   - The drawer will preserve the clicked sport as its active context, use real nearby-game data, and provide appropriate loading, empty, error, dismissal and card-navigation behavior.
+   - Confirmed that green UI accents should reuse the existing TYNG neon token --app-primary: #8cf000 consistently instead of introducing additional page-specific green values.
+   - No application code, backend code, database state or deployment was changed during this planning-only audit; the connected browser had no available session, so live visual comparison remains part of implementation verification.
+71. CLIENT-REFERENCE PLAYER HOME REDESIGN - 27 September 2026
+   - Rebuilt the active /app/home Player experience to match the supplied mobile references while leaving the Coach and Venue dashboards unchanged.
+   - Added the location/notification/profile header, search and filter bar, supplied sport-icon rail, three-card promotional carousel, Play/Book/Train actions, horizontally scrolling nearby games and venues, tournament card, dynamic top-coach cards and floating Create Game action.
+   - Added a full-screen searchable sports catalogue with the requested categories, BOX badges, selected state and all supplied SVG sport icons plus the reference Suggest a sport action.
+   - Added the requested sport interaction: tapping a home or catalogue sport opens a dismissible bottom drawer containing real nearby ongoing games filtered to that sport, presented as horizontally scrolling host cards with schedule, venue, players, open spots, price and Join navigation.
+   - Preserved the existing shared app header and bottom navigation unchanged; all visual work is scoped to the Player Home content and its Home-only overlays.
+   - Retained live location, nearby-game/realtime, coach and route integrations with loading, retry and empty states; the final Home-only emerald palette is recorded in the visual-finish correction below.
+   - Angular TypeScript compilation and the optimized production build passed. The running development server returned HTTP 200 for the app root and new SVG assets; the existing server configuration still returns HTTP 404 for direct /app/home HTTP requests, while client-side navigation remains available.
+   - No Laravel/backend change, database migration or production deployment was required for this frontend-only task.
+72. PLAYER HOME SCOPE AND PROFILE SIZING CORRECTION - 27 September 2026
+   - Restored the existing shared app header on /app/home and fully reverted the shared tab-shell, bottom-navigation and Angular budget changes so no other page inherits this redesign.
+   - Kept the redesign scoped to the Player Home content and Home-only modal/drawer classes.
+   - Constrained the Home profile photo to an explicit 34-by-34-pixel circle inside its 46-pixel action button and removed duplicate safe-area top spacing beneath the restored app header.
+   - Reverified the final scoped implementation with Angular compilation, production build and Git diff checks.
+73. PLAYER HOME REFERENCE PALETTE AND FINISH CORRECTION - 27 September 2026
+   - Rechecked all eight client screenshots and sampled their main surface and accent colors instead of inheriting the app-wide yellow-neon theme.
+   - Scoped the reference emerald #0cbb60, charcoal #0f1e17, muted sage-gray, soft-green and #f4f6f5 canvas palette to Player Home and its two Home-only overlays, leaving all shared and non-Home styling unchanged.
+   - Added the clean white rounded location/search surface and refined borders, shadows, promotional/action gradients, card text contrast and green button treatments to match the supplied finish.
+   - Corrected the visual proportions of the sport rail, host identity pill, action subtitles and coach identity panels while retaining the previously corrected 34-pixel profile photo.
+   - Verified the correction with the optimized Angular production build and Git diff checks; the browser integration had no connected local session, so verification used the complete supplied screenshot set plus compilation.
+74. MORE SPORTS SEARCH AND DRAWER HANDOFF - 27 September 2026
+   - Fixed the More Sports search to filter immediately using normalized partial terms, spaces, hyphens and useful aliases such as soccer, futsal, ping pong and bike.
+   - Replaced the unreliable timed overlay transition with Ionic's completed modal-dismiss event so selecting a sport consistently closes the catalogue and opens the same ongoing-games bottom drawer used by the Home sport rail.
+   - Added related-sport family matching for Box cricket, Box football, Lawn tennis and Marathon so their drawer can include applicable nearby games rather than incorrectly appearing unrelated or empty.
+   - Kept the change inside Player Home and verified it with the optimized Angular production build and Git diff checks.
+75. DISCOVER PLAYER-CARD IMAGE AND LAYOUT CORRECTION - 27 September 2026
+   - Fixed the Discover Players card photo being flex-shrunk into a thin strip by the viewport-constrained card deck.
+   - Added a protected responsive photo height so the complete player image plus availability, badge and distance overlays remain visible.
+   - Compacted and stabilized the detail layout so player summary, sport badges, four metrics, mutual-friend count and rating fit cleanly without distorting the card.
+   - Scoped the correction to /app/discover and verified it with the optimized Angular production build and Git diff checks.
+76. PLAYER HOME NEON PROMOTION CONTRAST UPDATE - 27 September 2026
+   - Updated the green Player Home promotion to the app's lighter neon gradient ending at #8cf000.
+   - Explicitly kept the NEW badge, promotion heading and supporting copy white, with a subtle text shadow for readability over the light neon finish.
+   - Kept the change scoped to the Home promotion component and verified it with the optimized Angular production build and Git diff checks.
+77. PLAYER HOME TOURNAMENT-CARD CONTRAST CORRECTION - 27 September 2026
+   - Restyled the Tournament card with the app's dark navy surface and neon green accent treatment shown in the supplied points-card reference.
+   - Forced the tournament title to white, details to readable light gray, and the sport label, trophy and Register action to neon green so global typography colors cannot make the content disappear.
+   - Kept the change scoped to the Player Home tournament card and verified it with the optimized Angular production build and Git diff checks.
+78. DYNAMIC PLAYER HOME TOURNAMENT SECTION AND PUBLIC EVENTS API - 27 September 2026
+   - Replaced the hard-coded Home tournament with the next real published public tournament returned by the Laravel API, including its sport, format, name, date, prize/entry information and event-detail navigation.
+   - Added an honest loading state and hide the section when no eligible tournament exists; undated published tournaments display Date to be announced instead of fabricated dates.
+   - Added authenticated GET /api/events/upcoming with future/undated, published and public filtering, chronological ordering and a bounded result limit.
+   - Added two Laravel feature tests covering visibility/status/date filtering, ordering and result limits; both tests passed, and the optimized Angular production build passed.
+   - Deployed the endpoint directly to live host srv1789528 in /var/www/tyng, cleared Laravel caches, verified the live route and PHP syntax, then committed and pushed backend branch developer as 9aa49a7 with a clean live worktree.
+79. PLAYER HOME PROMOTION SCREENSHOT MATCHING CORRECTION - 27 September 2026
+   - Matched the Home promotion card to the supplied reference with a compact 1.74:1 shape, 22-pixel corners and an emerald #08a956 to #13c96e gradient.
+   - Refined the white heading, supporting copy, NEW badge and white Create game button to reproduce the screenshot's spacing, scale and contrast.
+   - Rebuilt the subtle right-side football-pitch artwork using Home-scoped CSS and verified the result with the optimized Angular production build and Git diff checks.
+80. DYNAMIC PLAYER HOME TOP-COACHES SECTION - 27 September 2026
+   - Removed the Arjun Rao and Meera Shah demo cards and fixed the Home loader to read the real paginated /api/coaches response.
+   - Added rating-based top-coach ordering, real individual hourly fees from each coach profile, and honest loading, retry and empty states while preserving the supplied card design.
+   - Added a Laravel feature test that passed locally with five assertions; the optimized Angular production build also passed.
+   - Deployed directly to live host srv1789528 in /var/www/tyng, verified PHP syntax and a real production response containing current coaches and fees, then committed and pushed backend branch developer as beb618f with clean live and local backend worktrees.
+81. PLAYER HOME TOURNAMENT TEXT VISIBILITY CORRECTION - 27 September 2026
+   - Added dedicated high-specificity tournament typography classes so the global light-theme heading color cannot make the dynamic tournament name disappear.
+   - Matched the supplied second screenshot with a white tournament title, mint sport/format label, readable sage metadata, dark emerald card, mint trophy treatment and white-on-emerald Register button.
+   - Kept the correction scoped to the Player Home tournament card and verified it with the optimized Angular production build and Git diff checks.
+82. PLAYER HOME LOCATION DRAWER LAYOUT RESTORATION - 27 September 2026
+   - Added a dedicated location-modal class so Ionic's global overlay receives the intended Home drawer styling instead of losing component-scoped layout rules.
+   - Restored the full-width centered sheet, safe horizontal padding, rounded address cards, location icons, selected checkmark, readable headings and aligned Manage saved addresses action.
+   - Constrained every sheet element to the viewport to prevent the left-side clipping and horizontal overflow shown in the regression screenshot.
+   - Kept the correction scoped to the Player Home location drawer and verified it with the optimized Angular production build and Git diff checks; no connected browser session was available for direct screenshot capture.
+83. COACH PROFILE HISTORY-AWARE BACK NAVIGATION - 27 September 2026
+   - Changed the Back button on /app/coaches/:id to return through Angular browser history instead of always forcing the coach directory.
+   - Profiles opened from Player Home now return to Home, while profiles opened from the coach directory return to that directory; direct visits safely fall back to /app/coaches.
+   - Verified the navigation change with the optimized Angular production build and Git diff checks.
+84. PLAYER HOME SPORT-GAMES DRAWER CLIPPING CORRECTION - 27 September 2026
+   - Constrained the sport-games Ionic modal, content part and sheet to the full viewport width with explicit border-box sizing and horizontal overflow protection.
+   - Restored the complete ONGOING GAMES label, selected-sport heading, supporting description and close action with safe 18-pixel side padding.
+   - Stabilized the empty-state card width so centered content and left-aligned drawer content use the same viewport bounds.
+   - Kept the correction scoped to the Player Home sports drawer and verified it with the optimized Angular production build and Git diff checks.
+85. LOCAL PLAYER HOME STYLESHEET REFRESH AND DRAWER VERIFICATION - 27 September 2026
+   - Traced the repeatedly clipped drawer text to the long-running Angular dev server serving a stale styles.css, rather than to the updated modal rules.
+   - Safely restarted only the TYNG Angular process bound to port 8100 and allowed it to rebuild from the current workspace.
+   - Verified localhost:8100/styles.css now contains the sport-drawer width rules, location-drawer restoration and tournament typography correction; the current stylesheet size changed from 173,405 to 179,541 bytes.
+86. CONSISTENT PRICED COACHES ON PLAYER HOME - 27 September 2026
+   - Confirmed production currently has four active coaches with configured individual fees and three active coaches without pricing.
+   - Updated Player Home to load the complete active coach directory, retain only coaches with a valid real hourly fee, and display the first four consistently as a rupee amount with per hour.
+   - Kept unpriced coach profiles accessible from View all instead of inventing fees or mixing View profile actions into the priced Home cards.
+   - Verified the optimized Angular production build and confirmed the running port-8100 development bundle contains the new priced-coach filter.
+87. PLAYER HOME NEON ACCENT REPLACEMENT - 27 September 2026
+   - Replaced the bright emerald fill represented by the supplied color swatch with the exact requested neon #8CF000 across Player Home accent fills and its Home-only overlays.
+   - Updated the promotion gradient endpoint and tournament Register action to the same neon, and changed button/badge text on neon surfaces to dark ink for readable contrast.
+   - Verified the optimized Angular production build, restarted the TYNG development server because imported theme changes were not hot-reloading, and confirmed the stylesheet served on port 8100 contains the #8CF000 token.
+88. PLAYER TP POINTS HISTORY AND PASSBOOK - 27 September 2026
+   - Added a dedicated /app/tp/history player page with an emerald balance hero, exact #8CF000 neon accents, earned/redeemed/expiring summaries, grouped activity, All/Earned/Redeemed filters, pull-to-refresh, pagination and polished loading, empty, retry and end states.
+   - Connected the player drawer TP card and the Profile TP chip to the new history page, with history-aware Back navigation and a direct wallet conversion shortcut.
+   - Added the authenticated paginated Laravel GET /api/wallet/tp-history endpoint backed by the real TP ledger and current wallet summary; no mock history or fabricated balances are used.
+   - Passed the Angular production build and two Laravel feature tests with 11 assertions. Browser control was unavailable for a live visual click-through, so visual verification was limited to successful compilation and code-level route/state checks.
+   - Deployed directly to live host srv1789528 in /var/www/tyng, cleared caches, verified the live route and a real HTTP 200 controller response, then committed and pushed backend branch developer as 76d132d with clean live and local backend worktrees.
+89. SPORT-GAMES DRAWER CLOSE-BEFORE-NAVIGATION FIX - 27 September 2026
+   - Fixed the empty sport drawer's Create game action so it first dismisses the Ionic bottom sheet and navigates only after the didDismiss lifecycle event fires.
+   - Applied the same close-before-navigation flow to ongoing game cards opened from the drawer, preventing a stale overlay from remaining above the destination page.
+   - Preserved normal close and swipe-dismiss behavior by clearing queued navigation when the player closes the drawer without choosing an action.
+   - Verified the change with the optimized Angular production build, served development bundle inspection and Git diff checks.
+90. PLAYER HOME ADAPTIVE LOCATION CHIP - 27 September 2026
+   - Moved the Your location caption outside and above the clickable location pill, matching the requested header hierarchy.
+   - Reduced the chip height, pin, chevron and address typography for a cleaner compact treatment while preserving the full click target.
+   - Added length-aware address sizing from 14px down to 11px plus safe ellipsis containment, so long location names fit without colliding with header actions.
+   - Passed the optimized Angular production build, refreshed the global Home stylesheet dependency and verified the updated markup, adaptive-font handler and chip styles are served on port 8100.
+91. PAGINATED SPORT-SPECIFIC HOME GAMES DRAWER - 27 September 2026
+   - Replaced the drawer's client-side filtering of the general Home feed with a dedicated request whenever a player opens a sport category.
+   - Added the authenticated compact GET /api/home/sport-games endpoint with exact sport-family matching, optional nearby-location filtering, future/joinable game constraints and a fixed four-card page size.
+   - Limited each API item to the 11 fields the drawer renders: identity, sport/title, date/time, per-player cost, player/slot counts, host, venue and player names, plus pagination metadata.
+   - Added automatic next-page loading as horizontal scrolling reaches the third card, duplicate protection, loading-more feedback and initial/load-more retry states.
+   - Passed the Angular production build and a Laravel feature test with 15 assertions across three pages, sport filtering and compact response fields.
+   - Deployed to live host srv1789528 in /var/www/tyng, verified an HTTP 200 production response with perPage 4, cleared caches, then committed and pushed backend branch developer as e25a2b0 with clean live and local backend worktrees.
+92. ONGOING-GAME DRAWER HEIGHT AND CARD CONTAINMENT - 27 September 2026
+   - Increased the sport-games drawer to an 82% initial viewport snap with 62% and 95% alternatives, replacing content-sized height with a true full-height sheet surface.
+   - Constrained each horizontal game card to the usable viewport width with explicit min/max/flex sizing, border-box calculation and overflow protection.
+   - Rebuilt the card footer as a stable three-column layout so player avatars, remaining spots and the Join action stay fully visible on narrow phones.
+   - Refined drawer padding, card radius, shadow and internal spacing, then passed the optimized Angular production build and verified the updated breakpoint and CSS rules on port 8100.
+93. HIDE JOIN ACTION FROM THE GAME HOST - 27 September 2026
+   - Added viewer-specific isHost ownership to the compact sport-games API response instead of inferring ownership from display names.
+   - Removed the Join action for games created by the signed-in player and replaced the remaining-spots copy with Hosted by you; other players still receive the normal Join action.
+   - Passed the Angular production build and the compact API regression test with 18 assertions, including both host and non-host response cases.
+   - Deployed to live host srv1789528, verified production booking 28 returns isHost true to its actual creator, cleared caches, then committed and pushed backend branch developer as 4668f89 with clean live and local backend worktrees.
+94. OPAQUE GAME-DETAIL ACTION FOOTER - 27 September 2026
+   - Moved the game price, Chat and booking action row out of the scrolling ion-content and into a proper Ionic footer.
+   - Gave the footer a fully opaque white surface, top divider and shadow so scrolled cards no longer show through or sit behind the actions.
+   - Added a fixed flex page structure, responsive footer width and safe-area spacing while preserving every existing action state and click handler.
+   - Passed the optimized Angular production build and verified port 8101 serves the updated lazy chunk with the new footer and without the previous sticky positioning rule; visual browser automation was unavailable because no browser session was connected.
+95. 40% PLAYER LOCATION DRAWER - 27 September 2026
+   - Reduced the active Player Home location sheet from 55% to exactly 40% of the current viewport height.
+   - Limited the sheet to its 40% breakpoint so it cannot expand beyond the requested height, while preserving swipe-down dismissal.
+   - Made the address list vertically scrollable inside the fixed-height sheet so saved addresses and the management action remain accessible.
+   - Passed the optimized Angular production build and verified ports 8100 and 8101 serve the new 0.4 breakpoint plus the updated full-height, internally scrolling sheet styles.
+96. PLAYER HOME GREETING AND RESPONSIVE UI AUDIT - 27 September 2026
+   - Recovered the missing Hey, player greeting and Ready to play copy from Git history and restored them to the active Player Home v2 header.
+   - Increased the Your location caption from 10px to 12px while retaining the adaptive address sizing and compact location chip.
+   - Added viewport-safe sizing, overflow containment and responsive typography across promotion, action, game, venue, tournament and coach cards.
+   - Converted game footers, tournament cards and coach cards to stable grid layouts so long dynamic values cannot push buttons or prices outside the current screen.
+   - Added narrow-phone spacing rules up to 370px, a centered 720px tablet cap and viewport-safe positioning for the floating Create game action.
+   - Passed the optimized Angular production build, Git whitespace checks, and confirmed both ports 8100 and 8101 serve the restored greeting and refreshed responsive Home stylesheet.
+97. FRESH GPS POSITIONING FOR CHOOSE LOCATION MAP - 27 September 2026
+   - Changed the shared location picker to request a fresh high-accuracy device position every time the Choose location modal opens, using maximumAge 0 instead of accepting the normal two-minute cached fix.
+   - Cleared stale address state before locating, centered and zoomed the map to the new GPS coordinate, and reverse-geocoded that point immediately so the marker and displayed address stay synchronized.
+   - Applied the same fresh-GPS behavior to the locate control inside the map while keeping manual map movement and explicit Use this location confirmation intact.
+   - Preserved permission-denied, GPS-disabled and timeout fallbacks so users can still choose a point manually.
+   - Passed the optimized Angular production build and verified the shared location-field bundle served on port 8101 contains the fresh-GPS path.
+98. 50% PLAYER HOME LOCATION DRAWER - 27 September 2026
+   - Increased the active Select location sheet from 40% to exactly 50% of the current viewport height.
+   - Kept the fixed breakpoint, internal address-list scrolling and swipe-down dismissal behavior unchanged.
+   - Verified both running development servers serve the new 0.5 initial and maximum breakpoint.
+99. REFERENCE-MATCHED PLAYER HOME LOCATION HEADER - 27 September 2026
+   - Reworked the active Player Home header to match the supplied compact reference: caption and location are directly on the white surface with no surrounding pill border or shadow.
+   - Increased the adaptive address typography to 16px for short labels, scaling gradually to 13px for long locations, and kept the chevron immediately beside the address.
+   - Reduced notification and profile actions to compact 40px circles while preserving the orange notification indicator and bounded profile image.
+   - Placed the previously requested player greeting directly below the reference-matched location row so both requirements remain visible.
+   - Added matching narrow-screen sizing and confirmed ports 8100 and 8101 serve the refreshed template and global Home styles.
+100. RESPONSIVE GLASSMORPHISM POLISH FOR PLAYER HOME - 27 September 2026
+   - Applied a restrained glassmorphism system only to Player Home, with translucent surfaces, device-supported background blur, thin highlight borders and layered shadows.
+   - Unified the intro, search, notification/profile controls, sport icons, game/venue/coach states and floating Create game action while preserving readable text and the #8CF000 neon accent.
+   - Kept the promotional and tournament cards high-contrast, adding subtle glass highlights without weakening white typography or CTA visibility.
+   - Added graceful opaque fallbacks for devices without backdrop-filter support, reduced-motion handling, and an icon-only Create game action on short phone screens to prevent content obstruction.
+   - Passed the optimized Angular build and confirmed both local dev servers expose the new Home-only glass styling; existing Sass deprecation and style-budget warnings remain non-blocking.
+101. PLAYER HOME PROMOTION STRUCTURE AND COMPACT TYPOGRAPHY - 27 September 2026
+   - Rebuilt the promotion card internal structure to match the supplied reference, using a responsive 190-220px height, constrained copy width and stable two-line title treatment.
+   - Anchored the promotion CTA to the bottom of the card so dynamic subtitle wrapping cannot distort or overlap the button.
+   - Reduced Player Home text typography by approximately 5%, including the adaptive location label, while preserving icon sizes and interactive touch targets.
+   - Kept the update isolated to Player Home and preserved the glass treatment, white promotional text and #8CF000 accent.
+   - Confirmed port 8101 serves the updated card/type rules and passed the optimized Angular build; existing project warnings remain non-blocking.
+102. ADMIN-MANAGED DYNAMIC PLAYER HOME PROMOTIONS - 27 September 2026
+   - Replaced the hardcoded Player Home promotion carousel with Laravel-backed promotion records loaded from the authenticated /api/home/promotions endpoint.
+   - Added a dedicated Laravel admin module for creating, editing, ordering, scheduling, activating and deleting multiple Home promotion cards.
+   - Added admin fields for badge text, heading, description, button text, internal navigation route and green/blue/orange card theme, including a live form preview.
+   - Restricted promotion routes to internal /app paths in both backend validation and frontend navigation handling.
+   - Added automatic five-second rotation, manual navigation dots, loading skeleton and empty-state hiding on Player Home.
+   - Added and passed the promotion API feature test (10 assertions), Laravel Pint, PHP syntax checks, Blade compilation and the optimized Angular build.
+   - Applied migration 2026_09_27_220000_create_home_promotions_table locally and on production, seeded the three current cards, and verified the compact live payload.
+   - Deployed directly to /var/www/tyng on srv1789528, committed only task files as 2f6b822, pushed branch developer, and confirmed the live worktree is clean.
+   - Follow-up: the local XAMPP MariaDB privilege table mysql.roles_mapping is corrupt; the application migration was applied through a temporary localhost-only grant-table bypass without modifying the damaged system table.
+103. REFERENCE-SIZED PLAYER HOME LOCATION AND SEARCH HEADER - 27 September 2026
+   - Matched the supplied compact header structure with the location block and 40px notification/profile actions on the first row and the search field immediately below.
+   - Applied an 11px phone inset, 62px top row, 44px search height, 14px search radius and reference-sized search/filter icons.
+   - Reduced excess shadows and spacing while preserving the adaptive location text, notification indicator, profile image bounds and glass surface treatment.
+   - Preserved the requested player greeting and moved it below the search field so it no longer interrupts the reference header structure.
+   - Confirmed port 8101 serves the new measurements and passed the optimized Angular build with only the existing project warnings.
+104. SWIPE NAVIGATION FOR DYNAMIC HOME PROMOTIONS - 27 September 2026
+   - Added horizontal pointer-swipe navigation to the admin-managed Player Home promotion carousel.
+   - Left swipe advances to the next card, right swipe returns to the previous card, and both directions wrap across the full dynamic card list.
+   - Added a 44px horizontal gesture threshold with direction detection so vertical Home scrolling remains unaffected.
+   - Suppressed promotion CTA navigation after a completed swipe and restarted automatic rotation after every manual gesture.
+   - Confirmed port 8101 serves the gesture handlers and touch-action rules, and passed the optimized Angular build with only existing project warnings.
+105. EXACT REFERENCE STRUCTURE FOR PLAYER HOME HEADER AND SPORTS - 27 September 2026
+   - Matched the latest supplied header structure while retaining the application color system: location/actions first, compact search second, and sports immediately below.
+   - Applied 16px header/search insets, a 69px header row, 40px circular actions, a 44px search field and a 22px lower panel radius.
+   - Removed the greeting from this visual block so no extra content interrupts the reference sequence.
+   - Resized the five sport controls to evenly distributed 62px items with 56px circles, 29px image icons and 12px labels.
+   - Reduced decorative borders and shadows to match the flatter reference while preserving existing icon assets and click behavior.
+   - Confirmed port 8101 serves all reference measurements and passed the optimized Angular build with only existing project warnings.
+106. PROFILE PHOTOS IN PLAYER HOME TOP COACHES - 27 September 2026
+   - Connected the Top coaches cards to the profile image returned by the coach API.
+   - Preserved coach initials as the fallback when no profile image exists or an image cannot be loaded.
+   - Kept the existing card structure, responsive sizing, pricing and navigation behavior unchanged.
+107. RESTORED BOTTOM AD BANNER ON PLAYER HOME - 27 September 2026
+   - Restored the existing API-backed Home ad slider at the bottom of the active redesigned Player Home.
+   - Preserved the existing image, click-through, automatic rotation, manual dots and loading-skeleton behavior.
+   - Matched the banner margins to the responsive Home cards without changing today's other Home sections.
+108. ADDED HORIZONTAL SPACING TO PLAYER HOME SEARCH - 27 September 2026
+   - Increased the left and right spacing around the Player Home search bar so it no longer sits too close to the screen edges.
+   - Kept the search behavior, icons and responsive layout unchanged.
+   - Verified the change in the Angular source; a production build was not run for this spacing-only update.

@@ -38,7 +38,7 @@
             (mouseleave)="onMouseUp()"
             (click)="openPlayer()"
           >
-            <div class="relative h-64 w-full overflow-hidden bg-slate-100 pointer-events-none">
+            <div class="player-card-photo relative h-64 w-full overflow-hidden bg-slate-100 pointer-events-none">
               <img [src]="currentPlayer.photo" [alt]="currentPlayer.name" class="w-full h-full object-cover" draggable="false" />
               <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent"></div>
 
@@ -64,8 +64,8 @@
               </div>
             </div>
 
-            <div class="p-5 flex-1 flex flex-col justify-between space-y-4 pointer-events-none">
-              <div>
+            <div class="player-card-content p-5 flex-1 flex flex-col justify-between space-y-4 pointer-events-none">
+              <div class="player-card-summary">
                 <div class="flex items-baseline gap-2 mb-1">
                   <h3 class="text-2xl font-black text-slate-900">{{ currentPlayer.name }}</h3>
                   <span class="text-lg text-slate-500 font-semibold">{{ currentPlayer.age }}</span>
@@ -74,8 +74,8 @@
                 <p class="text-[10px] text-slate-400 mt-1">{{ currentPlayer.city }} · {{ currentPlayer.preferredPosition }} · {{ currentPlayer.preferredTime }}</p>
               </div>
 
-              <div class="flex flex-wrap gap-2">
-                <div *ngFor="let sport of currentPlayer.sports" class="px-3 py-1.5 bg-[var(--app-primary)]/10 border border-[var(--app-primary)]/25 rounded-xl flex items-center gap-2">
+              <div class="player-sports-list flex flex-wrap gap-2">
+                <div *ngFor="let sport of currentPlayer.sports" class="player-sport-badge px-3 py-1.5 bg-[var(--app-primary)]/10 border border-[var(--app-primary)]/25 rounded-xl flex items-center gap-2">
                   <span class="text-lg">{{ sport.emoji }}</span>
                   <div class="text-left">
                     <div class="text-[10px] font-black text-slate-900 leading-none">{{ sport.name }}</div>
@@ -84,30 +84,30 @@
                 </div>
               </div>
 
-              <div class="grid grid-cols-4 gap-2 pt-2 border-t border-slate-100">
-                <div class="bg-[#FAFBFC] rounded-xl p-2.5 text-center border border-slate-100">
+              <div class="player-stats-grid grid grid-cols-4 gap-2 pt-2 border-t border-slate-100">
+                <div class="player-stat bg-[#FAFBFC] rounded-xl p-2.5 text-center border border-slate-100">
                   <ion-icon name="flash-outline" class="text-orange-500 text-lg mb-1"></ion-icon>
                   <div class="text-sm font-black text-slate-900 leading-none">{{ currentPlayer.tp }}</div>
                   <div class="text-[9px] text-slate-500 mt-1 leading-none">TP</div>
                 </div>
-                <div class="bg-[#FAFBFC] rounded-xl p-2.5 text-center border border-slate-100">
+                <div class="player-stat bg-[#FAFBFC] rounded-xl p-2.5 text-center border border-slate-100">
                   <ion-icon name="shield-checkmark-outline" class="text-green-600 text-lg mb-1"></ion-icon>
                   <div class="text-sm font-black text-slate-900 leading-none">{{ currentPlayer.reliabilityScore }}%</div>
                   <div class="text-[9px] text-slate-500 mt-1 leading-none">Reliable</div>
                 </div>
-                <div class="bg-[#FAFBFC] rounded-xl p-2.5 text-center border border-slate-100">
+                <div class="player-stat bg-[#FAFBFC] rounded-xl p-2.5 text-center border border-slate-100">
                   <ion-icon name="trophy-outline" class="text-[#73C000] text-lg mb-1"></ion-icon>
                   <div class="text-sm font-black text-slate-900 leading-none">{{ currentPlayer.winRate }}%</div>
                   <div class="text-[9px] text-slate-500 mt-1 leading-none">Win</div>
                 </div>
-                <div class="bg-[#FAFBFC] rounded-xl p-2.5 text-center border border-slate-100">
+                <div class="player-stat bg-[#FAFBFC] rounded-xl p-2.5 text-center border border-slate-100">
                   <ion-icon name="disc-outline" class="text-violet-600 text-lg mb-1"></ion-icon>
                   <div class="text-sm font-black text-slate-900 leading-none">{{ currentPlayer.gamesPlayed }}</div>
                   <div class="text-[9px] text-slate-500 mt-1 leading-none">Games</div>
                 </div>
               </div>
 
-              <div class="flex items-center justify-between text-[10px] text-slate-500 pt-1">
+              <div class="player-card-meta flex items-center justify-between text-[10px] text-slate-500 pt-1">
                 <span>Mutual friends: {{ currentPlayer.mutualFriends }}</span>
                 <span>Rating: {{ currentPlayer.rating | number: '1.1-1' }}</span>
               </div>

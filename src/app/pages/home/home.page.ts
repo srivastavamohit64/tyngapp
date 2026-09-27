@@ -5,14 +5,15 @@ import { IonicModule, MenuController, Platform, ViewWillEnter, ViewWillLeave } f
 import { PluginListenerHandle } from '@capacitor/core';
 import { App } from '@capacitor/app';
 import { Subscription, firstValueFrom } from 'rxjs';
-import { BookingRecord, CoachDashboard, CoachDashboardMilestone, CoachDashboardWeather, HomeAd } from '../../core/models/api.model';
+import { BookingRecord, CoachDashboard, CoachDashboardMilestone, CoachDashboardWeather, HomeAd, HomePromotion } from '../../core/models/api.model';
 import { AdService } from '../../core/services/ad.service';
 import { AuthService } from '../../core/services/auth.service';
-import { BookingService } from '../../core/services/booking.service';
+import { BookingService, HomeSportGameCard } from '../../core/services/booking.service';
 import { CoachService } from '../../core/services/coach.service';
 import { DesignDataService } from '../../core/services/design-data.service';
 import { RealtimeService } from '../../core/services/realtime.service';
 import { LocationService, UserLocation, LocationError, LocationErrorType } from '../../core/services/location.service';
+import { HomePromotionService } from '../../core/services/home-promotion.service';
 import {
   CURRENT_LOCATION_ID,
   SavedAddress,
@@ -22,13 +23,47 @@ import {
   formatBookingDate,
   formatBookingTime,
 } from '../../core/utils/booking.utils';
+import { resolveMediaUrl } from '../../core/utils/media-url.util';
 import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 import { EventGame } from '../../shared/models/app.models';
+import { VenueEventRecord, VenueEventService } from '../../core/services/venue-event.service';
 
 interface QuickSuggestion {
   id: string;
   title: string;
   meta: string;
+}
+
+interface HomeSport {
+  id: string;
+  name: string;
+  icon: string;
+  box?: boolean;
+}
+
+interface HomeSportGroup {
+  name: string;
+  sports: HomeSport[];
+}
+
+interface HomeCoachCard {
+  id: number;
+  name: string;
+  image: string | null;
+  sport: string;
+  experience: string;
+  rating: string;
+  price: string;
+  priceCaption: string;
+}
+
+interface HomeTournamentCard {
+  id: string;
+  title: string;
+  sportLabel: string;
+  formatLabel: string;
+  dateLabel: string;
+  detailLabel: string;
 }
 
 @Component({
@@ -47,7 +82,9 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
   readonly auth = inject(AuthService);
   private readonly bookingService = inject(BookingService);
   private readonly coachService = inject(CoachService);
+  private readonly venueEventService = inject(VenueEventService);
   private readonly adService = inject(AdService);
+  private readonly homePromotionService = inject(HomePromotionService);
   private readonly realtime = inject(RealtimeService);
   private readonly router = inject(Router);
   private readonly menu = inject(MenuController);
@@ -71,11 +108,83 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
   nearbyLoading = false;
   nearbyError = '';
   quickSuggestion: QuickSuggestion | null = null;
+  sportDrawerGames: HomeSportGameCard[] = [];
+  sportDrawerLoading = false;
+  sportDrawerLoadingMore = false;
+  sportDrawerError = '';
+  private sportDrawerPage = 1;
+  private sportDrawerLastPage = 1;
+  private sportDrawerRequestVersion = 0;
 
   homeAds: HomeAd[] = [];
   adsLoading = true;
   adSlideIndex = 0;
   private adSliderTimer?: ReturnType<typeof setInterval>;
+
+  readonly homeSports: HomeSport[] = [
+    { id: 'cricket', name: 'Cricket', icon: 'assets/sports/cricket.svg' },
+    { id: 'badminton', name: 'Badminton', icon: 'assets/sports/badminton.svg' },
+    { id: 'tennis', name: 'Tennis', icon: 'assets/sports/tennis.svg' },
+    { id: 'basketball', name: 'Basketball', icon: 'assets/sports/basketball.svg' },
+  ];
+
+  homePromotions: HomePromotion[] = [];
+  promotionsLoading = true;
+  private promotionSliderTimer?: ReturnType<typeof setInterval>;
+  private promotionPointerStart?: { x: number; y: number };
+  private promotionSwipeConsumedUntil = 0;
+
+  readonly allSportGroups: HomeSportGroup[] = [
+    { name: 'Cricket & Football', sports: [
+      { id: 'cricket', name: 'Cricket', icon: 'assets/sports/cricket.svg' },
+      { id: 'box-cricket', name: 'Box cricket', icon: 'assets/sports/box-cricket.svg', box: true },
+      { id: 'football', name: 'Football', icon: 'assets/sports/football.svg' },
+      { id: 'box-football', name: 'Box football', icon: 'assets/sports/box-football.svg', box: true },
+      { id: 'hockey', name: 'Hockey', icon: 'assets/sports/hockey.svg' },
+    ] },
+    { name: 'Racquet Sports', sports: [
+      { id: 'tennis', name: 'Tennis', icon: 'assets/sports/tennis.svg' },
+      { id: 'lawn-tennis', name: 'Lawn tennis', icon: 'assets/sports/lawn-tennis.svg' },
+      { id: 'pickleball', name: 'Pickleball', icon: 'assets/sports/pickleball.svg' },
+      { id: 'badminton', name: 'Badminton', icon: 'assets/sports/badminton.svg' },
+      { id: 'table-tennis', name: 'Table tennis', icon: 'assets/sports/table-tennis.svg' },
+    ] },
+    { name: 'Court & Team Sports', sports: [
+      { id: 'basketball', name: 'Basketball', icon: 'assets/sports/basketball.svg' },
+      { id: 'volleyball', name: 'Volleyball', icon: 'assets/sports/volleyball.svg' },
+      { id: 'highcross', name: 'Highcross', icon: 'assets/sports/highcross.svg' },
+    ] },
+    { name: 'Running & Endurance', sports: [
+      { id: 'running', name: 'Running', icon: 'assets/sports/running.svg' },
+      { id: 'marathon', name: 'Marathon', icon: 'assets/sports/marathon.svg' },
+      { id: 'cycling', name: 'Cycling', icon: 'assets/sports/cycling.svg' },
+      { id: 'swimming', name: 'Swimming', icon: 'assets/sports/swimming.svg' },
+    ] },
+    { name: 'Table & Indoor Games', sports: [
+      { id: 'carrom', name: 'Carrom', icon: 'assets/sports/carrom.svg' },
+      { id: 'billiards', name: 'Billiards', icon: 'assets/sports/billiards.svg' },
+      { id: 'golf', name: 'Golf', icon: 'assets/sports/golf.svg' },
+    ] },
+    { name: 'Fitness & Training', sports: [
+      { id: 'yoga', name: 'Yoga', icon: 'assets/sports/yoga.svg' },
+      { id: 'martial-arts', name: 'Martial arts', icon: 'assets/sports/martial-arts.svg' },
+      { id: 'suggest', name: 'Suggest a sport', icon: 'assets/sports/suggest.svg' },
+    ] },
+  ];
+
+  readonly homeVenues = this.data.venues.slice(0, 4);
+  homeCoaches: HomeCoachCard[] = [];
+  coachesLoading = false;
+  coachesError = '';
+  homeTournament: HomeTournamentCard | null = null;
+  tournamentLoading = false;
+  promoSlideIndex = 0;
+  sportGamesOpen = false;
+  sportsPickerOpen = false;
+  selectedSport: HomeSport | null = null;
+  sportSearch = '';
+  private pendingDrawerSport: HomeSport | null = null;
+  private pendingSportGamesRoute: string | null = null;
 
   // General state
   greeting = '';
@@ -93,6 +202,25 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
 
   get playerPoints(): string {
     return (this.auth.user()?.tpPoints ?? 0).toLocaleString('en-IN');
+  }
+
+  get filteredSportGroups(): HomeSportGroup[] {
+    const query = this.normalizeSearchText(this.sportSearch);
+    if (!query) return this.allSportGroups;
+    const queryTokens = query.split(' ').filter(Boolean);
+    return this.allSportGroups
+      .map((group) => ({
+        ...group,
+        sports: group.sports.filter((sport) => {
+          const searchable = this.normalizeSearchText([
+            sport.name,
+            sport.id,
+            ...this.sportSearchAliases(sport.id),
+          ].join(' '));
+          return queryTokens.every((token) => searchable.includes(token));
+        }),
+      }))
+      .filter((group) => group.sports.length > 0);
   }
 
   get isCurrentSelected(): boolean {
@@ -257,6 +385,9 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
     this.homeVisible = role === 'player' || !role;
     if (this.homeVisible) {
       void this.loadHomeAds();
+      void this.loadHomePromotions();
+      void this.loadPlayerCoaches();
+      void this.loadPlayerTournament();
       void this.resetToGpsOnOpen();
       this.listenForNearbyGames();
     }
@@ -521,6 +652,7 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
 
   ionViewWillLeave() {
     this.homeVisible = false;
+    this.stopPromotionSlider();
   }
 
   ngOnDestroy() {
@@ -529,6 +661,7 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
     this.resumeSub?.unsubscribe();
     void this.appStateHandle?.remove();
     this.stopAdSlider();
+    this.stopPromotionSlider();
   }
 
   /** Open / reopen: force current GPS selection, then refresh nearby data. */
@@ -737,6 +870,14 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
     return this.locationLoading ? 'Detecting location…' : 'Set your location';
   }
 
+  get locationChipFontSize(): number {
+    const length = this.locationLabel.trim().length;
+    if (length > 30) return 12.35;
+    if (length > 24) return 13.3;
+    if (length > 18) return 14.25;
+    return 15.2;
+  }
+
   get playerLocation(): string {
     return this.locationLabel === 'Detecting location…' || this.locationLabel === 'Set your location'
       ? ''
@@ -908,6 +1049,339 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
       players: `${booking.currentPlayers}/${booking.totalPlayers}`,
       status: ratio >= 0.8 ? 'almost-full' : 'filling',
     };
+  }
+
+  selectPromoSlide(index: number): void {
+    if (index < 0 || index >= this.homePromotions.length) return;
+    this.promoSlideIndex = index;
+    this.startPromotionSlider();
+  }
+
+  openHomePromotion(promotion: HomePromotion): void {
+    if (Date.now() < this.promotionSwipeConsumedUntil) return;
+    const route = (promotion.navigationRoute || '').trim();
+    if (route !== '/app' && !route.startsWith('/app/')) return;
+    void this.router.navigateByUrl(route);
+  }
+
+  onPromotionPointerDown(event: PointerEvent): void {
+    if (!event.isPrimary || this.homePromotions.length < 2) return;
+    this.promotionPointerStart = { x: event.clientX, y: event.clientY };
+  }
+
+  onPromotionPointerUp(event: PointerEvent): void {
+    const start = this.promotionPointerStart;
+    this.promotionPointerStart = undefined;
+    if (!start || !event.isPrimary || this.homePromotions.length < 2) return;
+
+    const deltaX = event.clientX - start.x;
+    const deltaY = event.clientY - start.y;
+    if (Math.abs(deltaX) < 44 || Math.abs(deltaX) <= Math.abs(deltaY)) return;
+
+    event.preventDefault();
+    this.promotionSwipeConsumedUntil = Date.now() + 400;
+    const direction = deltaX < 0 ? 1 : -1;
+    this.promoSlideIndex = (this.promoSlideIndex + direction + this.homePromotions.length) % this.homePromotions.length;
+    this.startPromotionSlider();
+  }
+
+  onPromotionPointerCancel(): void {
+    this.promotionPointerStart = undefined;
+  }
+
+  async loadHomePromotions(): Promise<void> {
+    this.promotionsLoading = true;
+    try {
+      this.homePromotions = await firstValueFrom(this.homePromotionService.list());
+      this.promoSlideIndex = 0;
+      this.startPromotionSlider();
+    } catch {
+      this.homePromotions = [];
+      this.stopPromotionSlider();
+    } finally {
+      this.promotionsLoading = false;
+    }
+  }
+
+  private startPromotionSlider(): void {
+    this.stopPromotionSlider();
+    if (!this.homeVisible || this.homePromotions.length < 2) return;
+    this.promotionSliderTimer = setInterval(() => {
+      this.promoSlideIndex = (this.promoSlideIndex + 1) % this.homePromotions.length;
+    }, 5000);
+  }
+
+  private stopPromotionSlider(): void {
+    if (!this.promotionSliderTimer) return;
+    clearInterval(this.promotionSliderTimer);
+    this.promotionSliderTimer = undefined;
+  }
+
+  openSportGames(sport: HomeSport): void {
+    this.pendingDrawerSport = null;
+    this.selectedSport = sport;
+    this.sportDrawerGames = [];
+    this.sportDrawerError = '';
+    this.sportDrawerPage = 1;
+    this.sportDrawerLastPage = 1;
+    this.sportGamesOpen = true;
+    void this.loadSportDrawerGames(true);
+  }
+
+  closeSportGames(): void {
+    this.pendingSportGamesRoute = null;
+    this.sportDrawerRequestVersion += 1;
+    this.sportGamesOpen = false;
+  }
+
+  onSportGamesDidDismiss(): void {
+    this.sportGamesOpen = false;
+    const route = this.pendingSportGamesRoute;
+    this.pendingSportGamesRoute = null;
+    if (route) void this.router.navigateByUrl(route);
+  }
+
+  createGameFromSportDrawer(): void {
+    this.navigateFromSportGames('/app/game/create');
+  }
+
+  async loadSportDrawerGames(reset = false): Promise<void> {
+    const sport = this.selectedSport;
+    if (!sport || (!reset && (this.sportDrawerLoadingMore || this.sportDrawerPage >= this.sportDrawerLastPage))) return;
+
+    const requestVersion = ++this.sportDrawerRequestVersion;
+    const page = reset ? 1 : this.sportDrawerPage + 1;
+    if (reset) {
+      this.sportDrawerLoading = true;
+      this.sportDrawerError = '';
+    } else {
+      this.sportDrawerLoadingMore = true;
+    }
+
+    try {
+      const nearby = this.locationService.nearbyLocationQuery(this.auth.user()?.location);
+      const response = await firstValueFrom(
+        this.bookingService.getHomeSportGames(sport.id, page, nearby.query || undefined),
+      );
+      if (requestVersion !== this.sportDrawerRequestVersion) return;
+      if (!response.success || !response.data) throw new Error(response.message || 'Unable to load games.');
+
+      const nextItems = Array.isArray(response.data.items) ? response.data.items : [];
+      const merged = reset ? nextItems : [...this.sportDrawerGames, ...nextItems];
+      this.sportDrawerGames = merged.filter((game, index, games) => games.findIndex((item) => item.id === game.id) === index);
+      this.sportDrawerPage = response.data.pagination.currentPage;
+      this.sportDrawerLastPage = response.data.pagination.lastPage;
+      this.sportDrawerError = '';
+    } catch (error: any) {
+      if (requestVersion !== this.sportDrawerRequestVersion) return;
+      this.sportDrawerError = error?.error?.message || error?.message || 'Unable to load games.';
+      if (reset) this.sportDrawerGames = [];
+    } finally {
+      if (requestVersion === this.sportDrawerRequestVersion) {
+        this.sportDrawerLoading = false;
+        this.sportDrawerLoadingMore = false;
+      }
+    }
+  }
+
+  onSportDrawerScroll(event: Event): void {
+    const row = event.currentTarget as HTMLElement | null;
+    if (!row || this.sportDrawerLoadingMore || this.sportDrawerPage >= this.sportDrawerLastPage) return;
+    const oneCardRemaining = Math.max(180, row.clientWidth * 0.75);
+    if (row.scrollLeft + row.clientWidth >= row.scrollWidth - oneCardRemaining) {
+      void this.loadSportDrawerGames(false);
+    }
+  }
+
+  openSportsPicker(): void {
+    this.pendingDrawerSport = null;
+    this.sportSearch = '';
+    this.sportsPickerOpen = true;
+  }
+
+  closeSportsPicker(): void {
+    this.pendingDrawerSport = null;
+    this.sportsPickerOpen = false;
+  }
+
+  onSportsPickerDidDismiss(): void {
+    this.sportsPickerOpen = false;
+    const sport = this.pendingDrawerSport;
+    this.pendingDrawerSport = null;
+    if (sport) this.openSportGames(sport);
+  }
+
+  chooseSportFromPicker(sport: HomeSport): void {
+    if (sport.id === 'suggest') {
+      this.sportsPickerOpen = false;
+      void this.router.navigateByUrl('/app/profile/edit');
+      return;
+    }
+    this.selectedSport = sport;
+    this.pendingDrawerSport = sport;
+    this.sportsPickerOpen = false;
+  }
+
+  updateSportSearch(event: Event): void {
+    const input = event.target as HTMLInputElement | null;
+    this.sportSearch = input?.value ?? '';
+  }
+
+  personInitials(name?: string | null): string {
+    const parts = String(name || 'TYNG Player').trim().split(/\s+/).filter(Boolean);
+    return parts.slice(0, 2).map((part) => part[0]?.toUpperCase()).join('') || 'TP';
+  }
+
+  formatSportName(value?: string | null): string {
+    return String(value || 'Sport')
+      .replace(/[-_]+/g, ' ')
+      .replace(/\b\w/g, (letter) => letter.toUpperCase());
+  }
+
+  bookingDateTime(booking: { bookingDate?: string | null; startTime: string }): string {
+    return `${formatBookingDate(booking.bookingDate)} · ${formatBookingTime(booking.startTime)}`;
+  }
+
+  gamePlayers(booking: BookingRecord): BookingRecord['players'] {
+    return booking.acceptedPlayers?.length ? booking.acceptedPlayers : (booking.players || []);
+  }
+
+  gamePrice(booking: BookingRecord): number {
+    return Number(booking.costPerPlayer ?? booking.playerShareAmount ?? booking.price ?? 0);
+  }
+
+  openGame(booking: { id: string }): void {
+    this.navigateFromSportGames(`/app/game/${booking.id}`);
+  }
+
+  private navigateFromSportGames(route: string): void {
+    this.pendingSportGamesRoute = route;
+    this.sportGamesOpen = false;
+  }
+
+  private normalizedSport(value?: string | null): string {
+    const normalized = String(value || '').trim().toLowerCase().replace(/[\s_]+/g, '-');
+    const families: Record<string, string> = {
+      'box-cricket': 'cricket',
+      'box-football': 'football',
+      'lawn-tennis': 'tennis',
+      marathon: 'running',
+    };
+    return families[normalized] || normalized;
+  }
+
+  private normalizeSearchText(value: string): string {
+    return String(value || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, ' ')
+      .trim();
+  }
+
+  private sportSearchAliases(sportId: string): string[] {
+    const aliases: Record<string, string[]> = {
+      football: ['soccer'],
+      'box-football': ['futsal', 'indoor football', 'soccer'],
+      'box-cricket': ['indoor cricket'],
+      badminton: ['shuttle', 'shuttlecock'],
+      'table-tennis': ['ping pong'],
+      pickleball: ['paddle'],
+      cycling: ['cycle', 'bicycle', 'bike'],
+      swimming: ['swim'],
+      'martial-arts': ['combat'],
+    };
+    return aliases[sportId] || [];
+  }
+
+  async loadPlayerCoaches(): Promise<void> {
+    this.coachesLoading = true;
+    this.coachesError = '';
+    try {
+      const response = await firstValueFrom(this.coachService.getCoaches('', '', 50, 'top'));
+      const payload: any = response.data;
+      const rows = Array.isArray(payload) ? payload : (Array.isArray(payload?.data) ? payload.data : []);
+      const pricedRows = rows.filter((coach: any) => this.coachPriceAmount(coach) > 0);
+      this.homeCoaches = pricedRows.slice(0, 4).map((coach: any, index: number) => ({
+        id: Number(coach.id || index + 1),
+        name: String(coach.name || coach.displayName || 'TYNG Coach'),
+        image: resolveMediaUrl(coach.profileImage || coach.profile_image || coach.photo || coach.avatar),
+        sport: Array.isArray(coach.sports) ? String(coach.sports[0] || 'Multi-sport') : String(coach.sport || 'Multi-sport'),
+        experience: String(coach.experience || coach.experienceYears || 'Experienced'),
+        rating: String(coach.rating ?? 'New'),
+        price: this.coachPriceLabel(coach),
+        priceCaption: 'per hour',
+      }));
+    } catch {
+      this.homeCoaches = [];
+      this.coachesError = 'Coaches could not be loaded.';
+    } finally {
+      this.coachesLoading = false;
+    }
+  }
+
+  private async loadPlayerTournament(): Promise<void> {
+    this.tournamentLoading = true;
+    try {
+      const response = await firstValueFrom(this.venueEventService.upcoming(10));
+      const events = Array.isArray(response.data) ? response.data : [];
+      const event = events.find((item) => this.isTournamentEvent(item));
+      this.homeTournament = event ? this.toHomeTournament(event) : null;
+    } catch {
+      this.homeTournament = null;
+    } finally {
+      this.tournamentLoading = false;
+    }
+  }
+
+  private isTournamentEvent(event: VenueEventRecord): boolean {
+    const type = String(event.type || '').toLowerCase();
+    return type === 'competition' || type.includes('tournament') || Boolean(event.tournamentFormat);
+  }
+
+  private toHomeTournament(event: VenueEventRecord): HomeTournamentCard {
+    const sportLabel = this.formatSportName(event.sport || 'Sport');
+    const formatLabel = String(event.tournamentFormat || event.type || 'Tournament')
+      .replace(/[_-]+/g, ' ')
+      .replace(/\b\w/g, (letter) => letter.toUpperCase());
+    const prize = Math.max(Number(event.prizePool || 0), Number(event.cashPrize || 0));
+    const entryFee = Number(event.entryFee || 0);
+    const detailLabel = prize > 0
+      ? `Prize ${this.formatCurrency(prize)}`
+      : entryFee > 0
+        ? `Entry ${this.formatCurrency(entryFee)}`
+        : event.registrations > 0
+          ? `${event.registrations} registered`
+          : 'Registration open';
+
+    return {
+      id: String(event.id),
+      title: String(event.name || '').trim() || `${sportLabel} Tournament`,
+      sportLabel,
+      formatLabel,
+      dateLabel: this.tournamentDateLabel(event.eventDate),
+      detailLabel,
+    };
+  }
+
+  private tournamentDateLabel(value?: string | null): string {
+    if (!value) return 'Date to be announced';
+    const date = new Date(`${value}T00:00:00`);
+    if (Number.isNaN(date.getTime())) return 'Date to be announced';
+    return date.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
+  }
+
+  openTournament(eventId: string): void {
+    void this.router.navigateByUrl(`/app/events/details/${eventId}`);
+  }
+
+  private coachPriceLabel(coach: any): string {
+    return `₹${this.coachPriceAmount(coach).toLocaleString('en-IN')}`;
+  }
+
+  private coachPriceAmount(coach: any): number {
+    const amount = Number(coach.pricePerHour ?? coach.hourlyRate ?? coach.fee ?? 0);
+    return Number.isFinite(amount) && amount > 0 ? amount : 0;
   }
 
   async openMenu() {

@@ -248,6 +248,10 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
           </div>
         </div>
 
+      </div>
+    </ion-content>
+
+    <ion-footer *ngIf="!loading && game" class="game-action-footer ion-no-border">
         <div class="gd-cta">
           <div class="cta-price">
             <div class="cta-amount">{{ game.costPerPlayer > 0 ? ('₹' + game.costPerPlayer) : 'Free' }}</div>
@@ -271,11 +275,21 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
             </button>
           </div>
         </div>
-      </div>
-    </ion-content>
+    </ion-footer>
   `,
   styles: [
     `
+      :host {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        background: #ffffff;
+      }
+
+      ion-content {
+        --background: #fafbfc;
+      }
+
       .gd-page {
         background: #fafbfc;
         min-height: 100%;
@@ -677,12 +691,25 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
         border-radius: 999px;
       }
 
+      .game-action-footer {
+        flex: 0 0 auto;
+        z-index: 50;
+        background: #ffffff;
+        border-top: 1px solid #eef0f2;
+        box-shadow: 0 -8px 24px rgba(17, 24, 39, 0.09);
+      }
+
+      .game-action-footer::before {
+        display: none;
+      }
+
       .gd-cta {
-        position: sticky;
-        bottom: 0;
-        background: white;
-        padding: 16px 20px 40px;
-        box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 480px;
+        box-sizing: border-box;
+        margin: 0 auto;
+        background: #ffffff;
+        padding: 10px 16px 12px;
         display: flex;
         align-items: center;
         gap: 16px;

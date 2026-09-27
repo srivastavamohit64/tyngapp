@@ -72,6 +72,7 @@ type LocationPermissionValue = PermissionStatus['location'];
 export class LocationService {
   private geocoder?: google.maps.Geocoder;
   private currentPositionRequest?: Promise<Position>;
+  private freshPositionRequest?: Promise<Position>;
   private lastPermissionRequestTime = 0;
   private readonly PERMISSION_REQUEST_COOLDOWN = 5000; // 5 seconds
   private readonly savedAddresses = inject(SavedAddressesService);
@@ -169,7 +170,23 @@ export class LocationService {
    * Get current GPS location. On web, getCurrentPosition itself shows the
    * browser permission prompt — do not pre-fail as permanently denied.
    */
-  async getCurrentPosition(): Promise<Position> {
+  async getCurrentPosition(options: { forceFresh?: boolean } = {}): Promise<Position> {
+    if (options.forceFresh) {
+      if (this.freshPositionRequest) {
+        return this.freshPositionRequest;
+      }
+
+      const freshRequest = this.resolveCurrentPosition(true);
+      this.freshPositionRequest = freshRequest;
+      try {
+        return await freshRequest;
+      } finally {
+        if (this.freshPositionRequest === freshRequest) {
+          this.freshPositionRequest = undefined;
+        }
+      }
+    }
+
     // Share one native/browser request between callers. This avoids multiple
     // permission prompts and competing GPS reads when a map opens while
     // another location-aware view is still resolving.
@@ -177,7 +194,7 @@ export class LocationService {
       return this.currentPositionRequest;
     }
 
-    const request = this.resolveCurrentPosition();
+    const request = this.resolveCurrentPosition(false);
     this.currentPositionRequest = request;
     try {
       return await request;
@@ -188,7 +205,7 @@ export class LocationService {
     }
   }
 
-  private async resolveCurrentPosition(): Promise<Position> {
+  private async resolveCurrentPosition(forceFresh: boolean): Promise<Position> {
 
     const isWeb = Capacitor.getPlatform() === 'web';
     if (!isWeb) {
@@ -213,10 +230,10 @@ export class LocationService {
     try {
       return await Geolocation.getCurrentPosition({
         enableHighAccuracy: true,
-        // A recent OS fix is both faster and more reliable than forcing a GPS
-        // cold start every time. The map can still be adjusted manually.
-        timeout: 12000,
-        maximumAge: 120000,
+        // Normal callers may reuse a recent OS fix for speed. Map pickers pass
+        // forceFresh so every opening requests the device's current position.
+        timeout: forceFresh ? 15000 : 12000,
+        maximumAge: forceFresh ? 0 : 120000,
       });
     } catch (error) {
       const err = error as { message?: string; code?: number };

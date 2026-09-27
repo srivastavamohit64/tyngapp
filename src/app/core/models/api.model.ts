@@ -493,6 +493,19 @@ export interface HomeAd {
   sortOrder: number;
 }
 
+export type HomePromotionTheme = 'green' | 'blue' | 'orange';
+
+export interface HomePromotion {
+  id: number;
+  kicker: string;
+  title: string;
+  subtitle: string;
+  buttonText: string;
+  navigationRoute: string;
+  theme: HomePromotionTheme;
+  sortOrder: number;
+}
+
 export interface AppThemeColors {
   primary: string;
   secondary: string;

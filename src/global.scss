@@ -1,3 +1,5 @@
+/* Keep the reference-matched swipeable Player Home, cards and drawers in the global Ionic overlay/style bundle. */
+@use "./theme/player-home-v2";
 @import "tailwindcss";
 @import "./theme/variables.scss";
 

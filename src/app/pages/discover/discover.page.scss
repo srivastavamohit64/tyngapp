@@ -64,7 +64,7 @@
 .card-deck {
   width: 100%;
   max-width: 360px;
-  height: min(520px, calc(100vh - 320px));
+  height: clamp(430px, calc(100dvh - 300px), 540px);
   position: relative;
 }
 
@@ -95,6 +95,75 @@
 
 .active-card:active {
   cursor: grabbing;
+}
+
+.player-card-photo {
+  height: clamp(150px, 22dvh, 210px);
+  flex: 0 0 clamp(150px, 22dvh, 210px);
+}
+
+.player-card-photo img {
+  display: block;
+}
+
+.player-card-content {
+  min-height: 0;
+  padding: 14px 16px 12px;
+  justify-content: flex-start;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.player-card-content > * {
+  margin-top: 0 !important;
+}
+
+.player-card-summary h3 {
+  margin: 0;
+  line-height: 1.1;
+}
+
+.player-card-summary p {
+  margin-bottom: 0;
+}
+
+.player-sports-list {
+  flex: 0 0 auto;
+}
+
+.player-sport-badge {
+  min-width: 0;
+}
+
+.player-stats-grid {
+  flex: 0 0 auto;
+  padding-top: 8px;
+}
+
+.player-stat {
+  min-width: 0;
+  padding: 8px 4px;
+}
+
+.player-card-meta {
+  flex: 0 0 auto;
+  margin-top: auto !important;
+}
+
+@media (max-height: 700px) {
+  .card-deck {
+    height: 430px;
+  }
+
+  .player-card-photo {
+    height: 145px;
+    flex-basis: 145px;
+  }
+
+  .player-card-content {
+    gap: 8px;
+    padding-block: 12px 10px;
+  }
 }
 
 .loading-state {

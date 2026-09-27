@@ -142,7 +142,7 @@
           </div>
         </div>
 
-        <div class="drawer-xp-card" (click)="navigateTo('/app/leaderboard')">
+        <div class="drawer-xp-card" role="button" tabindex="0" aria-label="View TP point history" (click)="navigateTo('/app/tp/history')" (keydown.enter)="navigateTo('/app/tp/history')" (keydown.space)="navigateTo('/app/tp/history'); $event.preventDefault()">
           <div class="xp-orb1"></div>
           <div class="xp-orb2"></div>
           <div class="xp-top">

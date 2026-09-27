@@ -54,6 +54,39 @@ export interface WalletTransactionsResponse {
   };
 }
 
+export type TpHistoryFilter = 'all' | 'earned' | 'redeemed';
+
+export interface TpPointHistorySummary {
+  points: number;
+  earned: number;
+  redeemed: number;
+  expiring: number;
+  pointsPerRupee: number;
+  valueInr: number;
+}
+
+export interface TpPointHistoryItem {
+  id: string;
+  type: string;
+  points: number;
+  balanceAfter: number;
+  rupees?: number | null;
+  description?: string | null;
+  isCredit: boolean;
+  createdAt?: string | null;
+}
+
+export interface TpPointHistoryResponse {
+  summary: TpPointHistorySummary;
+  items: TpPointHistoryItem[];
+  pagination: {
+    currentPage: number;
+    lastPage: number;
+    perPage: number;
+    total: number;
+  };
+}
+
 @Injectable({ providedIn: 'root' })
 export class WalletService {
   private readonly api = inject(ApiService);
@@ -66,6 +99,12 @@ export class WalletService {
     return this.api.get<WalletTransactionsResponse>(
       `/wallet/transactions?page=${page}&per_page=${perPage}`
     );
+  }
+
+  getTpHistory(page = 1, filter: TpHistoryFilter = 'all', perPage = 20): Observable<ApiResponse<TpPointHistoryResponse>> {
+    const params = new URLSearchParams({ page: String(page), per_page: String(perPage) });
+    if (filter !== 'all') params.set('type', filter);
+    return this.api.get<TpPointHistoryResponse>(`/wallet/tp-history?${params.toString()}`);
   }
 
   topup(amount: number, gateway = 'simulated'): Observable<ApiResponse<{

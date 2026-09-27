@@ -130,10 +130,10 @@
           </button>
 
           <div class="meta-row">
-            <span class="meta-pill">
+            <button type="button" class="meta-pill" aria-label="View TP point history" (click)="openTpHistory()">
               <ion-icon name="flash"></ion-icon>
               {{ tpPoints() | number }} TP
-            </span>
+            </button>
             <span class="meta-pill meta-pill--soft">
               <ion-icon name="star"></ion-icon>
               {{ ratingLabel() }} Rating

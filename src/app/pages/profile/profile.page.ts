@@ -98,6 +98,10 @@ export class ProfilePage implements ViewWillEnter {
     void this.router.navigateByUrl('/app/xp/history');
   }
 
+  openTpHistory() {
+    void this.router.navigateByUrl('/app/tp/history');
+  }
+
   goBack() {
     if (this.route.snapshot.queryParamMap.get('from') === 'complete-profile') {
       void this.router.navigateByUrl('/app/coach/dashboard', { replaceUrl: true });

@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController, IonicModule } from '@ionic/angular';
@@ -109,6 +109,7 @@ import { resolveMediaUrl } from '../../core/utils/media-url.util';
 export class CoachProfileDetailPage implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly navigationLocation = inject(Location);
   private readonly coachService = inject(CoachService);
   private readonly chat = inject(ChatService);
   private readonly alertCtrl = inject(AlertController);
@@ -165,7 +166,11 @@ export class CoachProfileDetailPage implements OnInit {
   }
 
   back() {
-    this.router.navigateByUrl('/app/coaches');
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      this.navigationLocation.back();
+      return;
+    }
+    void this.router.navigateByUrl('/app/coaches');
   }
 
   photo(url?: string | null): string | null {

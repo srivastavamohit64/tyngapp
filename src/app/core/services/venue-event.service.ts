@@ -20,6 +20,7 @@ export interface VenueEventRecord {
   tournamentFormat?: string | null;
   teamCount?: number | null;
   prizePool: number;
+  cashPrize?: number;
   registrations: number;
   rating: number;
   status: string;
@@ -64,6 +65,10 @@ export class VenueEventService {
 
   dashboard(): Observable<ApiResponse<VenueEventsDashboard>> {
     return this.api.get<VenueEventsDashboard>('/venue/events');
+  }
+
+  upcoming(limit = 5): Observable<ApiResponse<VenueEventRecord[]>> {
+    return this.api.get<VenueEventRecord[]>(`/events/upcoming?limit=${limit}`);
   }
 
   sponsors(): Observable<ApiResponse<SponsorOption[]>> {

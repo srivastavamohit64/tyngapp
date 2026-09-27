@@ -20,10 +20,12 @@ export class CoachService {
     return this.api.get(`/coach/earnings?period=${encodeURIComponent(period)}`);
   }
 
-  getCoaches(search = '', sport = ''): Observable<ApiResponse<any>> {
+  getCoaches(search = '', sport = '', perPage = 20, sort = ''): Observable<ApiResponse<any>> {
     const params = new URLSearchParams();
     if (search.trim()) params.set('search', search.trim());
     if (sport && sport !== 'All') params.set('sport', sport);
+    params.set('per_page', String(Math.max(1, Math.min(50, perPage))));
+    if (sort) params.set('sort', sort);
     const query = params.toString();
     return this.api.get(`/coaches${query ? `?${query}` : ''}`);
   }

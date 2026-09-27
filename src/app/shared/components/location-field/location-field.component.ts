@@ -481,7 +481,8 @@ export class LocationFieldComponent implements ControlValueAccessor, AfterViewIn
   openMap() {
     this.mapError = '';
     this.mapHint = '';
-    this.mapAddress = this.value;
+    this.mapAddress = '';
+    this.mapDetails = null;
     this.pendingCenter = null;
     this.geocodedCenter = null;
     this.mapMounted = false;
@@ -574,14 +575,17 @@ export class LocationFieldComponent implements ControlValueAccessor, AfterViewIn
     this.mapHint = '';
 
     try {
-      const position = await this.locationService.getCurrentPosition();
+      const position = await this.locationService.getCurrentPosition({ forceFresh: true });
       const next: NativeMapCoordinate = {
         lat: position.coords.latitude,
         lng: position.coords.longitude,
       };
-      this.pickerCenter = next;
-      this.pickerZoom = 16;
+      this.mapAddress = '';
+      this.mapDetails = null;
+      this.geocodedCenter = null;
+      this.applyPickerCenter(next, 16, '');
       await this.pickerMap?.animateTo(next, 16);
+      await this.reverseGeocodeCenter(next);
       // idle → reverse geocode; do not auto-save profile location
     } catch (error) {
       this.mapHint = this.permissionMessage(error);
@@ -608,6 +612,7 @@ export class LocationFieldComponent implements ControlValueAccessor, AfterViewIn
         this.applyPickerCenter(quick.result.center, 16, '');
         this.locating = false;
         this.mountPicker();
+        void this.reverseGeocodeCenter(quick.result.center);
         return;
       }
 
@@ -639,10 +644,12 @@ export class LocationFieldComponent implements ControlValueAccessor, AfterViewIn
 
       this.locating = false;
       if ('center' in gps) {
-        this.pickerCenter = gps.center;
-        this.pickerZoom = 16;
-        this.mapHint = '';
+        this.mapAddress = '';
+        this.mapDetails = null;
+        this.geocodedCenter = null;
+        this.applyPickerCenter(gps.center, 16, '');
         await this.pickerMap?.animateTo(gps.center, 16);
+        void this.reverseGeocodeCenter(gps.center);
       } else {
         this.mapHint = this.permissionMessage(gps.error);
         void this.recenterOnExistingAddress(seq, fallback.center);
@@ -661,7 +668,7 @@ export class LocationFieldComponent implements ControlValueAccessor, AfterViewIn
 
   private async readGpsCenter(): Promise<GpsRead> {
     try {
-      const position = await this.locationService.getCurrentPosition();
+      const position = await this.locationService.getCurrentPosition({ forceFresh: true });
       return {
         center: {
           lat: position.coords.latitude,
