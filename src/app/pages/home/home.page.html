@@ -392,7 +392,7 @@
               <h1>Hey, {{ helloName }} <span aria-hidden="true">👋</span></h1>
               <p>Ready to play?</p>
             </div>
-            <button type="button" class="player-points-pill" aria-label="View TYNG point history" (click)="go('/app/tp/history')">
+            <button type="button" class="player-points-pill" aria-label="Open wallet" (click)="go('/app/wallet')">
               <ion-icon name="flame"></ion-icon>
               <span>{{ playerPoints }}</span>
             </button>
@@ -598,9 +598,14 @@
         </div> -->
         <p *ngIf="locationError" class="home-location-error">{{ locationError }}</p>
 
-        <button type="button" class="home-search" (click)="go('/app/search')">
-          <ion-icon name="search-outline"></ion-icon><span>Search venues, players, coaches</span><ion-icon name="options-outline" class="home-search-filter"></ion-icon>
-        </button>
+        <div class="home-search">
+          <button type="button" class="home-search-open" (click)="go('/app/search')" aria-label="Search venues, players and coaches">
+            <ion-icon name="search-outline"></ion-icon><span>Search venues, players, coaches</span>
+          </button>
+          <button type="button" class="home-search-filter-button" aria-label="Choose what to search" aria-haspopup="menu" [attr.aria-expanded]="searchFilterOpen" (click)="openSearchFilter($event)">
+            <ion-icon name="options-outline" class="home-search-filter"></ion-icon>
+          </button>
+        </div>
         </div>
 
         <ion-modal class="location-picker-modal" [isOpen]="locationPickerOpen" (didDismiss)="onLocationPickerDismiss()" [initialBreakpoint]="0.5" [breakpoints]="[0, 0.5]">
@@ -619,9 +624,8 @@
           </ng-template>
         </ion-modal>
 
-        <nav class="sport-rail" aria-label="Choose a sport">
-          <button type="button" class="sport-rail-item" *ngFor="let sport of homeSports" (click)="openSportGames(sport)"><span class="sport-rail-icon"><img [src]="sport.icon" alt="" /></span><span>{{ sport.name }}</span></button>
-          <button type="button" class="sport-rail-item" (click)="openSportsPicker()"><span class="sport-rail-icon"><ion-icon name="grid-outline"></ion-icon></span><span>More</span></button>
+        <nav id="home-sport-rail" class="sport-rail" aria-label="Choose a sport" (scroll)="onSportRailScroll($event)">
+          <button type="button" class="sport-rail-item" *ngFor="let sport of loopingSportRailItems" (click)="activateHomeSport(sport)" [attr.aria-hidden]="sport.railCycle !== 1 ? 'true' : null" [attr.tabindex]="sport.railCycle !== 1 ? -1 : 0"><span class="sport-rail-icon"><ion-icon *ngIf="sport.id === 'home-more'; else sportIcon" name="grid-outline"></ion-icon><ng-template #sportIcon><img [src]="sport.icon" alt="" /></ng-template></span><span>{{ sport.name }}</span></button>
         </nav>
 
         <section class="promotion-wrap" *ngIf="promotionsLoading || homePromotions.length" aria-label="Highlights" aria-live="polite">
@@ -658,8 +662,8 @@
           <div *ngIf="nearbyBookings.length" class="horizontal-card-row game-card-row">
             <article class="host-game-card" *ngFor="let booking of nearbyBookings.slice(0, 8)">
               <div class="host-card-head"><span class="host-avatar">{{ personInitials(booking.host.name) }}</span><div><strong>{{ booking.host.name || 'TYNG Player' }}</strong><small>Host · {{ booking.host.gamesPlayed || 0 }} games</small></div><span class="sport-chip">{{ formatSportName(booking.sport) }}</span></div>
-              <h3>{{ booking.title || formatSportName(booking.sport) + ' game' }}</h3><p><ion-icon name="time-outline"></ion-icon>{{ bookingDateTime(booking) }}</p><p><ion-icon name="location-outline"></ion-icon>{{ booking.venue.name || 'Venue TBD' }} · {{ booking.venue.location || 'Nearby' }}</p>
-              <div class="host-card-foot"><div class="player-stack"><span *ngFor="let player of gamePlayers(booking).slice(0, 3)">{{ personInitials(player.user.name) }}</span><b *ngIf="booking.currentPlayers > 3">+{{ booking.currentPlayers - 3 }}</b></div><span class="spots-copy">{{ booking.availableSlots }} spots left</span><button type="button" (click)="openGame(booking)">Join {{ gamePrice(booking) | currency:'INR':'symbol':'1.0-0' }}</button></div>
+              <h3>{{ booking.title || formatSportName(booking.sport) + ' game' }}</h3><p class="game-meta-row game-meta-time"><ion-icon name="time-outline"></ion-icon>{{ bookingDateTime(booking) }}</p><p class="game-meta-row game-meta-location"><ion-icon name="location-outline"></ion-icon><span>{{ booking.venue.name || 'Venue TBD' }} · {{ booking.venue.location || 'Nearby' }}</span></p>
+              <div class="host-card-foot"><div class="player-stack"><span *ngFor="let player of gamePlayers(booking).slice(0, 3)">{{ personInitials(player.user.name) }}</span><b *ngIf="booking.currentPlayers > 3">+{{ booking.currentPlayers - 3 }}</b></div><span class="spots-copy">{{ booking.availableSlots }} spots left</span><button type="button" (click)="openGame(booking)"><ng-container *ngIf="booking.bookingStatus === 'pending'; else joinGameLabel">View game</ng-container><ng-template #joinGameLabel>Join {{ gamePrice(booking) | currency:'INR':'symbol':'1.0-0' }}</ng-template></button></div>
             </article>
           </div>
         </section>
@@ -704,7 +708,7 @@
           </ng-container>
         </section>
 
-        <button type="button" class="floating-create-game" (click)="go('/app/game/create')"><ion-icon name="add-outline"></ion-icon><span>Create game</span></button>
+        <!-- <button type="button" class="floating-create-game" (click)="go('/app/game/create')"><ion-icon name="add-outline"></ion-icon><span>Create game</span></button> -->
 
         <ion-modal class="sport-games-modal" [isOpen]="sportGamesOpen" [initialBreakpoint]="0.82" [breakpoints]="[0, 0.62, 0.82, 0.95]" (didDismiss)="onSportGamesDidDismiss()">
           <ng-template><div class="sport-games-sheet"><div class="sheet-grabber"></div><div class="sheet-title-row"><div><small>ONGOING GAMES</small><h2>{{ selectedSport?.name }} near you</h2></div><button type="button" aria-label="Close" (click)="closeSportGames()"><ion-icon name="close-outline"></ion-icon></button></div><p class="sheet-description">Hosted games you can join now. Swipe across to see more.</p>
@@ -721,6 +725,24 @@
         </ion-modal>
       </section>
     </ng-container>
+
+    <ion-popover
+      class="search-filter-popover"
+      [isOpen]="searchFilterOpen"
+      [event]="searchFilterEvent"
+      side="bottom"
+      alignment="end"
+      (didDismiss)="closeSearchFilter()"
+    >
+      <ng-template>
+        <div class="search-filter-menu" role="menu" aria-label="Choose a search category">
+          <p>Search for</p>
+          <button type="button" role="menuitem" (click)="searchByType('venues')"><ion-icon name="business-outline"></ion-icon><span>Venues</span><ion-icon name="chevron-forward-outline"></ion-icon></button>
+          <button type="button" role="menuitem" (click)="searchByType('players')"><ion-icon name="people-outline"></ion-icon><span>Players</span><ion-icon name="chevron-forward-outline"></ion-icon></button>
+          <button type="button" role="menuitem" (click)="searchByType('coaches')"><ion-icon name="school-outline"></ion-icon><span>Coaches</span><ion-icon name="chevron-forward-outline"></ion-icon></button>
+        </div>
+      </ng-template>
+    </ion-popover>
 
   </main>
   </app-brand-header-shell>

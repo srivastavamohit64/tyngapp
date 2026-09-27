@@ -899,3 +899,99 @@
 - Increased the left and right spacing around the Player Home search bar so it no longer sits too close to the screen edges.
 - Kept the search behavior, icons and responsive layout unchanged.
 - Verified the change in the Angular source; a production build was not run for this spacing-only update.
+
+# Completed: Fixed venue event detail routing - 27 September 2026
+
+- Added the authenticated public `GET /api/events/{id}` endpoint for published public venue events.
+- Replaced the event-detail route's booking-detail component with a dedicated event-detail page, preventing event ID 9 from being looked up as expired booking ID 9.
+- Verified the Angular production build and deployed the Laravel endpoint to `srv1789528` (`/var/www/tyng`); live change committed and pushed as `3c2ce32`.
+- Follow-up: publish the rebuilt Angular bundle through the frontend hosting pipeline if the production web bundle is separate from the local Ionic app.
+
+# Completed: Improved coach session venue selection layout - 27 September 2026
+
+- Gave facility choices a consistent minimum height, internal spacing, line height and wrapping so facility names and sport details remain readable on narrow screens.
+- Clarified spacing and typography in the facility selection rows.
+- Verified with the Angular development build.
+
+# Completed: Refined coach student selection tabs - 27 September 2026
+
+- Restyled the My Students, Previous Batch and Add New selector as a balanced three-column segmented control with larger touch targets, readable labels and a clear selected state.
+- Added tab semantics and selected-state accessibility attributes.
+- Build verification not run for this visual-only adjustment.
+
+# Completed: Show live venue times in coach session planner - 27 September 2026
+
+- Replaced generated clock times with the coach scheduling availability API for the selected venue, court, date and session duration.
+- The choices now reflect venue hours, operating days, existing reservations and sessions, current time, and the venue's configured gap between booking slots.
+- Added loading, unavailable, and API error states; changing date or duration clears stale selections and reloads availability.
+- Verified with the Angular development build. Distinct recurring break windows are not represented in current venue profile data; the configured booking gap is applied.
+
+# Completed: Refined coach session time selection - 27 September 2026
+
+- Grouped open session times by morning, afternoon and evening, and showed each time with its end time.
+- Added a clear venue-hours and booking-gap strip, plus styled loading, empty and retry states for availability.
+- Confirmed the running Angular dev server serves the updated coach plan chunk and the development build compiles.
+
+# Completed: Fixed coupon row on coach pricing step - 27 September 2026
+
+- Replaced the shrink-prone coupon flex row with a responsive two-column layout and a fixed-width Apply button.
+- Increased control height and contrast, and added a visible focus state for the coupon input.
+- Confirmed the updated coach plan chunk is served on localhost:8100; no build was run for this styling adjustment.
+
+# Completed: Restore auto-generated coach session title - 27 September 2026
+
+- Removed the one-shot reactive effect that read non-reactive wizard fields and ran before the coach selected a sport.
+- Generate and refresh the default title as sport, venue and student selections change, and when entering Review & Publish; preserve a title the coach edits manually.
+- Added an accessible label and fallback placeholder to the title field. Angular development build passed and localhost:8100 serves the updated chunk.
+
+# Completed: Improved coach session success screen - 27 September 2026
+
+- Reworked the success page into a top-aligned, scroll-safe mobile layout with tighter confirmation rows and consistent two-column next-step cards.
+- Made the first checklist item accurately distinguish a confirmed venue booking from a request awaiting venue approval.
+- Verified with the Angular development build.
+
+# Completed: Fixed Home nearby games feed - 27 September 2026
+
+- Included venue-approval-pending social games in discovery instead of filtering them out on Home; their card action now says “View game” rather than implying they can join immediately.
+- When the selected location has coordinates, request discovery without a hard text location match and sort venue-coordinate games nearest-first using distance; venues without coordinates follow by session date/time. Text-only locations retain the existing locality-filter fallback.
+- `git diff --check` and `npm run build` passed. Build emitted existing Sass deprecation and Angular optional-chain warnings unrelated to this change.
+
+# Completed: Personalized looping Home sport rail - 27 September 2026
+
+- Expanded the Home sport rail from four fixed shortcuts to the full sport catalog, placing sports from the user's profile preferences first.
+- Made the horizontally swipeable rail wrap between duplicated cycles at either end; each cycle includes the More shortcut, and duplicate copies are skipped by keyboard navigation and assistive technology.
+- Applied scroll snapping and contained horizontal overscroll. `npm run build` passed; the build reports existing style-budget and Sass deprecation warnings.
+
+# Completed: Improved nearby game card layout - 27 September 2026
+
+- Changed the Home feed host avatar from a stretched oval to a 42px circle and tightened title spacing.
+- Let the venue/address row wrap up to two lines with a fixed icon alignment, and ensured the card action has a stable minimum width.
+- `npm run build` passed; the build reports existing Sass deprecation, optional-chain and style-budget warnings.
+
+# Completed: Limit Home sport shortcuts to four - 27 September 2026
+
+- Limited the looping Home rail to four sports plus More; profile-preferred sports retain priority, with the standard featured sports filling any remaining places.
+- More continues to open the full sport catalog.
+- `npm run build` passed; the build reports existing Sass deprecation, optional-chain and style-budget warnings.
+
+# Completed: Add category filter to Home search - 27 September 2026
+
+- Replaced the Home search filter icon's direct navigation with an anchored popover offering Venues, Players and Coaches.
+- Selecting a category opens `/app/search?type=...`; Search reads the type parameter and activates its matching result tab while loading results.
+- `git diff --check` and `npm run build` passed. Browser preview was unavailable in this session, so visual interaction was not browser-verified.
+
+# Completed: Add elevation to player side menu items - 27 September 2026
+
+- Added a subtle card shadow to player side-menu rows and matched their rounded corners, padding and minimum height to the venue menu row treatment.
+- `git diff --check` passed; this was a CSS-only adjustment and no build was run.
+
+# Completed: Make TP history route show XP history - 28 September 2026
+
+- Reworked the existing passbook design to show XP lifetime/season summary, level progress, XP activity details and paginated XP transactions from `/xp/me` and `/xp/history`.
+- Redirected the legacy `/app/tp/history` route to `/app/xp/history`; TP balance shortcuts now open Wallet rather than XP history.
+- `npm run build` and `git diff --check` passed. Existing Sass and style-budget warnings remain.
+
+# Completed: Link XP progression card to XP history - 28 September 2026
+
+- Changed the drawer XP/progression card click, Enter and Space actions to open `/app/xp/history`; updated its accessible role and label.
+- Preserved the card's display and visual styling. `git diff --check` passed.

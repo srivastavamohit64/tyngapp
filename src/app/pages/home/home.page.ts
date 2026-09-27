@@ -39,6 +39,7 @@ interface HomeSport {
   name: string;
   icon: string;
   box?: boolean;
+  railCycle?: number;
 }
 
 interface HomeSportGroup {
@@ -121,12 +122,87 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
   adSlideIndex = 0;
   private adSliderTimer?: ReturnType<typeof setInterval>;
 
-  readonly homeSports: HomeSport[] = [
+  private readonly featuredHomeSports: HomeSport[] = [
     { id: 'cricket', name: 'Cricket', icon: 'assets/sports/cricket.svg' },
     { id: 'badminton', name: 'Badminton', icon: 'assets/sports/badminton.svg' },
     { id: 'tennis', name: 'Tennis', icon: 'assets/sports/tennis.svg' },
     { id: 'basketball', name: 'Basketball', icon: 'assets/sports/basketball.svg' },
   ];
+
+  get homeSports(): HomeSport[] {
+    const catalog = this.allSportGroups.reduce((sports, group) => sports.concat(group.sports), [] as HomeSport[]);
+    const uniqueCatalog = catalog.filter((sport, index) => catalog.findIndex((item) => item.id === sport.id) === index);
+    const preferred = (this.auth.user()?.sports || [])
+      .map((value) => this.normalizeSportPreference(value))
+      .filter(Boolean);
+    const preferenceRank = (sport: HomeSport) => {
+      const id = this.normalizeSportPreference(sport.id);
+      const name = this.normalizeSportPreference(sport.name);
+      const index = preferred.findIndex((item) => item === id || item === name);
+      return index < 0 ? Number.MAX_SAFE_INTEGER : index;
+    };
+    const featuredRank = (sport: HomeSport) => this.featuredHomeSports.findIndex((item) => item.id === sport.id);
+    return [...uniqueCatalog].sort((a, b) => {
+      const aPreference = preferenceRank(a);
+      const bPreference = preferenceRank(b);
+      if (aPreference !== bPreference) return aPreference - bPreference;
+      if (aPreference === Number.MAX_SAFE_INTEGER) {
+        const aFeatured = featuredRank(a);
+        const bFeatured = featuredRank(b);
+        if (aFeatured !== bFeatured) {
+          if (aFeatured < 0) return 1;
+          if (bFeatured < 0) return -1;
+          return aFeatured - bFeatured;
+        }
+      }
+      return a.name.localeCompare(b.name);
+    }).slice(0, 4);
+  }
+
+  get loopingSportRailItems(): HomeSport[] {
+    const more: HomeSport = { id: 'home-more', name: 'More', icon: '', railCycle: 0 };
+    const items: HomeSport[] = [];
+    for (let cycle = 0; cycle < 3; cycle += 1) {
+      items.push(...this.homeSports.map((sport) => ({ ...sport, railCycle: cycle })));
+      items.push({ ...more, railCycle: cycle });
+    }
+    return items;
+  }
+
+  activateHomeSport(sport: HomeSport): void {
+    if (sport.id === 'home-more') {
+      this.openSportsPicker();
+      return;
+    }
+    this.openSportGames(sport);
+  }
+
+  private normalizeSportPreference(value: string): string {
+    return value.toLowerCase().replace(/[^a-z0-9]/g, '');
+  }
+
+  onSportRailScroll(event: Event): void {
+    const rail = event.currentTarget as HTMLElement;
+    const cycleWidth = this.sportRailCycleWidth(rail);
+    if (cycleWidth <= 0) return;
+    if (rail.scrollLeft < cycleWidth * 0.5) {
+      rail.scrollLeft += cycleWidth;
+    } else if (rail.scrollLeft > cycleWidth * 2.5) {
+      rail.scrollLeft -= cycleWidth;
+    }
+  }
+
+  private centerSportRailLoop(): void {
+    const rail = document.getElementById('home-sport-rail');
+    if (rail) rail.scrollLeft = this.sportRailCycleWidth(rail);
+  }
+
+  private sportRailCycleWidth(rail: HTMLElement): number {
+    const cycleItemCount = this.homeSports.length + 1;
+    const first = rail.children.item(0) as HTMLElement | null;
+    const nextCycle = rail.children.item(cycleItemCount) as HTMLElement | null;
+    return first && nextCycle ? nextCycle.offsetLeft - first.offsetLeft : 0;
+  }
 
   homePromotions: HomePromotion[] = [];
   promotionsLoading = true;
@@ -181,6 +257,8 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
   promoSlideIndex = 0;
   sportGamesOpen = false;
   sportsPickerOpen = false;
+  searchFilterOpen = false;
+  searchFilterEvent?: Event;
   selectedSport: HomeSport | null = null;
   sportSearch = '';
   private pendingDrawerSport: HomeSport | null = null;
@@ -378,6 +456,7 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
 
   ionViewWillEnter() {
     this.refreshGreeting();
+    setTimeout(() => this.centerSportRailLoop());
     const role = this.auth.user()?.role;
     if (role === 'coach') {
       void this.loadCoachDashboard();
@@ -841,6 +920,7 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
     } else {
       this.nearbyBookings = [...this.nearbyBookings, booking];
     }
+    this.nearbyBookings = this.sortNearbyBookings(this.nearbyBookings);
     this.nearbyGames = this.nearbyBookings.map((item) => this.mapNearbyGame(item));
     this.quickSuggestion = this.buildQuickSuggestion(this.nearbyBookings);
     this.nearbyError = '';
@@ -849,11 +929,10 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
   private isJoinableNearbyGame(booking: BookingRecord): boolean {
     const total = Number(booking.totalPlayers || 0);
     const current = Number(booking.currentPlayers || 0);
-    const status = String(booking.bookingStatus || '');
+    const status = String(booking.bookingStatus || '').toLowerCase();
     return total > 1
       && current < total
       && status !== 'full'
-      && status !== 'pending'
       && status !== 'cancelled'
       && status !== 'expired'
       && status !== 'completed';
@@ -981,14 +1060,21 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
     this.nearbyError = '';
     try {
       const nearby = this.locationService.nearbyLocationQuery(this.auth.user()?.location);
+      const hasCoordinates = Number.isFinite(nearby.latitude) && Number.isFinite(nearby.longitude);
       const response = await firstValueFrom(
         this.bookingService.getNearbyGames(20, {
-          matchLocation: !!nearby.query,
-          location: nearby.query || undefined,
+          // Use venue coordinates for a true nearest-first sort when possible;
+          // retain the existing locality filter as a fallback for text-only addresses.
+          matchLocation: !hasCoordinates && !!nearby.query,
+          location: !hasCoordinates ? nearby.query || undefined : undefined,
         }),
       );
       if (response.success && Array.isArray(response.data)) {
-        this.nearbyBookings = response.data.filter((booking) => this.isJoinableNearbyGame(booking));
+        this.nearbyBookings = this.sortNearbyBookings(
+          response.data.filter((booking) => this.isJoinableNearbyGame(booking)),
+          nearby.latitude,
+          nearby.longitude,
+        );
         this.nearbyGames = this.nearbyBookings.map((booking) => this.mapNearbyGame(booking));
         this.quickSuggestion = this.buildQuickSuggestion(this.nearbyBookings);
       } else {
@@ -1049,6 +1135,39 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
       players: `${booking.currentPlayers}/${booking.totalPlayers}`,
       status: ratio >= 0.8 ? 'almost-full' : 'filling',
     };
+  }
+
+  private sortNearbyBookings(
+    bookings: BookingRecord[],
+    latitude = this.locationService.nearbyLocationQuery(this.auth.user()?.location).latitude,
+    longitude = this.locationService.nearbyLocationQuery(this.auth.user()?.location).longitude,
+  ): BookingRecord[] {
+    const originIsValid = Number.isFinite(latitude) && Number.isFinite(longitude);
+    const distance = (booking: BookingRecord): number | null => {
+      const rawLat = booking.venue?.coordinates?.lat;
+      const rawLng = booking.venue?.coordinates?.lng;
+      if (!originIsValid || rawLat == null || rawLng == null) return null;
+      const lat = Number(rawLat);
+      const lng = Number(rawLng);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+      const radians = (degrees: number) => (degrees * Math.PI) / 180;
+      const dLat = radians(lat - Number(latitude));
+      const dLng = radians(lng - Number(longitude));
+      const a = Math.sin(dLat / 2) ** 2
+        + Math.cos(radians(Number(latitude))) * Math.cos(radians(lat)) * Math.sin(dLng / 2) ** 2;
+      return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    };
+    const startTimestamp = (booking: BookingRecord) =>
+      Date.parse(`${booking.bookingDate || ''}T${booking.startTime || '00:00:00'}`) || Number.MAX_SAFE_INTEGER;
+
+    return [...bookings].sort((a, b) => {
+      const aDistance = distance(a);
+      const bDistance = distance(b);
+      if (aDistance !== null && bDistance !== null && aDistance !== bDistance) return aDistance - bDistance;
+      if (aDistance !== null && bDistance === null) return -1;
+      if (aDistance === null && bDistance !== null) return 1;
+      return startTimestamp(a) - startTimestamp(b);
+    });
   }
 
   selectPromoSlide(index: number): void {
@@ -1390,6 +1509,21 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
 
   go(path: string) {
     this.router.navigateByUrl(path);
+  }
+
+  openSearchFilter(event: Event): void {
+    event.stopPropagation();
+    this.searchFilterEvent = event;
+    this.searchFilterOpen = true;
+  }
+
+  closeSearchFilter(): void {
+    this.searchFilterOpen = false;
+  }
+
+  searchByType(type: 'venues' | 'players' | 'coaches'): void {
+    this.searchFilterOpen = false;
+    void this.router.navigate(['/app/search'], { queryParams: { type } });
   }
 
   async loadHomeAds() {

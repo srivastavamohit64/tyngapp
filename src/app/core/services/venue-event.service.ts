@@ -7,8 +7,11 @@ export interface VenueEventRecord {
   id: string;
   type: string;
   name?: string | null;
+  coverImage?: string | null;
   sport?: string | null;
   facility?: string | null;
+  description?: string | null;
+  skillLevel?: string | null;
   eventDate?: string | null;
   startTime?: string | null;
   endTime?: string | null;
@@ -69,6 +72,10 @@ export class VenueEventService {
 
   upcoming(limit = 5): Observable<ApiResponse<VenueEventRecord[]>> {
     return this.api.get<VenueEventRecord[]>(`/events/upcoming?limit=${limit}`);
+  }
+
+  getPublicEvent(id: string): Observable<ApiResponse<VenueEventRecord>> {
+    return this.api.get<VenueEventRecord>(`/events/${encodeURIComponent(id)}`);
   }
 
   sponsors(): Observable<ApiResponse<SponsorOption[]>> {

@@ -380,6 +380,10 @@ export class SearchPage implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit(): void {
     const initial = (this.route.snapshot.queryParamMap.get('q') || '').trim();
+    const initialType = (this.route.snapshot.queryParamMap.get('type') || '').trim().toLowerCase();
+    if (initialType === 'venues' || initialType === 'venue') this.tab = 'venues';
+    else if (initialType === 'players' || initialType === 'player') this.tab = 'players';
+    else if (initialType === 'coaches' || initialType === 'coach') this.tab = 'coaches';
     this.query = initial;
     void this.runSearch(initial);
   }

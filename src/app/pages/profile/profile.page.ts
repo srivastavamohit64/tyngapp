@@ -98,8 +98,8 @@ export class ProfilePage implements ViewWillEnter {
     void this.router.navigateByUrl('/app/xp/history');
   }
 
-  openTpHistory() {
-    void this.router.navigateByUrl('/app/tp/history');
+  openWallet() {
+    void this.router.navigateByUrl('/app/wallet');
   }
 
   goBack() {

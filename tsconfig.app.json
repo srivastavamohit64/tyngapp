@@ -8,7 +8,8 @@
   "files": [
     "src/main.ts",
     "src/polyfills.ts",
-    "src/app/pages/coach/evaluate/evaluate.page.ts"
+    "src/app/pages/coach/evaluate/evaluate.page.ts",
+    "src/app/pages/events/event-detail.page.ts"
   ],
   "include": [
     "src/**/*.d.ts"

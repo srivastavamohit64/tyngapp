@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, signal, effect, inject, OnInit } from '@angular/core';
+import { Component, signal, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
@@ -27,13 +27,15 @@ interface Venue {
   name: string;
   image: string;
   distance: string;
-  slots: string[];
   pricePerHour: number;
   rating: number;
   address: string;
   sportEmojis: string[];
   isCoachFriendly: boolean;
   courts: VenueCourt[];
+  openTime: string;
+  closeTime: string;
+  slotIntervalMinutes: number;
 }
 
 interface VenueCourt {
@@ -42,6 +44,12 @@ interface VenueCourt {
   sport: string;
   pricePerHour: number;
   maxPlayers: number | null;
+}
+
+interface CoachAvailabilitySlot {
+  label: string;
+  endLabel: string;
+  period: 'Morning' | 'Afternoon' | 'Evening';
 }
 
 const SPORTS: Sport[] = [
@@ -109,8 +117,8 @@ function buildDates() {
   template: `
     <ion-content [fullscreen]="true">
       <!-- SUCCESS SCREEN -->
-      <div *ngIf="success()" class="success-shell px-6">
-        <div class="mb-6 flex flex-col items-center">
+      <div *ngIf="success()" class="success-shell">
+        <div class="success-hero">
           <div class="success-circle mb-4">
             <ion-icon name="checkmark-outline" class="text-white text-5xl font-black"></ion-icon>
           </div>
@@ -118,17 +126,15 @@ function buildDates() {
           <p class="text-[14px] text-[#9CA3AF] mb-6 text-center">{{ sessionCreationMessage() }}</p>
         </div>
 
-        <div class="w-full max-w-sm bg-white rounded-[24px] p-5 mb-5 shadow-sm border border-slate-100 space-y-2.5">
-          <div *ngFor="let a of ['Venue Reserved','Session Published','Student Invitations Sent','Session Chat Created','Schedule Updated','Attendance QR Generated']"
-            class="flex items-center gap-3 py-2 border-b border-[#F9FAFB] last:border-0">
-            <div class="w-6 h-6 rounded-full bg-[var(--app-primary)] flex items-center justify-center flex-shrink-0">
-              <ion-icon name="checkmark-outline" style="font-size:12px;color:#111827;font-weight:bold;"></ion-icon>
-            </div>
-            <span class="text-[13px] font-semibold text-[#111827]">{{ a }}</span>
+        <div class="success-checklist">
+          <p class="success-card-title">What’s ready</p>
+          <div *ngFor="let item of successItems(); let last = last" class="success-check-row" [class.success-check-row-last]="last">
+            <span class="success-check-icon"><ion-icon name="checkmark-outline"></ion-icon></span>
+            <span>{{ item }}</span>
           </div>
         </div>
 
-        <div class="w-full max-w-sm grid grid-cols-2 gap-2.5">
+        <div class="success-actions">
           <button (click)="go('/app/coach/students')" class="success-action-btn shadow-sm">
             <ion-icon name="people-outline" class="text-[var(--app-primary)] text-2xl mb-1"></ion-icon>
             Manage Students
@@ -209,10 +215,10 @@ function buildDates() {
             <p *ngIf="loading()" class="text-[13px] text-[#6B7280] mb-3">Loading your active students…</p>
             <p *ngIf="loadError()" class="text-[13px] text-[#DC2626] mb-3">{{ loadError() }}</p>
             <!-- Sub-tabs -->
-            <div class="flex bg-[#F3F4F6] p-1 rounded-2xl mb-4">
-              <button *ngFor="let t of ['my','batch','new']" (click)="studTab = t" class="flex-1 py-2 rounded-xl text-[11px] font-bold border-none"
-                [style.backgroundColor]="studTab === t ? 'white' : 'transparent'"
-                [style.color]="studTab === t ? '#111827' : '#9CA3AF'">
+            <div class="student-tabs" role="tablist" aria-label="Choose students">
+              <button *ngFor="let t of ['my','batch','new']" type="button" role="tab" (click)="studTab = t"
+                class="student-tab" [class.student-tab-active]="studTab === t"
+                [attr.aria-selected]="studTab === t">
                 {{ t === 'my' ? 'My Students' : t === 'batch' ? 'Previous Batch' : 'Add New' }}
               </button>
             </div>
@@ -318,7 +324,7 @@ function buildDates() {
             <div *ngIf="selectedVenue" class="mt-5">
               <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-3">Select Facility</p>
               <div class="grid grid-cols-1 gap-2">
-                <button *ngFor="let court of availableCourts()" type="button" (click)="chooseCourt(court)" class="rounded-2xl px-4 py-3 text-left border-none bg-white shadow-sm"
+                <button *ngFor="let court of availableCourts()" type="button" (click)="chooseCourt(court)" class="facility-option text-left bg-white shadow-sm"
                   [style.border]="selectedCourtId === court.id ? '2px solid var(--app-primary)' : '2px solid #F3F4F6'">
                   <div class="flex items-center justify-between gap-3">
                     <div><p class="text-[13px] font-black text-[#111827] m-0">{{ court.name }}</p><p class="text-[11px] text-[#9CA3AF] m-0">{{ court.sport }}<span *ngIf="court.maxPlayers"> · Up to {{ court.maxPlayers }} players</span></p></div>
@@ -338,7 +344,7 @@ function buildDates() {
             <!-- Calendar row -->
             <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-3">Select Date</p>
             <div class="flex gap-2.5 overflow-x-auto pb-1 mb-5 no-scrollbar">
-              <button *ngFor="let d of dateOptions" (click)="dateIdx = d.idx" class="flex-shrink-0 flex flex-col items-center px-3.5 py-2.5 rounded-2xl min-w-[54px] border-none shadow-sm"
+              <button *ngFor="let d of dateOptions" (click)="selectDate(d.idx)" class="flex-shrink-0 flex flex-col items-center px-3.5 py-2.5 rounded-2xl min-w-[54px] border-none shadow-sm"
                 [style.backgroundColor]="dateIdx === d.idx ? 'rgba(var(--app-primary-rgb),0.12)' : 'white'"
                 [style.border]="dateIdx === d.idx ? '2px solid var(--app-primary)' : '2px solid #F3F4F6'">
                 <span class="text-[9px] font-bold" [style.color]="dateIdx === d.idx ? 'var(--app-primary)' : '#9CA3AF'">{{ d.isToday ? 'Today' : d.day }}</span>
@@ -348,17 +354,38 @@ function buildDates() {
             </div>
             <!-- Time slots -->
             <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-3">Select Time</p>
-            <div class="grid grid-cols-4 gap-2 mb-5">
-              <button *ngFor="let t of (selectedVenue?.slots ?? ['6 AM','7 AM','8 AM','4 PM','5 PM','6 PM','7 PM','8 PM'])" (click)="time = t" class="py-3 rounded-2xl border-none shadow-sm text-center"
-                [style.backgroundColor]="time === t ? 'var(--app-primary)' : 'white'"
-                [style.border]="time === t ? '2px solid var(--app-primary)' : '2px solid #F3F4F6'">
-                <p class="text-[12px] font-black m-0" [style.color]="time === t ? '#111827' : '#6B7280'">{{ t }}</p>
-              </button>
+            <div *ngIf="selectedVenue" class="availability-hours">
+              <ion-icon name="time-outline"></ion-icon>
+              <span><strong>Venue hours</strong> {{ selectedVenue.openTime }} – {{ selectedVenue.closeTime }}</span>
+              <span *ngIf="selectedVenue.slotIntervalMinutes" class="availability-gap">{{ selectedVenue.slotIntervalMinutes }} min gap</span>
+            </div>
+            <div *ngIf="availabilityLoading" class="py-5 flex items-center justify-center gap-2 text-[12px] text-[#6B7280]">
+              <ion-spinner name="crescent"></ion-spinner><span>Checking venue availability…</span>
+            </div>
+            <div *ngIf="!availabilityLoading && availabilityMessage" class="availability-empty">
+              <ion-icon name="calendar-clear-outline"></ion-icon>
+              <span>{{ availabilityMessage }}</span>
+              <button *ngIf="availabilityMessage.includes('could not be checked')" type="button" (click)="loadAvailableTimes()">Try again</button>
+            </div>
+            <div *ngIf="!availabilityLoading && availableTimes.length" class="time-periods">
+              <section *ngFor="let period of availabilityPeriods" class="time-period" [hidden]="!timesForPeriod(period).length">
+                <h3>{{ period }} <span>{{ timesForPeriod(period).length }} open</span></h3>
+                <div class="time-slot-grid">
+                  <button *ngFor="let t of timesForPeriod(period)" type="button" (click)="selectTime(t.label)"
+                    class="time-slot-option" [class.time-slot-selected]="time === t.label">
+                    <strong>{{ t.label }}</strong><small>until {{ t.endLabel }}</small>
+                  </button>
+                </div>
+              </section>
+            </div>
+            <div *ngIf="!availabilityLoading && !availabilityMessage && !availableTimes.length" class="availability-empty">
+              <ion-icon name="calendar-outline"></ion-icon>
+              <span>Choose a venue and facility to check available times.</span>
             </div>
             <!-- Duration -->
             <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-3">Duration</p>
             <div class="grid grid-cols-4 gap-2 mb-4">
-              <button *ngFor="let d of durationsOptions" (click)="duration = d.id" class="py-3 rounded-2xl border-none text-center"
+              <button *ngFor="let d of durationsOptions" (click)="selectDuration(d.id)" class="py-3 rounded-2xl border-none text-center"
                 [style.backgroundColor]="duration === d.id ? 'rgba(var(--app-primary-rgb),0.12)' : 'white'"
                 [style.border]="duration === d.id ? '2px solid var(--app-primary)' : '2px solid #F3F4F6'">
                 <p class="text-[12px] font-bold m-0" [style.color]="duration === d.id ? '#111827' : '#6B7280'">{{ d.label }}</p>
@@ -522,10 +549,10 @@ function buildDates() {
               </div>
 
               <!-- Coupon input -->
-              <div *ngIf="!coupon" class="flex gap-2 mt-3">
-                <input [(ngModel)]="couponInp" placeholder="Enter coupon code"
-                  class="flex-1 bg-[#F3F4F6] rounded-xl px-3 h-10 text-[13px] font-semibold uppercase focus:outline-none min-h-0 border-none" />
-                <button (click)="applyCoupon()" [disabled]="!couponInp.trim()" class="h-10 px-4 rounded-xl text-[12px] font-black border-none"
+              <div *ngIf="!coupon" class="coupon-entry">
+                <input [(ngModel)]="couponInp" placeholder="Enter coupon code" aria-label="Coupon code"
+                  class="coupon-input" />
+                <button type="button" (click)="applyCoupon()" [disabled]="!couponInp.trim()" class="coupon-apply"
                   [style.backgroundColor]="couponInp.trim() ? 'var(--app-primary)' : '#F3F4F6'"
                   [style.color]="couponInp.trim() ? '#111827' : '#C4C9D4'">
                   Apply
@@ -563,7 +590,8 @@ function buildDates() {
             <!-- Title generated -->
             <div class="bg-white rounded-[24px] p-5 shadow-sm border border-slate-100">
               <p class="text-[11px] text-[#9CA3AF] font-black uppercase tracking-wider mb-2">Session Title (Auto-generated)</p>
-              <input [(ngModel)]="sessionTitle" class="w-full text-[16px] font-black text-[#111827] bg-[#F9FAFB] rounded-xl px-3 py-2.5 focus:outline-none min-h-0 border-none" />
+              <input [(ngModel)]="sessionTitle" placeholder="Add a session title" aria-label="Session title"
+                class="w-full text-[16px] font-black text-[#111827] bg-[#F9FAFB] rounded-xl px-3 py-2.5 focus:outline-none min-h-0 border-none" />
             </div>
 
             <!-- Summary metrics -->
@@ -638,36 +666,61 @@ function buildDates() {
     }
 
     .success-shell {
-      min-height: 100vh;
+      width: min(100%, 480px);
+      min-height: 100%;
+      box-sizing: border-box;
+      margin: 0 auto;
+      padding: calc(24px + env(safe-area-inset-top)) 20px calc(24px + env(safe-area-inset-bottom));
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
+      gap: 16px;
       background: #FAFBFC;
     }
 
     .success-circle {
-      width: 96px; height: 96px;
+      width: 68px;
+      height: 68px;
       border-radius: 50%;
       background: var(--app-primary);
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 8px 36px rgba(var(--app-primary-rgb),0.45);
+      display: grid;
+      place-items: center;
+      box-shadow: 0 8px 24px rgba(var(--app-primary-rgb), .25);
     }
+
+    .success-circle ion-icon { color: #173000; font-size: 34px; font-weight: 900; }
+    .success-hero { display:flex; width:100%; flex-direction:column; align-items:center; text-align:center; }
+    .success-hero h1 { margin:4px 0 0; color:#111827; font-size:25px; font-weight:900; line-height:1.2; }
+    .success-hero p { max-width:340px; margin:7px 0 0; color:#667085; font-size:13px; line-height:1.45; }
+    .success-checklist { width:100%; box-sizing:border-box; padding:14px 16px 8px; border:1px solid #EAECF0; border-radius:20px; background:#fff; box-shadow:0 4px 14px rgba(16,24,40,.045); }
+    .success-card-title { margin:0 0 5px; color:#98A2B3; font-size:10px; font-weight:850; letter-spacing:.1em; text-transform:uppercase; }
+    .success-check-row { display:flex; min-height:46px; align-items:center; gap:11px; border-bottom:1px solid #F2F4F7; color:#344054; font-size:12px; font-weight:750; }
+    .success-check-row-last { border-bottom:0; }
+    .success-check-icon { width:24px; height:24px; flex:0 0 24px; display:grid; place-items:center; border-radius:50%; background:var(--app-primary); color:#203600; }
+    .success-check-icon ion-icon { font-size:14px; font-weight:900; }
+    .success-actions { display:grid; width:100%; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
 
     .success-action-btn {
       display: flex;
+      min-height:82px;
+      min-width:0;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 16px;
+      gap:5px;
+      padding: 12px 8px;
+      border:1px solid #EAECF0;
       background: white;
-      border-radius: 20px;
+      border-radius: 17px;
       font-size: 12px;
-      font-weight: 700;
+      font-weight: 800;
       color: #111827;
-      border: none;
       cursor: pointer;
+      transition:transform .15s ease, box-shadow .15s ease;
     }
+    .success-action-btn:active { transform:scale(.98); }
+    .success-action-btn ion-icon { color:#65A30D; font-size:23px; }
 
     .sticky-header {
       position: sticky;
@@ -692,6 +745,160 @@ function buildDates() {
       color: #9CA3AF;
       margin: 4px 0 0;
     }
+
+    .student-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      align-items: center;
+      gap: 4px;
+      width: 100%;
+      min-height: 48px;
+      margin: 0 0 18px;
+      padding: 4px;
+      box-sizing: border-box;
+      border: 1px solid #E8EBEF;
+      border-radius: 16px;
+      background: #F3F4F6;
+    }
+
+    .student-tab {
+      display: flex;
+      min-width: 0;
+      min-height: 38px;
+      align-items: center;
+      justify-content: center;
+      padding: 0 5px;
+      border: 1px solid transparent;
+      border-radius: 12px;
+      background: transparent;
+      color: #667085;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.15;
+      text-align: center;
+      white-space: nowrap;
+      transition: background-color .18s ease, color .18s ease, box-shadow .18s ease;
+    }
+
+    .student-tab-active {
+      border-color: #EEF0F3;
+      background: #FFFFFF;
+      color: #111827;
+      box-shadow: 0 2px 5px rgba(16, 24, 40, .08);
+    }
+
+    .availability-hours {
+      display: flex;
+      min-height: 40px;
+      align-items: center;
+      gap: 7px;
+      margin: -3px 0 12px;
+      padding: 0 11px;
+      border: 1px solid #E8EBEF;
+      border-radius: 12px;
+      background: #FFFFFF;
+      color: #667085;
+      font-size: 10px;
+    }
+
+    .availability-hours > ion-icon { color: #65A30D; font-size: 16px; }
+    .availability-hours strong { margin-right: 3px; color: #344054; font-weight: 800; }
+    .availability-gap { margin-left: auto; color: #667085; white-space: nowrap; }
+
+    .time-periods { display: grid; gap: 15px; margin: 0 0 20px; }
+    .time-period h3 {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 0 0 8px;
+      color: #475467;
+      font-size: 11px;
+      font-weight: 850;
+    }
+    .time-period h3 span { color: #98A2B3; font-size: 10px; font-weight: 650; }
+    .time-slot-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+    .time-slot-option {
+      display: grid;
+      min-width: 0;
+      min-height: 50px;
+      align-content: center;
+      gap: 3px;
+      padding: 6px 3px;
+      border: 1px solid #E4E7EC;
+      border-radius: 13px;
+      background: #FFFFFF;
+      color: #344054;
+      box-shadow: 0 2px 5px rgba(16, 24, 40, .045);
+      text-align: center;
+      transition: border-color .16s ease, background-color .16s ease, transform .16s ease;
+    }
+    .time-slot-option strong { font-size: 11px; font-weight: 850; line-height: 1.2; }
+    .time-slot-option small { color: #98A2B3; font-size: 9px; line-height: 1.1; }
+    .time-slot-option.time-slot-selected {
+      border-color: var(--app-primary);
+      background: rgba(var(--app-primary-rgb), .14);
+      color: #111827;
+      box-shadow: 0 3px 9px rgba(var(--app-primary-rgb), .14);
+    }
+    .time-slot-selected small { color: #475467; }
+    .availability-empty {
+      display: flex;
+      min-height: 72px;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      margin-bottom: 18px;
+      padding: 12px;
+      border: 1px dashed #D0D5DD;
+      border-radius: 14px;
+      background: #FFFFFF;
+      color: #667085;
+      font-size: 11px;
+      line-height: 1.4;
+    }
+    .availability-empty ion-icon { flex: 0 0 auto; color: #98A2B3; font-size: 18px; }
+    .availability-empty button { padding: 5px 8px; border-radius: 8px; background: #F3F4F6; color: #344054; font-size: 10px; font-weight: 800; }
+
+    .coupon-entry {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 76px;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .coupon-input {
+      width: 100%;
+      min-width: 0;
+      height: 48px;
+      padding: 0 14px;
+      box-sizing: border-box;
+      border: 1px solid #EAECF0;
+      border-radius: 14px;
+      outline: none;
+      background: #F8F9FB;
+      color: #111827;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .035em;
+      text-transform: uppercase;
+    }
+    .coupon-input::placeholder { color: #98A2B3; font-weight: 500; letter-spacing: 0; text-transform: uppercase; }
+    .coupon-input:focus { border-color: #A3E635; box-shadow: 0 0 0 3px rgba(163, 230, 53, .16); }
+    .coupon-apply {
+      display: flex;
+      width: 76px;
+      min-width: 76px;
+      height: 48px;
+      align-items: center;
+      justify-content: center;
+      padding: 0 8px;
+      border: 0;
+      border-radius: 14px;
+      font-size: 12px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+    .coupon-apply:disabled { cursor: default; }
 
     /* Sport btn */
     .sport-selection-btn {
@@ -782,11 +989,54 @@ function buildDates() {
 
     /* Venue select */
     .venue-select-btn {
+      display: block;
       width: 100%;
       border-radius: 22px;
       overflow: hidden;
       cursor: pointer;
+      padding: 0;
+      text-align: left;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, .08);
+      transition: border-color .18s ease, box-shadow .18s ease;
     }
+
+    .facility-option {
+      display: flex;
+      width: 100%;
+      min-height: 68px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 12px 14px;
+      border: 1.5px solid #E5E7EB;
+      border-radius: 16px;
+      box-sizing: border-box;
+      line-height: 1.4;
+    }
+
+    .facility-option > div {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .facility-option p {
+      margin: 0;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+
+    .facility-option p + p {
+      margin-top: 4px;
+      color: #9CA3AF;
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .facility-option > span {
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+
 
     /* Chips */
     .chips-grid {
@@ -905,6 +1155,7 @@ export class CoachPlanPage implements OnInit {
   loadError = signal('');
   publishError = signal('');
   sessionCreationMessage = signal('Your session is being created.');
+  sessionCreatedConfirmed = signal(false);
 
   // Flow step State
   step = signal(1);
@@ -921,6 +1172,11 @@ export class CoachPlanPage implements OnInit {
   dateIdx = 0;
   time = '';
   duration = '60min';
+  availableTimes: CoachAvailabilitySlot[] = [];
+  readonly availabilityPeriods: CoachAvailabilitySlot['period'][] = ['Morning', 'Afternoon', 'Evening'];
+  availabilityLoading = false;
+  availabilityMessage = '';
+  private availabilityRequest = 0;
   sessType = '';
   trainingFocus: string[] = [];
   maxStuds = 12;
@@ -934,6 +1190,7 @@ export class CoachPlanPage implements OnInit {
   couponErr = '';
   automate = true;
   sessionTitle = '';
+  private generatedSessionTitle = '';
 
   readonly sportsOptions = SPORTS;
   readonly stepTitles = ['Choose Sport', 'Select Students', 'Choose Venue', 'Date & Time', 'Training Details', 'Equipment', 'Set Pricing', 'Review & Publish'];
@@ -946,19 +1203,6 @@ export class CoachPlanPage implements OnInit {
   readonly equipmentOptions = EQUIPMENT_OPTS;
   readonly equipSourceOptions = EQUIP_SOURCES;
   dateOptions = buildDates();
-
-  constructor() {
-    effect(() => {
-      const sp = this.sportsOptions.find(s => s.id === this.sport);
-      const vName = this.selectedVenue?.name.split(' ')[0] ?? 'Training';
-      const label = this.selStudents.length === 1
-        ? this.studentOptions.find(s => s.id === this.selStudents[0])?.name ?? 'Student'
-        : this.selStudents.length > 1 ? `Group (${this.selStudents.length})` : 'New Session';
-      if (sp) {
-        this.sessionTitle = `${vName} ${sp.name} Training – ${label}`;
-      }
-    });
-  }
 
   ngOnInit(): void {
     void this.loadPlanningData();
@@ -992,7 +1236,9 @@ export class CoachPlanPage implements OnInit {
           id: Number(item.id), name: item.name, image: resolveMediaUrl(item.image) || 'assets/icon/favicon.png',
           distance: '', pricePerHour: courts[0]?.pricePerHour || 0, rating: 0,
           address: item.location || 'Location pending', sportEmojis: [], isCoachFriendly: item.partnership?.status === 'active',
-          slots: this.defaultVenueSlots(item.open_time, item.close_time), courts,
+          courts,
+          openTime: item.open_time || '6:00 AM', closeTime: item.close_time || '10:00 PM',
+          slotIntervalMinutes: Number(item.slot_interval_minutes || 0),
         };
       }).filter((item: Venue) => item.id > 0 && item.courts.length > 0);
       this.batchOptions = (batchesResponse.data || []).map((item: any) => ({
@@ -1007,14 +1253,6 @@ export class CoachPlanPage implements OnInit {
     } finally {
       this.loading.set(false);
     }
-  }
-
-  private defaultVenueSlots(openTime?: string, closeTime?: string): string[] {
-    const open = this.toMinutes(openTime || '06:00');
-    const close = this.toMinutes(closeTime || '22:00');
-    const slots: string[] = [];
-    for (let minute = open; minute < close; minute += 60) slots.push(this.displayTime(minute));
-    return slots;
   }
 
   handleBack() {
@@ -1040,6 +1278,8 @@ export class CoachPlanPage implements OnInit {
     if (step < 1 || step > 8 || this.publishing() || this.success()) return;
     this.step.set(step);
     this.publishError.set('');
+    if (step === 8) this.refreshGeneratedTitle();
+    if (step === 4) void this.loadAvailableTimes();
   }
 
   selectSport(sportId: string): void {
@@ -1047,16 +1287,17 @@ export class CoachPlanPage implements OnInit {
     if (this.selectedVenue && !this.selectedVenue.courts.some(court => this.courtSupportsSelectedSport(court))) {
       this.selectedVenue = null;
       this.selectedCourtId = null;
-      return;
-    }
-    if (this.selectedVenue) {
+    } else if (this.selectedVenue) {
       this.selectedCourtId = this.preferredCourt(this.selectedVenue)?.id ?? null;
     }
+    this.refreshGeneratedTitle();
   }
 
   handleNext() {
     if (this.step() < 8) {
       this.step.update(s => s + 1);
+      if (this.step() === 8) this.refreshGeneratedTitle();
+      if (this.step() === 4) void this.loadAvailableTimes();
     } else {
       void this.publishSession();
     }
@@ -1066,12 +1307,14 @@ export class CoachPlanPage implements OnInit {
     this.selStudents = this.selStudents.includes(id)
       ? this.selStudents.filter(x => x !== id)
       : [...this.selStudents, id];
+    this.refreshGeneratedTitle();
   }
 
   selectBatch(batch: { id: string; studentIds: number[] }): void {
     const isSelected = this.selBatch === batch.id;
     this.selBatch = isSelected ? '' : batch.id;
     this.selStudents = isSelected ? [] : batch.studentIds;
+    this.refreshGeneratedTitle();
   }
 
   getStudentPhoto(id: number) {
@@ -1092,6 +1335,65 @@ export class CoachPlanPage implements OnInit {
     const dur = this.durationsOptions.find(d => d.id === this.duration);
     const hrs = dur?.hrs ?? 1;
     return this.displayTime(this.toMinutes(this.time) + hrs * 60);
+  }
+
+  selectDate(index: number): void {
+    this.dateIdx = index;
+    this.time = '';
+    void this.loadAvailableTimes();
+  }
+
+  selectDuration(id: string): void {
+    this.duration = id;
+    this.time = '';
+    void this.loadAvailableTimes();
+  }
+
+  selectTime(value: string): void {
+    this.time = value;
+    this.availabilityMessage = '';
+  }
+
+  async loadAvailableTimes(): Promise<void> {
+    const venue = this.selectedVenue;
+    const court = this.selectedCourt();
+    if (!venue || !court || this.step() !== 4) {
+      this.availableTimes = [];
+      this.availabilityMessage = '';
+      return;
+    }
+
+    const requestId = ++this.availabilityRequest;
+    const durationMinutes = Math.round((this.durationsOptions.find(item => item.id === this.duration)?.hrs ?? 1) * 60);
+    this.availabilityLoading = true;
+    this.availabilityMessage = '';
+    try {
+      const response = await firstValueFrom(this.coachService.getVenueAvailability(
+        venue.id, court.id, this.sessionDate(), durationMinutes,
+      ));
+      if (requestId !== this.availabilityRequest) return;
+      const slots = Array.isArray(response.data?.slots) ? response.data.slots : [];
+      this.availableTimes = slots.map((slot: any) => ({
+        label: String(slot.label || this.displayTime(this.toMinutes(slot.startTime || ''))),
+        endLabel: String(slot.endLabel || this.displayTime(this.toMinutes(slot.endTime || ''))),
+        period: (['Morning', 'Afternoon', 'Evening'].includes(slot.period) ? slot.period : 'Afternoon') as CoachAvailabilitySlot['period'],
+      }));
+      if (!this.availableTimes.some(slot => slot.label === this.time)) this.time = '';
+      this.availabilityMessage = this.availableTimes.length
+        ? ''
+        : `No available times for this date. There is a ${venue.slotIntervalMinutes || 0}-minute venue break between booking slots.`;
+    } catch (error: any) {
+      if (requestId !== this.availabilityRequest) return;
+      this.availableTimes = [];
+      this.time = '';
+      this.availabilityMessage = error?.error?.message || 'Venue availability could not be checked. Please try again.';
+    } finally {
+      if (requestId === this.availabilityRequest) this.availabilityLoading = false;
+    }
+  }
+
+  timesForPeriod(period: CoachAvailabilitySlot['period']): CoachAvailabilitySlot[] {
+    return this.availableTimes.filter(slot => slot.period === period);
   }
 
   private toMinutes(value: string): number {
@@ -1137,7 +1439,9 @@ export class CoachPlanPage implements OnInit {
         notes: this.notes || null,
       }));
       if (!response.success) throw new Error(response.message || 'Unable to create the session.');
-      this.sessionCreationMessage.set(response.data?.status === 'confirmed'
+      const confirmed = response.data?.status === 'confirmed';
+      this.sessionCreatedConfirmed.set(confirmed);
+      this.sessionCreationMessage.set(confirmed
         ? 'Your session is confirmed and player invitations are ready.'
         : 'Your session request has been sent to the venue for approval.');
       this.success.set(true);
@@ -1176,10 +1480,33 @@ export class CoachPlanPage implements OnInit {
   chooseVenue(venue: Venue): void {
     this.selectedVenue = venue;
     this.selectedCourtId = this.preferredCourt(venue)?.id ?? null;
+    this.refreshGeneratedTitle();
+    this.time = '';
+    this.availableTimes = [];
+    this.availabilityMessage = '';
+    if (this.step() === 4) void this.loadAvailableTimes();
   }
 
   chooseCourt(court: VenueCourt): void {
     this.selectedCourtId = court.id;
+    this.time = '';
+    this.availableTimes = [];
+    this.availabilityMessage = '';
+    if (this.step() === 4) void this.loadAvailableTimes();
+  }
+
+  private refreshGeneratedTitle(): void {
+    const sportName = this.sportsOptions.find(item => item.id === this.sport)?.name || 'Training';
+    const venueName = this.selectedVenue?.name.trim().split(/\s+/)[0] || 'Training';
+    const studentLabel = this.selStudents.length === 1
+      ? this.studentOptions.find(student => student.id === this.selStudents[0])?.name || 'Student'
+      : this.selStudents.length > 1 ? `Group (${this.selStudents.length})` : 'New Session';
+    const nextTitle = `${venueName} ${sportName} Training – ${studentLabel}`;
+
+    if (!this.sessionTitle.trim() || this.sessionTitle === this.generatedSessionTitle) {
+      this.sessionTitle = nextTitle;
+    }
+    this.generatedSessionTitle = nextTitle;
   }
 
   selectedCourt(): VenueCourt | null {
@@ -1250,6 +1577,17 @@ export class CoachPlanPage implements OnInit {
       { emoji: '🕒', label: 'Time', val: this.time || '—' },
       { emoji: '⏳', label: 'Duration', val: this.getDurationLabel() },
       { emoji: '👤', label: 'Price / Student', val: `₹${this.getPricePerStudent().toLocaleString()}` },
+    ];
+  }
+
+  successItems(): string[] {
+    return [
+      this.sessionCreatedConfirmed() ? 'Venue booking confirmed' : 'Venue approval requested',
+      'Coaching session created',
+      'Student invitations sent',
+      'Session chat created',
+      'Coach schedule updated',
+      'Attendance QR ready',
     ];
   }
 

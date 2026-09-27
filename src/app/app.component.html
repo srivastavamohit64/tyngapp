@@ -142,7 +142,7 @@
           </div>
         </div>
 
-        <div class="drawer-xp-card" role="button" tabindex="0" aria-label="View TP point history" (click)="navigateTo('/app/tp/history')" (keydown.enter)="navigateTo('/app/tp/history')" (keydown.space)="navigateTo('/app/tp/history'); $event.preventDefault()">
+        <div class="drawer-xp-card" role="link" tabindex="0" aria-label="View XP history" (click)="navigateTo('/app/xp/history')" (keydown.enter)="navigateTo('/app/xp/history')" (keydown.space)="navigateTo('/app/xp/history'); $event.preventDefault()">
           <div class="xp-orb1"></div>
           <div class="xp-orb2"></div>
           <div class="xp-top">
@@ -166,7 +166,7 @@
           <div class="xp-to-next">{{ xpToNextLabel() }}</div>
         </div>
 
-        <div class="drawer-menu">
+        <div class="drawer-menu player-drawer-menu">
           <button class="menu-item" (click)="navigateTo('/app/friends')">
             <div class="menu-icon"><ion-icon name="people-outline"></ion-icon></div>
             <div class="menu-text">

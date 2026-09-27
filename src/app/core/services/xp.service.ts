@@ -9,6 +9,17 @@ export interface XpLine {
   label: string;
   xpAmount: number;
   category: string;
+  status?: string;
+  bookingId?: string | null;
+  sport?: string | null;
+  createdAt?: string | null;
+}
+
+export interface XpHistoryPage {
+  items: XpLine[];
+  currentPage: number;
+  lastPage: number;
+  total: number;
 }
 
 export interface AdminXpRule {
@@ -117,6 +128,13 @@ export class XpService {
 
   bookingSummary(bookingId: string | number): Observable<XpBookingSummary | null> {
     return this.api.get<XpBookingSummary>(`/xp/bookings/${bookingId}/summary`).pipe(map((res) => res.data));
+  }
+
+  historyPage(page = 1, perPage = 20): Observable<XpHistoryPage> {
+    const params = new URLSearchParams({ page: String(page), per_page: String(perPage) });
+    return this.api.get<XpHistoryPage>(`/xp/history?${params.toString()}`).pipe(
+      map((res) => res.data ?? { items: [], currentPage: 1, lastPage: 1, total: 0 }),
+    );
   }
 
   adminRules(): Observable<AdminXpRule[]> {

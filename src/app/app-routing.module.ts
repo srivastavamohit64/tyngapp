@@ -87,7 +87,7 @@ const routes: Routes = [
   {
     path: 'app/events/details/:id',
     canActivate: [authGuard],
-    loadComponent: () => import('./pages/player/game-detail.page').then((m) => m.GameDetailPage),
+    loadComponent: () => import('./pages/events/event-detail.page').then((m) => m.EventDetailPage),
   },
   {
     path: 'app/events/:mode',
@@ -125,7 +125,8 @@ const routes: Routes = [
       },
       {
         path: 'tp/history',
-        loadComponent: () => import('./pages/player/tp-history.page').then((m) => m.TpHistoryPage),
+        redirectTo: 'xp/history',
+        pathMatch: 'full',
       },
       {
         path: 'coach/dashboard',
@@ -270,7 +271,7 @@ const routes: Routes = [
       },
       {
         path: 'xp/history',
-        loadComponent: () => import('./pages/player/xp-history.page').then((m) => m.XpHistoryPage),
+        loadComponent: () => import('./pages/player/tp-history.page').then((m) => m.XpHistoryPage),
       },
       {
         path: 'stats',
