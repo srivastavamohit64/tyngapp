@@ -492,7 +492,7 @@ type WalletSection = 'wallet' | 'points' | 'gifts';
       }
 
       .header-passbook-btn {
-        width: 40px; height: 40px; border: none; border-radius: 14px;
+        width: var(--app-header-btn-size); height: var(--app-header-btn-size); border: none; border-radius: 14px;
         background: #f3f4f6; color: #111827;
         display: inline-flex; align-items: center; justify-content: center; padding: 0;
       }

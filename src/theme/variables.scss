@@ -153,6 +153,15 @@
   --app-chrome-top-inset: var(--safe-area-top);
 
   /*
+   * Single top-bar size for every screen. Height excludes the status-bar inset.
+   */
+  --app-header-height: 60px;
+  --app-header-title-size: 18px;
+  --app-header-title-weight: 800;
+  --app-header-title-line-height: 1.2;
+  --app-header-btn-size: 40px;
+
+  /*
    * Floating tab chrome offset (set by .tabs-shell when tab bar is mounted).
    * Includes system bottom inset so fixed CTAs sit above the pill + gesture area.
    */

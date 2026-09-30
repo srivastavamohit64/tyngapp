@@ -170,19 +170,19 @@ const DOCS = [
       <div class="collab-detail-page pb-36 text-left">
         <!-- Sticky Header -->
         <div class="sticky-header bg-white border-b border-[#F3F4F6]">
-          <div class="flex items-center justify-between px-5 h-14">
-            <button (click)="back()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
+          <div class="app-header-bar flex items-center justify-between px-5">
+            <button (click)="back()" class="app-header-btn flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
               <ion-icon name="chevron-back-outline" class="text-xl text-[#111827]"></ion-icon>
             </button>
             <div class="text-center">
-              <p class="text-[15px] font-black text-[#111827] m-0">Venue Collaboration</p>
+              <p class="app-header-title text-[#111827] m-0">Venue Collaboration</p>
               <p class="text-[11px] text-[#9CA3AF] m-0 font-bold">{{ data().venueName }}</p>
             </div>
             <div class="flex gap-1.5">
-              <button class="w-9 h-9 flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
+              <button class="app-header-btn flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
                 <ion-icon name="download-outline" class="text-[#111827] text-lg"></ion-icon>
               </button>
-              <button class="w-9 h-9 flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
+              <button class="app-header-btn flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
                 <ion-icon name="share-social-outline" class="text-[#111827] text-lg"></ion-icon>
               </button>
             </div>

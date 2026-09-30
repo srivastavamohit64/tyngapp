@@ -9,12 +9,12 @@
 
 .enrollment-content { --background: #f8fafb; }
 .enroll-page { min-height: 100%; color: var(--ink); background: #f8fafb; padding-bottom: calc(92px + env(safe-area-inset-bottom)); }
-.page-header { position: sticky; top: 0; z-index: 20; height: calc(58px + env(safe-area-inset-top)); padding: env(safe-area-inset-top) 16px 0; display: grid; grid-template-columns: 40px minmax(0, 1fr) 40px; align-items: center; background: rgba(255,255,255,.96); border-bottom: 1px solid var(--line); backdrop-filter: blur(12px); }
-.page-header > button { width: 38px; height: 38px; padding: 0; border: 0; border-radius: 13px; display: grid; place-items: center; color: var(--ink); background: #f2f4f7; font-size: 20px; }
+.page-header { position: sticky; top: 0; z-index: 20; height: calc(var(--app-header-height) + env(safe-area-inset-top)); padding: env(safe-area-inset-top) 16px 0; display: grid; grid-template-columns: var(--app-header-btn-size) minmax(0, 1fr) var(--app-header-btn-size); align-items: center; background: rgba(255,255,255,.96); border-bottom: 1px solid var(--line); backdrop-filter: blur(12px); }
+.page-header > button { width: var(--app-header-btn-size); height: var(--app-header-btn-size); padding: 0; border: 0; border-radius: 13px; display: grid; place-items: center; color: var(--ink); background: #f2f4f7; font-size: 20px; }
 .page-header > div { min-width: 0; text-align: center; }
-.page-header h1 { margin: 0; font-size: 17px; line-height: 1.2; font-weight: 850; }
+.page-header h1 { margin: 0; font-size: var(--app-header-title-size); line-height: var(--app-header-title-line-height); font-weight: var(--app-header-title-weight); }
 .page-header p { margin: 2px 0 0; color: #98a2b3; font-size: 10px; font-weight: 700; }
-.progress-track { position: sticky; top: calc(58px + env(safe-area-inset-top)); z-index: 19; padding: 10px 16px; display: flex; justify-content: center; gap: 6px; background: rgba(255,255,255,.96); border-bottom: 1px solid #f1f2f4; }
+.progress-track { position: sticky; top: calc(var(--app-header-height) + env(safe-area-inset-top)); z-index: 19; padding: 10px 16px; display: flex; justify-content: center; gap: 6px; background: rgba(255,255,255,.96); border-bottom: 1px solid #f1f2f4; }
 .progress-track span { width: 8px; height: 6px; border-radius: 20px; background: #e4e7ec; transition: width .18s ease, background .18s ease; }
 .progress-track span.current { width: 25px; background: var(--lime); }
 .progress-track span.done { background: #ff8500; }
@@ -52,6 +52,7 @@
 .student-copy strong,.student-copy small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .student-copy strong { font-size: 13px; }
 .student-copy small { color: var(--muted); font-size: 10px; }
+.invited-tag { justify-self: start; padding: 2px 7px; border-radius: 999px; background: #fffaeb; color: #b54708; font-size: 9px; font-style: normal; font-weight: 800; }
 .student-row > ion-icon { color: #78df13; font-size: 21px; }
 .form-card,.photo-card,.review-profile { padding: 16px; border: 1px solid var(--line); border-radius: 20px; background: #fff; box-shadow: 0 3px 14px rgba(16,24,40,.025); }
 .form-card { display: grid; gap: 15px; }
@@ -134,4 +135,4 @@
 .success-actions button { min-height: 67px; padding: 9px; border: 1px solid var(--line); border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--ink); background: #fff; font-size: 10px; font-weight: 750; }
 .success-actions ion-icon { color: #6bd30a; font-size: 20px; }
 @media (max-width: 350px) { .page-body{padding-right:12px;padding-left:12px}.type-card{padding:12px}.photo-card{grid-template-columns:60px minmax(0,1fr)}.photo-preview{width:60px;height:60px}.chips button{padding:0 9px}.success-page{padding-right:14px;padding-left:14px} }
-@media (min-width: 700px) { .page-header{grid-template-columns:40px minmax(0,380px) 40px;justify-content:center}.bottom-action{display:flex}.page-body{padding-top:28px} }
+@media (min-width: 700px) { .page-header{grid-template-columns:var(--app-header-btn-size) minmax(0,380px) var(--app-header-btn-size);justify-content:center}.bottom-action{display:flex}.page-body{padding-top:28px} }

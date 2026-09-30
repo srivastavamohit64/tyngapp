@@ -67,8 +67,10 @@ import { SkeletonListComponent } from '../../shared/components/skeleton';
         display: flex;
         align-items: center;
         gap: 12px;
-        padding: 12px 20px;
-        padding-top: calc(12px + var(--app-chrome-top-inset, var(--safe-area-top)));
+        padding: 0 20px;
+        padding-top: var(--app-chrome-top-inset, var(--safe-area-top));
+        min-height: calc(var(--app-header-height) + var(--app-chrome-top-inset, var(--safe-area-top)));
+        box-sizing: border-box;
         background: #fff;
         border-bottom: 1px solid #f3f4f6;
         position: sticky;
@@ -77,8 +79,8 @@ import { SkeletonListComponent } from '../../shared/components/skeleton';
       }
       .back-btn,
       .mark-btn {
-        width: 40px;
-        height: 40px;
+        width: var(--app-header-btn-size);
+        height: var(--app-header-btn-size);
         border: none;
         border-radius: 12px;
         background: #f3f4f6;
@@ -92,8 +94,9 @@ import { SkeletonListComponent } from '../../shared/components/skeleton';
         flex: 1;
         text-align: center;
         margin: 0;
-        font-size: 17px;
-        font-weight: 900;
+        font-size: var(--app-header-title-size);
+        font-weight: var(--app-header-title-weight);
+        line-height: var(--app-header-title-line-height);
         color: #111827;
       }
       .loading,

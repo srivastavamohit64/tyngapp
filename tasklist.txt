@@ -772,3 +772,31 @@ TYNG — TODAY'S WORK SUMMARY
 124. LINK XP PROGRESSION CARD TO XP HISTORY - 28 September 2026
    - Route click, Enter and Space on the drawer XP card to `/app/xp/history`; update accessibility role and label without changing its design.
    - `git diff --check` passed.
+125. SAME-SIZE TITLE BAR ON EVERY SCREEN - 30 September 2026
+   - The strip at the top of each screen, showing the page name and the back button, is now the same height everywhere in the app.
+   - Page names use one text size, so a title no longer looks huge on one screen and tiny on the next.
+   - Back, close and other small buttons in that strip are all the same size, which makes them easier to tap.
+   - This applies to player, coach, venue owner and admin screens. Welcome messages, success messages and the big name at the top of profile pages were left as they were.
+126. SAME SIDE MENU LOOK FOR COACHES AND VENUE OWNERS - 30 September 2026
+   - Coaches and venue owners now see the same side menu style as players: separate rounded white cards with a soft shadow and even spacing.
+   - Coaches whose profile is fully complete no longer see a leftover "Complete Profile" option in their menu.
+127. PLAYERS PICK A DATE AND TIME BEFORE BOOKING A COACH - 30 September 2026
+   - Tapping "Book Coaching Session" now opens a short form instead of jumping straight to chat.
+   - Players must choose the session date and time, and say whether the session repeats. If it repeats, they also pick the last date.
+   - The app stops players from choosing a past date, a time that has already passed today, or a last date before the first session.
+   - Coaches see the date, time and "one-time" or "recurring until…" on each session request, and the first chat message includes the same details.
+   - Players using an older version of the app will be asked for a date when they try to book, so they should update the app.
+128. PLAYERS MUST ACCEPT BEFORE JOINING A COACH - 30 September 2026
+   - When a coach adds a player who already uses TYNG, the player now gets an invitation instead of being added straight away.
+   - The player joins the coach's student list only after tapping Accept. They can also decline.
+   - Players get a notification, and can see waiting invitations at the top of the Coaches screen.
+   - Coaches now have two tabs in My Students: Students and Pending. Pending shows who hasn't accepted yet, with buttons to send a reminder or cancel the invitation.
+   - When searching for a player to add, coaches can see who already has an invitation waiting.
+   - If a player had already asked to join that coach, adding them still works straight away because they have already agreed.
+   - Student profiles that a coach creates for children without their own login are still added straight away, because those children cannot sign in to accept.
+129. ANSWER SESSION REQUESTS RIGHT IN THE CHAT - 30 September 2026
+   - When a player asks a coach for a session, the request message in the chat now shows a small card with the date, time, whether it repeats, and whether it has been answered yet.
+   - Coaches can tap Accept or Decline on that card without leaving the chat. The app asks them to confirm before declining.
+   - Tapping View opens all the request details, and coaches can jump from there to their full list of session requests.
+   - Once the coach answers, a short reply is posted in the chat automatically, and the player gets a notification that includes the session date and time.
+   - Players see on the same card whether the coach is still deciding, has accepted, or has declined.

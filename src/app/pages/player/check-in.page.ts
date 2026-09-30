@@ -46,10 +46,10 @@ type BarcodeDetectorLike = {
     </ion-content>
   `,
   styles: [`
-    .ci-page { padding: calc(16px + var(--safe-area-top)) 18px calc(24px + var(--safe-area-bottom)); }
-    header { display: flex; align-items: center; gap: 8px; }
-    h1 { margin: 0; font-size: 20px; font-weight: 900; }
-    .back { border: none; background: #F3F4F6; width: 36px; height: 36px; border-radius: 50%; }
+    .ci-page { padding: var(--safe-area-top) 18px calc(24px + var(--safe-area-bottom)); }
+    header { display: flex; align-items: center; gap: 8px; min-height: var(--app-header-height); box-sizing: border-box; }
+    h1 { margin: 0; font-size: var(--app-header-title-size); font-weight: var(--app-header-title-weight); line-height: var(--app-header-title-line-height); }
+    .back { border: none; background: #F3F4F6; width: var(--app-header-btn-size); height: var(--app-header-btn-size); border-radius: 50%; }
     .lead { color: #6B7280; font-weight: 600; }
     .preview-wrap { position: relative; }
     .preview { width: 100%; height: 280px; background: #111827; border-radius: 18px; object-fit: cover; }

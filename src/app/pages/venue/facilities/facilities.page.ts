@@ -346,7 +346,9 @@ const STATUS_OPTIONS: StatusOption[] = [
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: 10px 16px 12px;
+      padding: var(--app-chrome-top-inset, var(--safe-area-top)) 16px 0;
+      min-height: calc(var(--app-header-height) + var(--app-chrome-top-inset, var(--safe-area-top)));
+      box-sizing: border-box;
       background: #fff;
       border-bottom: 1px solid #F3F4F6;
     }
@@ -359,10 +361,10 @@ const STATUS_OPTIONS: StatusOption[] = [
 
     .fac-header-copy h1 {
       margin: 0;
-      font-size: 16px;
-      font-weight: 900;
+      font-size: var(--app-header-title-size);
+      font-weight: var(--app-header-title-weight);
       color: #111827;
-      line-height: 1.2;
+      line-height: var(--app-header-title-line-height);
     }
 
     .fac-header-copy p {
@@ -373,8 +375,8 @@ const STATUS_OPTIONS: StatusOption[] = [
     }
 
     .fac-icon-btn {
-      width: 40px;
-      height: 40px;
+      width: var(--app-header-btn-size);
+      height: var(--app-header-btn-size);
       border: none;
       border-radius: 12px;
       background: #F3F4F6;

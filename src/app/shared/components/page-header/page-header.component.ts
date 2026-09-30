@@ -22,11 +22,7 @@ import { IonicModule } from '@ionic/angular';
           >
             <ion-icon name="chevron-back"></ion-icon>
           </button>
-          <h1
-            class="title"
-            [class.title-md]="titleSize === 'md'"
-            [class.title-spaced]="hasSubContent && !showActions"
-          >{{ title }}</h1>
+          <h1 class="title">{{ title }}</h1>
           <span *ngIf="badge" class="title-badge">{{ badge }}</span>
         </div>
         <div *ngIf="showActions" class="actions">
@@ -61,11 +57,9 @@ import { IonicModule } from '@ionic/angular';
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 20px 20px 0;
-      }
-
-      .page-header-row.with-actions {
-        padding-bottom: 12px;
+        min-height: var(--app-header-height);
+        padding: 0 20px;
+        box-sizing: border-box;
       }
 
       .title-wrap {
@@ -76,8 +70,8 @@ import { IonicModule } from '@ionic/angular';
       }
 
       .back-btn {
-        width: 36px;
-        height: 36px;
+        width: var(--app-header-btn-size);
+        height: var(--app-header-btn-size);
         min-height: unset;
         border-radius: 12px;
         display: grid;
@@ -95,19 +89,13 @@ import { IonicModule } from '@ionic/angular';
 
       .title {
         margin: 0;
-        font-size: 26px;
-        font-weight: 900;
+        font-size: var(--app-header-title-size);
+        font-weight: var(--app-header-title-weight);
         color: var(--app-foreground);
-        letter-spacing: -0.02em;
-        line-height: 1.1;
-      }
-
-      .title.title-md {
-        font-size: 24px;
-      }
-
-      .title.title-spaced {
-        margin-bottom: 16px;
+        line-height: var(--app-header-title-line-height);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       .title-badge {
@@ -140,8 +128,6 @@ import { IonicModule } from '@ionic/angular';
 })
 export class PageHeaderComponent {
   @Input() title = '';
-  /** lg = 26px (My Bookings), md = 24px (Chats) */
-  @Input() titleSize: 'lg' | 'md' = 'lg';
   @Input() badge: number | null = null;
   @Input() showBack = false;
   @Input() showActions = false;

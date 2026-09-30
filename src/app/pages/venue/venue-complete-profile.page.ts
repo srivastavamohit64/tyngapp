@@ -115,19 +115,19 @@ const STEP_TITLES = [
       <div *ngIf="!isSuccess()" class="complete-profile-page pb-32 text-left">
         <!-- Sticky Header -->
         <div class="sticky-header bg-white border-b border-[#F3F4F6]">
-          <div class="flex items-center justify-between px-5 h-14">
-            <button (click)="handleBack()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
+          <div class="app-header-bar flex items-center justify-between px-5">
+            <button (click)="handleBack()" class="app-header-btn flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
               <ion-icon name="chevron-back-outline" class="text-xl text-[#111827]"></ion-icon>
             </button>
             <div class="text-center">
-              <p class="text-[14px] font-black text-[#111827] m-0 leading-none">
+              <p class="app-header-title text-[#111827] m-0">
                 {{ isEditingReadyProfile() ? 'Edit Venue Profile' : 'Complete Venue Profile' }}
               </p>
               <p class="text-[11px] text-[#9CA3AF] m-0 font-bold mt-1">
                 Step {{ step() }} of {{ totalSteps }} · {{ stepTitle() }}
               </p>
             </div>
-            <div class="w-10 h-10" aria-hidden="true"></div>
+            <div class="app-header-btn" aria-hidden="true"></div>
           </div>
 
           <!-- Progress dots indicator (tap to jump) -->

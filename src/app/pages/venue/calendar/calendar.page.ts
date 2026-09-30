@@ -168,20 +168,23 @@ interface CalendarBookingItem {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 8px 16px 4px;
+      padding: var(--app-chrome-top-inset, var(--safe-area-top)) 16px 0;
+      min-height: calc(var(--app-header-height) + var(--app-chrome-top-inset, var(--safe-area-top)));
+      box-sizing: border-box;
       background: #fff;
     }
 
     .cal-header h1 {
       margin: 0;
-      font-size: 17px;
-      font-weight: 900;
+      font-size: var(--app-header-title-size);
+      font-weight: var(--app-header-title-weight);
+      line-height: var(--app-header-title-line-height);
       color: #111827;
     }
 
     .icon-btn {
-      width: 40px;
-      height: 40px;
+      width: var(--app-header-btn-size);
+      height: var(--app-header-btn-size);
       border: none;
       border-radius: 12px;
       background: #F3F4F6;

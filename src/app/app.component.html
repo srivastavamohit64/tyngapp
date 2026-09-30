@@ -53,15 +53,17 @@
       </div>
 
       <div class="drawer-menu">
-        <button class="menu-item" *ngFor="let item of coachMenuItems" [hidden]="item.label === 'Complete Profile' && profileCompletion() >= 100" (click)="navigateTo(item.path)">
-          <div class="menu-icon"><ion-icon [name]="item.icon"></ion-icon></div>
-          <div class="menu-text">
-            <div class="menu-label">{{ item.label }}</div>
-            <div class="menu-desc">{{ item.sub }}</div>
-          </div>
-          <div *ngIf="coachMenuBadge(item) as badge" class="menu-badge">{{ badge }}</div>
-          <ion-icon *ngIf="!coachMenuBadge(item)" name="chevron-forward-outline" class="menu-chevron"></ion-icon>
-        </button>
+        <ng-container *ngFor="let item of coachMenuItems">
+          <button class="menu-item" *ngIf="!(item.label === 'Complete Profile' && profileCompletion() >= 100)" (click)="navigateTo(item.path)">
+            <div class="menu-icon"><ion-icon [name]="item.icon"></ion-icon></div>
+            <div class="menu-text">
+              <div class="menu-label">{{ item.label }}</div>
+              <div class="menu-desc">{{ item.sub }}</div>
+            </div>
+            <div *ngIf="coachMenuBadge(item) as badge" class="menu-badge">{{ badge }}</div>
+            <ion-icon *ngIf="!coachMenuBadge(item)" name="chevron-forward-outline" class="menu-chevron"></ion-icon>
+          </button>
+        </ng-container>
 
       </div>
     </div>
@@ -108,7 +110,7 @@
           </div>
         </div>
 
-        <div class="drawer-menu venue-drawer-menu">
+        <div class="drawer-menu">
           <button class="menu-item" *ngFor="let item of venueMenuItems()" (click)="navigateTo(item.path)">
             <div class="menu-icon"><ion-icon [name]="item.icon"></ion-icon></div>
             <div class="menu-text">
@@ -166,7 +168,7 @@
           <div class="xp-to-next">{{ xpToNextLabel() }}</div>
         </div>
 
-        <div class="drawer-menu player-drawer-menu">
+        <div class="drawer-menu">
           <button class="menu-item" (click)="navigateTo('/app/friends')">
             <div class="menu-icon"><ion-icon name="people-outline"></ion-icon></div>
             <div class="menu-text">

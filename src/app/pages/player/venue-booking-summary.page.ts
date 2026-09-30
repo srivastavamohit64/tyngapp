@@ -318,14 +318,16 @@ interface AppliedCoupon {
       .summary-header {
         position: sticky; top: 0; z-index: 20;
         display: flex; align-items: center; justify-content: space-between; gap: 12px;
-        padding: calc(10px + var(--app-chrome-top-inset, var(--safe-area-top))) 16px 10px;
+        padding: var(--app-chrome-top-inset, var(--safe-area-top)) 16px 0;
+        min-height: calc(var(--app-header-height) + var(--app-chrome-top-inset, var(--safe-area-top)));
+        box-sizing: border-box;
         background: rgba(255,255,255,.96); border-bottom: 1px solid #eef0f3;
       }
       .summary-header-copy { text-align: center; min-width: 0; }
-      .summary-header-copy h1 { margin: 0; font-size: 15px; font-weight: 900; }
+      .summary-header-copy h1 { margin: 0; font-size: var(--app-header-title-size); font-weight: var(--app-header-title-weight); line-height: var(--app-header-title-line-height); }
       .summary-header-copy p { margin: 2px 0 0; font-size: 11px; font-weight: 700; color: #9ca3af; }
       .icon-btn {
-        width: 40px; height: 40px; border: none; border-radius: 14px; background: #f3f4f6;
+        width: var(--app-header-btn-size); height: var(--app-header-btn-size); border: none; border-radius: 14px; background: #f3f4f6;
         display: inline-flex; align-items: center; justify-content: center; color: #111827;
       }
       .icon-btn ion-icon { font-size: 20px; }

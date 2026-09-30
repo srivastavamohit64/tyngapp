@@ -230,13 +230,13 @@ const COACH_CHATS: CoachChatItem[] = [
     .coach-chat-page { --background: #FAFBFC; }
     .chat-shell { min-height: 100%; display: flex; flex-direction: column; background: #FAFBFC; }
     .chat-header { position: sticky; top: 0; z-index: 30; background: #fff; border-bottom: 1px solid #F3F4F6; padding-top: var(--app-chrome-top-inset, var(--safe-area-top)); }
-    .chat-header-row { display: flex; align-items: center; justify-content: space-between; padding: 20px 20px 12px; }
+    .chat-header-row { display: flex; align-items: center; justify-content: space-between; min-height: var(--app-header-height); box-sizing: border-box; padding: 0 20px; }
     .chat-header-left { display: flex; align-items: center; gap: 12px; }
     .title-wrap { display: flex; align-items: center; gap: 8px; }
-    .title-wrap h1 { margin: 0; font-size: 24px; font-weight: 900; color: #111827; letter-spacing: -0.02em; }
+    .title-wrap h1 { margin: 0; font-size: var(--app-header-title-size); font-weight: var(--app-header-title-weight); line-height: var(--app-header-title-line-height); color: #111827; letter-spacing: -0.02em; }
     .title-badge { min-width: 22px; height: 22px; border-radius: 999px; background: #FF7A00; color: #fff; font-size: 11px; font-weight: 900; display: inline-flex; align-items: center; justify-content: center; padding: 0 6px; }
     .chat-header-actions { display: flex; gap: 4px; }
-    .icon-btn { width: 36px; height: 36px; border: none; border-radius: 12px; background: transparent; color: #111827; font-size: 18px; display: grid; place-items: center; }
+    .icon-btn { width: var(--app-header-btn-size); height: var(--app-header-btn-size); border: none; border-radius: 12px; background: transparent; color: #111827; font-size: 18px; display: grid; place-items: center; }
     .search-row { display: flex; align-items: center; gap: 8px; margin: 0 16px 12px; background: #F3F4F6; border-radius: 16px; padding: 0 16px; height: 40px; }
     .search-row ion-icon { color: #9CA3AF; font-size: 15px; }
     .search-row input { flex: 1; border: none; background: transparent; outline: none; font-size: 14px; color: #111827; min-height: unset; }

@@ -53,14 +53,16 @@ import { ChatBubbleComponent } from '../../shared/components/chat-bubble/chat-bu
         display: flex;
         align-items: center;
         gap: 12px;
-        padding: calc(12px + var(--safe-area-top)) 16px 12px;
+        padding: var(--safe-area-top) 16px 0;
+        min-height: calc(var(--app-header-height) + var(--safe-area-top));
+        box-sizing: border-box;
         background: #fff;
         border-bottom: 1px solid #e5e7eb;
       }
 
       .back {
-        width: 40px;
-        height: 40px;
+        width: var(--app-header-btn-size);
+        height: var(--app-header-btn-size);
         min-height: unset;
         border-radius: 12px;
         background: #f3f4f6;
@@ -72,14 +74,15 @@ import { ChatBubbleComponent } from '../../shared/components/chat-bubble/chat-bu
 
       h2 {
         margin: 0;
-        font-size: 18px;
-        font-weight: 700;
+        font-size: var(--app-header-title-size);
+        font-weight: var(--app-header-title-weight);
+        line-height: var(--app-header-title-line-height);
         color: #111827;
       }
 
       p {
         margin: 2px 0 0;
-        font-size: 12px;
+        font-size: 11px;
         color: #6b7280;
       }
 

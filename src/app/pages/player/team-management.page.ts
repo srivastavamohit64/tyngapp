@@ -25,7 +25,6 @@ import { SkeletonListComponent } from '../../shared/components/skeleton';
           </button>
           <div class="header-titles">
             <h1>My Friends</h1>
-            <p *ngIf="!loading && !errorMessage">{{ friends.length }} {{ friends.length === 1 ? 'friend' : 'friends' }}</p>
           </div>
           <button type="button" class="icon-btn" (click)="loadFriends()" aria-label="Refresh">
             <ion-icon name="refresh-outline"></ion-icon>
@@ -96,7 +95,9 @@ import { SkeletonListComponent } from '../../shared/components/skeleton';
         display: flex;
         align-items: center;
         gap: 12px;
-        padding: calc(16px + var(--app-chrome-top-inset, var(--safe-area-top))) 16px 12px;
+        padding: var(--app-chrome-top-inset, var(--safe-area-top)) 16px 0;
+        min-height: calc(var(--app-header-height) + var(--app-chrome-top-inset, var(--safe-area-top)));
+        box-sizing: border-box;
         background: #fff;
         border-bottom: 1px solid #f1f5f9;
         position: sticky;
@@ -112,8 +113,9 @@ import { SkeletonListComponent } from '../../shared/components/skeleton';
 
       .header-titles h1 {
         margin: 0;
-        font-size: 18px;
-        font-weight: 800;
+        font-size: var(--app-header-title-size);
+        font-weight: var(--app-header-title-weight);
+        line-height: var(--app-header-title-line-height);
         letter-spacing: -0.02em;
       }
 
@@ -125,8 +127,8 @@ import { SkeletonListComponent } from '../../shared/components/skeleton';
       }
 
       .icon-btn {
-        height: 40px;
-        width: 40px;
+        height: var(--app-header-btn-size);
+        width: var(--app-header-btn-size);
         border-radius: 999px;
         border: 1px solid #e5e7eb;
         background: #fff;

@@ -429,18 +429,20 @@ type DetailTab = 'overview' | 'players' | 'amenities' | 'live';
     }
     .bd-header {
       display: grid;
-      grid-template-columns: 40px 1fr 40px;
+      grid-template-columns: var(--app-header-btn-size) 1fr var(--app-header-btn-size);
       align-items: center;
       gap: 10px;
-      padding: 10px 16px;
-      padding-top: calc(10px + var(--app-chrome-top-inset, var(--safe-area-top)));
+      padding: 0 16px;
+      padding-top: var(--app-chrome-top-inset, var(--safe-area-top));
+      min-height: calc(var(--app-header-height) + var(--app-chrome-top-inset, var(--safe-area-top)));
+      box-sizing: border-box;
       background: #fff;
     }
     .bd-header-title { text-align: center; min-width: 0; }
-    .bd-header-title h1 { margin: 0; font-size: 16px; font-weight: 900; color: #111827; line-height: 1.2; }
+    .bd-header-title h1 { margin: 0; font-size: var(--app-header-title-size); font-weight: var(--app-header-title-weight); color: #111827; line-height: var(--app-header-title-line-height); }
     .bd-header-title p { margin: 2px 0 0; font-size: 11px; font-weight: 700; color: #9CA3AF; }
     .bd-icon-btn {
-      width: 40px; height: 40px; border: none; border-radius: 999px;
+      width: var(--app-header-btn-size); height: var(--app-header-btn-size); border: none; border-radius: 999px;
       background: #F3F4F6; color: #111827; display: grid; place-items: center; font-size: 18px;
     }
     .bd-tabs {

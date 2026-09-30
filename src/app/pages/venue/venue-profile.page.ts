@@ -59,12 +59,12 @@ const DOC_LABELS: Record<string, string> = {
     <ion-content [fullscreen]="true" class="has-tabs">
       <div class="venue-profile-page pb-32 text-left">
 
-        <div class="sticky-header flex items-center justify-between px-5 h-14 bg-white border-b border-[#F3F4F6]">
-          <button type="button" (click)="back()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
+        <div class="sticky-header app-header-bar flex items-center justify-between px-5 bg-white border-b border-[#F3F4F6]">
+          <button type="button" (click)="back()" class="app-header-btn flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
             <ion-icon name="chevron-back-outline" class="text-xl text-[#111827]"></ion-icon>
           </button>
-          <p class="text-[17px] font-black text-[#111827] m-0">Venue Profile</p>
-          <button type="button" (click)="editProfile()" class="edit-icon-btn" aria-label="Edit profile">
+          <p class="app-header-title text-[#111827] m-0">Venue Profile</p>
+          <button type="button" (click)="editProfile()" class="edit-icon-btn app-header-btn" aria-label="Edit profile">
             <ion-icon name="create-outline"></ion-icon>
           </button>
         </div>
@@ -285,12 +285,14 @@ const DOC_LABELS: Record<string, string> = {
       top: 0;
       z-index: 30;
       padding-top: var(--app-chrome-top-inset, var(--safe-area-top));
+      min-height: calc(var(--app-header-height) + var(--app-chrome-top-inset, var(--safe-area-top)));
+      box-sizing: border-box;
       box-shadow: 0 2px 10px rgba(0,0,0,0.02);
     }
 
     .edit-icon-btn {
-      width: 40px;
-      height: 40px;
+      width: var(--app-header-btn-size);
+      height: var(--app-header-btn-size);
       display: flex;
       align-items: center;
       justify-content: center;

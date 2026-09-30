@@ -158,15 +158,15 @@ function buildDates() {
       <div *ngIf="!success()" class="plan-page">
         <!-- Sticky Wizard Header -->
         <div class="sticky-header">
-          <div class="flex items-center justify-between px-5 h-14 bg-white border-b border-[#F3F4F6]">
-            <button (click)="handleBack()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
+          <div class="app-header-bar flex items-center justify-between px-5 bg-white border-b border-[#F3F4F6]">
+            <button (click)="handleBack()" class="app-header-btn flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
               <ion-icon name="chevron-back-outline" class="text-xl text-[#111827]"></ion-icon>
             </button>
             <div class="text-center">
-              <p class="text-[15px] font-black text-[#111827]">Create New Session</p>
+              <p class="app-header-title text-[#111827]">Create New Session</p>
               <p class="text-[11px] text-[#9CA3AF] font-bold">Step {{ step() }} of 8</p>
             </div>
-            <button (click)="go('/app/coach/dashboard')" class="w-10 h-10 flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
+            <button (click)="go('/app/coach/dashboard')" class="app-header-btn flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
               <ion-icon name="close-outline" class="text-xl text-[#111827]"></ion-icon>
             </button>
           </div>

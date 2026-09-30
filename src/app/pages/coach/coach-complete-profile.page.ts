@@ -72,15 +72,15 @@ const ALL_SECTIONS = [
 
         <!-- Header -->
         <div class="sticky-header">
-          <div class="flex items-center justify-between px-5 h-14 bg-white border-b border-[#F3F4F6]">
-            <button (click)="back()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
+          <div class="app-header-bar flex items-center justify-between px-5 bg-white border-b border-[#F3F4F6]">
+            <button (click)="back()" class="app-header-btn flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
               <ion-icon name="chevron-back-outline" class="text-xl text-[#111827]"></ion-icon>
             </button>
             <div class="text-center">
-              <p class="text-[15px] font-black text-[#111827]">Complete Your Profile</p>
+              <p class="app-header-title text-[#111827]">Complete Your Profile</p>
             </div>
             <button *ngIf="getProgress() < 100" (click)="back()" class="text-[13px] font-semibold text-[#9CA3AF] bg-transparent border-none">Skip</button>
-            <div *ngIf="getProgress() >= 100" class="w-10"></div>
+            <div *ngIf="getProgress() >= 100" class="app-header-btn"></div>
           </div>
 
           <!-- Progress bar info -->

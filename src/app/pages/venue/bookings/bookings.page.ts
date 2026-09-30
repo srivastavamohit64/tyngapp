@@ -173,27 +173,28 @@ interface BookingItem {
       z-index: 20;
       background: #fff;
       border-bottom: 1px solid #F3F4F6;
-      padding: 8px 16px 12px;
+      padding: var(--app-chrome-top-inset, var(--safe-area-top)) 16px 12px;
     }
 
     .page-header__row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 48px;
-      margin-bottom: 10px;
+      height: var(--app-header-height);
+      margin-bottom: 4px;
     }
 
     .page-header h1 {
       margin: 0;
-      font-size: 17px;
-      font-weight: 900;
+      font-size: var(--app-header-title-size);
+      font-weight: var(--app-header-title-weight);
+      line-height: var(--app-header-title-line-height);
       color: #111827;
     }
 
     .icon-btn {
-      width: 40px;
-      height: 40px;
+      width: var(--app-header-btn-size);
+      height: var(--app-header-btn-size);
       border: none;
       border-radius: 12px;
       background: #F3F4F6;

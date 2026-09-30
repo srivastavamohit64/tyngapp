@@ -19,6 +19,7 @@ interface StudentSearchResult {
   sports?: string[];
   level?: number;
   location?: string;
+  invitationPending?: boolean;
 }
 
 interface BatchOption {
@@ -44,9 +45,9 @@ const MEMBERSHIPS = ['Trial Student', 'Regular Student', 'Academy Student', 'Pri
   template: `
     <ion-content [fullscreen]="true" class="enrollment-content">
       <main *ngIf="isSuccess(); else enrollmentWizard" class="success-page">
-        <div class="success-mark"><ion-icon [name]="enrollType === 'invite' ? 'paper-plane-outline' : 'checkmark-outline'"></ion-icon></div>
-        <p class="eyebrow">{{ enrollType === 'invite' ? 'INVITATION READY' : 'ENROLMENT COMPLETE' }}</p>
-        <h1>{{ enrollType === 'invite' ? 'Invitation Created' : 'Student Enrolled' }}</h1>
+        <div class="success-mark"><ion-icon [name]="enrollType === 'invite' || invitationSent() ? 'paper-plane-outline' : 'checkmark-outline'"></ion-icon></div>
+        <p class="eyebrow">{{ invitationSent() ? 'WAITING FOR PLAYER' : enrollType === 'invite' ? 'INVITATION READY' : 'ENROLMENT COMPLETE' }}</p>
+        <h1>{{ invitationSent() ? 'Invitation Sent' : enrollType === 'invite' ? 'Invitation Created' : 'Student Enrolled' }}</h1>
         <p class="success-copy">{{ resultMessage() }}</p>
 
         <section class="result-card">
@@ -127,7 +128,7 @@ const MEMBERSHIPS = ['Trial Student', 'Regular Student', 'Academy Student', 'Pri
               </div>
               <button type="button" class="type-card" (click)="chooseType('existing')">
                 <span class="type-icon"><ion-icon name="search-outline"></ion-icon></span>
-                <span class="type-copy"><strong>Existing TYNG User</strong><small>Find and connect a registered player.</small></span>
+                <span class="type-copy"><strong>Existing TYNG User</strong><small>Find a registered player and send an invitation.</small></span>
                 <ion-icon name="chevron-forward-outline"></ion-icon>
               </button>
               <button type="button" class="type-card" (click)="chooseType('invite')">
@@ -174,6 +175,7 @@ const MEMBERSHIPS = ['Trial Student', 'Regular Student', 'Academy Student', 'Pri
                   <span class="student-copy">
                     <strong>{{ student.name }}</strong>
                     <small>{{ playerMeta(student) }}</small>
+                    <em *ngIf="student.invitationPending" class="invited-tag">Invitation pending</em>
                   </span>
                   <ion-icon [name]="selExisting?.id === student.id ? 'checkmark-circle' : 'ellipse-outline'"></ion-icon>
                 </button>
@@ -397,6 +399,7 @@ export class CoachEnrollStudentPage implements OnInit, OnDestroy {
   readonly shareFeedback = signal('');
   readonly invitationJoinSteps = signal<string[]>([]);
   readonly successItems = signal<string[]>([]);
+  readonly invitationSent = signal(false);
 
   ngOnInit(): void {
     this.loadBatches();
@@ -449,7 +452,7 @@ export class CoachEnrollStudentPage implements OnInit, OnDestroy {
   }
 
   ctaLabel(): string {
-    if (this.enrollType === 'existing') return 'Connect Student';
+    if (this.enrollType === 'existing') return this.selExisting?.invitationPending ? 'Send Reminder' : 'Send Invitation';
     if (this.enrollType === 'invite') return 'Create Invitation';
     if (this.managedStep === 6) return 'Enroll Student';
     return 'Continue';
@@ -502,11 +505,22 @@ export class CoachEnrollStudentPage implements OnInit, OnDestroy {
 
     if (this.enrollType === 'existing' && this.selExisting) {
       this.coach.enrollExistingStudent(this.selExisting.id, this.coachNotes).subscribe({
-        next: response => this.finishEnrollment(response, [
-          'Existing TYNG account connected',
-          'Added to My Students',
-          'Private coach chat enabled',
-        ]),
+        next: response => {
+          if ((response.data as any)?.status === 'pending') {
+            this.invitationSent.set(true);
+            this.finishEnrollment(response, [
+              'Invitation sent to the player in TYNG',
+              'Shown under Pending in My Students',
+              'Added to My Students once they accept',
+            ]);
+            return;
+          }
+          this.finishEnrollment(response, [
+            'Existing TYNG account connected',
+            'Added to My Students',
+            'Private coach chat enabled',
+          ]);
+        },
         error: error => this.failSave(error),
       });
       return;
@@ -784,6 +798,7 @@ export class CoachEnrollStudentPage implements OnInit, OnDestroy {
     this.shareFeedback.set('');
     this.invitationJoinSteps.set([]);
     this.successItems.set([]);
+    this.invitationSent.set(false);
     this.searchQ = '';
     this.searchResults.set([]);
     this.selExisting = null;

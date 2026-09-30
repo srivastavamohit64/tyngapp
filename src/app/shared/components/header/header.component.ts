@@ -106,7 +106,7 @@ export type AppHeaderVariant = 'brand' | 'page' | 'venue';
         display: flex;
         align-items: center;
         justify-content: space-between;
-        height: 60px;
+        height: var(--app-header-height);
         padding: 0 20px;
         box-sizing: border-box;
       }
@@ -114,10 +114,10 @@ export type AppHeaderVariant = 'brand' | 'page' | 'venue';
       .hdr-btn {
         position: relative;
         z-index: 2;
-        width: 40px;
-        height: 40px;
+        width: var(--app-header-btn-size);
+        height: var(--app-header-btn-size);
         min-height: unset;
-        min-width: 40px;
+        min-width: var(--app-header-btn-size);
         border-radius: 12px;
         display: grid;
         place-items: center;
@@ -219,10 +219,10 @@ export type AppHeaderVariant = 'brand' | 'page' | 'venue';
 
       .title {
         margin: 0;
-        font-size: 17px;
-        font-weight: 700;
+        font-size: var(--app-header-title-size);
+        font-weight: var(--app-header-title-weight);
         color: #111827;
-        line-height: 1.2;
+        line-height: var(--app-header-title-line-height);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -237,8 +237,8 @@ export type AppHeaderVariant = 'brand' | 'page' | 'venue';
       }
 
       .hdr-spacer {
-        width: 40px;
-        height: 40px;
+        width: var(--app-header-btn-size);
+        height: var(--app-header-btn-size);
         flex-shrink: 0;
       }
 
@@ -248,7 +248,7 @@ export type AppHeaderVariant = 'brand' | 'page' | 'venue';
         display: flex;
         align-items: center;
         justify-content: flex-end;
-        min-width: 40px;
+        min-width: var(--app-header-btn-size);
       }
     `,
   ],

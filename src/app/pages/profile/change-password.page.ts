@@ -39,11 +39,11 @@ import { TextInputComponent } from '../../shared/components/text-input/text-inpu
     </ion-content>
   `,
   styles: [`
-    .edit-profile { padding: calc(12px + var(--safe-area-top)) 20px 32px; min-height: 100%; background: #fafbfc; }
-    .hdr { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
-    .hdr h1 { flex: 1; text-align: center; font-size: 17px; font-weight: 900; margin: 0; color: #111827; }
-    .spacer { width: 40px; }
-    .icon-btn { width: 40px; height: 40px; border: none; border-radius: 12px; background: #f3f4f6; display: grid; place-items: center; }
+    .edit-profile { padding: var(--safe-area-top) 20px 32px; min-height: 100%; background: #fafbfc; }
+    .hdr { display: flex; align-items: center; gap: 12px; height: var(--app-header-height); margin-bottom: 24px; }
+    .hdr h1 { flex: 1; text-align: center; font-size: var(--app-header-title-size); font-weight: var(--app-header-title-weight); line-height: var(--app-header-title-line-height); margin: 0; color: #111827; }
+    .spacer { width: var(--app-header-btn-size); }
+    .icon-btn { width: var(--app-header-btn-size); height: var(--app-header-btn-size); border: none; border-radius: 12px; background: #f3f4f6; display: grid; place-items: center; }
     .fields { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
     .error { color: #dc2626; font-size: 13px; margin: 0 0 12px; }
     .success { color: #16a34a; font-size: 13px; margin: 0 0 12px; }

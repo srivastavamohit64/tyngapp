@@ -59,8 +59,9 @@ type RequestFilter = 'pending' | 'all';
 
               <div class="request-meta">
                 <span class="meta-chip"><ion-icon name="football-outline"></ion-icon>{{ request.sport || 'Coaching session' }}</span>
-                <span *ngIf="request.requested_date" class="meta-chip"><ion-icon name="calendar-outline"></ion-icon>{{ request.requested_date | date:'d MMM y' }}</span>
-                <span *ngIf="request.requested_start_time" class="meta-chip"><ion-icon name="time-outline"></ion-icon>{{ request.requested_start_time }}</span>
+                <span *ngIf="request.requested_date" class="meta-chip"><ion-icon name="calendar-outline"></ion-icon>{{ request.requested_date | date:'EEE, d MMM y':'UTC' }}</span>
+                <span *ngIf="request.requested_start_time" class="meta-chip"><ion-icon name="time-outline"></ion-icon>{{ displayTime(request.requested_start_time) }}</span>
+                <span *ngIf="request.requested_date" class="meta-chip"><ion-icon name="repeat-outline"></ion-icon>{{ request.is_recurring ? 'Recurring until ' + (request.recurring_end_date | date:'d MMM y':'UTC') : 'One-time session' }}</span>
                 <span *ngIf="request.quoted_price" class="meta-chip"><ion-icon name="cash-outline"></ion-icon>₹{{ request.quoted_price }}</span>
               </div>
 
@@ -92,11 +93,12 @@ type RequestFilter = 'pending' | 'all';
   `,
   styles: [`
     .booking-requests-page { min-height:100%; background:#f7f9fc; padding:18px 18px 112px; color:#172033; }
-    .page-heading { display:flex; align-items:center; gap:13px; max-width:720px; margin:0 auto 22px; }
-    .back-button { width:42px; height:42px; flex:0 0 42px; display:grid; place-items:center; border:0; border-radius:15px; background:#fff; color:#172033; font-size:21px; box-shadow:0 2px 10px #1526420d; }
+    .page-heading { display:flex; align-items:center; gap:13px; max-width:720px; min-height:var(--app-header-height); box-sizing:border-box; margin:0 auto 22px; }
+    .page-heading > div { flex:1; min-width:0; }
+    .back-button { width:var(--app-header-btn-size); height:var(--app-header-btn-size); flex:0 0 var(--app-header-btn-size); display:grid; place-items:center; border:0; border-radius:15px; background:#fff; color:#172033; font-size:21px; box-shadow:0 2px 10px #1526420d; }
     .eyebrow { margin:0 0 4px; color:#16a34a; font-size:10px; font-weight:800; letter-spacing:.12em; }
-    h1 { margin:0; font-size:23px; line-height:1.15; font-weight:850; }
-    .subtitle { margin:5px 0 0; color:#788398; font-size:12px; line-height:1.4; }
+    h1 { margin:0; font-size:var(--app-header-title-size); line-height:var(--app-header-title-line-height); font-weight:var(--app-header-title-weight); }
+    .subtitle { margin:2px 0 0; overflow:hidden; color:#788398; font-size:11px; line-height:1.3; text-overflow:ellipsis; white-space:nowrap; }
     .filter-row { display:flex; gap:8px; max-width:720px; margin:0 auto 16px; }
     .filter-row button { min-height:38px; padding:0 14px; border:1px solid #e3e8ef; border-radius:20px; background:#fff; color:#657086; font-size:12px; font-weight:700; }
     .filter-row button.active { border-color:#a3e635; background:#f0fbdc; color:#267b22; }
@@ -131,7 +133,7 @@ type RequestFilter = 'pending' | 'all';
     .notice { max-width:720px; margin:0 auto 12px; padding:10px 12px; border-radius:12px; font-size:12px; }
     .error-notice { background:#fff1f0; color:#b42318; }
     .success-notice { background:#ecfdf3; color:#16803c; }
-    @media (min-width:700px) { .booking-requests-page { padding:28px 28px 120px; } .page-heading h1 { font-size:27px; } }
+    @media (min-width:700px) { .booking-requests-page { padding:28px 28px 120px; } }
   `],
 })
 export class CoachBookingRequestsPage implements OnInit {
@@ -203,6 +205,13 @@ export class CoachBookingRequestsPage implements OnInit {
   }
 
   trackRequest(_index: number, request: any): number { return request.id; }
+
+  displayTime(value: string): string {
+    const [hours, minutes] = String(value).split(':').map(Number);
+    if (Number.isNaN(hours) || Number.isNaN(minutes)) return value;
+    const suffix = hours >= 12 ? 'PM' : 'AM';
+    return `${hours % 12 || 12}:${String(minutes).padStart(2, '0')} ${suffix}`;
+  }
 
   async openChat(request: any): Promise<void> {
     const playerId = Number(request.player_id || request.player?.id);

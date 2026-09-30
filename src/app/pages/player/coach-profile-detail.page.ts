@@ -1,6 +1,7 @@
 import { CommonModule, Location } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { AlertController, IonicModule } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 import { CoachService } from '../../core/services/coach.service';
@@ -10,18 +11,18 @@ import { resolveMediaUrl } from '../../core/utils/media-url.util';
 @Component({
   selector: 'app-coach-profile-detail',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, FormsModule, IonicModule],
   template: `
     <ion-content fullscreen>
       <main class="safe-area-top page-with-tab-bar px-6 py-4 bg-background text-foreground" *ngIf="coach">
         
         <!-- Header -->
-        <header class="flex items-center justify-between mb-6">
-          <button (click)="back()" class="h-10 w-10 grid place-items-center rounded-full bg-card border border-border">
+        <header class="app-header-bar flex items-center justify-between mb-6">
+          <button (click)="back()" class="app-header-btn grid place-items-center rounded-full bg-card border border-border">
             <ion-icon name="chevron-back-outline" class="text-xl"></ion-icon>
           </button>
-          <h1 class="text-lg font-bold text-center flex-1">Coach Profile</h1>
-          <div class="w-10"></div>
+          <h1 class="app-header-title text-center flex-1">Coach Profile</h1>
+          <div class="app-header-btn"></div>
         </header>
 
         <!-- Profile Detail Card -->
@@ -88,6 +89,57 @@ import { resolveMediaUrl } from '../../core/utils/media-url.util';
         </div>
 
       </main>
+
+      <ion-modal
+        [isOpen]="bookingSheetOpen"
+        [initialBreakpoint]="1"
+        [breakpoints]="[0, 1]"
+        class="booking-sheet-modal"
+        (didDismiss)="closeBookingSheet()"
+      >
+        <ng-template>
+          <form class="booking-sheet" (ngSubmit)="submitBooking()" novalidate>
+            <div class="sheet-head">
+              <div>
+                <h2>Book a session</h2>
+                <p>{{ coach?.name }} will see these details before confirming.</p>
+              </div>
+              <button type="button" class="sheet-close" aria-label="Close" (click)="closeBookingSheet()">
+                <ion-icon name="close"></ion-icon>
+              </button>
+            </div>
+
+            <label class="field">
+              <span>Session date <b>*</b></span>
+              <input type="date" name="sessionDate" [(ngModel)]="sessionDate" [min]="today()" required />
+            </label>
+
+            <label class="field">
+              <span>Time <b>*</b></span>
+              <input type="time" name="sessionTime" [(ngModel)]="sessionTime" required />
+            </label>
+
+            <div class="field">
+              <span>Is it a recurring session? <b>*</b></span>
+              <div class="choice-row" role="radiogroup" aria-label="Recurring session">
+                <button type="button" role="radio" [attr.aria-checked]="!isRecurring" [class.active]="!isRecurring" (click)="setRecurring(false)">No, one time</button>
+                <button type="button" role="radio" [attr.aria-checked]="isRecurring" [class.active]="isRecurring" (click)="setRecurring(true)">Yes, recurring</button>
+              </div>
+            </div>
+
+            <label class="field" *ngIf="isRecurring">
+              <span>End date <b>*</b></span>
+              <input type="date" name="recurringEndDate" [(ngModel)]="recurringEndDate" [min]="minEndDate()" required />
+            </label>
+
+            <p *ngIf="bookingFormError" class="form-error" role="alert">{{ bookingFormError }}</p>
+
+            <button type="submit" class="sheet-submit" [disabled]="bookingInProgress">
+              {{ bookingInProgress ? 'Sending request…' : 'Send booking request' }}
+            </button>
+          </form>
+        </ng-template>
+      </ion-modal>
     </ion-content>
   `,
   styles: [
@@ -103,6 +155,23 @@ import { resolveMediaUrl } from '../../core/utils/media-url.util';
       button.bg-gradient-to-r {
         background: linear-gradient(to right, var(--app-primary), var(--app-primary-to)) !important;
       }
+      .booking-sheet-modal { --height: auto; --border-radius: 24px 24px 0 0; }
+      .booking-sheet { display:flex; flex-direction:column; gap:14px; padding:20px 20px calc(20px + var(--safe-area-bottom)); background:#fff; color:#111827; }
+      .sheet-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+      .sheet-head h2 { margin:0; font-size:18px; font-weight:800; }
+      .sheet-head p { margin:4px 0 0; color:#6b7280; font-size:12px; line-height:1.4; }
+      .sheet-close { width:36px; height:36px; flex:0 0 36px; display:grid; place-items:center; padding:0; border:0; border-radius:12px; background:#f3f4f6; color:#111827; font-size:18px; }
+      .field { display:flex; flex-direction:column; gap:6px; }
+      .field > span { font-size:13px; font-weight:700; color:#374151; }
+      .field b { color:#ef4444; }
+      .field input { width:100%; height:48px; padding:0 14px; border:1px solid #e5e7eb; border-radius:14px; background:#f9fafb; color:#111827; font-size:15px; font-family:inherit; box-sizing:border-box; }
+      .field input:focus { outline:none; border-color:var(--app-primary); background:#fff; }
+      .choice-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+      .choice-row button { height:44px; border:1px solid #e5e7eb; border-radius:14px; background:#fff; color:#4b5563; font-size:13px; font-weight:700; }
+      .choice-row button.active { border-color:var(--app-primary); background:rgba(var(--app-primary-rgb), 0.14); color:#111827; }
+      .form-error { margin:0; padding:10px 12px; border-radius:12px; background:#fef2f2; color:#b91c1c; font-size:12px; font-weight:600; }
+      .sheet-submit { height:50px; margin-top:4px; border:0; border-radius:999px; background:linear-gradient(to right, var(--app-primary), var(--app-primary-to)); color:#111827; font-size:15px; font-weight:800; }
+      .sheet-submit:disabled { opacity:.6; }
     `
   ]
 })
@@ -122,6 +191,12 @@ export class CoachProfileDetailPage implements OnInit {
   bookingInProgress = false;
   bookingRequestSent = false;
   bookingChatId: string | null = null;
+  bookingSheetOpen = false;
+  sessionDate = '';
+  sessionTime = '';
+  isRecurring = false;
+  recurringEndDate = '';
+  bookingFormError = '';
 
   readonly coaches = [
     { id: 1, name: 'Coach Arvind Sharma', sport: 'Cricket', experience: '12+ Yrs Exp', rating: 4.9, avatar: '🏏', distance: '1.5 km', price: '₹800/session', bio: 'Former State level cricketer focusing on batting techniques, stamina building, and match strategy for all age groups.', specialties: ['Batting Stance', 'Spin Tactics', 'Fitness Training', 'Group Scrimmage'] },
@@ -177,25 +252,90 @@ export class CoachProfileDetailPage implements OnInit {
     return resolveMediaUrl(url);
   }
 
-  async bookSession() {
+  bookSession() {
     if (!this.coach || !this.coachId || this.bookingInProgress) return;
     if (this.bookingRequestSent && this.bookingChatId) {
       void this.router.navigateByUrl(`/app/chat/${encodeURIComponent(this.bookingChatId)}`);
       return;
     }
+    this.bookingFormError = '';
+    this.bookingSheetOpen = true;
+  }
+
+  closeBookingSheet() {
+    this.bookingSheetOpen = false;
+  }
+
+  setRecurring(value: boolean) {
+    this.isRecurring = value;
+    if (!value) this.recurringEndDate = '';
+    this.bookingFormError = '';
+  }
+
+  today(): string {
+    return this.toDateInput(new Date());
+  }
+
+  minEndDate(): string {
+    if (!this.sessionDate) return this.today();
+    const next = new Date(`${this.sessionDate}T00:00:00`);
+    next.setDate(next.getDate() + 1);
+    return this.toDateInput(next);
+  }
+
+  private validateBookingForm(): string {
+    if (!this.sessionDate) return 'Choose a session date.';
+    if (this.sessionDate < this.today()) return 'The session date cannot be in the past.';
+    if (!this.sessionTime) return 'Choose a session time.';
+    if (this.sessionDate === this.today() && new Date(`${this.sessionDate}T${this.sessionTime}:00`) <= new Date()) {
+      return 'Choose a time later than now.';
+    }
+    if (this.isRecurring) {
+      if (!this.recurringEndDate) return 'Choose when the recurring sessions should end.';
+      if (this.recurringEndDate <= this.sessionDate) return 'The end date must be after the first session date.';
+    }
+    return '';
+  }
+
+  private toDateInput(date: Date): string {
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${date.getFullYear()}-${month}-${day}`;
+  }
+
+  private readableDate(value: string): string {
+    return new Date(`${value}T00:00:00`).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  private readableTime(value: string): string {
+    return new Date(`2000-01-01T${value}:00`).toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit', hour12: true });
+  }
+
+  async submitBooking() {
+    if (!this.coach || !this.coachId || this.bookingInProgress) return;
+    this.bookingFormError = this.validateBookingForm();
+    if (this.bookingFormError) return;
 
     this.bookingInProgress = true;
     let requestWasSent = false;
     const sport = String(this.coach.sport || '').split(',')[0].trim();
-    const requestMessage = `Hi ${this.coach.name}, I'd like to book a coaching session with you. Please let me know your availability and confirm the details.`;
+    const schedule = this.isRecurring
+      ? `starting ${this.readableDate(this.sessionDate)} at ${this.readableTime(this.sessionTime)}, recurring until ${this.readableDate(this.recurringEndDate)}`
+      : `on ${this.readableDate(this.sessionDate)} at ${this.readableTime(this.sessionTime)}`;
+    const requestMessage = `Hi ${this.coach.name}, I'd like to book a coaching session ${schedule}. Please confirm if this works for you.`;
 
     try {
       const requestResponse = await firstValueFrom(this.coachService.requestCoachingBooking(this.coachId, {
         sport,
         message: requestMessage,
+        requested_date: this.sessionDate,
+        requested_start_time: this.sessionTime,
+        is_recurring: this.isRecurring,
+        recurring_end_date: this.isRecurring ? this.recurringEndDate : null,
       }));
       if (!requestResponse.success) throw new Error(requestResponse.message || 'Unable to send the booking request.');
       requestWasSent = true;
+      this.bookingSheetOpen = false;
 
       const threadResponse = await this.chat.openPrivate({
         id: this.coachId,
@@ -216,12 +356,15 @@ export class CoachProfileDetailPage implements OnInit {
       this.bookingChatId = chatId;
       await this.showBookingSent(chatId);
     } catch (error: any) {
-      const detail = error?.error?.message || error?.message || 'Please try again.';
+      const fieldErrors = error?.error?.errors ? ([] as unknown[]).concat(...Object.values(error.error.errors)) : [];
+      const detail = String(fieldErrors[0] || error?.error?.message || error?.message || 'Please try again.');
+      if (!requestWasSent) {
+        this.bookingFormError = detail;
+        return;
+      }
       const alert = await this.alertCtrl.create({
-        header: requestWasSent ? 'Request sent, chat unavailable' : 'Booking request not sent',
-        message: requestWasSent
-          ? `Your request is with ${this.coach.name}, but we could not send the first chat message. ${detail}`
-          : detail,
+        header: 'Request sent, chat unavailable',
+        message: `Your request is with ${this.coach.name}, but we could not send the first chat message. ${detail}`,
         buttons: ['OK'],
       });
       await alert.present();

@@ -32,12 +32,12 @@ interface PeakHour {
       <div class="analytics-page pb-32 text-left">
         
         <!-- Header -->
-        <div class="sticky-header flex items-center justify-between px-5 h-14 bg-white border-b border-[#F3F4F6]">
-          <button (click)="goHome()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
+        <div class="sticky-header app-header-bar flex items-center justify-between px-5 bg-white border-b border-[#F3F4F6]">
+          <button (click)="goHome()" class="app-header-btn flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
             <ion-icon name="chevron-back-outline" class="text-xl text-[#111827]"></ion-icon>
           </button>
-          <p class="text-[17px] font-black text-[#111827] m-0">Revenue Analytics</p>
-          <div class="w-10"></div>
+          <p class="app-header-title text-[#111827] m-0">Revenue Analytics</p>
+          <div class="app-header-btn"></div>
         </div>
 
         <div class="px-5 pt-4 space-y-6">
@@ -118,6 +118,8 @@ interface PeakHour {
       top: 0;
       z-index: 30;
       padding-top: var(--app-chrome-top-inset, var(--safe-area-top));
+      min-height: calc(var(--app-header-height) + var(--app-chrome-top-inset, var(--safe-area-top)));
+      box-sizing: border-box;
       box-shadow: 0 2px 10px rgba(0,0,0,0.02);
     }
   `]

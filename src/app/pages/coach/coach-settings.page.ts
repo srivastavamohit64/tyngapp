@@ -28,12 +28,12 @@ const STATUSES: StatusItem[] = [
     <ion-content [fullscreen]="true">
       <div class="settings-page pb-32">
         <!-- Sticky Header -->
-        <div class="sticky-header flex items-center justify-between px-5 h-14 bg-white border-b border-[#F3F4F6]">
-          <button (click)="back()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
+        <div class="sticky-header app-header-bar flex items-center justify-between px-5 bg-white border-b border-[#F3F4F6]">
+          <button (click)="back()" class="app-header-btn flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
             <ion-icon name="chevron-back-outline" class="text-xl text-[#111827]"></ion-icon>
           </button>
-          <p class="text-[17px] font-black text-[#111827] m-0">Settings</p>
-          <button (click)="go('/app/coach/notifications')" class="w-10 h-10 flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
+          <p class="app-header-title text-[#111827] m-0">Settings</p>
+          <button (click)="go('/app/coach/notifications')" class="app-header-btn flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
             <ion-icon name="help-circle-outline" class="text-xl text-[#111827]"></ion-icon>
           </button>
         </div>

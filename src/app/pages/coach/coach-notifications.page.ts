@@ -33,13 +33,13 @@ const FILTERS = [
       <div class="notifications-page pb-28">
         <!-- Sticky Header -->
         <div class="sticky-header bg-white border-b border-[#F3F4F6]">
-          <div class="notif-header flex items-center justify-between px-5 pb-3">
+          <div class="notif-header app-header-bar flex items-center justify-between px-5">
             <div class="flex items-center gap-3">
-              <button (click)="back()" class="w-10 h-10 flex items-center justify-center rounded-full bg-[#F3F4F6] border-none">
+              <button (click)="back()" class="app-header-btn flex items-center justify-center rounded-full bg-[#F3F4F6] border-none">
                 <ion-icon name="chevron-back-outline" class="text-[#111827] text-xl"></ion-icon>
               </button>
               <div class="flex items-center gap-2">
-                <h1 class="text-[18px] font-extrabold text-[#111827] tracking-tight m-0">Notifications</h1>
+                <h1 class="app-header-title text-[#111827] m-0">Notifications</h1>
                 <div *ngIf="totalUnread() > 0" class="min-w-[22px] h-[22px] rounded-full bg-[#FF7A00] flex items-center justify-center px-1.5">
                   <span class="text-[11px] font-black text-white">{{ totalUnread() }}</span>
                 </div>
@@ -206,8 +206,9 @@ const FILTERS = [
     }
 
     .notif-header {
-      min-height: 62px;
-      padding-top: calc(10px + var(--app-chrome-top-inset, var(--safe-area-top)));
+      min-height: calc(var(--app-header-height) + var(--app-chrome-top-inset, var(--safe-area-top)));
+      padding-top: var(--app-chrome-top-inset, var(--safe-area-top));
+      padding-bottom: 0;
       padding-left: max(16px, var(--safe-area-left, 0px));
       padding-right: max(16px, var(--safe-area-right, 0px));
       box-sizing: border-box;
@@ -223,9 +224,9 @@ const FILTERS = [
     }
 
     .header-action {
-      width: 42px;
-      height: 42px;
-      flex: 0 0 42px;
+      width: var(--app-header-btn-size);
+      height: var(--app-header-btn-size);
+      flex: 0 0 var(--app-header-btn-size);
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -329,7 +330,6 @@ const FILTERS = [
     @media (max-width: 350px) {
       .filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; padding-right: 12px; padding-left: 12px; }
       .notif-header { gap: 8px; }
-      .notif-header h1 { font-size: 17px; }
       .notification-feed { padding-right: 10px; padding-left: 10px; }
       .notification-actions { padding-left: 0; }
     }

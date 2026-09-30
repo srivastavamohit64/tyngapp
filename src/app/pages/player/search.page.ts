@@ -115,13 +115,15 @@ interface SearchRow {
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: calc(12px + var(--app-chrome-top-inset, var(--safe-area-top))) 16px 10px;
+      padding: var(--app-chrome-top-inset, var(--safe-area-top)) 16px 0;
+      min-height: calc(var(--app-header-height) + var(--app-chrome-top-inset, var(--safe-area-top)));
+      box-sizing: border-box;
       background: transparent;
     }
 
     .sp-back {
-      width: 42px;
-      height: 42px;
+      width: var(--app-header-btn-size);
+      height: var(--app-header-btn-size);
       border: none;
       border-radius: 50%;
       background: #f3f4f6;

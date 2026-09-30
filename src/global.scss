@@ -280,6 +280,25 @@ app-brand-header-shell.has-brand-chrome {
   --app-chrome-top-inset: 0px;
 }
 
+/* Top-bar size helpers for utility-class templates */
+.app-header-bar {
+  min-height: var(--app-header-height);
+  box-sizing: border-box;
+}
+
+.app-header-title {
+  font-size: var(--app-header-title-size) !important;
+  font-weight: var(--app-header-title-weight) !important;
+  line-height: var(--app-header-title-line-height) !important;
+}
+
+.app-header-btn {
+  width: var(--app-header-btn-size) !important;
+  height: var(--app-header-btn-size) !important;
+  min-width: var(--app-header-btn-size);
+  min-height: var(--app-header-btn-size);
+}
+
 /* Fixed / sticky bottom action bars clear Android nav / gesture bar */
 ion-content .venue-safe-footer,
 ion-content .fixed.bottom-0,

@@ -41,9 +41,9 @@ import { AdminXpRule, XpService } from '../../core/services/xp.service';
     </ion-content>
   `,
   styles: [`
-    .page { min-height: 100%; background: #fafbfc; padding: calc(16px + var(--safe-area-top)) 20px calc(112px + var(--safe-area-bottom)); }
-    .header { display:flex; align-items:center; gap:12px; margin-bottom:18px; } .back { width:40px; height:40px; min-height:unset; border:0; border-radius:12px; background:#f3f4f6; font-size:20px; color:#111827; }
-    h1 { margin:0; font-size:22px; color:#111827; } .header p { margin:4px 0 0; color:#6b7280; font-size:12px; }
+    .page { min-height: 100%; background: #fafbfc; padding: var(--safe-area-top) 20px calc(112px + var(--safe-area-bottom)); }
+    .header { display:flex; align-items:center; gap:12px; height:var(--app-header-height); margin-bottom:18px; } .back { width:var(--app-header-btn-size); height:var(--app-header-btn-size); flex-shrink:0; min-height:unset; border:0; border-radius:12px; background:#f3f4f6; font-size:20px; color:#111827; }
+    h1 { margin:0; font-size:var(--app-header-title-size); font-weight:var(--app-header-title-weight); line-height:var(--app-header-title-line-height); color:#111827; } .header p { margin:2px 0 0; color:#6b7280; font-size:11px; }
     .rule-card { background:#fff; border:1px solid #e5e7eb; border-radius:18px; padding:16px; margin-bottom:12px; } .rule-head { display:flex; justify-content:space-between; gap:12px; }
     .rule-head strong { display:block; color:#111827; font-size:15px; } .rule-head span { color:#6b7280; font-size:11px; } .fields { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:16px 0 12px; }
     label { display:block; color:#6b7280; font-size:11px; font-weight:700; } input, select { display:block; box-sizing:border-box; width:100%; margin-top:5px; padding:10px; border:1px solid #d1d5db; border-radius:10px; background:#fff; color:#111827; font:inherit; font-size:14px; } .fields label:last-child { grid-column:1/-1; }

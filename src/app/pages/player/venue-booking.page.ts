@@ -234,7 +234,9 @@ interface DateItem {
         align-items: center;
         justify-content: space-between;
         gap: 12px;
-        padding: calc(10px + var(--app-chrome-top-inset, var(--safe-area-top))) 16px 10px;
+        padding: var(--app-chrome-top-inset, var(--safe-area-top)) 16px 0;
+        min-height: calc(var(--app-header-height) + var(--app-chrome-top-inset, var(--safe-area-top)));
+        box-sizing: border-box;
         background: rgba(255, 255, 255, 0.96);
         border-bottom: 1px solid #eef0f3;
         backdrop-filter: blur(8px);
@@ -247,8 +249,9 @@ interface DateItem {
 
       .book-header-copy h1 {
         margin: 0;
-        font-size: 15px;
-        font-weight: 900;
+        font-size: var(--app-header-title-size);
+        font-weight: var(--app-header-title-weight);
+        line-height: var(--app-header-title-line-height);
         letter-spacing: -0.02em;
       }
 
@@ -263,8 +266,8 @@ interface DateItem {
       }
 
       .icon-btn {
-        width: 40px;
-        height: 40px;
+        width: var(--app-header-btn-size);
+        height: var(--app-header-btn-size);
         border: none;
         border-radius: 14px;
         background: #f3f4f6;

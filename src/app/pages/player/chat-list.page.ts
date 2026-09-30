@@ -25,7 +25,6 @@ import { SkeletonListComponent } from '../../shared/components/skeleton';
       <main class="page-with-tab-bar min-h-full bg-[#FAFBFC] text-[#111827] flex flex-col">
         <app-page-header
           [title]="isCoach() ? 'Chat' : 'Chats'"
-          titleSize="md"
           [badge]="totalUnread()"
           [showActions]="true"
           [hasSubContent]="true"
@@ -210,8 +209,8 @@ import { SkeletonListComponent } from '../../shared/components/skeleton';
         gap: 8px;
       }
       .icon-btn {
-        width: 36px;
-        height: 36px;
+        width: var(--app-header-btn-size);
+        height: var(--app-header-btn-size);
         border-radius: 999px;
         border: none;
         background: rgba(255, 255, 255, 0.18);

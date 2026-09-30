@@ -80,7 +80,14 @@ export class CoachService {
     return this.api.post(`/coaches/${coachId}/student-requests`, payload);
   }
 
-  requestCoachingBooking(coachId: number, payload: { sport?: string; message: string }): Observable<ApiResponse<any>> {
+  requestCoachingBooking(coachId: number, payload: {
+    sport?: string;
+    message: string;
+    requested_date: string;
+    requested_start_time: string;
+    is_recurring: boolean;
+    recurring_end_date?: string | null;
+  }): Observable<ApiResponse<any>> {
     return this.api.post(`/coaches/${coachId}/booking-requests`, payload);
   }
 
@@ -119,6 +126,18 @@ export class CoachService {
 
   getStudentInvitations(): Observable<ApiResponse<any[]>> {
     return this.api.get<any[]>('/coach/student-invitations');
+  }
+
+  resendStudentInvitation(id: number): Observable<ApiResponse<any>> {
+    return this.api.post(`/coach/student-invitations/${id}/resend`, {});
+  }
+
+  cancelStudentInvitation(id: number): Observable<ApiResponse<any>> {
+    return this.api.post(`/coach/student-invitations/${id}/cancel`, {});
+  }
+
+  getMyCoachInvitations(): Observable<ApiResponse<any[]>> {
+    return this.api.get<any[]>('/player/coach-invitations');
   }
 
   getCoachInvitation(token: string): Observable<ApiResponse<any>> {
@@ -198,8 +217,13 @@ export class CoachService {
     return this.api.get('/coach/sessions');
   }
 
-  getCoachBookingRequests(status: 'pending' | 'accepted' | 'declined' | 'all' = 'pending'): Observable<ApiResponse<any>> {
-    return this.api.get(`/coach/booking-requests?status=${encodeURIComponent(status)}`);
+  getCoachBookingRequests(status: 'pending' | 'accepted' | 'declined' | 'all' = 'pending', playerId?: number): Observable<ApiResponse<any>> {
+    const player = playerId ? `&player_id=${playerId}` : '';
+    return this.api.get(`/coach/booking-requests?status=${encodeURIComponent(status)}${player}`);
+  }
+
+  getMyCoachBookingRequests(coachId?: number): Observable<ApiResponse<any[]>> {
+    return this.api.get<any[]>(`/player/coach-booking-requests${coachId ? `?coach_id=${coachId}` : ''}`);
   }
 
   respondToCoachBookingRequest(id: number, status: 'accepted' | 'declined'): Observable<ApiResponse<any>> {

@@ -16,13 +16,29 @@ import { resolveMediaUrl } from '../../core/utils/media-url.util';
       <main class="safe-area-top page-with-tab-bar px-6 py-4 bg-background text-foreground">
         
         <!-- Header -->
-        <header class="flex items-center justify-between mb-6">
-          <button (click)="back()" class="h-10 w-10 grid place-items-center rounded-full bg-card border border-border">
+        <header class="app-header-bar flex items-center justify-between mb-6">
+          <button (click)="back()" class="app-header-btn grid place-items-center rounded-full bg-card border border-border">
             <ion-icon name="chevron-back-outline" class="text-xl"></ion-icon>
           </button>
-          <h1 class="text-lg font-bold text-center flex-1">Find Coaches</h1>
-          <div class="w-10"></div>
+          <h1 class="app-header-title text-center flex-1">Find Coaches</h1>
+          <div class="app-header-btn"></div>
         </header>
+
+        <section *ngIf="invitations.length" class="invites mb-6" aria-label="Coaching invitations">
+          <div class="invites-title">
+            <b>Coaching invitations</b>
+            <span>{{ invitations.length }} waiting for you</span>
+          </div>
+          <button type="button" class="invite-row" *ngFor="let invite of invitations" (click)="openInvitation(invite.token)">
+            <img *ngIf="invite.coach?.profileImage; else inviteCoachIcon" [src]="photo(invite.coach.profileImage)" alt="" />
+            <ng-template #inviteCoachIcon><span class="invite-fallback"><ion-icon name="person-outline"></ion-icon></span></ng-template>
+            <span class="invite-copy">
+              <strong>{{ invite.coach?.name || 'A coach' }}</strong>
+              <small>Invited you to join as a student</small>
+            </span>
+            <span class="invite-cta">Review</span>
+          </button>
+        </section>
 
         <!-- Search and Filter -->
         <div class="search-box mb-6 relative">
@@ -103,6 +119,17 @@ import { resolveMediaUrl } from '../../core/utils/media-url.util';
         overflow-wrap: anywhere;
         line-height: 1.35;
       }
+      .invites { padding: 14px; border: 1px solid #d9f99d; border-radius: 18px; background: #f7fee7; }
+      .invites-title { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+      .invites-title b { font-size: 14px; color: #111827; }
+      .invites-title span { font-size: 11px; font-weight: 700; color: #4d7c0f; }
+      .invite-row { width: 100%; display: flex; align-items: center; gap: 10px; padding: 10px; margin-top: 8px; border: 0; border-radius: 14px; background: #fff; text-align: left; box-shadow: 0 2px 8px rgba(16, 24, 40, 0.05); }
+      .invite-row:first-of-type { margin-top: 0; }
+      .invite-row img, .invite-fallback { width: 42px; height: 42px; flex: 0 0 42px; border-radius: 50%; object-fit: cover; background: #f3f4f6; display: grid; place-items: center; color: #6b7280; font-size: 18px; }
+      .invite-copy { flex: 1; min-width: 0; display: grid; gap: 2px; }
+      .invite-copy strong { font-size: 13px; color: #111827; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .invite-copy small { font-size: 11px; color: #6b7280; }
+      .invite-cta { flex-shrink: 0; padding: 7px 12px; border-radius: 999px; background: var(--app-primary); color: #111827; font-size: 12px; font-weight: 800; }
     `
   ]
 })
@@ -119,8 +146,22 @@ export class CoachesPage implements OnInit {
   readonly sportChips: FilterChip[] = this.sports.map((s) => ({ id: s, label: s }));
 
   coaches: any[] = [];
+  invitations: any[] = [];
 
   ngOnInit(): void { this.applyFilters(); }
+
+  ionViewWillEnter(): void { this.loadInvitations(); }
+
+  loadInvitations(): void {
+    this.coachService.getMyCoachInvitations().subscribe({
+      next: (response) => { this.invitations = Array.isArray(response.data) ? response.data : []; },
+      error: () => { this.invitations = []; },
+    });
+  }
+
+  openInvitation(token: string): void {
+    void this.router.navigateByUrl(`/app/coach-invite/${encodeURIComponent(token)}`);
+  }
 
   applyFilters(): void {
     this.loading = true; this.error = '';

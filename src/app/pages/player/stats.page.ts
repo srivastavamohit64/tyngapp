@@ -257,12 +257,14 @@ import { IonicModule } from '@ionic/angular';
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: calc(16px + var(--app-chrome-top-inset, var(--safe-area-top))) 20px 16px;
+      padding: var(--app-chrome-top-inset, var(--safe-area-top)) 20px 0;
+      min-height: calc(var(--app-header-height) + var(--app-chrome-top-inset, var(--safe-area-top)));
+      box-sizing: border-box;
       background: #FFFFFF;
     }
 
     .back-btn, .edit-btn {
-      width: 40px; height: 40px;
+      width: var(--app-header-btn-size); height: var(--app-header-btn-size);
       border-radius: 50%;
       background: #F3F4F6;
       border: none;
@@ -272,8 +274,9 @@ import { IonicModule } from '@ionic/angular';
     }
 
     .stats-title {
-      font-size: 18px;
-      font-weight: 800;
+      font-size: var(--app-header-title-size);
+      font-weight: var(--app-header-title-weight);
+      line-height: var(--app-header-title-line-height);
       color: #111827;
       margin: 0;
     }

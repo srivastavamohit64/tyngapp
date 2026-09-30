@@ -84,28 +84,34 @@ import { PageSkeletonComponent } from '../../shared/components/skeleton';
       .page {
         min-height: 100%;
         background: #fafbfc;
-        padding: calc(12px + var(--safe-area-top)) 20px 32px;
+        padding: var(--safe-area-top) 20px 32px;
+      }
+      .page > .back {
+        margin-top: 10px;
       }
       .hdr {
         display: flex;
         align-items: center;
         gap: 12px;
+        min-height: var(--app-header-height);
+        box-sizing: border-box;
         margin-bottom: 20px;
       }
       .hdr h1 {
         flex: 1;
         margin: 0;
         text-align: center;
-        font-size: 17px;
-        font-weight: 900;
+        font-size: var(--app-header-title-size);
+        font-weight: var(--app-header-title-weight);
+        line-height: var(--app-header-title-line-height);
         color: #111827;
       }
       .spacer {
-        width: 40px;
+        width: var(--app-header-btn-size);
       }
       .back {
-        width: 40px;
-        height: 40px;
+        width: var(--app-header-btn-size);
+        height: var(--app-header-btn-size);
         border-radius: 12px;
         background: #f3f4f6;
         display: grid;

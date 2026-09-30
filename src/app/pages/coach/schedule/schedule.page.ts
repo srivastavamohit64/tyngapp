@@ -143,15 +143,15 @@ function buildWeek() {
       <div class="schedule-page">
         <!-- Sticky Header -->
         <div class="sticky-header">
-          <div class="flex items-center justify-between px-5 h-14 bg-white border-b border-[#F3F4F6]">
-            <button (click)="back()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
+          <div class="app-header-bar flex items-center justify-between px-5 bg-white border-b border-[#F3F4F6]">
+            <button (click)="back()" class="app-header-btn flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
               <ion-icon name="chevron-back-outline" class="text-xl text-[#111827]"></ion-icon>
             </button>
             <div class="text-center">
-              <p class="text-[17px] font-black text-[#111827] m-0">Schedule</p>
+              <p class="app-header-title text-[#111827] m-0">Schedule</p>
               <p class="text-[11px] text-[#9CA3AF] font-bold m-0">{{ todayLabel }}</p>
             </div>
-            <button class="w-10 h-10 flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
+            <button class="app-header-btn flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
               <ion-icon name="search-outline" class="text-xl text-[#111827]"></ion-icon>
             </button>
           </div>

@@ -362,20 +362,20 @@ type PeriodKey = 'today' | 'week' | 'month' | 'year';
         z-index: 30;
         background: #fff;
         border-bottom: 1px solid #f3f4f6;
-        padding: calc(8px + var(--app-chrome-top-inset, var(--safe-area-top))) 16px 12px;
+        padding: var(--app-chrome-top-inset, var(--safe-area-top)) 16px 12px;
       }
 
       .header-row {
         display: grid;
-        grid-template-columns: 40px 1fr 40px;
+        grid-template-columns: var(--app-header-btn-size) 1fr var(--app-header-btn-size);
         align-items: center;
         gap: 10px;
-        min-height: 40px;
+        height: var(--app-header-height);
       }
 
       .icon-btn {
-        width: 40px;
-        height: 40px;
+        width: var(--app-header-btn-size);
+        height: var(--app-header-btn-size);
         border: none;
         border-radius: 12px;
         background: #f3f4f6;
@@ -401,10 +401,10 @@ type PeriodKey = 'today' | 'week' | 'month' | 'year';
 
       .header-title h1 {
         margin: 0;
-        font-size: 16px;
-        font-weight: 900;
+        font-size: var(--app-header-title-size);
+        font-weight: var(--app-header-title-weight);
         color: #111827;
-        line-height: 1.2;
+        line-height: var(--app-header-title-line-height);
         letter-spacing: -0.01em;
       }
 
@@ -431,7 +431,7 @@ type PeriodKey = 'today' | 'week' | 'month' | 'year';
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 8px;
-        margin-top: 12px;
+        margin-top: 4px;
       }
 
       .period-chip {

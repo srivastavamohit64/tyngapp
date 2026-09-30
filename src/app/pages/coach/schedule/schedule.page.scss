@@ -18,7 +18,7 @@
   z-index: 100;
   background: var(--app-card);
   border-bottom: 1px solid var(--app-border);
-  padding-top: calc(16px + var(--app-chrome-top-inset, var(--safe-area-top)));
+  padding-top: var(--app-chrome-top-inset, var(--safe-area-top));
   padding-left: calc(20px + var(--safe-area-left));
   padding-right: calc(20px + var(--safe-area-right));
   padding-bottom: 0;
@@ -28,7 +28,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
+  min-height: var(--app-header-height);
+  box-sizing: border-box;
+  margin-bottom: 6px;
 }
 
 .header-left {
@@ -40,8 +42,8 @@
 .back-btn {
   display: grid;
   place-items: center;
-  width: 38px;
-  height: 38px;
+  width: var(--app-header-btn-size);
+  height: var(--app-header-btn-size);
   border-radius: 10px;
   background: var(--app-muted);
   border: 1px solid var(--app-border);
@@ -58,16 +60,17 @@
 
 .sched-header h1 {
   margin: 0;
-  font-size: 22px;
-  font-weight: 700;
+  font-size: var(--app-header-title-size);
+  font-weight: var(--app-header-title-weight);
+  line-height: var(--app-header-title-line-height);
   color: var(--app-foreground);
 }
 
 .filter-icon-btn {
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
+  width: var(--app-header-btn-size);
+  height: var(--app-header-btn-size);
   border-radius: 50%;
   background: rgba(37, 99, 235, 0.15);
   border: none;

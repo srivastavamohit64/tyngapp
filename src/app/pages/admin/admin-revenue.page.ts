@@ -31,10 +31,10 @@ import { IonicModule } from '@ionic/angular';
   `,
   styles: [
     `
-      .page { min-height: 100%; background: #fafbfc; padding: calc(16px + var(--safe-area-top)) 20px calc(112px + var(--safe-area-bottom)); }
-      .header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
-      .back { width: 40px; height: 40px; min-height: unset; border-radius: 12px; background: #f3f4f6; display: grid; place-items: center; font-size: 20px; color: #111827; }
-      h1 { margin: 0; font-size: 22px; font-weight: 700; color: #111827; }
+      .page { min-height: 100%; background: #fafbfc; padding: var(--safe-area-top) 20px calc(112px + var(--safe-area-bottom)); }
+      .header { display: flex; align-items: center; gap: 12px; height: var(--app-header-height); margin-bottom: 16px; }
+      .back { width: var(--app-header-btn-size); height: var(--app-header-btn-size); min-height: unset; border-radius: 12px; background: #f3f4f6; display: grid; place-items: center; font-size: 20px; color: #111827; }
+      h1 { margin: 0; font-size: var(--app-header-title-size); font-weight: var(--app-header-title-weight); line-height: var(--app-header-title-line-height); color: #111827; }
       .hero-card { background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to)); border-radius: 24px; padding: 24px; margin-bottom: 20px; color: #111827; }
       .hero-card p { margin: 0; font-size: 14px; opacity: 0.8; }
       .hero-card h2 { margin: 8px 0; font-size: 32px; font-weight: 900; }

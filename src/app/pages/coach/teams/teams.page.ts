@@ -10,15 +10,15 @@ import { IonicModule } from '@ionic/angular';
   template: `
     <ion-content fullscreen>
       <main class="safe-area-top page-with-tab-bar min-h-full bg-background text-white">
-        <header class="bg-card border-b border-white/10 px-6 py-4 sticky top-0 z-10">
-          <div class="flex items-center justify-between">
+        <header class="app-header-bar bg-card border-b border-white/10 px-6 flex items-center sticky top-0 z-10">
+          <div class="flex w-full items-center justify-between">
             <div class="flex items-center gap-3">
-              <button (click)="goHome()" class="text-slate-400 flex items-center bg-transparent">
+              <button (click)="goHome()" class="app-header-btn text-slate-400 flex items-center justify-center bg-transparent">
                 <ion-icon name="chevron-back-outline" class="text-2xl"></ion-icon>
               </button>
-              <h2 class="text-xl font-bold tracking-tight">My Teams</h2>
+              <h2 class="app-header-title m-0">My Teams</h2>
             </div>
-            <button class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+            <button class="app-header-btn rounded-full bg-primary/20 flex items-center justify-center">
               <ion-icon name="add-outline" class="text-xl text-primary"></ion-icon>
             </button>
           </div>
