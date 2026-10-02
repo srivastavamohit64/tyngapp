@@ -1655,3 +1655,11 @@ $page: #fafbfc;
     font-size: 14px;
   }
 }
+
+.lb-rank-skel { padding: 6px 0 4px; }
+.lb-skel-big { display: block; width: 42%; height: 34px; margin: 6px 0 12px; border-radius: 10px; --background: rgba(255, 255, 255, 0.16); }
+.lb-skel-line { display: block; width: 70%; height: 12px; margin: 6px 0; border-radius: 999px; --background: rgba(255, 255, 255, 0.16); }
+.lb-skel-line--dark { --background: #e5e7eb; }
+.lb-skel-line--short { width: 45%; }
+.lb-skel-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px; }
+.lb-skel-stat { display: block; height: 52px; margin: 0; border-radius: 14px; --background: rgba(255, 255, 255, 0.1); }

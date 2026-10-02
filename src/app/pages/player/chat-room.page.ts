@@ -45,7 +45,8 @@ interface GameChatDetails {
             </div>
             <div class="min-w-0">
               <h1 class="app-header-title text-slate-900 truncate">
-                {{ thread?.title || 'Chat' }}
+                <ng-container *ngIf="thread?.title || !loading; else chatTitleSkel">{{ thread?.title || 'Chat' }}</ng-container>
+                <ng-template #chatTitleSkel><ion-skeleton-text animated style="display:block;width:120px;height:14px;margin:4px 0;border-radius:999px"></ion-skeleton-text></ng-template>
               </h1>
               <p
                 class="text-[10px] font-bold mt-0.5"

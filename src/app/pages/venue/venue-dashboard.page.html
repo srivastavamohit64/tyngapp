@@ -281,7 +281,8 @@
                 <ion-icon name="sunny"></ion-icon>
               </div>
               <div>
-                <p class="venue-weather-place">Today · {{ weatherLocation }}</p>
+                <p *ngIf="weatherLocation; else weatherPlaceSkel" class="venue-weather-place">Today · {{ weatherLocation }}</p>
+                <ng-template #weatherPlaceSkel><ion-skeleton-text animated style="display:block;width:120px;height:11px;margin:2px 0 6px;border-radius:999px"></ion-skeleton-text></ng-template>
                 <div class="venue-weather-temp">
                   <strong>{{ weatherTemp }}°</strong>
                   <span>{{ weatherCondition }}</span>

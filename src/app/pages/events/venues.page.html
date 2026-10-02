@@ -18,7 +18,8 @@
             </div>
           </div>
           <div class="venues-count-pill">
-            <strong>{{ filteredCourts().length }}</strong>
+            <strong *ngIf="!loading(); else countSkel">{{ filteredCourts().length }}</strong>
+            <ng-template #countSkel><ion-skeleton-text animated style="display:inline-block;width:28px;height:14px;margin:0;border-radius:999px;vertical-align:middle"></ion-skeleton-text></ng-template>
             <span>courts</span>
           </div>
         </div>
@@ -66,7 +67,7 @@
 
       <section class="venues-results">
         <div class="results-row">
-          <p>
+          <p *ngIf="!loading(); else countSkel">
             {{ filteredCourts().length }}
             {{ filteredCourts().length === 1 ? 'court' : 'courts' }}
             in {{ city() }}

@@ -4,11 +4,12 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 import { VenueEventRecord, VenueEventService } from '../../core/services/venue-event.service';
+import { PageSkeletonComponent } from '../../shared/components/skeleton';
 
 @Component({
   selector: 'app-event-detail',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, PageSkeletonComponent],
   template: `
     <ion-content [fullscreen]="true">
       <main class="event-page">
@@ -17,7 +18,7 @@ import { VenueEventRecord, VenueEventService } from '../../core/services/venue-e
           <span>Events</span>
         </button>
 
-        <div *ngIf="loading" class="state">Loading event…</div>
+        <app-page-skeleton *ngIf="loading" variant="detail" label="Loading event"></app-page-skeleton>
         <div *ngIf="!loading && errorMessage" class="state error">
           <h2>Couldn't load event</h2>
           <p>{{ errorMessage }}</p>

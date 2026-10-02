@@ -6,6 +6,7 @@ import { IonicModule } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { CoachGalleryCategory, CoachGalleryItem, CoachProfileDetails, CoachProfileDetailsPayload, CoachService, CoachVerificationDocument, CoachVerificationDocumentType } from '../../core/services/coach.service';
+import { SkeletonListComponent } from '../../shared/components/skeleton';
 
 const LANGUAGES = ['English','Hindi','Tamil','Telugu','Kannada','Malayalam','Punjabi','Marathi','Gujarati','Bengali','Other'];
 const LOCATIONS = ['Sports Academy','Sports Club','School','Private Turf',"Player's Venue",'Home Coaching','Public Grounds','Indoor Courts'];
@@ -30,7 +31,7 @@ const ALL_SECTIONS = [
 @Component({
   selector: 'app-coach-complete-profile',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule],
+  imports: [CommonModule, IonicModule, FormsModule, SkeletonListComponent],
   template: `
     <ion-content [fullscreen]="true">
       <!-- SUCCESS SCREEN -->
@@ -79,18 +80,19 @@ const ALL_SECTIONS = [
             <div class="text-center">
               <p class="app-header-title text-[#111827]">Complete Your Profile</p>
             </div>
-            <button *ngIf="getProgress() < 100" (click)="back()" class="text-[13px] font-semibold text-[#9CA3AF] bg-transparent border-none">Skip</button>
-            <div *ngIf="getProgress() >= 100" class="app-header-btn"></div>
+            <button *ngIf="!detailsLoading && getProgress() < 100" (click)="back()" class="text-[13px] font-semibold text-[#9CA3AF] bg-transparent border-none">Skip</button>
+            <div *ngIf="detailsLoading || getProgress() >= 100" class="app-header-btn"></div>
           </div>
 
           <!-- Progress bar info -->
           <div class="px-5 pb-4 pt-2 bg-white">
             <div class="flex items-center justify-between mb-2">
-              <span class="text-[13px] font-black text-[#111827]">{{ getProgress() }}% Complete</span>
-              <span class="text-[11px] text-[#9CA3AF] font-bold">{{ getCompletedCount() }}/{{ allSections.length }} sections</span>
+              <span *ngIf="!detailsLoading; else progressSkel" class="text-[13px] font-black text-[#111827]">{{ getProgress() }}% Complete</span>
+              <span *ngIf="!detailsLoading" class="text-[11px] text-[#9CA3AF] font-bold">{{ getCompletedCount() }}/{{ allSections.length }} sections</span>
+              <ng-template #progressSkel><ion-skeleton-text animated style="display:block;width:110px;height:13px;margin:0;border-radius:999px"></ion-skeleton-text></ng-template>
             </div>
             <div class="h-2.5 bg-[#F3F4F6] rounded-full overflow-hidden">
-              <div class="h-full rounded-full" [style.width]="getProgress() + '%'" style="background: linear-gradient(90deg,var(--app-primary) 0%,var(--app-primary-to) 100%)"></div>
+              <div class="h-full rounded-full" [style.width]="(detailsLoading ? 0 : getProgress()) + '%'" style="background: linear-gradient(90deg,var(--app-primary) 0%,var(--app-primary-to) 100%)"></div>
             </div>
             <p class="text-[11px] text-[#9CA3AF] mt-1.5 leading-relaxed">
               Complete your profile to unlock bookings, earn your Verified Coach badge and improve your visibility.
@@ -98,7 +100,8 @@ const ALL_SECTIONS = [
           </div>
         </div>
 
-        <div class="px-4 pt-4 space-y-3">
+        <div *ngIf="detailsLoading" class="px-4 pt-4"><app-skeleton-list [count]="8" avatarSize="28px"></app-skeleton-list></div>
+        <div *ngIf="!detailsLoading" class="px-4 pt-4 space-y-3">
           <p *ngIf="profileSaveError" class="mx-1 text-[12px] font-semibold text-red-600">{{ profileSaveError }}</p>
 
           <!-- 1. Languages -->
@@ -1031,6 +1034,8 @@ export class CoachCompleteProfilePage implements DoCheck, OnInit {
     return this.selectedGalleryCategory === 'video' ? 'video/*' : this.selectedGalleryCategory === 'certificate' ? 'image/*,application/pdf,.pdf' : 'image/*';
   }
 
+  detailsLoading = true;
+
   ngOnInit(): void { this.loadGallery(); this.loadVerificationDocuments(); this.loadProfileDetails(); }
 
   ngDoCheck(): void {
@@ -1270,13 +1275,17 @@ export class CoachCompleteProfilePage implements DoCheck, OnInit {
   private loadProfileDetails(): void {
     this.coachService.getMyCoachProfileDetails().subscribe({
       next: (result) => {
+        this.detailsLoading = false;
         const details = result.data;
         if (!result.success || !details) return;
         this.applyProfileDetails(details);
         this.lastProfileDraft = this.profileDetailsDraft();
         this.profileDetailsLoaded = true;
       },
-      error: () => { this.profileSaveError = 'Saved profile details could not be loaded. You can still update them and save again.'; },
+      error: () => {
+        this.detailsLoading = false;
+        this.profileSaveError = 'Saved profile details could not be loaded. You can still update them and save again.';
+      },
     });
   }
 

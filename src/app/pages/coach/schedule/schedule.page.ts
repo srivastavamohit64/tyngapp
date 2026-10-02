@@ -7,6 +7,7 @@ import { SegmentControlComponent, SegmentOption } from '../../../shared/componen
 import { CoachService } from '../../../core/services/coach.service';
 import { TabBadgeService } from '../../../core/services/tab-badge.service';
 import { resolveMediaUrl } from '../../../core/utils/media-url.util';
+import { SkeletonListComponent } from '../../../shared/components/skeleton';
 
 interface Student {
   id: number;
@@ -136,7 +137,7 @@ function buildWeek() {
 @Component({
   selector: 'app-coach-schedule',
   standalone: true,
-  imports: [CommonModule, IonicModule, BrandHeaderShellComponent, SegmentControlComponent],
+  imports: [CommonModule, IonicModule, BrandHeaderShellComponent, SegmentControlComponent, SkeletonListComponent],
   template: `
     <ion-content [fullscreen]="true" class="has-tabs">
       <app-brand-header-shell>
@@ -188,7 +189,7 @@ function buildWeek() {
                 class="flex items-center gap-3 py-2.5 px-3 rounded-[18px]" [style.backgroundColor]="m.accent + '10'">
                 <span class="text-xl">{{ m.emoji }}</span>
                 <div>
-                  <p class="text-[14px] font-black text-[#111827] leading-none m-0">{{ m.value }}</p>
+                  <p *ngIf="!loading(); else valueSkel" class="text-[14px] font-black text-[#111827] leading-none m-0">{{ m.value }}</p>
                   <p class="text-[10px] text-[#9CA3AF] mt-0.5 m-0 font-bold">{{ m.label }}</p>
                 </div>
               </button>
@@ -197,10 +198,11 @@ function buildWeek() {
             <div class="mt-4 pt-3.5 border-t border-[#F3F4F6]">
               <div class="flex justify-between text-[11px] mb-1.5">
                 <span class="text-[#9CA3AF] font-bold">Today's Completion</span>
-                <span class="text-[var(--app-primary)] font-black">50%</span>
+                <span *ngIf="!loading(); else valueSkel" class="text-[var(--app-primary)] font-black">{{ todayCompletionPct }}%</span>
+                <ng-template #valueSkel><ion-skeleton-text animated style="display:block;width:46px;height:12px;margin:0;border-radius:999px"></ion-skeleton-text></ng-template>
               </div>
               <div class="h-1.5 bg-[#F3F4F6] rounded-full overflow-hidden">
-                <div class="h-full rounded-full bg-gradient-to-r from-[var(--app-primary)] to-[var(--app-primary-to)]" style="width: 50%;"></div>
+                <div class="h-full rounded-full bg-gradient-to-r from-[var(--app-primary)] to-[var(--app-primary-to)]" [style.width.%]="loading() ? 0 : todayCompletionPct"></div>
               </div>
             </div>
           </div>
@@ -213,7 +215,9 @@ function buildWeek() {
           ></app-segment-control>
 
           <!-- Session List timeline -->
-          <div *ngIf="filteredSessions().length === 0" class="py-16 text-center">
+          <app-skeleton-list *ngIf="loading() && !filteredSessions().length" [count]="4" avatarSize="44px"></app-skeleton-list>
+          <div *ngIf="!loading() && loadError()" class="py-8 text-center text-[13px] font-bold text-[#DC2626]">{{ loadError() }}</div>
+          <div *ngIf="!loading() && !loadError() && filteredSessions().length === 0" class="py-16 text-center">
             <div class="text-6xl mb-3">🏋️</div>
             <h3 class="text-[18px] font-black text-[#111827] mb-1">No Coaching Sessions</h3>
             <p class="text-[13px] text-[#6B7280] leading-relaxed mb-5">Enjoy your free time or create a new coaching session.</p>
@@ -443,7 +447,7 @@ export class CoachSchedulePage implements OnInit {
 
   selectedDay = signal(0);
   activeTab = signal<'today' | 'upcoming' | 'completed' | 'cancelled'>('today');
-  loading = signal(false);
+  loading = signal(true);
   loadError = signal('');
   private readonly sessions = signal<CoachSession[]>([]);
 
@@ -479,6 +483,12 @@ export class CoachSchedulePage implements OnInit {
 
   get confirmedCount(): number {
     return this.todaySessions.filter(session => session.status === 'Confirmed').length;
+  }
+
+  get todayCompletionPct(): number {
+    const total = this.todaySessions.length;
+    if (!total) return 0;
+    return Math.round((this.todaySessions.filter((session) => session.status === 'Completed').length / total) * 100);
   }
 
   get pendingSessionCount(): number {

@@ -566,7 +566,7 @@ export class CreateGamePage implements OnInit {
 
   submitting = false;
   venues: Venue[] = [];
-  venuesLoading = false;
+  venuesLoading = true;
 
   openingTime = '06:00';
   closingTime = '20:00';
@@ -661,7 +661,6 @@ export class CreateGamePage implements OnInit {
   }
 
   ngOnInit() {
-    this.venues = [...this.data.venues];
     void this.loadVenues();
     this.initializeDates();
   }

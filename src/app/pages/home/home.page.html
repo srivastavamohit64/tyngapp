@@ -13,11 +13,12 @@
           <div class="w-2 h-2 rounded-full bg-[var(--app-primary)] animate-pulse flex-shrink-0"></div>
           <div class="coach-focus-content">
             <strong class="coach-focus-title">Today's Focus</strong>
-            <span class="coach-focus-stat"><b>{{ coachFocusSessions() }}</b> Sessions</span>
+            <span class="coach-focus-stat"><b *ngIf="coachDashboardLoaded(); else focusSkel">{{ coachFocusSessions() }}</b> Sessions</span>
             <span class="coach-focus-separator">·</span>
-            <span class="coach-focus-stat"><b>{{ coachFocusRequests() }}</b> Requests</span>
+            <span class="coach-focus-stat"><b *ngIf="coachDashboardLoaded(); else focusSkel">{{ coachFocusRequests() }}</b> Requests</span>
             <span class="coach-focus-separator">·</span>
-            <span class="coach-focus-stat coach-focus-earnings"><b>{{ coachFocusEarnings() }}</b> Expected</span>
+            <span class="coach-focus-stat coach-focus-earnings"><b *ngIf="coachDashboardLoaded(); else focusSkel">{{ coachFocusEarnings() }}</b> Expected</span>
+            <ng-template #focusSkel><ion-skeleton-text animated class="coach-skel-num"></ion-skeleton-text></ng-template>
           </div>
         </div>
       </div>
@@ -34,7 +35,10 @@
               <ion-icon name="flash"></ion-icon>
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-3">
+          <div *ngIf="!coachDashboardLoaded()" class="grid grid-cols-2 gap-3" aria-busy="true" aria-label="Loading your day">
+            <ion-skeleton-text *ngFor="let i of [1,2,3,4]" animated class="coach-skel-tile"></ion-skeleton-text>
+          </div>
+          <div *ngIf="coachDashboardLoaded()" class="grid grid-cols-2 gap-3">
             <button *ngFor="let metric of coachPulseMetrics" type="button" (click)="openCoachMetric(metric.label)"
               [attr.aria-label]="'Open ' + metric.label + ', ' + metric.value"
               class="coach-pulse-metric rounded-[18px] p-3.5 relative overflow-hidden text-left w-full"
@@ -50,7 +54,7 @@
           <div class="coach-goal-progress">
             <div class="coach-goal-heading">
               <span>Daily Goal Progress</span>
-              <strong>{{ coachDailyGoalProgress }}%</strong>
+              <strong *ngIf="coachDashboardLoaded(); else focusSkel">{{ coachDailyGoalProgress }}%</strong>
             </div>
             <div class="coach-goal-track">
               <div class="h-full rounded-full" [style.width.%]="coachDailyGoalProgress" style="background: linear-gradient(90deg, var(--app-primary), var(--app-primary-to));"></div>
@@ -59,7 +63,7 @@
         </div>
 
         <!-- Profile Completion banner -->
-        <div *ngIf="!coachProfileDismissed() && coachProfileCompletion < 100" class="profile-comp-banner coach-profile-card">
+        <div *ngIf="coachDashboardLoaded() && !coachProfileDismissed() && coachProfileCompletion < 100" class="profile-comp-banner coach-profile-card">
           <div class="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-[var(--app-primary)]/10"></div>
           <div class="absolute -bottom-4 right-16 w-16 h-16 rounded-full bg-[#FF7A00]/10"></div>
           <div class="relative">
@@ -114,9 +118,9 @@
             <button (click)="go('/app/coach/schedule')" class="see-all-btn">View All <ion-icon name="chevron-forward-outline"></ion-icon></button>
           </div>
           <div class="space-y-4">
-            <div *ngIf="coachDashboardLoading()" class="section-card p-4 text-center text-[13px] text-[#6B7280]">Loading today’s sessions…</div>
+            <ng-container *ngIf="!coachDashboardLoaded()"><app-card-row-skeleton *ngFor="let i of [1,2]" [full]="true" mediaHeight="130px" [lines]="3" label="Loading sessions"></app-card-row-skeleton></ng-container>
             <div *ngIf="coachDashboardError()" class="section-card p-4 text-center text-[13px] text-[#DC2626]">{{ coachDashboardError() }}</div>
-            <div *ngIf="!coachDashboardLoading() && !coachDashboardError() && coachSessions.length === 0" class="section-card p-4 text-center text-[13px] text-[#6B7280]">No coaching sessions are scheduled for today.</div>
+            <div *ngIf="coachDashboardLoaded() && !coachDashboardError() && coachSessions.length === 0" class="section-card p-4 text-center text-[13px] text-[#6B7280]">No coaching sessions are scheduled for today.</div>
             <div *ngFor="let session of coachSessions" class="session-card">
               <div class="relative h-[130px] overflow-hidden rounded-t-[24px] bg-slate-200">
                 <img [src]="session.image" [alt]="session.sport" class="w-full h-full object-cover" />
@@ -162,7 +166,8 @@
             </div>
             <div class="flex-1">
               <p class="text-[11px] font-black text-[#111827]/60 uppercase tracking-wider mb-0.5">Student Requests</p>
-              <p class="text-[15px] font-black text-[#111827] leading-snug">{{ coachStudentRequestCount }} pending coaching request{{ coachStudentRequestCount === 1 ? '' : 's' }}</p>
+              <ng-template #requestSkel><ion-skeleton-text animated class="coach-skel-line coach-skel-line--dark"></ion-skeleton-text></ng-template>
+              <p *ngIf="coachDashboardLoaded(); else requestSkel" class="text-[15px] font-black text-[#111827] leading-snug">{{ coachStudentRequestCount }} pending coaching request{{ coachStudentRequestCount === 1 ? '' : 's' }}</p>
               <p class="text-[12px] text-[#111827]/60 mt-1">Review requests and accept the players you want to coach.</p>
             </div>
           </div>
@@ -181,7 +186,7 @@
             <div *ngFor="let prog of coachProgressCards"
               class="rounded-[18px] p-3 text-center" [style.backgroundColor]="prog.bg">
               <ion-icon [name]="prog.icon" class="text-2xl" [style.color]="prog.color"></ion-icon>
-              <p class="text-lg font-black leading-none mt-1" [style.color]="prog.color">{{ prog.value }}</p>
+              <p *ngIf="coachDashboardLoaded(); else focusSkel" class="text-lg font-black leading-none mt-1" [style.color]="prog.color">{{ prog.value }}</p>
               <p class="text-[10px] font-semibold mt-1.5 leading-snug" [style.color]="prog.color">{{ prog.label }}</p>
             </div>
           </div>
@@ -190,7 +195,8 @@
         <!-- Activity Timeline -->
         <div>
           <div class="section-title">Recent Activity</div>
-          <div class="section-card px-4 py-2">
+          <app-skeleton-list *ngIf="!coachDashboardLoaded()" [count]="3" avatarSize="32px"></app-skeleton-list>
+          <div *ngIf="coachDashboardLoaded()" class="section-card px-4 py-2">
             <div *ngFor="let activity of coachActivities; let i = index" class="flex items-center gap-3 py-3"
               [class.border-b]="i < coachActivities.length - 1" [style.borderBottomColor]="'#F9FAFB'">
               <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold"
@@ -202,7 +208,7 @@
                 <p class="text-[10px] text-[#9CA3AF] mt-0.5">{{ activity.time }}</p>
               </div>
             </div>
-            <div *ngIf="!coachDashboardLoading() && !coachActivities.length" class="py-5 text-center text-[13px] text-[#6B7280]">
+            <div *ngIf="!coachActivities.length" class="py-5 text-center text-[13px] text-[#6B7280]">
               No recent coaching activity yet.
             </div>
           </div>
@@ -218,9 +224,10 @@
             <span class="text-[9px] bg-[var(--app-primary)]/15 text-[#16A34A] font-black px-2 py-0.5 rounded-full">AI</span>
           </div>
           <div class="bg-[#F9FAFB] rounded-2xl px-4 py-3.5 mb-3">
-            <p class="text-[13px] text-[#6B7280] leading-relaxed">
+            <p *ngIf="coachDashboardLoaded(); else insightSkel" class="text-[13px] text-[#6B7280] leading-relaxed">
               <strong class="text-[#111827] font-bold">{{ coachInsight.heading }}</strong> {{ coachInsight.message }}
             </p>
+            <ng-template #insightSkel><ion-skeleton-text animated class="coach-skel-line"></ion-skeleton-text><ion-skeleton-text animated class="coach-skel-line coach-skel-line--short"></ion-skeleton-text></ng-template>
           </div>
           <button (click)="go('/app/coach/evaluate')" class="btn-green-ghost w-full h-10 rounded-2xl text-[13px] font-bold text-[#111827] flex items-center justify-center gap-1">
             View Evaluations <ion-icon name="arrow-forward-outline"></ion-icon>
@@ -237,7 +244,7 @@
             <div *ngFor="let earn of coachEarningsSnapshot"
               class="bg-[#F9FAFB] rounded-2xl p-3 text-center">
               <p class="text-[10px] text-[#9CA3AF] mb-1">{{ earn.period }}</p>
-              <p class="text-[14px] font-black text-[#111827]">{{ earn.amount }}</p>
+              <p *ngIf="coachDashboardLoaded(); else focusSkel" class="text-[14px] font-black text-[#111827]">{{ earn.amount }}</p>
               <p class="text-[10px] font-bold text-[#22C55E] mt-0.5">{{ earn.trend }}</p>
             </div>
           </div>
@@ -253,10 +260,10 @@
             <span class="section-title">Venue Availability</span>
             <button (click)="go('/app/coach/book-venue')" class="see-all-btn">See All <ion-icon name="chevron-forward-outline"></ion-icon></button>
           </div>
-          <div *ngIf="coachVenueLoading()" class="coach-dashboard-inline-state"><ion-spinner name="crescent"></ion-spinner><span>Checking today's venue times…</span></div>
+          <app-card-row-skeleton *ngIf="coachVenueLoading() && !coachVenues.length" [count]="2" cardWidth="175px" mediaHeight="95px" [lines]="3" label="Checking venue times"></app-card-row-skeleton>
           <div *ngIf="!coachVenueLoading() && coachVenueError()" class="coach-dashboard-inline-state error"><span>{{ coachVenueError() }}</span><button type="button" (click)="loadCoachVenues()">Retry</button></div>
           <div *ngIf="!coachVenueLoading() && !coachVenueError() && !coachVenues.length" class="coach-dashboard-inline-state"><span>No approved venues are available right now.</span><button type="button" (click)="go('/app/coach/book-venue')">Browse venues</button></div>
-          <div *ngIf="!coachVenueLoading() && coachVenues.length" class="flex gap-3 overflow-x-auto pb-1 no-scrollbar">
+          <div *ngIf="coachVenues.length" class="flex gap-3 overflow-x-auto pb-1 no-scrollbar">
             <div *ngFor="let venue of coachVenues" class="flex-shrink-0 w-[175px] bg-white rounded-[22px] overflow-hidden border border-[#F3F4F6] shadow-sm">
               <div class="h-[95px] overflow-hidden bg-slate-200">
                 <img [src]="venue.image" [alt]="venue.name" class="w-full h-full object-cover" />
@@ -281,7 +288,8 @@
             <span class="section-title">Community</span>
             <button (click)="go('/app/events/upcoming')" class="see-all-btn">Explore <ion-icon name="chevron-forward-outline"></ion-icon></button>
           </div>
-          <div *ngIf="!coachDashboardLoading() && !coachCommunity.length" class="coach-dashboard-inline-state"><span>No upcoming public community events.</span><button type="button" (click)="go('/app/coach/community')">Open coach community</button></div>
+          <app-card-row-skeleton *ngIf="!coachDashboardLoaded()" [count]="2" cardWidth="185px" mediaHeight="95px" [lines]="2" label="Loading community events"></app-card-row-skeleton>
+          <div *ngIf="coachDashboardLoaded() && !coachCommunity.length" class="coach-dashboard-inline-state"><span>No upcoming public community events.</span><button type="button" (click)="go('/app/coach/community')">Open coach community</button></div>
           <div *ngIf="coachCommunity.length" class="flex gap-3 overflow-x-auto pb-1 no-scrollbar">
             <div *ngFor="let com of coachCommunity" class="flex-shrink-0 w-[185px] bg-white rounded-[22px] overflow-hidden border border-[#F3F4F6] shadow-sm">
               <div class="relative h-[95px] overflow-hidden bg-slate-200">
@@ -306,7 +314,8 @@
             <span class="section-title">Recent Reviews</span>
             <button (click)="go('/app/coach/insights')" class="see-all-btn">View All <ion-icon name="chevron-forward-outline"></ion-icon></button>
           </div>
-          <div *ngIf="!coachDashboardLoading() && !coachReviews.length" class="coach-dashboard-inline-state"><span>No published student reviews yet.</span><button type="button" (click)="go('/app/coach/insights')">View insights</button></div>
+          <app-skeleton-list *ngIf="!coachDashboardLoaded()" [count]="2" avatarSize="36px"></app-skeleton-list>
+          <div *ngIf="coachDashboardLoaded() && !coachReviews.length" class="coach-dashboard-inline-state"><span>No published student reviews yet.</span><button type="button" (click)="go('/app/coach/insights')">View insights</button></div>
           <div class="space-y-3">
             <div *ngFor="let rev of coachReviews" class="section-card p-4">
               <div class="flex items-center gap-3 mb-2.5">
@@ -331,8 +340,11 @@
               <div class="coach-milestone-icon"><ion-icon name="trophy"></ion-icon></div>
               <div class="coach-milestone-copy">
                 <p class="coach-milestone-kicker">Milestone</p>
-                <p class="coach-milestone-title">{{ coachMilestone.title }}</p>
-                <p class="coach-milestone-description">{{ coachMilestone.description }}</p>
+                <ng-container *ngIf="coachDashboardLoaded(); else milestoneSkel">
+                  <p class="coach-milestone-title">{{ coachMilestone.title }}</p>
+                  <p class="coach-milestone-description">{{ coachMilestone.description }}</p>
+                </ng-container>
+                <ng-template #milestoneSkel><ion-skeleton-text animated class="coach-skel-line coach-skel-line--light"></ion-skeleton-text><ion-skeleton-text animated class="coach-skel-line coach-skel-line--light coach-skel-line--short"></ion-skeleton-text></ng-template>
               </div>
             </div>
           </div>
@@ -344,7 +356,8 @@
                 <div class="coach-weather-icon">
                   <ion-icon [name]="coachWeather.icon"></ion-icon>
                 </div>
-                <div>
+                <div *ngIf="!coachDashboardLoaded()" class="coach-weather-skel"><ion-skeleton-text animated class="coach-skel-line"></ion-skeleton-text><ion-skeleton-text animated class="coach-skel-line coach-skel-line--short"></ion-skeleton-text></div>
+                <div *ngIf="coachDashboardLoaded()">
                   <p class="coach-weather-location">Today &middot; {{ coachWeather.location || 'Location not set' }}</p>
                   <div class="coach-weather-reading">
                     <p class="coach-weather-temperature">{{ coachWeather.temperature !== null && coachWeather.temperature !== undefined ? coachWeather.temperature + '°' : '—' }}</p>
@@ -352,7 +365,7 @@
                   </div>
                 </div>
               </div>
-              <div class="coach-weather-outdoor" [class.caution]="!coachWeather.outdoorSuitable">
+              <div *ngIf="coachDashboardLoaded()" class="coach-weather-outdoor" [class.caution]="!coachWeather.outdoorSuitable">
                 <p>{{ coachWeather.available ? 'Outdoor' : 'Weather' }}</p>
                 <span>{{ coachWeather.outdoorLabel }}</span>
               </div>
@@ -626,7 +639,8 @@
         </ion-modal>
 
         <div class="feed-section-heading sport-rail-heading"><h2>Explore by sport</h2></div>
-        <nav id="home-sport-rail" class="sport-rail" aria-label="Choose a sport">
+        <div *ngIf="!homeSportsReady" class="sport-rail home-sport-rail-skeleton" aria-busy="true" aria-label="Loading sports"><span class="sport-rail-item" *ngFor="let i of [1,2,3,4,5,6]"><ion-skeleton-text animated class="sport-rail-icon"></ion-skeleton-text><ion-skeleton-text animated class="home-skel-label"></ion-skeleton-text></span></div>
+        <nav *ngIf="homeSportsReady" id="home-sport-rail" class="sport-rail" aria-label="Choose a sport">
           <button type="button" class="sport-rail-item" *ngFor="let sport of sportRailItems" (click)="activateHomeSport(sport)"><span class="sport-rail-icon"><ion-icon *ngIf="sport.id === 'home-more'; else sportIcon" name="grid-outline"></ion-icon><ng-template #sportIcon><img [src]="sport.icon" alt="" /></ng-template></span><span>{{ sport.name }}</span></button>
         </nav>
 
@@ -662,7 +676,7 @@
 
         <section class="home-feed-section">
           <div class="feed-section-heading"><h2>Games near you</h2><button type="button" (click)="go('/app/ongoing')">View all <ion-icon name="chevron-forward-outline"></ion-icon></button></div>
-          <div *ngIf="nearbyLoading" class="feed-state"><ion-spinner name="crescent"></ion-spinner><span>Finding games near you…</span></div>
+          <app-card-row-skeleton *ngIf="nearbyLoading && !nearbyBookings.length" class="home-card-skeleton" [count]="2" cardWidth="min(78vw, 290px)" mediaHeight="132px" label="Finding games near you"></app-card-row-skeleton>
           <div *ngIf="!nearbyLoading && nearbyError" class="feed-state feed-state-error"><span>{{ nearbyError }}</span><button type="button" (click)="loadNearbyGames()">Retry</button></div>
           <div *ngIf="!nearbyLoading && !nearbyError && !nearbyBookings.length" class="feed-state"><span>No ongoing games found nearby.</span><button type="button" (click)="go('/app/game/create')">Host the first game</button></div>
           <div *ngIf="nearbyBookings.length" class="horizontal-card-row game-card-row">
@@ -681,7 +695,7 @@
 
         <section class="home-feed-section">
           <div class="feed-section-heading"><h2>Top venues near you</h2><button type="button" (click)="go('/app/venues')">View all <ion-icon name="chevron-forward-outline"></ion-icon></button></div>
-          <div class="home-inline-state" *ngIf="venuesLoading"><ion-spinner name="crescent"></ion-spinner><span>Finding venues near you…</span></div>
+          <app-card-row-skeleton *ngIf="venuesLoading" class="home-card-skeleton" [count]="2" cardWidth="min(70vw, 250px)" mediaHeight="120px" label="Finding venues near you"></app-card-row-skeleton>
           <div class="home-inline-state error" *ngIf="!venuesLoading && venuesError"><span>{{ venuesError }}</span><button type="button" (click)="loadHomeVenues()">Retry</button></div>
           <div class="home-inline-state" *ngIf="!venuesLoading && !venuesError && !homeVenues.length"><span>No venues are listed near you yet.</span><button type="button" (click)="go('/app/venues')">Browse venues</button></div>
           <div class="horizontal-card-row venue-card-row" *ngIf="homeVenues.length">
@@ -696,15 +710,15 @@
           </div>
         </section>
 
-        <section class="home-feed-section" *ngIf="tournamentLoading || homeTournament">
+        <section class="home-feed-section" *ngIf="(tournamentLoading && !homeTournament) || homeTournament">
           <div class="feed-section-heading"><h2>Tournaments</h2><button type="button" (click)="go('/app/events/upcoming')">View all <ion-icon name="chevron-forward-outline"></ion-icon></button></div>
-          <article class="tournament-card tournament-card-loading" *ngIf="tournamentLoading"><ion-spinner name="crescent"></ion-spinner><span>Loading upcoming tournaments…</span></article>
-          <article class="tournament-card" *ngIf="!tournamentLoading && homeTournament as tournament"><span class="tournament-icon"><ion-icon name="trophy-outline"></ion-icon></span><div><small class="tournament-kicker">{{ tournament.sportLabel }} · {{ tournament.formatLabel }}</small><h3 class="tournament-title">{{ tournament.title }}</h3><p class="tournament-meta">{{ tournament.dateLabel }} · {{ tournament.detailLabel }}</p></div><button type="button" (click)="openTournament(tournament.id)">Register</button></article>
+          <app-card-row-skeleton *ngIf="tournamentLoading && !homeTournament" class="home-card-skeleton" [full]="true" mediaHeight="0" [lines]="3" label="Loading upcoming tournaments"></app-card-row-skeleton>
+          <article class="tournament-card" *ngIf="homeTournament as tournament"><span class="tournament-icon"><ion-icon name="trophy-outline"></ion-icon></span><div><small class="tournament-kicker">{{ tournament.sportLabel }} · {{ tournament.formatLabel }}</small><h3 class="tournament-title">{{ tournament.title }}</h3><p class="tournament-meta">{{ tournament.dateLabel }} · {{ tournament.detailLabel }}</p></div><button type="button" (click)="openTournament(tournament.id)">Register</button></article>
         </section>
 
         <section class="home-feed-section coaches-section">
           <div class="feed-section-heading"><h2>Coaches for you</h2><button type="button" (click)="go('/app/coaches')">View all <ion-icon name="chevron-forward-outline"></ion-icon></button></div>
-          <div class="home-inline-state" *ngIf="coachesLoading"><ion-spinner name="crescent"></ion-spinner><span>Finding top coaches…</span></div>
+          <app-card-row-skeleton *ngIf="coachesLoading && !homeCoaches.length" class="home-card-skeleton" [count]="2" cardWidth="min(78vw, 290px)" mediaHeight="0" [lines]="4" label="Finding top coaches"></app-card-row-skeleton>
           <div class="home-inline-state error" *ngIf="!coachesLoading && coachesError"><span>{{ coachesError }}</span><button type="button" (click)="loadPlayerCoaches()">Retry</button></div>
           <div class="home-inline-state" *ngIf="!coachesLoading && !coachesError && !homeCoaches.length"><span>No coaches with pricing are available right now.</span><button type="button" (click)="go('/app/coaches')">View directory</button></div>
           <div class="horizontal-card-row coach-card-row" *ngIf="homeCoaches.length">
@@ -720,6 +734,11 @@
               </span>
             </button>
           </div>
+        </section>
+
+        <section class="home-feed-section home-progress-section" *ngIf="progressLoading && !xpSummary">
+          <div class="feed-section-heading"><h2>Your performance</h2></div>
+          <app-card-row-skeleton class="home-card-skeleton" [full]="true" mediaHeight="0" [lines]="5" label="Loading your performance"></app-card-row-skeleton>
         </section>
 
         <section class="home-feed-section home-progress-section" *ngIf="xpSummary as xp">

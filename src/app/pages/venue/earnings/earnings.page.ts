@@ -48,7 +48,7 @@ type PeriodKey = 'today' | 'week' | 'month' | 'year';
           </div>
         </div>
 
-        <div class="px-5 pt-2" *ngIf="loading() && !data()">
+        <div class="px-5 pt-2" *ngIf="loading()">
           <app-page-skeleton variant="wallet" label="Loading earnings"></app-page-skeleton>
         </div>
 
@@ -59,7 +59,7 @@ type PeriodKey = 'today' | 'week' | 'month' | 'year';
           </div>
         </div>
 
-        <div class="px-5 pt-4 space-y-5" *ngIf="data()">
+        <div class="px-5 pt-4 space-y-5" *ngIf="data() && !loading()">
           <!-- Summary hero -->
           <div
             class="rounded-[24px] p-6 relative overflow-hidden text-left"

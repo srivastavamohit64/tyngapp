@@ -129,7 +129,8 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
                 <span class="live-dot"></span>
                 <span>LIVE</span>
               </div>
-              <div class="map-count">{{ games.length }} active games nearby</div>
+              <div class="map-count"><ng-container *ngIf="!loading; else ogCountSkel">{{ games.length }}</ng-container> active games nearby</div>
+              <ng-template #ogCountSkel><ion-skeleton-text animated style="display:inline-block;width:28px;height:14px;margin:0;border-radius:999px;vertical-align:middle"></ion-skeleton-text></ng-template>
               <div class="map-sub">Tap a pin for game details</div>
               <button type="button" class="open-map-cta" (click)="openFullMap()">Open full map</button>
             </div>
@@ -138,7 +139,7 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
 
         <!-- Games count -->
         <div class="games-count-row">
-          <span class="games-count">{{ filteredGames.length }} games found</span>
+          <span class="games-count"><ng-container *ngIf="!loading; else ogCountSkel">{{ filteredGames.length }}</ng-container> games found</span>
           <button class="sort-btn">
             <ion-icon name="swap-vertical-outline"></ion-icon>
             Sort

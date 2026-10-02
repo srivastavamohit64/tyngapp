@@ -3,11 +3,12 @@ import { Component, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { ApiService } from '../../core/services/api.service';
+import { SkeletonListComponent } from '../../shared/components/skeleton';
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, SkeletonListComponent],
   template: `
     <ion-content fullscreen>
       <main class="page">
@@ -23,12 +24,13 @@ import { ApiService } from '../../core/services/api.service';
             </button>
           </div>
 
+          <ng-template #statValueSkel><ion-skeleton-text animated style="display:block;width:48px;height:22px;margin:4px 0;border-radius:8px"></ion-skeleton-text></ng-template>
           <div class="stats">
             <div class="stat" *ngFor="let s of stats">
               <div class="stat-icon" [style.color]="s.color">
                 <ion-icon [name]="s.icon"></ion-icon>
               </div>
-              <p class="stat-value">{{ s.value }}</p>
+              <p *ngIf="!operationsLoading; else statValueSkel" class="stat-value">{{ s.value }}</p>
               <p class="stat-label">{{ s.label }}</p>
               <p class="stat-change">{{ s.change }}</p>
             </div>
@@ -37,7 +39,7 @@ import { ApiService } from '../../core/services/api.service';
 
         <section class="section">
           <h3>Coach &amp; Venue Operations</h3>
-          <p *ngIf="operationsLoading" class="text-sm text-slate-500">Loading live scheduling activity…</p>
+          <app-skeleton-list *ngIf="operationsLoading" [count]="3" avatarSize="36px"></app-skeleton-list>
           <p *ngIf="operationsError" class="text-sm text-red-600">{{ operationsError }}</p>
           <div *ngIf="operations as ops" class="bg-white rounded-2xl border border-slate-200 p-4">
             <div class="grid grid-cols-2 gap-3 mb-4">

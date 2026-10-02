@@ -112,6 +112,13 @@
               <span class="lb-rank-period">{{ periodLabel }}</span>
             </div>
 
+            <div *ngIf="loading" class="lb-rank-skel" aria-busy="true" aria-label="Loading your rank">
+              <ion-skeleton-text animated class="lb-skel-big"></ion-skeleton-text>
+              <ion-skeleton-text animated class="lb-skel-line"></ion-skeleton-text>
+              <div class="lb-skel-stats"><ion-skeleton-text *ngFor="let i of [1,2,3]" animated class="lb-skel-stat"></ion-skeleton-text></div>
+            </div>
+
+            <ng-container *ngIf="!loading">
             <div class="lb-rank-main">
               <div>
                 <p class="lb-rank-number">{{ me?.rank ? '#' + me?.rank : '—' }}</p>
@@ -161,6 +168,7 @@
                 <p class="lb-chase-empty">Play a verified game{{ periodSuffix }} to get on this board.</p>
               </ng-template>
             </div>
+            </ng-container>
 
             <button type="button" class="lb-lime-btn" (click)="openXpHistory()">VIEW MY XP →</button>
           </div>
@@ -173,15 +181,21 @@
           <div class="lb-next-icon"><ion-icon name="flash"></ion-icon></div>
           <div class="lb-next-copy">
             <p class="lb-next-kicker">YOUR NEXT MOVE</p>
-            <ng-container *ngIf="playerAhead; else nextMoveOther">
+            <ng-container *ngIf="loading">
+              <ion-skeleton-text animated class="lb-skel-line lb-skel-line--dark"></ion-skeleton-text>
+              <ion-skeleton-text animated class="lb-skel-line lb-skel-line--dark lb-skel-line--short"></ion-skeleton-text>
+            </ng-container>
+            <ng-container *ngIf="!loading && playerAhead; else nextMoveOther">
               <p class="lb-next-title">You're {{ xpToAhead | number }} XP away from #{{ playerAhead.rank }}.</p>
               <p class="lb-next-text">Complete one verified game on time and you could move up.</p>
             </ng-container>
             <ng-template #nextMoveOther>
+              <ng-container *ngIf="!loading">
               <p class="lb-next-title">{{ me?.rank === 1 ? "You're top of the board." : 'Get on the board.' }}</p>
               <p class="lb-next-text">
                 {{ me?.rank === 1 ? 'Keep playing verified games to defend #1.' : 'Join a verified game near you to start earning XP.' }}
               </p>
+            </ng-container>
             </ng-template>
           </div>
           <button type="button" class="lb-next-btn" (click)="findGame()">FIND A GAME</button>

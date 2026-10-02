@@ -8,13 +8,14 @@ import {
   CoachInsightsPeriod,
 } from '../../core/models/api.model';
 import { CoachService } from '../../core/services/coach.service';
+import { PageSkeletonComponent } from '../../shared/components/skeleton';
 
 type ColouredMetric = CoachInsightMetric & { color: string };
 
 @Component({
   selector: 'app-coach-insights',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, PageSkeletonComponent],
   template: `
     <ion-content [fullscreen]="true" class="insights-content-shell">
       <main class="insights-page">
@@ -44,7 +45,7 @@ type ColouredMetric = CoachInsightMetric & { color: string };
           </button>
         </nav>
 
-        <div *ngIf="loading()" class="status-strip" aria-live="polite">
+        <div *ngIf="loading() && data()" class="status-strip" aria-live="polite">
           <ion-spinner name="crescent"></ion-spinner>
           <span>Refreshing insights…</span>
         </div>
@@ -54,7 +55,8 @@ type ColouredMetric = CoachInsightMetric & { color: string };
           <button type="button" (click)="loadInsights()">Retry</button>
         </div>
 
-        <section class="page-body" [class.is-loading]="loading()">
+        <app-page-skeleton *ngIf="!data() && loading()" variant="dashboard" label="Loading insights"></app-page-skeleton>
+        <section *ngIf="data()" class="page-body" [class.is-loading]="loading()">
           <article class="growth-card">
             <div class="growth-card__top">
               <div class="score-ring" [style.--score]="growthIndex()">
@@ -366,7 +368,7 @@ export class CoachInsightsPage {
   readonly selectedPeriod = signal<CoachInsightsPeriod>('last_30_days');
   readonly selectedDate = signal(this.today);
   readonly calendarOpen = signal(false);
-  readonly loading = signal(false);
+  readonly loading = signal(true);
   readonly error = signal('');
   readonly data = signal<CoachInsightsPayload | null>(null);
 

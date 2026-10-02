@@ -99,6 +99,9 @@
               <div class="venue-drawer-completion-fill" [style.width.%]="profileCompletion()"></div>
             </div>
             <div class="venue-drawer-checklist">
+              <ng-container *ngIf="!venueMenuLoaded()">
+                <div *ngFor="let i of [1,2,3,4]" class="venue-drawer-check"><ion-skeleton-text animated class="venue-drawer-skel"></ion-skeleton-text></div>
+              </ng-container>
               <div *ngFor="let item of venueChecklistPreview()" class="venue-drawer-check">
                 <div class="venue-drawer-check-dot" [class.venue-drawer-check-dot--done]="item.done">
                   <ion-icon *ngIf="item.done" name="checkmark"></ion-icon>
@@ -115,11 +118,12 @@
             <div class="menu-icon"><ion-icon [name]="item.icon"></ion-icon></div>
             <div class="menu-text">
               <div class="menu-label">{{ item.label }}</div>
-              <div class="menu-desc">{{ item.sub }}</div>
+              <div *ngIf="!item.live || venueMenuLoaded(); else menuDescSkel" class="menu-desc">{{ item.sub }}</div>
             </div>
             <div *ngIf="item.badge" class="menu-badge">{{ item.badge }}</div>
             <ion-icon *ngIf="!item.badge" name="chevron-forward-outline" class="menu-chevron"></ion-icon>
           </button>
+          <ng-template #menuDescSkel><ion-skeleton-text animated class="menu-desc-skel"></ion-skeleton-text></ng-template>
 
         </div>
       </div>

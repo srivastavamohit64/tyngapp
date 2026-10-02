@@ -6,6 +6,7 @@ import { IonicModule } from '@ionic/angular';
 import { CoachService } from '../../core/services/coach.service';
 import { ChatService } from '../../core/services/chat.service';
 import { resolveMediaUrl } from '../../core/utils/media-url.util';
+import { PageSkeletonComponent } from '../../shared/components/skeleton';
 
 interface Student {
   id: number;
@@ -168,9 +169,17 @@ const ACHIEVEMENT_COLORS: Record<string, { bg: string; color: string }> = {
 @Component({
   selector: 'app-coach-student-profile',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule],
+  imports: [CommonModule, IonicModule, FormsModule, PageSkeletonComponent],
   template: `
     <ion-content [fullscreen]="true">
+      <div *ngIf="!student" class="student-profile-loading">
+        <button type="button" (click)="back()" class="sp-back" aria-label="Back"><ion-icon name="chevron-back-outline"></ion-icon></button>
+        <app-page-skeleton *ngIf="loading" variant="detail" label="Loading student profile"></app-page-skeleton>
+        <div *ngIf="!loading && loadError" class="sp-error" role="alert">
+          <p>{{ loadError }}</p>
+          <button type="button" (click)="loadStudent(studentId)">Try again</button>
+        </div>
+      </div>
       <div *ngIf="student" class="student-profile-page pb-40">
         <!-- Hero Cover image -->
         <div class="relative h-[32vh] min-h-[220px] overflow-hidden bg-gray-900">
@@ -602,6 +611,11 @@ const ACHIEVEMENT_COLORS: Record<string, { bg: string; color: string }> = {
       animation: scanLaser 1.8s infinite ease-in-out;
     }
 
+    .student-profile-loading { padding: calc(var(--safe-area-top, 0px) + 12px) 16px 24px; }
+    .sp-back { width: 40px; height: 40px; margin-bottom: 10px; border: 0; border-radius: 50%; background: #f3f4f6; display: grid; place-items: center; font-size: 20px; color: #111827; }
+    .sp-error { padding: 40px 12px; text-align: center; color: #6b7280; font-size: 14px; }
+    .sp-error button { margin-top: 12px; height: 40px; padding: 0 18px; border: 0; border-radius: 12px; background: var(--app-primary); color: #111827; font-weight: 800; }
+
     @keyframes scanLaser {
       0% { top: 10%; }
       50% { top: 90%; }
@@ -616,6 +630,9 @@ export class CoachStudentProfilePage implements OnInit {
   private readonly chat = inject(ChatService);
 
   student: Student | null = null;
+  loading = true;
+  loadError = '';
+  studentId = 0;
   liked = false;
   showQR = signal(false);
   scanState = signal<'ready' | 'scanning' | 'success'>('ready');
@@ -635,33 +652,43 @@ export class CoachStudentProfilePage implements OnInit {
   readonly focusAreas = FOCUS_AREAS;
 
   ngOnInit() {
-    this.route.paramMap.subscribe(params => {
-      const id = Number(params.get('id'));
-      this.coach.getStudent(id).subscribe({ next: (response) => {
-        const data: any = response.data;
-        const relation = data?.relationship;
-        const managedProfile = relation?.profile;
-        const player = relation?.student || {};
-        const sessions = data?.sessions || [];
-        const evaluations = data?.evaluations || [];
-        const latest = evaluations[0] || {};
-        const skillRatings = latest.skill_ratings || {};
-        this.student = {
-          id: Number(player.id || id), name: player.name || 'Student', age: this.ageFromDob(player.dob),
-          photo: resolveMediaUrl(player.profile_image) || 'assets/icon/favicon.png', cover: resolveMediaUrl(player.cover_image) || resolveMediaUrl(player.profile_image) || 'assets/icon/favicon.png', sport: (player.sports || ['Coaching'])[0], emoji: '',
-          skillLevel: managedProfile?.skill_level || 'Beginner', sessionsCompleted: sessions.length, attendance: 0,
-          trainingFocus: relation?.training_focus || [], lastSession: sessions[0]?.session_date || '', coachSince: relation?.enrolled_at || '', membershipStatus: relation?.status === 'active' ? 'Active' : 'Inactive', managedProfile,
-          stats: { sessions: sessions.length, hours: 0, attendance: 0, improvement: 0, streak: 0, tournamentWins: 0, personalBest: '—' },
-          evaluation: { technique: skillRatings.technique || latest.rating || 5, fitness: skillRatings.fitness || latest.rating || 5, gameAwareness: skillRatings.gameAwareness || latest.rating || 5, discipline: skillRatings.discipline || latest.rating || 5, teamwork: skillRatings.teamwork || latest.rating || 5, confidence: skillRatings.confidence || latest.rating || 5 },
-          notes: (data?.notes || []).map((n: any) => ({ text: n.note, date: n.created_at || '' })), achievements: data?.achievements || [], timeline: data?.timeline || [],
-        };
-        if (this.student) {
-          this.evaluation = { ...this.student.evaluation };
-          this.notes = [...this.student.notes];
-          this.selectedFocus = [...this.student.trainingFocus];
-        }
-      }, error: () => { this.student = null; } });
-    });
+    this.route.paramMap.subscribe(params => this.loadStudent(Number(params.get('id'))));
+  }
+
+  loadStudent(id: number) {
+    this.studentId = id;
+    this.student = null;
+    this.loading = true;
+    this.loadError = '';
+    this.coach.getStudent(id).subscribe({ next: (response) => {
+      this.loading = false;
+      const data: any = response.data;
+      const relation = data?.relationship;
+      const managedProfile = relation?.profile;
+      const player = relation?.student || {};
+      const sessions = data?.sessions || [];
+      const evaluations = data?.evaluations || [];
+      const latest = evaluations[0] || {};
+      const skillRatings = latest.skill_ratings || {};
+      this.student = {
+        id: Number(player.id || id), name: player.name || 'Student', age: this.ageFromDob(player.dob),
+        photo: resolveMediaUrl(player.profile_image) || 'assets/icon/favicon.png', cover: resolveMediaUrl(player.cover_image) || resolveMediaUrl(player.profile_image) || 'assets/icon/favicon.png', sport: (player.sports || ['Coaching'])[0], emoji: '',
+        skillLevel: managedProfile?.skill_level || 'Beginner', sessionsCompleted: sessions.length, attendance: 0,
+        trainingFocus: relation?.training_focus || [], lastSession: sessions[0]?.session_date || '', coachSince: relation?.enrolled_at || '', membershipStatus: relation?.status === 'active' ? 'Active' : 'Inactive', managedProfile,
+        stats: { sessions: sessions.length, hours: 0, attendance: 0, improvement: 0, streak: 0, tournamentWins: 0, personalBest: '—' },
+        evaluation: { technique: skillRatings.technique || latest.rating || 5, fitness: skillRatings.fitness || latest.rating || 5, gameAwareness: skillRatings.gameAwareness || latest.rating || 5, discipline: skillRatings.discipline || latest.rating || 5, teamwork: skillRatings.teamwork || latest.rating || 5, confidence: skillRatings.confidence || latest.rating || 5 },
+        notes: (data?.notes || []).map((n: any) => ({ text: n.note, date: n.created_at || '' })), achievements: data?.achievements || [], timeline: data?.timeline || [],
+      };
+      if (this.student) {
+        this.evaluation = { ...this.student.evaluation };
+        this.notes = [...this.student.notes];
+        this.selectedFocus = [...this.student.trainingFocus];
+      }
+    }, error: () => {
+      this.student = null;
+      this.loading = false;
+      this.loadError = 'This student could not be loaded. Check your connection and try again.';
+    } });
   }
 
   back() {

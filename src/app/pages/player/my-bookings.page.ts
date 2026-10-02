@@ -179,8 +179,8 @@ export class MyBookingsPage implements OnInit, OnDestroy {
       + (this.bookings.counts.cancelled || 0)
       + (this.bookings.counts.completed || 0);
     return [
-      { id: 'upcoming', label: `Upcoming (${upcoming})` },
-      { id: 'past', label: `Past (${past})` },
+      { id: 'upcoming', label: this.loading ? 'Upcoming' : `Upcoming (${upcoming})` },
+      { id: 'past', label: this.loading ? 'Past' : `Past (${past})` },
     ];
   }
 

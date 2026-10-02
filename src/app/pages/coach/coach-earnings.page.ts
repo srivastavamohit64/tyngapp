@@ -3,6 +3,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { CoachService } from '../../core/services/coach.service';
+import { SkeletonListComponent } from '../../shared/components/skeleton';
 
 type EarningsPeriod = 'today' | 'week' | 'month' | 'year';
 
@@ -27,7 +28,7 @@ interface CoachEarningsData {
 @Component({
   selector: 'app-coach-earnings',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, SkeletonListComponent],
   template: `
     <ion-content [fullscreen]="true" class="has-tabs">
       <div class="earnings-page">
@@ -71,20 +72,21 @@ interface CoachEarningsData {
             <div class="summary-stats">
               <div class="summary-stat">
                 <ion-icon name="today-outline"></ion-icon>
-                <strong>{{ currency(data()?.stats?.today || 0) }}</strong>
+                <strong *ngIf="!loading(); else statSkel">{{ currency(data()?.stats?.today || 0) }}</strong>
                 <span>Today</span>
               </div>
               <div class="summary-stat">
                 <ion-icon name="calendar-outline"></ion-icon>
-                <strong>{{ currency(data()?.stats?.week || 0) }}</strong>
+                <strong *ngIf="!loading(); else statSkel">{{ currency(data()?.stats?.week || 0) }}</strong>
                 <span>This Week</span>
               </div>
               <div class="summary-stat">
                 <ion-icon name="wallet-outline"></ion-icon>
-                <strong>{{ currency(data()?.wallet_balance || 0) }}</strong>
+                <strong *ngIf="!loading(); else statSkel">{{ currency(data()?.wallet_balance || 0) }}</strong>
                 <span>Wallet</span>
               </div>
             </div>
+            <ng-template #statSkel><ion-skeleton-text animated class="stat-skel"></ion-skeleton-text></ng-template>
           </section>
 
           <section class="wallet-card">
@@ -94,7 +96,8 @@ interface CoachEarningsData {
             </div>
             <div class="wallet-balance">
               <span>Available Balance</span>
-              <strong>{{ currency(data()?.wallet_balance || 0) }}</strong>
+              <strong *ngIf="!loading(); else walletSkel">{{ currency(data()?.wallet_balance || 0) }}</strong>
+              <ng-template #walletSkel><ion-skeleton-text animated class="wallet-skel"></ion-skeleton-text></ng-template>
               <p><i></i> Current wallet balance</p>
             </div>
             <div class="wallet-actions">
@@ -109,7 +112,9 @@ interface CoachEarningsData {
             <div class="section-title-row">
               <div><h2>Earnings Breakdown</h2><p>Completed sessions by sport</p></div>
             </div>
+            <app-skeleton-list *ngIf="loading()" [count]="3" avatarSize="0px"></app-skeleton-list>
             <div *ngIf="!loading() && data()?.breakdown?.length === 0" class="empty-copy">Completed sessions will appear here.</div>
+            <ng-container *ngIf="!loading()">
             <div *ngFor="let item of data()?.breakdown; trackBy: trackBreakdown" class="breakdown-row">
               <div class="breakdown-topline">
                 <div><strong>{{ item.label }}</strong><span>{{ item.sessions }} session{{ item.sessions === 1 ? '' : 's' }}</span></div>
@@ -117,6 +122,7 @@ interface CoachEarningsData {
               </div>
               <div class="progress-track"><span [style.width.%]="item.percentage"></span></div>
             </div>
+            </ng-container>
           </section>
 
           <section class="content-card">
@@ -124,7 +130,9 @@ interface CoachEarningsData {
               <div><h2>Recent Sessions</h2><p>Your latest completed coaching sessions</p></div>
               <button type="button" class="view-all" (click)="go('/app/coach/schedule')">Schedule <ion-icon name="chevron-forward-outline"></ion-icon></button>
             </div>
+            <app-skeleton-list *ngIf="loading()" [count]="3" avatarSize="36px"></app-skeleton-list>
             <div *ngIf="!loading() && data()?.recent_sessions?.length === 0" class="empty-copy">No completed sessions yet.</div>
+            <ng-container *ngIf="!loading()">
             <article *ngFor="let session of data()?.recent_sessions; trackBy: trackSession" class="session-row">
               <div class="session-icon"><ion-icon name="checkmark-circle-outline"></ion-icon></div>
               <div class="session-copy">
@@ -134,6 +142,7 @@ interface CoachEarningsData {
               </div>
               <b class="session-amount">{{ currency(session.amount) }}</b>
             </article>
+            </ng-container>
           </section>
         </main>
       </div>
@@ -156,6 +165,8 @@ interface CoachEarningsData {
     .summary-change { position:relative; min-height:18px; margin:5px 0 20px; color:#ADB8C7; font-size:11px; }
     .summary-change.positive { color:#9BE859; }
     .summary-change.negative { color:#FDB4A8; }
+    .stat-skel { display:block; width:64px; height:14px; margin:4px auto; border-radius:999px; --background:rgba(255,255,255,.16); }
+    .wallet-skel { display:block; width:120px; height:26px; margin:6px 0; border-radius:9px; }
     .loading-total { width:190px; height:44px; margin:4px 0 5px; border-radius:9px; background:#ffffff16; animation:pulse 1s infinite alternate; }
     .summary-stats { position:relative; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
     .summary-stat { display:flex; min-width:0; min-height:87px; flex-direction:column; align-items:center; justify-content:center; gap:3px; padding:9px 5px; border:1px solid #ffffff0d; border-radius:16px; background:#ffffff12; text-align:center; }
@@ -206,7 +217,7 @@ export class CoachEarningsPage implements OnInit {
   private readonly router = inject(Router);
   private readonly coach = inject(CoachService);
   readonly selectedPeriod = signal<EarningsPeriod>('month');
-  readonly loading = signal(false);
+  readonly loading = signal(true);
   readonly error = signal('');
   readonly data = signal<CoachEarningsData | null>(null);
   readonly periods: Array<{ key: EarningsPeriod; label: string }> = [

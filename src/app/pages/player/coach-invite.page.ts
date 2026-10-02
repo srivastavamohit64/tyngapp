@@ -4,11 +4,12 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { CoachService } from '../../core/services/coach.service';
 import { resolveMediaUrl } from '../../core/utils/media-url.util';
+import { PageSkeletonComponent } from '../../shared/components/skeleton';
 
 @Component({
   selector: 'app-coach-invite',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, PageSkeletonComponent],
   template: `
     <ion-content [fullscreen]="true">
       <main class="invite-page">
@@ -18,7 +19,7 @@ import { resolveMediaUrl } from '../../core/utils/media-url.util';
           <span></span>
         </header>
 
-        <div *ngIf="loading()" class="state"><ion-spinner name="crescent"></ion-spinner><p>Loading invitation...</p></div>
+        <app-page-skeleton *ngIf="loading()" variant="profile" label="Loading invitation"></app-page-skeleton>
         <div *ngIf="error()" class="state error">
           <ion-icon name="alert-circle-outline"></ion-icon>
           <h2>Invitation unavailable</h2>

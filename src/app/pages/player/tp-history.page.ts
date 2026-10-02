@@ -6,6 +6,7 @@ import { firstValueFrom } from 'rxjs';
 import { XpLine, XpService, XpSummary } from '../../core/services/xp.service';
 import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { PageSkeletonComponent } from '../../shared/components/skeleton';
 
 interface XpHistoryGroup {
   key: string;
@@ -16,7 +17,7 @@ interface XpHistoryGroup {
 @Component({
   selector: 'app-xp-history-page',
   standalone: true,
-  imports: [CommonModule, IonicModule, BrandHeaderShellComponent, PageHeaderComponent],
+  imports: [CommonModule, IonicModule, BrandHeaderShellComponent, PageHeaderComponent, PageSkeletonComponent],
   template: `
     <ion-content fullscreen>
       <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
@@ -42,7 +43,7 @@ interface XpHistoryGroup {
             </section>
 
             <ng-template #heroSkeleton>
-              <section class="tp-hero tp-hero-loading"><ion-spinner name="crescent"></ion-spinner><span>Loading your XP…</span></section>
+              <app-page-skeleton variant="wallet" label="Loading your XP"></app-page-skeleton>
             </ng-template>
 
             <section class="tp-stat-grid" *ngIf="summary() as total">

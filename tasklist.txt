@@ -917,3 +917,12 @@ TYNG — TODAY'S WORK SUMMARY
    - The bottom menu (Home, Players, My Bookings, Chat, and the coach, venue and admin versions) now hides while the phone keyboard is open, and comes back when it closes. Buttons fixed at the bottom of a screen move down into the freed space.
    - In the phone app this follows the keyboard itself. In a phone web browser it follows typing in a text box.
    - Type check passes. Checked in the test browser with phone touch emulation: the menu hides while a text box is in use and returns afterwards. The Android and iOS apps need a rebuild (npx cap sync) to pick it up.
+152. LOADING PLACEHOLDERS INSTEAD OF SAMPLE TEXT - 2 October 2026
+   - Screens across the app used to show sample names, zeros or "nothing found" messages for a moment before the real information arrived. They now show grey placeholder shapes until it loads, and only say "nothing found" once loading has finished. Refreshing keeps the current information on screen.
+   - The grey placeholders were nearly invisible on white cards everywhere in the app because of their colour. They now use a darker tint, with a light tint in dark mode.
+   - Player: Home (sports row, games, venues, coaches, tournament, performance), leaderboard, coach profile (review count is now real), create game, venue and game counts, My Bookings, chat, event detail, coach invite, TP history.
+   - Coach: dashboard (no more sample sessions or requests), students, schedule (today's completion is now real instead of a fixed 50%), insights, earnings, student profile, complete profile.
+   - Venue staff: booking detail, calendar, earnings, facilities, dashboard weather place, complete profile, create event, side menu (the made-up checklist was removed).
+   - Admin: dashboard numbers and operations list.
+   - Type check passes and the app compiles. Home was checked in the browser as a player on a slowed-down connection. Coach, venue and admin screens were not opened in the browser.
+   - Still to do: some screens have no server data at all yet (Stats, coach Profile tab, upcoming events, admin users/venues/revenue/disputes, venue analytics, coach teams and settings, venue collab), and a few values are always made up (venue weather, coach earnings chart, venue rating 4.5 and opening hours fallback, bell red dot, venue booking summary slots, coach side menu rating 4.8).

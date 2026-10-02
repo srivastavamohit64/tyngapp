@@ -56,7 +56,8 @@ const TYPES = [
                 <select [(ngModel)]="draft.sport"><option *ngFor="let s of sports" [value]="s">{{ s | titlecase }}</option></select>
               </div>
               <div><label>Facility</label>
-                <select [(ngModel)]="draft.facility"><option *ngFor="let c of courts" [value]="c">{{ c }}</option></select>
+                <ion-skeleton-text *ngIf="courtsLoading" animated style="display:block;height:44px;margin:0;border-radius:12px"></ion-skeleton-text>
+                <select *ngIf="!courtsLoading" [(ngModel)]="draft.facility"><option *ngFor="let c of courts" [value]="c">{{ c }}</option></select>
               </div>
             </div>
             <label>Description</label>
@@ -156,7 +157,8 @@ const TYPES = [
               <div><strong>{{ s.name }}</strong><p>{{ s.package || 'Sponsor' }}</p></div>
               <button type="button" class="x" (click)="removeSponsor(i)">×</button>
             </div>
-            <div class="catalog-empty" *ngIf="!sponsors.length">No active sponsors are available yet. Ask an admin to add one.</div>
+            <ng-container *ngIf="sponsorsLoading"><ion-skeleton-text *ngFor="let i of [1,2]" animated style="display:block;height:52px;margin:0 0 8px;border-radius:12px"></ion-skeleton-text></ng-container>
+            <div class="catalog-empty" *ngIf="!sponsorsLoading && !sponsors.length">No active sponsors are available yet. Ask an admin to add one.</div>
             <button type="button" class="sponsor-option" *ngFor="let sponsor of sponsors" [class.selected]="hasSponsor(sponsor.id)" (click)="toggleSponsor(sponsor)">
               <img *ngIf="sponsor.imageUrl" [src]="sponsor.imageUrl" [alt]="sponsor.name" class="sponsor-img" />
               <div class="av" *ngIf="!sponsor.imageUrl">{{ sponsor.name.charAt(0) }}</div>
@@ -243,6 +245,8 @@ export class VenueCreateEventPage implements OnInit {
   readonly fee = 49;
   sports = ['football', 'cricket', 'badminton', 'basketball', 'tennis'];
   courts = ['Court 1'];
+  courtsLoading = true;
+  sponsorsLoading = true;
   genders = ['all', 'men', 'women', 'mixed'];
   recurring = ['no', 'weekly', 'monthly', 'seasonal', 'league'];
   formats = ['Knockout', 'League', 'Round Robin', 'Swiss', 'Double Elimination'];
@@ -325,7 +329,10 @@ export class VenueCreateEventPage implements OnInit {
     const type = this.route.snapshot.queryParamMap.get('type');
     if (type) this.draft.type = type;
     void this.loadCourts();
-    this.eventsApi.sponsors().subscribe({ next: (res) => { this.sponsors = res.data ?? []; } });
+    this.eventsApi.sponsors().subscribe({
+      next: (res) => { this.sponsors = res.data ?? []; this.sponsorsLoading = false; },
+      error: () => { this.sponsorsLoading = false; },
+    });
   }
 
   cta(): string {
@@ -461,6 +468,8 @@ export class VenueCreateEventPage implements OnInit {
       }
     } catch {
       // keep default
+    } finally {
+      this.courtsLoading = false;
     }
   }
 }

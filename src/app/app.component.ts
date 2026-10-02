@@ -28,6 +28,8 @@ interface VenueMenuItem {
   path: string;
   icon: string;
   badge?: string;
+  /** Subtitle comes from the venue dashboard API. */
+  live?: boolean;
 }
 
 @Component({
@@ -54,6 +56,7 @@ export class AppComponent implements OnInit {
   private lastScrollPath = '';
   readonly coachScheduleCount = signal(0);
 
+  readonly venueMenuLoaded = signal(false);
   private readonly venueMenuStats = signal<{
     profileName: string;
     profilePercent: number;
@@ -97,10 +100,10 @@ export class AppComponent implements OnInit {
     const profileSub = `${m.profileName || this.user()?.name?.trim() || 'Venue'} · ${m.profilePercent || this.user()?.profileCompletion || 0}%`;
 
     return [
-      { label: 'Venue Profile', sub: profileSub, path: '/app/venue/profile', icon: 'business-outline' },
-      { label: 'Facilities & Amenities', sub: facilitiesSub, path: '/app/venue/facilities', icon: 'cube-outline' },
+      { label: 'Venue Profile', sub: profileSub, path: '/app/venue/profile', icon: 'business-outline', live: true },
+      { label: 'Facilities & Amenities', sub: facilitiesSub, path: '/app/venue/facilities', icon: 'cube-outline', live: true },
       { label: 'Wallet', sub: 'Balance & top-up', path: '/app/wallet', icon: 'wallet-outline' },
-      { label: 'Earnings', sub: earnings, path: '/app/venue/earnings', icon: 'cash-outline' },
+      { label: 'Earnings', sub: earnings, path: '/app/venue/earnings', icon: 'cash-outline', live: true },
       { label: 'Coaches', sub: 'Partner coaches', path: '/app/venue/facilities', icon: 'people-outline' },
       { label: 'Events', sub: 'Create & manage events', path: '/app/venue/events', icon: 'sparkles-outline' },
       { label: 'Analytics', sub: 'Occupancy & insights', path: '/app/venue/analytics', icon: 'bar-chart-outline' },
@@ -112,13 +115,7 @@ export class AppComponent implements OnInit {
     const live = this.venueMenuStats().checklist
       .filter((item) => item.label.toLowerCase() !== 'amenities' && item.label.toLowerCase() !== 'verification')
       .slice(0, 4);
-    if (live.length) return live;
-    return [
-      { label: 'Venue Information', done: false },
-      { label: 'Sports Offered', done: false },
-      { label: 'Photos', done: false },
-      { label: 'Pricing', done: false },
-    ];
+    return live;
   });
 
   ngOnInit(): void {
@@ -385,6 +382,8 @@ export class AppComponent implements OnInit {
       });
     } catch {
       // Keep previous menu stats if dashboard fails.
+    } finally {
+      this.venueMenuLoaded.set(true);
     }
   }
 

@@ -7,13 +7,28 @@ import { firstValueFrom } from 'rxjs';
 import { CoachService } from '../../core/services/coach.service';
 import { ChatService } from '../../core/services/chat.service';
 import { resolveMediaUrl } from '../../core/utils/media-url.util';
+import { PageSkeletonComponent } from '../../shared/components/skeleton';
 
 @Component({
   selector: 'app-coach-profile-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule],
+  imports: [CommonModule, FormsModule, IonicModule, PageSkeletonComponent],
   template: `
     <ion-content fullscreen>
+      <main class="safe-area-top page-with-tab-bar px-6 py-4 bg-background text-foreground" *ngIf="!coach">
+        <header class="app-header-bar flex items-center justify-between mb-6">
+          <button (click)="back()" class="app-header-btn grid place-items-center rounded-full bg-card border border-border" aria-label="Back">
+            <ion-icon name="chevron-back-outline" class="text-xl"></ion-icon>
+          </button>
+          <h1 class="app-header-title text-center flex-1">Coach Profile</h1>
+          <div class="app-header-btn"></div>
+        </header>
+        <app-page-skeleton *ngIf="loading" variant="profile" label="Loading coach profile"></app-page-skeleton>
+        <div *ngIf="!loading" class="py-16 text-center text-sm text-slate-500" role="alert">
+          <p class="mb-4">{{ loadError || 'This coach profile is not available.' }}</p>
+          <button type="button" class="h-10 px-5 rounded-xl bg-primary font-bold text-slate-900" (click)="loadCoach()">Try again</button>
+        </div>
+      </main>
       <main class="safe-area-top page-with-tab-bar px-6 py-4 bg-background text-foreground" *ngIf="coach">
         
         <!-- Header -->
@@ -35,7 +50,7 @@ import { resolveMediaUrl } from '../../core/utils/media-url.util';
           <p class="text-xs font-bold text-primary mb-3 uppercase tracking-wide">{{ coach.sport }} • {{ coach.experience }}</p>
           <span class="rating flex items-center gap-1.5 text-sm font-bold text-secondary mb-4">
             <ion-icon name="star"></ion-icon>
-            {{ coach.rating }} (48 Reviews)
+            {{ coach.rating }}<ng-container *ngIf="coach.reviewCount"> ({{ coach.reviewCount }} review{{ coach.reviewCount === 1 ? '' : 's' }})</ng-container>
           </span>
 
           <div class="grid grid-cols-2 gap-4 w-full border-t border-border pt-4 mt-2">
@@ -185,6 +200,8 @@ export class CoachProfileDetailPage implements OnInit {
 
   coachId: number | null = null;
   coach: any = null;
+  loading = true;
+  loadError = '';
   requesting = false;
   requestSent = false;
   canChat = false;
@@ -210,24 +227,7 @@ export class CoachProfileDetailPage implements OnInit {
       const idStr = params.get('id');
       if (idStr) {
         this.coachId = +idStr;
-        this.coachService.getCoach(this.coachId).subscribe({
-          next: (response) => {
-            const item: any = response.data;
-            this.coach = {
-              ...item,
-              avatar: '👤',
-              sport: Array.isArray(item.sports) ? item.sports.join(', ') : (item.sport || 'Multi-sport'),
-              specialties: Array.isArray(item.sports) && item.sports.length ? item.sports : ['Coaching program'],
-              experience: item.experience || 'Coach',
-              bio: item.bio || 'Coach profile information will be available soon.',
-              rating: item.rating ?? 'New',
-              price: 'Discuss with Coach',
-              distance: item.location || 'Location not set',
-            };
-            if (this.route.snapshot.queryParamMap.get('book') === '1') this.bookSession();
-          },
-          error: () => { this.coach = null; },
-        });
+        this.loadCoach();
         this.coachService.getMyCoachStudentRequests().subscribe({
           next: (response) => {
             const data: any = response.data;
@@ -237,7 +237,38 @@ export class CoachProfileDetailPage implements OnInit {
             this.requestSent = !!match && !this.canChat;
           },
         });
+      } else {
+        this.loading = false;
       }
+    });
+  }
+
+  loadCoach() {
+    if (!this.coachId) return;
+    this.loading = true;
+    this.loadError = '';
+    this.coachService.getCoach(this.coachId).subscribe({
+      next: (response) => {
+        this.loading = false;
+        const item: any = response.data;
+        this.coach = {
+          ...item,
+          avatar: '👤',
+          sport: Array.isArray(item.sports) ? item.sports.join(', ') : (item.sport || 'Multi-sport'),
+          specialties: Array.isArray(item.sports) && item.sports.length ? item.sports : ['Coaching program'],
+          experience: item.experience || 'Coach',
+          bio: item.bio || 'Coach profile information will be available soon.',
+          rating: item.rating ?? 'New',
+          price: 'Discuss with Coach',
+          distance: item.location || 'Location not set',
+        };
+        if (this.route.snapshot.queryParamMap.get('book') === '1') this.bookSession();
+      },
+      error: (error) => {
+        this.coach = null;
+        this.loading = false;
+        this.loadError = error?.error?.message || 'This coach profile could not be loaded.';
+      },
     });
   }
 

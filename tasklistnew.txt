@@ -178,24 +178,29 @@ PLAYER
 - See real venues near you on the Home page, nearest first, with their photo, area, distance, sports and starting price. Tap a venue to open it and book.
 - Choose which 5 sports appear in the sports row on your Home page: tap More, then Edit Home, pick your 5 favourites and save. Your choice stays on every phone you sign in on.
 - See just your area under your name on the Home page, for example "Preeti Nagar" instead of "Preeti Nagar > Lucknow". If your area is not known, your city is shown.
+- See grey placeholder shapes while Home, the leaderboard, coach profiles, chats, bookings and other screens load, instead of sample text or a "nothing found" message that then changes. A coach profile now shows the real number of reviews.
 
 COACH
 
 - Use a back button on inner pages. The bottom menu now only appears on your main screens.
+- See grey placeholder shapes on your dashboard, students, schedule, insights, earnings and student pages while they load, instead of sample sessions and requests. Today's completion on your schedule is now worked out from your real sessions.
 
 VENUE STAFF
 
 - Use a back button on inner pages. The bottom menu now only appears on your main screens.
 - When you save your venue address, players nearby can now see how far away your venue is.
+- See grey placeholder shapes on bookings, calendar, earnings, facilities, your venue profile steps, event creation and the side menu while they load, instead of zeros or a made-up checklist.
 
 ADMIN
 
 - Edit the Privacy Policy and Terms & Conditions from the CMS Pages item in the admin menu. Changes appear in the app straight away.
+- See grey placeholder shapes on the dashboard numbers and activity list while they load, instead of zeros.
 
 ALL APP USERS
 
 - Headings above cards and lists now look the same on every screen: the same size, bold capital letters and colour, so pages are easier to scan.
 - The bottom menu now hides while you are typing, so the keyboard has more room and does not cover buttons. It comes back as soon as the keyboard closes.
+- Loading placeholders are now easy to see on every screen, so it is clear when information is still on its way.
 
 Writing rule: Whenever work is finished, add a short note here explaining in everyday words what changed and how it helps players, coaches, or administrators. Write for someone who does not work in software. Avoid programming terms, internal names, and tool names. Describe what the person can now do.
 

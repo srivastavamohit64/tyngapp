@@ -911,3 +911,7 @@ ion-modal.sports-picker-modal::part(content) { border-radius: 0; }
   .tournament-card,
   .player-home-v2 .player-home-ads { width: calc(100% - 48px); margin-inline: 24px; }
 }
+
+.home-card-skeleton { padding: 0 18px 4px; }
+.home-sport-rail-skeleton .sport-rail-icon { margin: 0; border: 0; --background: #eef0f3; }
+.home-sport-rail-skeleton .home-skel-label { width: 70%; height: 9px; margin: 0; border-radius: 999px; }

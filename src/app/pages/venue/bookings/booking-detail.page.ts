@@ -53,7 +53,7 @@ type DetailTab = 'overview' | 'players' | 'amenities' | 'live';
           </div>
         </div>
 
-        <div *ngIf="loading() && !booking()" class="px-4 pt-3">
+        <div *ngIf="loading() && !ready()" class="px-4 pt-3">
           <app-page-skeleton variant="detail" label="Loading booking"></app-page-skeleton>
         </div>
         <div *ngIf="!loading() && errorMessage() && !booking()" class="bd-state bd-state--error">
@@ -61,7 +61,7 @@ type DetailTab = 'overview' | 'players' | 'amenities' | 'live';
           <button type="button" class="btn btn--primary" (click)="load()">Retry</button>
         </div>
 
-        <ng-container *ngIf="booking() as b">
+        <ng-container *ngIf="ready() && booking() as b">
           <div class="bd-body">
             <section class="bd-hero" *ngIf="tab() !== 'players'">
               <div class="bd-hero-top">
@@ -785,6 +785,8 @@ export class VenueBookingDetailPage implements OnInit, OnDestroy {
   readonly sportEmoji = sportEmoji;
   readonly tab = signal<DetailTab>('overview');
   readonly loading = signal(true);
+  /** Booking, players and venue extras have all arrived at least once. */
+  readonly ready = signal(false);
   readonly acting = signal(false);
   readonly errorMessage = signal('');
   readonly booking = signal<BookingRecord | null>(null);
@@ -1095,6 +1097,7 @@ export class VenueBookingDetailPage implements OnInit, OnDestroy {
       this.booking.set(null);
     } finally {
       this.loading.set(false);
+      this.ready.set(true);
     }
   }
 

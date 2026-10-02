@@ -67,7 +67,7 @@ export class VenueDashboardPage implements OnInit, OnDestroy, ViewWillEnter {
   readonly hasDashboard = signal(false);
 
   /** Weather card: temp stays placeholder; place comes from GPS. */
-  weatherLocation = 'Detecting…';
+  weatherLocation = '';
   readonly weatherTemp = '-';
   readonly weatherCondition = '—';
 

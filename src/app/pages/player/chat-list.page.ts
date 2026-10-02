@@ -588,10 +588,10 @@ export class ChatListPage implements OnInit, OnDestroy, ViewWillEnter, ViewWillL
         this.loading = false;
         void this.tabBadges.refresh();
       });
-      // If RTDB returns empty quickly, still clear loading after a short wait.
+      // Only a safety net: the listener normally reports (even an empty list) well before this.
       setTimeout(() => {
         if (this.loading) this.loading = false;
-      }, 2500);
+      }, 8000);
     } catch {
       this.errorMessage = 'Unable to load chats from Firebase.';
       this.threads.set([]);

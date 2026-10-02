@@ -7,7 +7,7 @@ import { BookingCalendarEvent } from '../../../core/models/api.model';
 import { BookingService } from '../../../core/services/booking.service';
 import { VenueService } from '../../../core/services/venue.service';
 import { BrandHeaderShellComponent } from '../../../shared/components/brand-header-shell/brand-header-shell.component';
-import { PageSkeletonComponent } from '../../../shared/components/skeleton';
+import { PageSkeletonComponent, SkeletonListComponent } from '../../../shared/components/skeleton';
 
 interface CalendarCourt {
   name: string;
@@ -38,7 +38,7 @@ interface CalendarBookingItem {
 @Component({
   selector: 'app-venue-calendar-page',
   standalone: true,
-  imports: [CommonModule, IonicModule, BrandHeaderShellComponent, PageSkeletonComponent],
+  imports: [CommonModule, IonicModule, BrandHeaderShellComponent, PageSkeletonComponent, SkeletonListComponent],
   template: `
     <ion-content [fullscreen]="true" class="has-tabs">
       <app-brand-header-shell>
@@ -89,17 +89,18 @@ interface CalendarBookingItem {
 
         <section class="stats-row" *ngIf="!loading() || courts().length">
           <div class="stat">
-            <p class="stat__num">{{ selectedDayCount() }}</p>
+            <p *ngIf="!loading(); else statSkel" class="stat__num">{{ selectedDayCount() }}</p>
+            <ng-template #statSkel><ion-skeleton-text animated class="stat-skel"></ion-skeleton-text></ng-template>
             <p class="stat__label">Day Bookings</p>
           </div>
           <div class="stat-divider"></div>
           <div class="stat">
-            <p class="stat__num">{{ monthBookingCount() }}</p>
+            <p *ngIf="!loading(); else statSkel" class="stat__num">{{ monthBookingCount() }}</p>
             <p class="stat__label">This Month</p>
           </div>
           <div class="stat-divider"></div>
           <div class="stat">
-            <p class="stat__num">{{ courts().length }}</p>
+            <p *ngIf="!loading(); else statSkel" class="stat__num">{{ courts().length }}</p>
             <p class="stat__label">Courts</p>
           </div>
         </section>
@@ -136,6 +137,8 @@ interface CalendarBookingItem {
             No bookings on {{ selectedDayLabel() }}
           </div>
 
+          <app-skeleton-list *ngIf="loading() && courts().length" [count]="3" avatarSize="40px"></app-skeleton-list>
+          <ng-container *ngIf="!loading()">
           <article class="event-card" *ngFor="let event of selectedDayEvents()">
             <div class="event-top">
               <span class="event-tag">{{ event.sport }}</span>
@@ -152,6 +155,7 @@ interface CalendarBookingItem {
               </div>
             </div>
           </article>
+          </ng-container>
         </section>
       </div>
       </app-brand-header-shell>
@@ -313,6 +317,7 @@ interface CalendarBookingItem {
       text-align: center;
     }
 
+    .stat-skel { display: block; width: 36px; height: 20px; margin: 0 auto 4px; border-radius: 8px; }
     .stat__num {
       margin: 0;
       font-size: 22px;
@@ -507,7 +512,7 @@ export class VenueCalendarPage implements OnInit {
   viewMonth = signal(this.startOfMonth(new Date()));
   selectedDate = signal(this.toIso(new Date()));
   selectedCourt = signal<string>('all');
-  loading = signal(false);
+  loading = signal(true);
   errorMessage = signal('');
   courts = signal<CalendarCourt[]>([]);
   monthEvents = signal<CalendarBookingItem[]>([]);

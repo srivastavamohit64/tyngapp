@@ -68,14 +68,15 @@ const STATUS_OPTIONS: StatusOption[] = [
           </button>
           <div class="fac-header-copy">
             <h1>Facilities & Amenities</h1>
-            <p>{{ facilityList().length }} court{{ facilityList().length === 1 ? '' : 's' }}</p>
+            <p *ngIf="!loading() || facilityList().length; else courtCountSkel">{{ facilityList().length }} court{{ facilityList().length === 1 ? '' : 's' }}</p>
+            <ng-template #courtCountSkel><ion-skeleton-text animated style="display:block;width:64px;height:12px;margin:4px 0 0;border-radius:999px"></ion-skeleton-text></ng-template>
           </div>
           <button type="button" class="fac-icon-btn fac-icon-btn--add" (click)="addFacility()" aria-label="Add facility">
             <ion-icon name="add-outline"></ion-icon>
           </button>
         </header>
 
-        <div class="fac-track no-scrollbar" *ngIf="!loading() && facilityList().length">
+        <div class="fac-track no-scrollbar" *ngIf="facilityList().length">
           <button
             type="button"
             class="fac-chip"
@@ -109,7 +110,7 @@ const STATUS_OPTIONS: StatusOption[] = [
             <button type="button" class="fac-primary" (click)="addFacility()">Add facility</button>
           </div>
 
-          <ng-container *ngIf="!loading() && (facilityList().length || selectedId())">
+          <ng-container *ngIf="(!loading() || facilityList().length) && (facilityList().length || selectedId())">
             <section class="fac-card">
               <h2>Facility information</h2>
               <label class="fac-label">Facility name *</label>

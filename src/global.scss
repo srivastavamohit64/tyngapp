@@ -556,7 +556,11 @@ ion-modal::part(content) {
 
 ion-skeleton-text {
   --background: var(--app-border-subtle);
-  --background-rgb: 237, 240, 244;
+  --background-rgb: 17, 24, 39;
+}
+
+.dark-mode ion-skeleton-text {
+  --background-rgb: 255, 255, 255;
 }
 
 @media (prefers-reduced-motion: reduce) {

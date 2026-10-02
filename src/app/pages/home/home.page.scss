@@ -1329,3 +1329,11 @@ ion-popover.search-filter-popover {
     background-position: -100% 0;
   }
 }
+
+.coach-skel-num { display: inline-block; width: 26px; height: 12px; margin: 0 2px; border-radius: 999px; vertical-align: middle; }
+.coach-skel-tile { display: block; height: 92px; margin: 0; border-radius: 18px; --background: #eef0f3; }
+.coach-skel-line { display: block; width: 85%; height: 12px; margin: 4px 0; border-radius: 999px; }
+.coach-skel-line--short { width: 55%; }
+.coach-skel-line--dark { width: 70%; height: 16px; --background: rgba(17, 24, 39, 0.12); }
+.coach-skel-line--light { --background: rgba(255, 255, 255, 0.22); }
+.coach-weather-skel { width: 150px; }

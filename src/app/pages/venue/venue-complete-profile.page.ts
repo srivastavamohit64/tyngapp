@@ -13,7 +13,7 @@ import { VenueService, SportsEquipmentItem } from '../../core/services/venue.ser
 import { normalizeImageFile } from '../../core/utils/image-file.util';
 import { LocationFieldComponent } from '../../shared/components/location-field/location-field.component';
 import { ReverseGeocodeDetails } from '../../core/services/location.service';
-import { SkeletonListComponent } from '../../shared/components/skeleton';
+import { PageSkeletonComponent, SkeletonListComponent } from '../../shared/components/skeleton';
 import { sportEmoji } from '../../core/utils/booking.utils';
 
 interface MaintFacility {
@@ -74,7 +74,7 @@ const STEP_TITLES = [
 @Component({
   selector: 'app-venue-complete-profile',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule, LocationFieldComponent, SkeletonListComponent],
+  imports: [CommonModule, IonicModule, FormsModule, LocationFieldComponent, SkeletonListComponent, PageSkeletonComponent],
   template: `
     <ion-content [fullscreen]="true">
       <!-- SUCCESS SCREEN -->
@@ -150,7 +150,10 @@ const STEP_TITLES = [
           </div>
         </div>
 
-        <div class="px-5 pt-5">
+        <div *ngIf="profileLoading()" class="px-5 pt-5">
+          <app-page-skeleton variant="detail" label="Loading your venue details"></app-page-skeleton>
+        </div>
+        <div *ngIf="!profileLoading()" class="px-5 pt-5">
           <div *ngIf="saveError()" class="mb-4 rounded-2xl bg-[#FEF2F2] border border-[#FECACA] px-4 py-3 text-[13px] font-bold text-[#DC2626]">
             {{ saveError() }}
           </div>
@@ -657,7 +660,7 @@ const STEP_TITLES = [
             <ion-icon name="create-outline" aria-hidden="true"></ion-icon>
             Request Edit Document
           </button>
-          <button (click)="handleNext()" [disabled]="!canProceed() || saving()"
+          <button (click)="handleNext()" [disabled]="profileLoading() || !canProceed() || saving()"
             class="w-full h-13 rounded-[24px] text-[15px] font-black border-none text-[#111827] transition-all"
             [style.background]="canProceed() && !saving() ? 'linear-gradient(135deg,var(--app-primary),var(--app-primary-to))' : '#F3F4F6'"
             [style.color]="canProceed() && !saving() ? '#111827' : '#C4C9D4'"
@@ -2026,6 +2029,8 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
     void this.router.navigateByUrl('/app/venue/dashboard', { replaceUrl: true });
   }
 
+  readonly profileLoading = signal(true);
+
   private async loadExistingProfile() {
     try {
       const response = await firstValueFrom(this.venueService.getMyProfile());
@@ -2163,6 +2168,7 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
       // Keep local defaults if profile fetch fails.
     } finally {
       this.applyResumeStep();
+      this.profileLoading.set(false);
     }
   }
 

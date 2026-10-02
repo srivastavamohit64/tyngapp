@@ -24,6 +24,7 @@ import {
 } from '../../core/utils/booking.utils';
 import { resolveMediaUrl } from '../../core/utils/media-url.util';
 import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
+import { CardRowSkeletonComponent, PageSkeletonComponent, SkeletonListComponent } from '../../shared/components/skeleton';
 import { EventGame } from '../../shared/models/app.models';
 import { VenueEventRecord, VenueEventService } from '../../core/services/venue-event.service';
 import { VenueListItem, VenueService } from '../../core/services/venue.service';
@@ -115,6 +116,9 @@ interface HomeTournamentCard {
     CommonModule,
     IonicModule,
     BrandHeaderShellComponent,
+    CardRowSkeletonComponent,
+    PageSkeletonComponent,
+    SkeletonListComponent,
   ],
   styleUrls: ['./home.page.scss'],
   templateUrl: './home.page.html',
@@ -150,12 +154,13 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
 
   nearbyGames: EventGame[] = [];
   nearbyBookings: BookingRecord[] = [];
-  nearbyLoading = false;
+  nearbyLoading = true;
   nearbyError = '';
   xpSummary: XpSummary | null = null;
   raceRows: HomeRaceRow[] = [];
   raceNote = '';
   homeBadges: HomeBadgeCard[] = [];
+  progressLoading = true;
   quickSuggestion: QuickSuggestion | null = null;
   sportDrawerGames: HomeSportGameCard[] = [];
   sportDrawerLoading = false;
@@ -280,15 +285,16 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
   venuesError = '';
   private venuesRequestVersion = 0;
   homeCoaches: HomeCoachCard[] = [];
-  coachesLoading = false;
+  coachesLoading = true;
   coachesError = '';
   homeTournament: HomeTournamentCard | null = null;
-  tournamentLoading = false;
+  tournamentLoading = true;
   promoSlideIndex = 0;
   sportGamesOpen = false;
   sportsPickerOpen = false;
   readonly homeSportsCount = HOME_SPORTS_COUNT;
   customHomeSportIds: string[] | null = this.readCachedHomeSports();
+  homeSportsReady = this.hasCachedHomeSportsEntry();
   homeSportsEditing = false;
   homeSportsDraft: string[] = [];
   homeSportsSaving = false;
@@ -353,6 +359,7 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
   // Coach Dashboard state
   coachProfileDismissed = signal(false);
   coachDashboardLoading = signal(false);
+  coachDashboardLoaded = signal(false);
   coachDashboardError = signal('');
   coachDailyGoalProgress = 0;
   coachStudentRequestCount = 0;
@@ -376,25 +383,15 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
     { icon: '⭐', label: 'New Reviews', value: '3', accent: '#F59E0B' },
     { icon: '👥', label: 'Booking Requests', value: '5', accent: '#38BDF8' },
   ];
-  coachSessions = [
-    { id: 1, sport: 'Cricket', emoji: '🏏', image: 'https://images.unsplash.com/photo-1593341646782-e0b495cff86d?w=700&h=300&fit=crop&auto=format', title: 'Elite Cricket Academy', team: 'Advanced Batch · 12 Students', venue: 'Phoenix Arena', time: '6:00 PM', type: 'Training', status: 'upcoming', startsIn: 'Starts in 45 min' },
-    { id: 2, sport: 'Football', emoji: '⚽', image: 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=700&h=300&fit=crop&auto=format', title: 'Football Skills Workshop', team: 'Junior Squad · 8 Students', venue: 'K.D. Singh Stadium', time: '7:30 PM', type: 'Skills', status: 'upcoming', startsIn: 'Starts in 2h 15m' },
-    { id: 3, sport: 'Badminton', emoji: '🏸', image: 'https://images.unsplash.com/photo-1722087642932-9b070e9a066e?w=700&h=300&fit=crop&auto=format', title: 'Individual Coaching', team: 'Priya Verma · 1 Student', venue: 'Sports Complex', time: '4:00 PM', type: 'One-on-One', status: 'completed', startsIn: null },
-  ];
+  coachSessions: Array<{ id: number; sport: string; emoji: string; image: string; title: string; team: string; venue: string; time: string; type: string; status: string; startsIn: string | null }> = [];
   readonly coachQuickActions = [
     { icon: 'add-outline', label: 'New Session', sub: 'Schedule a slot', color: 'var(--app-primary)', path: '/app/coach/create-session' },
     { icon: 'calendar-outline', label: 'Manage Schedule', sub: 'View your calendar', color: '#FF7A00', path: '/app/coach/schedule' },
     { icon: 'person-add-outline', label: 'Add Student', sub: 'Onboard a new player', color: '#38BDF8', path: '/app/coach/enroll-student' },
     { icon: 'analytics-outline', label: 'Evaluate Player', sub: 'Track progress', color: '#7C3AED', path: '/app/coach/evaluate' },
   ];
-  coachActivities: Array<{ id: string | number; icon: string; bg: string; color: string; text: string; time: string }> = [
-    { id: 1, icon: '✓', bg: '#F0FDF4', color: '#16A34A', text: 'Rahul completed Session #18', time: '20 min ago' },
-    { id: 2, icon: '⭐', bg: '#FFFBEB', color: '#D97706', text: 'You received a 5-Star Review from Ananya', time: '1 hr ago' },
-    { id: 3, icon: '🏆', bg: '#F5F3FF', color: '#7C3AED', text: 'Aarav won District Badminton Championship', time: '3 hrs ago' },
-    { id: 4, icon: '💰', bg: '#F0FDF4', color: '#16A34A', text: '₹1,200 Payment Received', time: '5 hrs ago' },
-    { id: 5, icon: '📅', bg: '#EFF6FF', color: '#3B82F6', text: 'Session Rescheduled — Priya moved to 7 PM', time: 'Yesterday' },
-  ];
-  coachVenueLoading = signal(false);
+  coachActivities: Array<{ id: string | number; icon: string; bg: string; color: string; text: string; time: string }> = [];
+  coachVenueLoading = signal(true);
   coachVenueError = signal('');
   coachVenues: Array<{ id: number; name: string; image: string; meta: string; slots: number; price: number }> = [];
   coachCommunity: Array<{ id: number; title: string; sub: string; image: string; tag: string }> = [];
@@ -408,10 +405,7 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
     condition: 'Weather unavailable', icon: 'cloud-offline-outline',
     outdoorSuitable: false, outdoorLabel: 'Add location',
   };
-  coachReviews = [
-    { name: 'Ananya Patel', photo: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=80&h=80&fit=crop&auto=format', rating: 5, text: 'Excellent coaching session. My cricket technique improved dramatically in just 3 weeks.' },
-    { name: 'Rahul Sharma', photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&auto=format', rating: 5, text: 'My batting improved significantly after just 5 sessions. Highly recommended!' },
-  ];
+  coachReviews: Array<{ name: string; photo: string; rating: number; text: string }> = [];
 
   // Venue Dashboard state
   venueProfileDismissed = signal(false);
@@ -531,9 +525,6 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
   private async loadCoachDashboard(): Promise<void> {
     this.coachDashboardLoading.set(true);
     this.coachDashboardError.set('');
-    this.coachSessions = [];
-    this.coachReviews = [];
-    this.coachActivities = [];
     void this.loadCoachVenues();
     try {
       const response = await firstValueFrom(this.coachService.getDashboard());
@@ -546,6 +537,7 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
       this.coachDashboardError.set('Unable to refresh your coach dashboard. Pull down to try again.');
     } finally {
       this.coachDashboardLoading.set(false);
+      this.coachDashboardLoaded.set(true);
     }
   }
 
@@ -588,9 +580,9 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
       emoji: this.sportEmoji(session.sport),
       image: this.sportImage(session.sport),
       title: session.title,
-      team: session.studentName ? `${session.studentName} Â· ${session.studentCount || 1} Student` : 'Group session',
+      team: session.studentName ? `${session.studentName} · ${session.studentCount || 1} Student` : 'Group session',
       venue: session.venueName || 'Venue to be confirmed',
-      time: `${this.formatClock(session.startTime)} â€“ ${this.formatClock(session.endTime)}`,
+      time: `${this.formatClock(session.startTime)} – ${this.formatClock(session.endTime)}`,
       type: session.studentCount === 1 ? 'One-on-One' : 'Training',
       status: session.status,
       startsIn: ['scheduled', 'confirmed'].includes(session.status) ? this.startsIn(session.startTime) : null,
@@ -1414,12 +1406,17 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
   }
 
   private async loadHomeSports(): Promise<void> {
-    if (!this.auth.getToken()) return;
+    if (!this.auth.getToken()) {
+      this.homeSportsReady = true;
+      return;
+    }
     try {
       const response = await firstValueFrom(this.playerProfileService.getHomeSports());
       this.applyHomeSports(response.data?.sports ?? null);
     } catch {
       // Keep the cached choice when offline.
+    } finally {
+      this.homeSportsReady = true;
     }
   }
 
@@ -1429,8 +1426,7 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
     const key = this.homeSportsStorageKey();
     if (!key) return;
     try {
-      if (valid) localStorage.setItem(key, JSON.stringify(valid));
-      else localStorage.removeItem(key);
+      localStorage.setItem(key, JSON.stringify(valid));
     } catch {
       // Storage can be unavailable in private mode.
     }
@@ -1444,6 +1440,16 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
       return Array.isArray(parsed) && parsed.length === HOME_SPORTS_COUNT ? parsed.map(String) : null;
     } catch {
       return null;
+    }
+  }
+
+  private hasCachedHomeSportsEntry(): boolean {
+    const key = this.homeSportsStorageKey();
+    if (!key) return true;
+    try {
+      return localStorage.getItem(key) !== null;
+    } catch {
+      return true;
     }
   }
 
@@ -1676,6 +1682,7 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
       firstValueFrom(this.xpService.leaderboard('month')).catch(() => null),
       firstValueFrom(this.xpService.badges()).catch(() => []),
     ]);
+    this.progressLoading = false;
     this.xpSummary = summary;
 
     const rows = board?.items ?? [];
