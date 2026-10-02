@@ -909,3 +909,7 @@ TYNG — TODAY'S WORK SUMMARY
    - Changed for players (Home, Profile, Coaches, Coach profile, Venue page, Venue booking, Chat, Leaderboard, Settings, Edit Profile), coaches (dashboard, Profile, Students, Book venue, Insights, Chat), venue staff (Dashboard Quick Actions, Venue profile, Calendar, Analytics, Events) and admin (Dashboard).
    - The size is set in one place (theme/variables.scss), so it can be changed for the whole app at once. Titles inside cards, page titles and pop-up titles were left alone.
    - Type check passes, the app compiles, and Home, Profile, Coaches, Chat and Settings were checked in the browser as a player. Coach, venue and admin screens were not opened in the browser.
+150. SHORTER LOCATION ON THE HOME PAGE - 2 October 2026
+   - The location under "Hey, name" on Home now shows only the area (for example "Preeti Nagar" instead of "Preeti Nagar > Lucknow"). When there is no area, it shows the city.
+   - Holding the mouse over it still shows the full location. The location picker and nearby search still use the full location.
+   - Type check passes and it was checked in the browser as a player.

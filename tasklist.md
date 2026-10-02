@@ -1159,3 +1159,8 @@
 - **How:** new CSS variables --app-section-title-* in src/theme/variables.scss and a global .app-section-title class in src/global.scss (no margin, so Tailwind margin classes still apply). Existing component heading classes now read the variables: Home (player and coach), player profile, leaderboard, coaches, coach profile detail, venue detail, venue booking, chat list, settings sub-pages, edit profile, coach profile/students/book-venue/insights/chat, venue dashboard Quick Actions (.venue-section-title--outside, since .venue-section-title is also used inside cards), venue profile, calendar, analytics, events hub, admin dashboard.
 - **Left alone:** titles inside cards, page and top-bar titles, modal titles, wizard steps, date group labels and result-count rows.
 - **Verified:** type check passes, dev server compiles. In the browser as a player, Home, Profile, Coaches, Chat and Notification settings headings all compute to 16px / 900 / uppercase / #111827. Coach, venue staff and admin screens were not opened in the browser.
+
+# Completed: Shorter location label in the Home header - 2 October 2026
+
+- **What changed:** new headerLocationLabel getter in home.page.ts keeps only the first part of the location label (the area), so "Preeti Nagar > Lucknow" shows as "Preeti Nagar". When the label has no area it is just the city, so the city shows. The "Detecting location…" and "Set your location" placeholders are unchanged. Both header location buttons in home.page.html use it, with the full label as the 	itle tooltip. locationLabel and playerLocation are unchanged, so nearby searches still get the full location.
+- **Verified:** type check passes; in the browser as a player the header shows "Preeti Nagar".

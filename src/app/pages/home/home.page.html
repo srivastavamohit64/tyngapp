@@ -399,7 +399,7 @@
           </div>
           <button type="button" class="home-location-trigger" (click)="openLocationPicker()">
             <ion-icon name="location" class="home-location-pin"></ion-icon>
-            <span class="home-location-label">{{ locationLabel }}</span>
+            <span class="home-location-label" [attr.title]="locationLabel">{{ headerLocationLabel }}</span>
             <ion-icon name="chevron-down" class="home-location-chevron"></ion-icon>
           </button>
           <p *ngIf="locationError" class="home-location-error">{{ locationError }}</p>
@@ -583,7 +583,7 @@
             <h1 class="home-greeting-title">Hey, {{ helloName }} <span aria-hidden="true">👋</span></h1>
             <button type="button" class="home-location-trigger" aria-label="Change your location" (click)="openLocationPicker()">
               <ion-icon name="location-outline" class="home-location-pin"></ion-icon>
-              <strong>{{ locationLabel }}</strong>
+              <strong [attr.title]="locationLabel">{{ headerLocationLabel }}</strong>
               <ion-icon name="chevron-down-outline" class="home-location-chevron"></ion-icon>
             </button>
           </div>

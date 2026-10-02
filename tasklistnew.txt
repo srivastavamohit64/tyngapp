@@ -177,6 +177,7 @@ PLAYER
 - See your level, XP, reliability, rankings, badges and recent games in one place, and mark a recent game as won, lost or draw.
 - See real venues near you on the Home page, nearest first, with their photo, area, distance, sports and starting price. Tap a venue to open it and book.
 - Choose which 5 sports appear in the sports row on your Home page: tap More, then Edit Home, pick your 5 favourites and save. Your choice stays on every phone you sign in on.
+- See just your area under your name on the Home page, for example "Preeti Nagar" instead of "Preeti Nagar > Lucknow". If your area is not known, your city is shown.
 
 COACH
 

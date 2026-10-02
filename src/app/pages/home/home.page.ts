@@ -986,6 +986,12 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
     return this.locationLoading ? 'Detecting location…' : 'Set your location';
   }
 
+  get headerLocationLabel(): string {
+    const label = this.locationLabel;
+    if (!this.playerLocation) return label;
+    return label.split(/\s*>\s*/).find((part) => part.trim())?.trim() || label;
+  }
+
   get playerLocation(): string {
     return this.locationLabel === 'Detecting location…' || this.locationLabel === 'Set your location'
       ? ''
