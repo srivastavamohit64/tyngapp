@@ -69,6 +69,7 @@ interface CoachProfile {
   achievements: string[];
   gallery: GalleryItem[];
   details: {
+    coverImage: string | null;
     serviceRadius?: string;
     coachingLocations: string[];
     trialEnabled?: boolean | null;
@@ -121,11 +122,23 @@ const WEEK_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
         <main class="cp-page" *ngIf="coach as c">
           <section class="cp-hero">
-            <div class="cp-cover">
-              <img *ngIf="coverUrl" [src]="coverUrl" [alt]="c.name + ' coaching'" />
-              <div class="cp-cover-shade"></div>
+            <div class="cp-cover" [class.cp-cover-default]="!coverUrl">
+              <ng-container *ngIf="coverUrl; else defaultCover">
+                <img [src]="coverUrl" [alt]="c.name + ' cover photo'" />
+                <div class="cp-cover-shade"></div>
+              </ng-container>
+              <ng-template #defaultCover>
+                <svg class="cp-cover-pitch" viewBox="0 0 320 180" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <rect x="18" y="18" width="284" height="144" rx="5" />
+                  <path d="M160 18v144M18 90h38m246 0h-38" />
+                  <circle cx="160" cy="90" r="30" />
+                  <rect x="18" y="53" width="48" height="74" />
+                  <rect x="254" y="53" width="48" height="74" />
+                </svg>
+              </ng-template>
               <div class="cp-cover-actions">
                 <button type="button" *ngIf="!c.viewer.isSelf" [class.saved]="c.isSaved" [attr.aria-label]="c.isSaved ? 'Remove from saved coaches' : 'Save coach'" [attr.aria-pressed]="c.isSaved" [disabled]="saving" (click)="toggleSave()"><ion-icon [name]="c.isSaved ? 'bookmark' : 'bookmark-outline'"></ion-icon></button>
+                <button type="button" *ngIf="c.viewer.isSelf" aria-label="Change cover photo" (click)="editCover()"><ion-icon name="camera-outline"></ion-icon></button>
                 <button type="button" aria-label="Share coach" (click)="share()"><ion-icon name="share-social-outline"></ion-icon></button>
                 <button type="button" *ngIf="!c.viewer.isSelf" aria-label="Coach options" (click)="openMore()"><ion-icon name="ellipsis-horizontal"></ion-icon></button>
               </div>
@@ -543,6 +556,8 @@ const WEEK_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
     .cp-cover { position:relative; height:205px; overflow:hidden; background:linear-gradient(135deg,#111827,#1F2937 55%,#2c3a14); }
     .cp-cover img { width:100%; height:100%; object-fit:cover; display:block; }
+    .cp-cover-default { background:linear-gradient(135deg,#111827,#1F2937); }
+    .cp-cover-pitch { position:absolute; top:0; right:0; width:72%; height:100%; color:#fff; opacity:.09; }
     .cp-cover-shade { position:absolute; inset:0; background:linear-gradient(to top,rgba(17,24,39,.9),rgba(17,24,39,.3) 50%,rgba(17,24,39,.15)); }
     .cp-cover-actions { position:absolute; top:16px; right:16px; display:flex; gap:8px; }
     .cp-cover-actions button { width:40px; height:40px; display:grid; place-items:center; border:0; border-radius:50%; background:rgba(255,255,255,.15); color:#fff; font-size:17px; backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); }
@@ -909,6 +924,7 @@ export class CoachProfileDetailPage implements OnInit {
       reliability: item?.reliability ?? null,
       details: {
         ...details,
+        coverImage: details.coverImage || null,
         coachingLocations: list(details.coachingLocations),
         weeklyAvailability: details.weeklyAvailability && typeof details.weeklyAvailability === 'object' && !Array.isArray(details.weeklyAvailability) ? details.weeklyAvailability : {},
         feeOptions: details.feeOptions && typeof details.feeOptions === 'object' && !Array.isArray(details.feeOptions) ? details.feeOptions : {},
@@ -933,8 +949,7 @@ export class CoachProfileDetailPage implements OnInit {
 
   private applyCoach(c: CoachProfile): void {
     this.coach = c;
-    const images = c.gallery.filter((item) => item.mimeType?.startsWith('image/'));
-    this.coverUrl = images.find((item) => item.category === 'training_photo')?.url ?? null;
+    this.coverUrl = c.details.coverImage;
     this.primarySport = c.sports[0] || 'Multi-sport';
     this.specialityLine = (c.details.specialities.length ? c.details.specialities : c.sessionTypes).slice(0, 4).join(' • ');
     this.experienceTile = c.experienceYears ? c.experienceYears.replace(/\s*years?/i, ' YRS').toUpperCase() : '—';
@@ -1107,6 +1122,10 @@ export class CoachProfileDetailPage implements OnInit {
     } catch {
       await this.toast(url);
     }
+  }
+
+  editCover(): void {
+    void this.router.navigate(['/app/profile/edit']);
   }
 
   toggleSave() {

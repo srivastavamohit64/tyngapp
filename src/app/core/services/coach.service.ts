@@ -66,6 +66,16 @@ export class CoachService {
     return this.api.put<CoachProfileDetails>('/coach/profile-details', details);
   }
 
+  uploadCoachCover(file: File): Observable<ApiResponse<{ coverImage: string }>> {
+    const form = new FormData();
+    form.append('file', file, file.name);
+    return this.api.postForm<{ coverImage: string }>('/coach/profile-cover', form);
+  }
+
+  deleteCoachCover(): Observable<ApiResponse<{ coverImage: null }>> {
+    return this.api.delete<{ coverImage: null }>('/coach/profile-cover');
+  }
+
   getMyCoachVerificationDocuments(): Observable<ApiResponse<CoachVerificationDocument[]>> {
     return this.api.get<CoachVerificationDocument[]>('/coach/verification-documents');
   }
@@ -293,6 +303,7 @@ export interface CoachVerificationDocument {
 }
 
 export interface CoachProfileDetails {
+  coverImage: string | null;
   languages: string[];
   coachingLocations: string[];
   serviceRadius: string;

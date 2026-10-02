@@ -199,6 +199,7 @@ COACH
 - Players now see your training photos as your profile cover, your certificates, partner venues, free times and a reliability score worked out from how often you finish sessions, reply to requests and how well students turn up.
 - Add your own session packages in Edit Profile, such as a 60-minute one-to-one or a monthly plan, with a price, length and short description. Players pick one when they book, and your lowest price is shown on your profile.
 - Add your exact years of coaching, a short summary of your experience, and how many years you have coached each sport.
+- Choose your own cover photo for the top of your profile in Edit Profile, change it any time, or go back to the default. Until you add one, players see a dark background with football pitch lines. You can also tap the camera button on your own profile to change it.
 
 VENUE STAFF
 
@@ -214,6 +215,7 @@ ADMIN
 - Open any coach's public profile, exactly as players see it, with the new "View public profile" button on the coach list or the coach's page. It also shows how many players saved the coach, any open reports, and what the coach still needs to fill in.
 - Handle reports and safety concerns about coaches on the new Coach Reports page in the side menu. A number shows how many are waiting, and safety concerns appear first. Mark each one as being looked at, sorted or dismissed, and add a note.
 - See each coach's ratings for coaching quality, communication, punctuality, professionalism and value, plus their years of experience and session packages, on the coach's page.
+- The coach public profile preview shows the coach's own cover photo, and lists a missing cover photo among the things the coach still needs to add.
 
 ALL APP USERS
 

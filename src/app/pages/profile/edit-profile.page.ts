@@ -65,6 +65,30 @@ const COACH_OFFER_TYPES: Array<{ id: CoachOfferType; label: string }> = [
           <input #libraryInput type="file" accept="image/jpeg,image/png,image/webp,image/*" hidden (change)="onFile($event)" />
         </div>
 
+        <section class="coach-gallery" *ngIf="auth.user()?.role === 'coach' && coachDetailsLoaded">
+          <div class="coach-gallery-heading"><h2>Profile cover</h2><p>The background photo at the top of the profile players see</p></div>
+          <div class="cover-preview" [class.cover-preview-default]="!coachDetails.coverImage">
+            <img *ngIf="coachDetails.coverImage; else defaultCoverArt" [src]="coachDetails.coverImage" alt="Your profile cover" />
+            <ng-template #defaultCoverArt>
+              <svg viewBox="0 0 320 180" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <rect x="18" y="18" width="284" height="144" rx="5" />
+                <path d="M160 18v144M18 90h38m246 0h-38" />
+                <circle cx="160" cy="90" r="30" />
+                <rect x="18" y="53" width="48" height="74" />
+                <rect x="254" y="53" width="48" height="74" />
+              </svg>
+              <span>Default cover</span>
+            </ng-template>
+          </div>
+          <div class="cover-actions">
+            <button type="button" (click)="pickCover()" [disabled]="coverBusy"><ion-icon name="image-outline"></ion-icon>{{ coverBusy ? 'Saving…' : (coachDetails.coverImage ? 'Change cover' : 'Upload cover') }}</button>
+            <button type="button" class="cover-remove" *ngIf="coachDetails.coverImage" (click)="removeCover()" [disabled]="coverBusy"><ion-icon name="trash-outline"></ion-icon>Use default</button>
+          </div>
+          <p class="detail-hint">A wide photo works best (JPG, PNG or WebP, up to 10 MB).</p>
+          <p *ngIf="coverError" class="error">{{ coverError }}</p>
+          <input #coverInput type="file" accept="image/jpeg,image/png,image/webp" hidden (change)="onCoverFile($event)" />
+        </section>
+
         <section class="coach-gallery" *ngIf="auth.user()?.role === 'coach'">
           <div class="coach-gallery-heading"><h2>Coaching gallery</h2><p>Add, preview, or remove profile media</p></div>
           <div class="coach-gallery-categories">
@@ -403,6 +427,16 @@ const COACH_OFFER_TYPES: Array<{ id: CoachOfferType; label: string }> = [
     .coach-gallery { padding:16px; margin-bottom:18px; border:1px solid #edf0f2; border-radius:18px; background:#fff; }
     .coach-gallery-heading h2 { margin:0; font-size:15px; font-weight:900; color:#111827; }
     .coach-gallery-heading p { margin:4px 0 12px; font-size:12px; color:#9ca3af; }
+    .cover-preview { position:relative; height:120px; overflow:hidden; border-radius:14px; background:#E5E7EB; }
+    .cover-preview img { width:100%; height:100%; object-fit:cover; display:block; }
+    .cover-preview-default { background:linear-gradient(135deg,#111827,#1F2937); }
+    .cover-preview-default svg { position:absolute; top:0; right:0; width:72%; height:100%; color:#fff; opacity:.09; }
+    .cover-preview-default span { position:absolute; left:12px; bottom:10px; padding:4px 9px; border-radius:999px; background:rgba(140,240,0,.15); color:#8CF000; font-size:9px; font-weight:900; letter-spacing:.12em; text-transform:uppercase; }
+    .cover-actions { display:flex; gap:8px; margin-top:10px; }
+    .cover-actions button { flex:1; min-height:42px; display:flex; align-items:center; justify-content:center; gap:6px; border:0; border-radius:12px; background:#111827; color:#8CF000; font-size:11px; font-weight:900; }
+    .cover-actions button.cover-remove { background:#f3f4f6; color:#374151; }
+    .cover-actions button:disabled { opacity:.6; }
+    .cover-actions + .detail-hint { margin:8px 0 0; }
     .coach-gallery-categories { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
     .coach-gallery-categories button { min-height:48px; padding:8px 10px; display:flex; justify-content:space-between; align-items:center; gap:6px; background:#f9fafb; border:1px solid #edf0f2; border-radius:12px; text-align:left; font-size:11px; font-weight:800; color:#374151; }
     .coach-gallery-categories small { color:#9ca3af; font-size:10px; white-space:nowrap; }
@@ -585,6 +619,7 @@ export class EditProfilePage implements OnInit {
   @ViewChild('cameraInput') cameraInput?: ElementRef<HTMLInputElement>;
   @ViewChild('libraryInput') libraryInput?: ElementRef<HTMLInputElement>;
   @ViewChild('coachGalleryInput') coachGalleryInput?: ElementRef<HTMLInputElement>;
+  @ViewChild('coverInput') coverInput?: ElementRef<HTMLInputElement>;
   @ViewChild('verificationInput') verificationInput?: ElementRef<HTMLInputElement>;
 
   readonly auth = inject(AuthService);
@@ -611,6 +646,8 @@ export class EditProfilePage implements OnInit {
   coachGallery: CoachGalleryItem[] = [];
   galleryBusy = false;
   galleryError = '';
+  coverBusy = false;
+  coverError = '';
   selectedGalleryCategory: CoachGalleryCategory = 'profile_photo';
   readonly galleryCategories: { id: CoachGalleryCategory; label: string }[] = [
     { id: 'profile_photo', label: 'Profile photos' }, { id: 'training_photo', label: 'Training photos' },
@@ -688,6 +725,7 @@ export class EditProfilePage implements OnInit {
 
   private emptyCoachDetails(): CoachProfileDetails {
     return {
+      coverImage: null,
       languages: [], coachingLocations: [], serviceRadius: '', sessionTypes: [], equipment: [],
       trialEnabled: null, trialType: '', travelMode: '', weeklyAvailability: {},
       feeOptions: { individual: '', group: '', monthly: '' }, feesNegotiable: false,
@@ -899,6 +937,44 @@ export class EditProfilePage implements OnInit {
       this.coachGallery = this.coachGallery.filter((media) => media.id !== item.id);
     } catch (error: any) { this.galleryError = error?.error?.message || error?.message || 'Unable to remove this item.'; }
     finally { this.galleryBusy = false; }
+  }
+
+  pickCover(): void {
+    if (!this.coverInput || this.coverBusy) return;
+    this.coverError = '';
+    this.coverInput.nativeElement.value = '';
+    this.coverInput.nativeElement.click();
+  }
+
+  async onCoverFile(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      this.coverError = 'Choose a photo under 10 MB.';
+      return;
+    }
+    this.coverBusy = true;
+    this.coverError = '';
+    try {
+      const result = await firstValueFrom(this.coachService.uploadCoachCover(file));
+      if (!result.success || !result.data) throw new Error(result.message || 'Unable to upload this cover.');
+      this.coachDetails = { ...this.coachDetails, coverImage: result.data.coverImage };
+    } catch (error: any) { this.coverError = error?.error?.message || error?.message || 'Unable to upload this cover.'; }
+    finally { this.coverBusy = false; }
+  }
+
+  async removeCover(): Promise<void> {
+    if (this.coverBusy) return;
+    this.coverBusy = true;
+    this.coverError = '';
+    try {
+      const result = await firstValueFrom(this.coachService.deleteCoachCover());
+      if (!result.success) throw new Error(result.message || 'Unable to remove this cover.');
+      this.coachDetails = { ...this.coachDetails, coverImage: null };
+    } catch (error: any) { this.coverError = error?.error?.message || error?.message || 'Unable to remove this cover.'; }
+    finally { this.coverBusy = false; }
   }
 
   private loadCoachGallery(): void {
