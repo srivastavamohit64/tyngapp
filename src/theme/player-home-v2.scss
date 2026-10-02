@@ -593,9 +593,29 @@ ion-modal.sport-games-modal .sport-chip { max-width: 88px; min-height: 29px; pad
 .home-badge-medal::before { content: ''; position: absolute; inset: 4px; border: 1px solid currentColor; border-radius: 50%; opacity: .2; }
 .home-badge-medal ion-icon { font-size: 25px; }
 .home-badge-card strong { max-width: 100%; overflow: hidden; color: #111827; font-size: 11px; font-weight: 900; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
-.home-badge-card small { display: -webkit-box; margin-top: 4px; overflow: hidden; color: #9ca3af; font-size: 9px; line-height: 1.35; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.home-badge-card small { display: block; max-width: 100%; margin-top: 4px; overflow: hidden; color: #9ca3af; font-size: 9px; line-height: 1.35; text-overflow: ellipsis; white-space: nowrap; }
 .home-badge-card.is-locked { --badge-color: #9ca3af; --badge-tint: #f3f4f6; }
 .home-badge-card.is-locked strong { color: #6b7280; }
+
+ion-modal.badge-detail-modal { --width: min(320px, calc(100% - 40px)); --height: auto; --max-height: calc(100% - 64px); --border-radius: 26px; --background: transparent; --box-shadow: 0 8px 28px rgba(17,24,39,.20); --backdrop-opacity: .45; }
+ion-modal.badge-detail-modal .ion-page { position: relative; contain: layout style; overflow: visible; }
+.badge-detail-card { --badge-color: #16a34a; --badge-tint: #f0fdf4; position: relative; display: flex; padding: 26px 22px 20px; flex-direction: column; align-items: center; border-radius: 26px; background: #fff; text-align: center; font-family: var(--app-font-family); }
+.badge-detail-card.is-locked { --badge-color: #9ca3af; --badge-tint: #f3f4f6; }
+.badge-detail-close { position: absolute; top: 12px; right: 12px; display: grid; width: 32px; height: 32px; min-height: unset; padding: 0; place-items: center; border: 0; border-radius: 50%; background: #f3f4f6; color: #6b7280; font-size: 18px; }
+.badge-detail-medal { width: 76px; height: 76px; margin-bottom: 14px; }
+.badge-detail-medal ion-icon { font-size: 30px; }
+.badge-detail-category { color: var(--badge-color); font-size: 10px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+.badge-detail-card h2 { margin: 4px 0 0; color: #111827; font-size: 18px; font-weight: 900; line-height: 1.2; text-transform: uppercase; overflow-wrap: anywhere; }
+.badge-detail-description { margin: 8px 0 0; color: #6b7280; font-size: 13px; line-height: 1.45; overflow-wrap: anywhere; }
+.badge-detail-status { display: inline-flex; margin-top: 16px; padding: 8px 12px; align-items: center; gap: 6px; border-radius: 12px; background: #f0fdf4; color: #16a34a; font-size: 12px; font-weight: 700; }
+.badge-detail-status ion-icon { font-size: 16px; }
+.badge-detail-progress { width: 100%; margin-top: 16px; padding: 12px 14px; border-radius: 16px; background: #f9fafb; text-align: left; }
+.badge-detail-progress-head { display: flex; align-items: center; justify-content: space-between; color: #6b7280; font-size: 11px; font-weight: 700; }
+.badge-detail-progress-head b { color: #111827; font-weight: 900; }
+.badge-detail-bar { height: 6px; margin-top: 8px; overflow: hidden; border-radius: 999px; background: #e5e7eb; }
+.badge-detail-bar span { display: block; height: 100%; border-radius: inherit; background: #8cf000; }
+.badge-detail-progress p { margin: 8px 0 0; color: #6b7280; font-size: 11px; line-height: 1.4; }
+.badge-detail-action { width: 100%; min-height: unset; margin-top: 18px; padding: 12px 16px; border: 0; border-radius: 14px; background: #111827; color: #8cf000; font-size: 12px; font-weight: 900; text-transform: uppercase; }
 
 .home-suggestion-card { display: flex; padding: 16px; align-items: center; gap: 12px; border: 1px solid rgba(140,240,0,.3); border-radius: 24px; background: #f5ffe8; }
 .home-suggestion-icon { display: grid; width: 44px; height: 44px; flex: 0 0 44px; place-items: center; border-radius: 16px; background: #8cf000; color: #111827; font-size: 20px; }
