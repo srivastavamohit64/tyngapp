@@ -1164,3 +1164,9 @@
 
 - **What changed:** new headerLocationLabel getter in home.page.ts keeps only the first part of the location label (the area), so "Preeti Nagar > Lucknow" shows as "Preeti Nagar". When the label has no area it is just the city, so the city shows. The "Detecting location…" and "Set your location" placeholders are unchanged. Both header location buttons in home.page.html use it, with the full label as the 	itle tooltip. locationLabel and playerLocation are unchanged, so nearby searches still get the full location.
 - **Verified:** type check passes; in the browser as a player the header shows "Preeti Nagar".
+
+# Completed: Hide the bottom tab bar while the keyboard is open - 2 October 2026
+
+- **What changed:** UiChromeService has a new keyboardOpen signal. On native it listens to the Capacitor Keyboard keyboardWillShow/keyboardDidShow/keyboardWillHide/keyboardDidHide events. In touch (pointer: coarse) web browsers it treats a focused text input, textarea or contenteditable as an open keyboard. Checkboxes, radios and read-only inputs don't count. TabsPage hides pp-bottom-tab-navigation while it is true, so --app-bottom-chrome-offset drops back and fixed bottom CTAs sit right above the keyboard. Desktop browsers are unaffected.
+- **Verified:** type check passes. In the browser with touch emulation, the tab bar unmounts when a text input is focused, stays for a checkbox, and returns on blur. Native builds need 
+px cap sync and a rebuild to test on a device.

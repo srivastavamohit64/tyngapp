@@ -195,6 +195,7 @@ ADMIN
 ALL APP USERS
 
 - Headings above cards and lists now look the same on every screen: the same size, bold capital letters and colour, so pages are easier to scan.
+- The bottom menu now hides while you are typing, so the keyboard has more room and does not cover buttons. It comes back as soon as the keyboard closes.
 
 Writing rule: Whenever work is finished, add a short note here explaining in everyday words what changed and how it helps players, coaches, or administrators. Write for someone who does not work in software. Avoid programming terms, internal names, and tool names. Describe what the person can now do.
 

@@ -913,3 +913,7 @@ TYNG — TODAY'S WORK SUMMARY
    - The location under "Hey, name" on Home now shows only the area (for example "Preeti Nagar" instead of "Preeti Nagar > Lucknow"). When there is no area, it shows the city.
    - Holding the mouse over it still shows the full location. The location picker and nearby search still use the full location.
    - Type check passes and it was checked in the browser as a player.
+151. BOTTOM MENU HIDES WHILE TYPING - 2 October 2026
+   - The bottom menu (Home, Players, My Bookings, Chat, and the coach, venue and admin versions) now hides while the phone keyboard is open, and comes back when it closes. Buttons fixed at the bottom of a screen move down into the freed space.
+   - In the phone app this follows the keyboard itself. In a phone web browser it follows typing in a text box.
+   - Type check passes. Checked in the test browser with phone touch emulation: the menu hides while a text box is in use and returns afterwards. The Android and iOS apps need a rebuild (npx cap sync) to pick it up.

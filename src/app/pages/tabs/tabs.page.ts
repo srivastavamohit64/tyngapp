@@ -19,7 +19,7 @@ import { TabItem } from '../../shared/models/app.models';
   template: `
     <div class="tabs-shell">
       <ion-router-outlet></ion-router-outlet>
-      <app-bottom-tab-navigation *ngIf="showTabs() && !chrome.overlayOpen()" [tabs]="tabs()"></app-bottom-tab-navigation>
+      <app-bottom-tab-navigation *ngIf="showTabs() && !chrome.overlayOpen() && !chrome.keyboardOpen()" [tabs]="tabs()"></app-bottom-tab-navigation>
     </div>
   `,
   styles: [
