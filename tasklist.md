@@ -1,4 +1,4 @@
-# TYNG — Today’s Work and Progress
+# TYNG â€” Todayâ€™s Work and Progress
 
 ## Completed: Onboarding profile return path (25 September 2026)
 
@@ -15,12 +15,12 @@
 ## Completed: Profile and Edit Profile back-loop fix (24 September 2026)
 
 - Updated both Coach Profile and Edit Profile back buttons to return through navigation history.
-- Removed the hard-coded Edit Profile → Coach Profile redirect that caused the two pages to loop.
+- Removed the hard-coded Edit Profile â†’ Coach Profile redirect that caused the two pages to loop.
 - Verified the TypeScript application check passes.
 
 ## Completed: Coach Profile back navigation (24 September 2026)
 
-- Coach Profile’s back button now returns to the page that opened it using app navigation history.
+- Coach Profileâ€™s back button now returns to the page that opened it using app navigation history.
 - Verified the TypeScript application check and diff validation.
 
 ## Completed: Coach cards and gallery layout (24 September 2026)
@@ -32,18 +32,18 @@
 
 ## Completed: Coach location suffix removal (24 September 2026)
 
-- Removed the “away” text entirely from the Coach Profile location value.
+- Removed the â€œawayâ€ text entirely from the Coach Profile location value.
 - Verified the TypeScript application check passes.
 
 ## Completed: Coach location label cleanup (24 September 2026)
 
-- Coach Profile now shows “Location not set” without incorrectly appending “away.”
-- The “away” suffix appears only when a real Coach location is available.
+- Coach Profile now shows â€œLocation not setâ€ without incorrectly appending â€œaway.â€
+- The â€œawayâ€ suffix appears only when a real Coach location is available.
 - Verified the TypeScript application check and diff validation.
 
 ## Completed: Coach listing image layout (24 September 2026)
 
-- Fixed Coach listing avatars so every profile image stays in a consistent 64×64 rounded square instead of shrinking beside long text.
+- Fixed Coach listing avatars so every profile image stays in a consistent 64Ã—64 rounded square instead of shrinking beside long text.
 - Added a matching person icon fallback when a Coach has no uploaded image.
 - Verified the TypeScript check and diff validation pass.
 
@@ -80,10 +80,10 @@
 
 - Coach **My Students** now refreshes active students and pending requests every time the page is opened, including from a notification, tab, direct link, or back navigation.
 
-## Completed: Dynamic Coach Today’s Focus earnings (24 September 2026)
+## Completed: Dynamic Coach Todayâ€™s Focus earnings (24 September 2026)
 
-- Updated Coach Today’s Focus to include sessions created through the current Coach planning flow, not only older session records.
-- Expected earnings now total the Coach fee from today’s confirmed sessions; completed sessions and session counts also include both session systems.
+- Updated Coach Todayâ€™s Focus to include sessions created through the current Coach planning flow, not only older session records.
+- Expected earnings now total the Coach fee from todayâ€™s confirmed sessions; completed sessions and session counts also include both session systems.
 - The session planner now uses the Individual rate set in Coach Edit Profile as the starting fee for a new session. Existing session prices remain unchanged.
 - Removed placeholder focus amounts, so the card never briefly shows mock values while live dashboard data loads.
 
@@ -106,12 +106,12 @@
 
 - Rebuilt the Player dashboard greeting to use the reference layout: profile photo, online status, welcome text, points shortcut, and compact location control.
 - Removed the unrelated brand header from both dashboard role views so Player and Coach screens begin with their dashboard information.
-- Kept each role’s relevant information while making the two openings feel like one product family.
+- Kept each roleâ€™s relevant information while making the two openings feel like one product family.
 
 ## Completed: Coach dashboard screenshot alignment (24 September 2026)
 
 - Matched the Coach dashboard opening viewport to the supplied screenshot by removing the brand header from the Coach view only.
-- Tuned the greeting and Today’s Focus card spacing, border, shadow, and sizing for the reference layout.
+- Tuned the greeting and Todayâ€™s Focus card spacing, border, shadow, and sizing for the reference layout.
 - Player home keeps its existing brand header.
 
 ## Completed: Coach student search fix (24 September 2026)
@@ -153,15 +153,15 @@
 
 ## Completed: Live Laravel Admin panel
 
-- Added Admin → **Coaches** navigation and routes: `/admin/coaches` and `/admin/coaches/{coach}`.
+- Added Admin â†’ **Coaches** navigation and routes: `/admin/coaches` and `/admin/coaches/{coach}`.
 - Added Coach directory metrics: contact, location, sports, rating, active students, and coaching sessions.
-- Added Coach admin profile drill-down with Coach details, Coach–Student relationships, and recent sessions.
+- Added Coach admin profile drill-down with Coach details, Coachâ€“Student relationships, and recent sessions.
 - Deployed the Coach request APIs, media URL fix, and Admin Coach pages to `/var/www/tyng` over SSH.
 - Ran production migrations and Laravel cache clearing; PHP syntax and route checks passed.
 
 ## Follow-up / recommended next work
 
-- Add stored latitude/longitude to Coach and Player profiles before displaying calculated “distance away”; current `location` is text only.
+- Add stored latitude/longitude to Coach and Player profiles before displaying calculated â€œdistance awayâ€; current `location` is text only.
 - Expand the admin Coach profile with request/review/earnings tables and filters, using the data already loaded by the controller.
 - Replace remaining static demo content on Coach profile/detail pages where business data is not yet available.
 - Verify the Ionic dev server after a clean restart; the TypeScript config was restored after an overly broad include briefly compiled legacy test files.
@@ -188,13 +188,13 @@
 - Deployed migration/API changes to `/var/www/tyng`, ran migration, route, syntax, and cache checks, and pushed commit `31a660a` to the `developer` branch.
 - Angular production build passed; existing Sass deprecation and bundle-size warnings remain.
 
-## Completed: Coach note presentation — 23 September 2026
+## Completed: Coach note presentation â€” 23 September 2026
 
 - Updated the Coach Student private-notes form and saved-note card spacing, borders, focus state, add action, and visual hierarchy.
 - Replaced raw ISO timestamps with local, readable date/time labels and a time icon.
 - Angular production build passed; existing Sass deprecation and bundle-size warnings remain.
 
-## Completed: Coach Community chat — 23 September 2026
+## Completed: Coach Community chat â€” 23 September 2026
 
 - Replaced the former static Coach Community examples with a live shared Coach-only realtime chat.
 - Added a Coach Community section/filter and direct access button in the Coach chat inbox, plus a Coach side-menu entry and `/app/coach/community` route.
@@ -213,15 +213,15 @@
 - Deployed and verified the Laravel chat authorization update on `srv1789528`, cleared caches, and pushed commit `a6f6fad` to `developer`.
 - Angular production build passed; existing Sass deprecation and bundle-size warnings remain.
 
-## Completed: Live Coach dashboard metrics — 23 September 2026
+## Completed: Live Coach dashboard metrics â€” 23 September 2026
 
 - Removed the literal question-mark placeholders and broken currency display from the Coach dashboard.
 - Student requests, coaching progress, insight copy, earnings snapshot, and the recent-activity empty state now use the live Laravel Coach dashboard response.
-- Added Laravel metrics for pending student requests, today’s evaluations, and today’s completed sessions.
+- Added Laravel metrics for pending student requests, todayâ€™s evaluations, and todayâ€™s completed sessions.
 - Deployed and syntax/route-verified on `srv1789528`; pushed backend commit `d02b808` to `developer`.
 - Frontend build was started for validation; follow-up is to complete the production bundle check if the local Angular builder remains slow.
 
-## Completed: Dynamic Coach session planning — 23 September 2026
+## Completed: Dynamic Coach session planning â€” 23 September 2026
 
 - Connected the Coach session wizard to live active students and approved Laravel venues, replacing its fixed player and venue cards.
 - Publishing now creates a real Coach session through Laravel; selected players are validated as active and stored as a group when applicable.
@@ -229,66 +229,66 @@
 - Converted the Coach Book Venue catalogue to load approved venues from Laravel rather than demo cards.
 - Deployed migration/API/model updates to `srv1789528`, ran the migration and PHP checks, and pushed `962da7c` and `807df37` to `developer`.
 
-## Completed: Dynamic previous Coach batches — 23 September 2026
+## Completed: Dynamic previous Coach batches â€” 23 September 2026
 
 - Replaced the static Previous Batch examples with real multi-student Coach sessions from Laravel.
 - Selecting a previous batch restores its real student IDs in the session wizard.
 - Added and verified the live Coach batch route; pushed `cd00d44` to `developer`.
 
-## Completed: Coach venue catalogue and profile-card polish — 23 September 2026
+## Completed: Coach venue catalogue and profile-card polish â€” 23 September 2026
 
 - Fixed live venue cards to avoid demo-only rating, capacity, amenities, slot, and zero-price placeholders.
 - Removed static upcoming-reservation cards from the live catalogue and clarified the booking action.
 - Replaced corrupted question-mark glyphs in the dynamic Coach profile completion card with Ionic icons.
 
-## Delivery sync — 23 September 2026
+## Delivery sync â€” 23 September 2026
 
 - Synced all Coach workflow, chat, dashboard, profile, venue, and task-list changes made today to the application and Laravel Git branches.
 
-## Completed: Admin Coach operational history — 23 September 2026
+## Completed: Admin Coach operational history â€” 23 September 2026
 
 - Expanded the Laravel Admin Coach profile to show student status, session and group-member history, coaching requests, evaluations, private notes, booking requests, reviews, and summary metrics.
 - Deployed to `srv1789528`, cleared and rebuilt Blade views, and pushed backend commit `3725a60` to `developer`.
 
-## Completed: Admin Coach page layout fix — 23 September 2026
+## Completed: Admin Coach page layout fix â€” 23 September 2026
 
 - Fixed the production Admin Coach profile 500 error caused by extending a non-existent Blade layout.
 - Rebuilt production Blade views and pushed Laravel commit `a222795` to `developer`.
 
-## Completed: Laravel merge conflict resolution — 23 September 2026
+## Completed: Laravel merge conflict resolution â€” 23 September 2026
 
 - Resolved the active `git pull origin developer` conflicts in the coach API controller, chat service, and API routes while preserving local and remote functionality.
 - Verified no unmerged entries or conflict markers remain; PHP syntax checks and the coach route listing pass.
 - Changes remain uncommitted and unpushed as requested.
 
-## Planned: Coach schedule end-to-end workflow — 23 September 2026
+## Planned: Coach schedule end-to-end workflow â€” 23 September 2026
 
 - Audited the schedule UI, coach planning flow, venue booking flow, Laravel APIs, and the available Figma reference.
 - Identified that the schedule currently uses mock data; production implementation requires API-backed coach sessions, player visibility/notifications, and a real venue reservation linkage.
 - Figma Make design context could not be inspected because the connected account lacks edit access; implementation awaits approval and/or access.
 
-## Planned: Coach multi-venue scheduling architecture — 23 September 2026
+## Planned: Coach multi-venue scheduling architecture â€” 23 September 2026
 
 - Defined the approved planning direction: coaches may hold permanent partnerships with multiple venues, each with recurring availability and commercial rules, while retaining one-off venue booking.
 - Prepared the implementation scope covering partnerships, venue-controlled reservations, player invitations and RSVP, schedule views, notifications, attendance, completion, and evaluation flows.
 
-## Completed: Exported Figma code review — 23 September 2026
+## Completed: Exported Figma code review â€” 23 September 2026
 
 - Reviewed `E:\TYNG APP` as the available design source, including coach schedule, session creation/detail, venue coach-management, availability, and calendar screens.
 - Confirmed the intended workflow includes venue-aware time slots, participant invitations, automatic session chat/reminders/attendance, per-student payment allocation, and venue-wide facility conflict management.
 
-## Planned: Final coach scheduling implementation — 23 September 2026
+## Planned: Final coach scheduling implementation â€” 23 September 2026
 
 - Finalized the implementation plan against the exported Figma code and existing Ionic/Laravel architecture, separating venue employment from multi-venue coach partnerships.
 - Scope is ready for approval: database/API foundation, live schedule, venue reservations, player RSVP, financial allocation, notifications, attendance, completion, and verification.
 
-## Completed: Senior architecture review for Coach Scheduling & Venue Partnerships — 23 September 2026
+## Completed: Senior architecture review for Coach Scheduling & Venue Partnerships â€” 23 September 2026
 
 - Produced `E:\xampp\htdocs\tyng\docs\coach-scheduling-venue-partnership-architecture.md`, a production-readiness redesign based on the Figma export, Ionic application, Laravel Coach module, and existing booking domain.
 - Documented target workflows, ERD, normalized schema, API contracts, lifecycle and sequence diagrams, authorization, conflict locking, commerce/settlement, edge cases, notifications, reporting, scalability, migration strategy, and phased delivery.
 - No application code, database schema, live-server configuration, Google Cloud configuration, commits, or deployments were changed.
 
-## Completed: Coach scheduling foundation — 24 September 2026
+## Completed: Coach scheduling foundation â€” 24 September 2026
 
 - Added a dedicated scheduling domain: coach/venue partnerships, court-backed coaching sessions, normalized participants, reservation records, and database-enforced 15-minute court allocation locks.
 - Added protected Coach and Venue APIs for bookable facilities, session creation, partnership requests, session approval, and schedule retrieval; legacy sessions remain visible during the transition.
@@ -297,25 +297,25 @@
 - TypeScript compilation, PHP syntax validation, route registration, and diff whitespace checks pass locally. Local migration execution is unavailable because local MySQL is stopped; live migration and route verification are required during deployment.
 - Corrected scheduling venue images to use the Laravel media URL resolver and the Ionic media URL resolver, with a local fallback image when a venue has not uploaded a cover photo.
 
-## Completed: Coach session setup navigation — 24 September 2026
+## Completed: Coach session setup navigation â€” 24 September 2026
 
 - Made each of the eight progress indicators clickable, with accessible labels and current-step state, so coaches can jump directly between setup steps.
 - Kept the publish action protected by final server-side validation.
 - Prevented incompatible venues/courts from being selected for the chosen sport, and reset the court selection when the coach changes to an unsupported sport. This addresses the validation message visible on the Review step.
 - TypeScript check passes.
 
-## Completed: Sport-specific venue facilities — 24 September 2026
+## Completed: Sport-specific venue facilities â€” 24 September 2026
 
 - The venue list and the selected venue's facility list now both show only facilities that support the sport chosen in step 1.
 - This prevents unrelated facilities (for example, tennis courts in a cricket session) from appearing in venue selection.
 
-## Completed: Coach response to player session requests — 24 September 2026
+## Completed: Coach response to player session requests â€” 24 September 2026
 
 - Added Accept and Decline actions to pending player booking requests.
 - Added a coach-owned response endpoint with pending-state locking, duplicate-response protection, and player notification.
 - Accepting adds the player to the coach's active student list; the player is told to message the coach to confirm a date and time because the original request does not reserve a time slot.
 
-## Completed: Application-wide mobile UI quality refinement â€” 24 September 2026
+## Completed: Application-wide mobile UI quality refinement Ã¢â‚¬â€ 24 September 2026
 
 - Completed a source-based audit of every routed Player, Coach, Venue, Admin, authentication, onboarding, profile, booking, finance, map and chat screen. Findings and priorities are recorded in `UI_UX_AUDIT.md`.
 - Added a semantic visual foundation for consistent surfaces, borders, elevation, responsive control heights, readable brand text, focus rings and reduced-motion support.
@@ -418,7 +418,7 @@
 
 ## Completed: Live Coach Schedule message and session counts - 24 September 2026
 
-- Replaced the fixed “3 Unread” message value in the Coach Schedule summary with the live unread Chat count.
+- Replaced the fixed â€œ3 Unreadâ€ message value in the Coach Schedule summary with the live unread Chat count.
 - Made the New Messages summary open Coach Chat when selected.
 - Replaced the fixed side-menu Schedule badge with the real count of active today/upcoming Coach sessions; completed, cancelled, rejected and expired sessions are excluded.
 - Replaced the fixed pending-reschedule display with the actual pending session-request count.
@@ -457,7 +457,7 @@
 
 ## Completed: Client task-list delivery summary - 24 September 2026
 
-- Rebuilt `tasklistnew.txt` from completed task-list items 20–47 only, excluding planning and review work that did not create a user-facing change.
+- Rebuilt `tasklistnew.txt` from completed task-list items 20â€“47 only, excluding planning and review work that did not create a user-facing change.
 - Grouped the delivered changes into Coach, Player, Venue Staff, Admin and All App Users using client-friendly language.
 
 ## Completed: Repository update status - 24 September 2026
@@ -520,7 +520,7 @@
 
 - Restored the clipboard action in the Player Evaluation header and connected it to the persisted coach-evaluation API.
 - Added a mobile history sheet showing each saved date, overall score, four skill ratings, strengths, improvement areas and coach notes for the selected player.
-- Added retry, empty, loading and paginated “load older” states so every past evaluation remains accessible rather than showing only recent records.
+- Added retry, empty, loading and paginated â€œload olderâ€ states so every past evaluation remains accessible rather than showing only recent records.
 - Verified Angular TypeScript compilation, the Angular development build and Git diff checks successfully.
 
 # Completed: Shareable off-platform student invitations - 25 September 2026
@@ -676,7 +676,7 @@
 # Completed: Dynamic Player Home tournament section and public events API - 27 September 2026
 
 - Replaced the hard-coded Home tournament with the next real published public tournament returned by the Laravel API, including its sport, format, name, date, prize/entry information and event-detail navigation.
-- Added an honest loading state and hide the section when no eligible tournament exists; undated published tournaments display “Date to be announced” instead of fabricated dates.
+- Added an honest loading state and hide the section when no eligible tournament exists; undated published tournaments display â€œDate to be announcedâ€ instead of fabricated dates.
 - Added authenticated `GET /api/events/upcoming` with future/undated, published and public filtering, chronological ordering and a bounded result limit.
 - Added two Laravel feature tests covering visibility/status/date filtering, ordering and result limits; both tests passed, and the optimized Angular production build passed.
 - Deployed the endpoint directly to live host `srv1789528` in `/var/www/tyng`, cleared Laravel caches, verified the live route and PHP syntax, then committed and pushed backend branch `developer` as `9aa49a7` with a clean live worktree.
@@ -800,7 +800,7 @@
 
 # Completed: Player Home greeting and responsive UI audit - 27 September 2026
 
-- Recovered the missing `Hey, {{ helloName }} 👋` and `Ready to play?` greeting from Git history and restored it to the active Player Home v2 header.
+- Recovered the missing `Hey, {{ helloName }} ðŸ‘‹` and `Ready to play?` greeting from Git history and restored it to the active Player Home v2 header.
 - Increased the `Your location` caption from 10px to 12px while retaining the adaptive address sizing and compact location chip.
 - Added viewport-safe sizing, overflow containment and responsive typography across promotion, action, game, venue, tournament and coach cards.
 - Converted game footers, tournament cards and coach cards to stable grid layouts so long dynamic values cannot push buttons or prices outside the current screen.
@@ -839,7 +839,7 @@
 
 # Completed: Player Home promotion structure and compact typography - 27 September 2026
 
-- Rebuilt the promotion card’s internal structure to match the supplied reference, using a responsive 190–220px height, constrained copy width and stable two-line title treatment.
+- Rebuilt the promotion cardâ€™s internal structure to match the supplied reference, using a responsive 190â€“220px height, constrained copy width and stable two-line title treatment.
 - Anchored the promotion CTA to the bottom of the card so dynamic subtitle wrapping cannot distort or overlap the button.
 - Reduced Player Home text typography by approximately 5%, including the adaptive location label, while preserving icon sizes and interactive touch targets.
 - Kept the update isolated to Player Home and preserved the glass treatment, white promotional text and `#8CF000` accent.
@@ -952,7 +952,7 @@
 
 # Completed: Fixed Home nearby games feed - 27 September 2026
 
-- Included venue-approval-pending social games in discovery instead of filtering them out on Home; their card action now says “View game” rather than implying they can join immediately.
+- Included venue-approval-pending social games in discovery instead of filtering them out on Home; their card action now says â€œView gameâ€ rather than implying they can join immediately.
 - When the selected location has coordinates, request discovery without a hard text location match and sort venue-coordinate games nearest-first using distance; venues without coordinates follow by session date/time. Text-only locations retain the existing locality-filter fallback.
 - `git diff --check` and `npm run build` passed. Build emitted existing Sass deprecation and Angular optional-chain warnings unrelated to this change.
 
@@ -1004,13 +1004,13 @@
 
 # Completed: Player Home greeting header matches reference - 1 October 2026
 
-- Rebuilt the player Home header: the profile photo is now on the left as a 52px rounded square with a green online dot. To its right are two lines: "HEY, NAME 👋" in bold uppercase, then the location (green pin, gray text, chevron) that opens the location picker.
+- Rebuilt the player Home header: the profile photo is now on the left as a 52px rounded square with a green online dot. To its right are two lines: "HEY, NAME ðŸ‘‹" in bold uppercase, then the location (green pin, gray text, chevron) that opens the location picker.
 - Removed the "Your location" caption and the unused `locationChipFontSize` getter. Long names and locations are cut off with "..." so both lines always fit beside the photo.
 - The dev server recompiled successfully. Not checked in a browser because the preview browser wasn't logged in.
 - Refined it to match the full reference: the photo is now 48px with a 2.5px lime border and a smaller online dot. The greeting is 18px, there's more space between the two lines, and the location is smaller, bolder dark-gray text. Checked against the reference in a standalone test page that used the same styles.
 - Simplified it again at the user's request: a plain 52px round photo (no border or online dot), "Hey Name!" in 20px regular-weight dark text, and the location in 16px gray text with just a dropdown arrow (no pin icon, emoji or capitals). Checked in the standalone test page.
 - Fixed it on the live dev page (checked while logged in): the dev server had kept an old copy of the global stylesheet, and once it rebuilt, a generic `.home-location-trigger` pill style from `home.page.scss` was still winning. Made the header's location selectors more specific so it shows as plain gray text with a dropdown arrow.
-- Changed the greeting to "HEY, NAME 👋" in heavy uppercase (19px, weight 900), keeping the plain round photo and gray location. Checked on the logged-in Home page.
+- Changed the greeting to "HEY, NAME ðŸ‘‹" in heavy uppercase (19px, weight 900), keeping the plain round photo and gray location. Checked on the logged-in Home page.
 - Restyled the Home location line to match the reference: green pin, 12.5px bold dark-gray text and a small gray chevron, with a little more space below the greeting. Checked on the logged-in Home page.
 - Changed the Home profile photo to the reference style: a 50px rounded square with a 2.5px lime border and a green online dot at the bottom-right. Checked on the logged-in Home page.
 - Matched the Home background and search bar to the reference: removed the white glass card behind the header so it sits on the flat light page background (#fafbfc). The search bar is now white with a soft shadow and 16px corners, with a dark navy (#111827) rounded filter button holding a lime funnel icon. Compiled; not yet checked on screen because the preview browser session was logged out.
@@ -1019,7 +1019,7 @@
 - Changed the "Venues near you" placeholder images on player Home from alternating green and blue to the reference dark navy (#161e2d to #18212f), with faint pitch lines and a translucent white rating pill. Checked in a test page using the compiled app styles.
 - Restyled the "Book" button on the Home "Venues near you" cards to the reference: a fully rounded navy (#111827) pill with bold lime uppercase text and a soft shadow. The label still says "Book". Checked in a test page using the compiled app styles.
 - Centred the "Games near you" card when there is only one game (`:only-child` with auto side margins). With two or more games, the row still scrolls sideways from the left as before. Checked in a test page using the compiled app styles.
-- Replaced the vertical "Top coaches" list on player Home with a swipeable "COACHES FOR YOU" row matching the reference. Each white card has a rounded photo (or initials), the name in uppercase with a green verified tick (only when the coach record has a verified flag), "{Sport} Coach" in green, up to two specialties (or extra sports) in gray, rating plus experience (years when known, otherwise the level), "From ₹X/hr" and a lime "VIEW COACH →" link. The heading is uppercase with a gray "VIEW ALL >". Removed the unused `priceCaption` field and old `.coach-home-card` styles. Also added matching scroll padding to every swipeable Home row so snapping no longer pushes the first card against the screen edge. Compiled with no lint errors; checked in a test page using the compiled app styles.
+- Replaced the vertical "Top coaches" list on player Home with a swipeable "COACHES FOR YOU" row matching the reference. Each white card has a rounded photo (or initials), the name in uppercase with a green verified tick (only when the coach record has a verified flag), "{Sport} Coach" in green, up to two specialties (or extra sports) in gray, rating plus experience (years when known, otherwise the level), "From â‚¹X/hr" and a lime "VIEW COACH â†’" link. The heading is uppercase with a gray "VIEW ALL >". Removed the unused `priceCaption` field and old `.coach-home-card` styles. Also added matching scroll padding to every swipeable Home row so snapping no longer pushes the first card against the screen edge. Compiled with no lint errors; checked in a test page using the compiled app styles.
 
 # Completed: Player Home performance, race, badges and suggestion sections - 1 October 2026
 
@@ -1065,7 +1065,7 @@
 
 # Completed: Player Home section headings match Figma - 2 October 2026
 
-- All Home section headings now use the Figma `SectionTitle` style (16px, weight 900, uppercase, -0.02em, #111827), with grey uppercase "View all ›" links (11px, #6B7280). Changed in `src/theme/player-home-v2.scss`; the separate caps variant was merged into the base heading.
+- All Home section headings now use the Figma `SectionTitle` style (16px, weight 900, uppercase, -0.02em, #111827), with grey uppercase "View all â€º" links (11px, #6B7280). Changed in `src/theme/player-home-v2.scss`; the separate caps variant was merged into the base heading.
 - Added the "Explore by sport" heading above the sport rail and renamed "Venues near you" to "Top venues near you" (`home.page.html`).
 - "Games near you" and "Tournaments" keep their titles because Figma has no matching section. Figma's "Next up" is the player's own next booking, which Home doesn't show yet.
 - Compiled successfully. Not checked visually: the preview browser was logged out.
@@ -1076,7 +1076,7 @@
 - **Sections:** "FIND COACHES" intro; search bar with a dark filter button (orange dot when filters are on); sport chips built from the sports coaches actually teach; coaching invitations (kept); "RECOMMENDED FOR YOU" dark featured card (hidden while searching or filtering); "COACHES FOR YOU" list with a sort pill; coach cards (photo, NEW ON TYNG, verified tick, sports, session types, rating or "No reviews yet", experience range, sessions and students, area or distance, ID VERIFIED / CERTIFIED, next available, price or "On request", NEGOTIABLE, VIEW PROFILE and BOOK); empty state; Coach filters sheet (sport, session type, coach experience, distance, price, session availability, rating, language, verified-only toggle); Sort coaches sheet. Infinite scroll and pull to refresh. The tab bar hides while a sheet is open.
 - BOOK opens `/app/coaches/:id?book=1`, which now opens the existing booking sheet straight away.
 - **Backend (live, commit `f36829b` on `developer`):** `CoachController::index` now returns, per coach: `area` (short form of the saved address), `distanceKm`, experience level/label/years, `sessionTypes`, `languages`, `achievements`, `groupPrice`, rating and `reviewCount` from published reviews, `sessionsCompleted`, `activeStudents`, `idVerified` / `certified` (approved verification documents), `isNew` (joined in the last 30 days), `nextAvailable` (next open weekly slot, India time), today/tomorrow/weekend availability and `sharesSport`. It also returns `facets` (sports, session types, languages present). New filters: `sports`, `session_types`, `experience`, `languages`, `price` bands, `min_rating`, `availability`, `verified`, `max_distance`; sorts: recommended, top, nearest, soonest, price, experience. Sport matching now ignores case, which fixes the old filter that never matched lowercase sports. Home's existing `sort=top` call still works.
-- **Figma values with no backend data:** sponsored badge, specialisation and skill-level filters (shown as session type and coach experience instead), exact years (shown as the onboarding range, e.g. "4–10 Years"), exact next-session times (shown as the weekly slot, e.g. "Today • Night"). NEAREST sort and distance filter only appear once coaches have saved coordinates (none do yet).
+- **Figma values with no backend data:** sponsored badge, specialisation and skill-level filters (shown as session type and coach experience instead), exact years (shown as the onboarding range, e.g. "4â€“10 Years"), exact next-session times (shown as the weekly slot, e.g. "Today â€¢ Night"). NEAREST sort and distance filter only appear once coaches have saved coordinates (none do yet).
 - **Follow-up:** there is no admin approval step for coach verification documents (all stay "submitted"), so ID VERIFIED / CERTIFIED badges and "Verified only" show nothing until an admin approve action sets them to `approved`.
 - Compiled with no lint errors. Checked on the logged-in dev page at phone width with live data: list (10 coaches), Cricket chip (5), Today + English filter (1), price sort, BOOK opening the booking sheet (closed without sending).
 
@@ -1135,7 +1135,7 @@
   - **Documents:** upload (PDF or image, up to 20 MB), view, download, replace, delete with confirmation, visibility per document, document types and privacy options.
 - **Editing:** Personal Info and Medical have edit mode with a Cancel / Save bar and a "Profile updated" pill. Tapping a recent game lets the player open it or mark it won, lost or draw.
 - **Verified:** type check passes and the dev server compiles. Checked logged in at phone size against live data: all five tabs render with no console errors, edit mode and the save bar work, the Documents empty state shows, and opening with `?tab=documents` selects that tab.
-- **Figma items with no backend data:** rank movement ("↑ 3 positions"), phone verification status, and a "verified" tick on documents. The hydration reminder is stored but no reminder is sent. The medical access and document visibility choices are stored but not yet enforced for coaches or venues.
+- **Figma items with no backend data:** rank movement ("â†‘ 3 positions"), phone verification status, and a "verified" tick on documents. The hydration reminder is stored but no reminder is sent. The medical access and document visibility choices are stored but not yet enforced for coaches or venues.
 - **Follow-up:** a screen to rate other players after a game; enforce medical/document access and the "allow messages" toggle; the app top bar scrolls away on every page (its sticky style has no effect), so the profile tabs pin to the top of the screen.
 
 # Completed: Home "Top venues near you" now uses live venues - 2 October 2026
@@ -1162,7 +1162,7 @@
 
 # Completed: Shorter location label in the Home header - 2 October 2026
 
-- **What changed:** new headerLocationLabel getter in home.page.ts keeps only the first part of the location label (the area), so "Preeti Nagar > Lucknow" shows as "Preeti Nagar". When the label has no area it is just the city, so the city shows. The "Detecting location…" and "Set your location" placeholders are unchanged. Both header location buttons in home.page.html use it, with the full label as the title tooltip. locationLabel and playerLocation are unchanged, so nearby searches still get the full location.
+- **What changed:** new headerLocationLabel getter in home.page.ts keeps only the first part of the location label (the area), so "Preeti Nagar > Lucknow" shows as "Preeti Nagar". When the label has no area it is just the city, so the city shows. The "Detecting locationâ€¦" and "Set your location" placeholders are unchanged. Both header location buttons in home.page.html use it, with the full label as the title tooltip. locationLabel and playerLocation are unchanged, so nearby searches still get the full location.
 - **Verified:** type check passes; in the browser as a player the header shows "Preeti Nagar".
 
 # Completed: Hide the bottom tab bar while the keyboard is open - 2 October 2026
@@ -1172,15 +1172,15 @@
 
 # Completed: Skeleton placeholders instead of sample or old text while API data loads - 2 October 2026
 
-- **Problem:** many screens first rendered hard-coded sample values, zeros or "No … found" empty states, then swapped in API data, so wrong text flashed before the real values.
+- **Problem:** many screens first rendered hard-coded sample values, zeros or "No â€¦ found" empty states, then swapped in API data, so wrong text flashed before the real values.
 - **Pattern used:** loading flags now start true (Ionic renders once before ionViewWillEnter). A separate loaded/ready flag keeps skeletons to the first load only, so pull-to-refresh keeps old data visible. Empty states only show once data has loaded. Sample arrays were replaced by empty typed arrays. New shared app-card-row-skeleton (inputs count, cardWidth, mediaHeight, lines, full, label) is exported from shared/components/skeleton/index.ts.
-- **Global fix:** global.scss set ion-skeleton-text --background-rgb to 237, 240, 244. Animated skeletons paint that colour at 6–13% opacity, so every animated skeleton in the app was close to invisible on white. It is now 17, 24, 39 (Ionic's default dark text tint), with 255, 255, 255 under .dark-mode.
+- **Global fix:** global.scss set ion-skeleton-text --background-rgb to 237, 240, 244. Animated skeletons paint that colour at 6â€“13% opacity, so every animated skeleton in the app was close to invisible on white. It is now 17, 24, 39 (Ionic's default dark text tint), with 255, 255, 255 under .dark-mode.
 - **Player:** Home sport rail (skeleton until home-sports load or a cached entry exists), Games near you, Top venues, Coaches, Tournament and Performance sections; leaderboard rank card and next move; coach profile detail (skeleton + retry, review count now from coach.reviewCount instead of a fixed "48 Reviews"); create game no longer pre-fills sample venues; venue court counts, ongoing games count, My Bookings segment counts; chat room title; event detail, coach invite and TP history page skeletons; chat list safety timeout raised to 8 s.
-- **Coach:** dashboard (Home coach branch) no longer shows sample sessions/requests/activity; every section has a skeleton until the first load finishes (coachDashboardLoaded). Fixed garbled · and – characters in session text. Students (counts, invitations, list), Schedule (stats, list, error line; today's completion % is now computed instead of a fixed 50%), Insights, Earnings (stats, wallet, breakdown, recent sessions), Student profile (loads by route id, skeleton + retry), Complete profile (progress and form skeleton, Skip hidden while loading).
+- **Coach:** dashboard (Home coach branch) no longer shows sample sessions/requests/activity; every section has a skeleton until the first load finishes (coachDashboardLoaded). Fixed garbled Â· and â€“ characters in session text. Students (counts, invitations, list), Schedule (stats, list, error line; today's completion % is now computed instead of a fixed 50%), Insights, Earnings (stats, wallet, breakdown, recent sessions), Student profile (loads by route id, skeleton + retry), Complete profile (progress and form skeleton, Skip hidden while loading).
 - **Venue staff:** booking detail, calendar stats and events, earnings period switch, facilities court count and form, dashboard weather place name, complete profile steps (Next disabled while loading), create event courts and sponsors, side menu (Venue Profile / Facilities / Earnings subtitles and the profile checklist show skeletons until the dashboard call returns; the fake four-item checklist fallback was removed).
 - **Admin:** dashboard stat values and operations list.
 - **Verified:** type check passes and the dev server compiles. In the browser as a player with 4 s simulated network latency, Home shows visible skeleton cards that are replaced by real venues and the games empty state once data arrives. Coach, venue staff and admin screens were not opened in the browser.
-- **Follow-up (not changed, no API behind them yet):** Stats page, coach Profile tab, upcoming events page, admin users/venues/revenue/disputes, venue analytics, coach teams/settings, venue collab detail. Values that are still always fake: venue weather text and temperature, coach earnings sparkline, venue rating 4.5 and "6 AM–10 PM" fallbacks, header bell red dot, venue booking summary slots, coach side menu rating "4.8 (128)".
+- **Follow-up (not changed, no API behind them yet):** Stats page, coach Profile tab, upcoming events page, admin users/venues/revenue/disputes, venue analytics, coach teams/settings, venue collab detail. Values that are still always fake: venue weather text and temperature, coach earnings sparkline, venue rating 4.5 and "6 AMâ€“10 PM" fallbacks, header bell red dot, venue booking summary slots, coach side menu rating "4.8 (128)".
 
 # Completed: Player and coach badges with progress, plus admin badge views - 2 October 2026
 
@@ -1188,7 +1188,7 @@
 - **Backend (live, `developer` f00ce0c):** new `App\Services\BadgeService` owns badge criteria, progress (`current`, `threshold`, `progressPct`, `hint`), secret handling and unlocking for both roles. `xp_badges.audience` (player/coach) added by migration `2026_10_02_000005_add_coach_badges_and_audience`, which also sets icons, enables Good Sport and Fan Favourite (player ratings exist now) and adds 8 coach badges: First Whistle (1 session), Session Pro (25), Century Coach (100), Squad Builder (10 active students), Academy Builder (30), Talent Scout (25 evaluations), Top Rated (10 published reviews at 4.5+ average) and secret Iron Coach (a completed session every week for 8 weeks). Venue Favourite stays off (no venue-to-player ratings yet).
 - **When badges unlock:** game completion (existing XP engine now delegates to BadgeService), player rating saved, coach session or scheduled session marked completed, student becomes active, evaluation created, review saved (model events, after commit), on opening badge screens (throttled to once per 2 minutes per user), daily `badges:evaluate` at 03:30, and the admin "Re-check now" button. Each new unlock sends a "Badge unlocked" notification (XP notification category) that opens `/app/badges`.
 - **API:** `GET /xp/badges` is role-aware and returns `audience`, `items` (with progress), `earned`, `locked`, `secret`, `total` and `next` (closest badge). The player profile `badges` block uses the same data.
-- **Admin:** XP → Badges has Player/Coach filters, editable name/description/threshold/visibility/active, plain-language criteria, earned counts and a "Re-check now" button. New badge page lists everyone who earned it (searchable, with links to the player XP page or coach page). Badge cards with progress on the player XP page and the coach page; badge count columns on the player XP list and coach list.
+- **Admin:** XP â†’ Badges has Player/Coach filters, editable name/description/threshold/visibility/active, plain-language criteria, earned counts and a "Re-check now" button. New badge page lists everyone who earned it (searchable, with links to the player XP page or coach page). Badge cards with progress on the player XP page and the coach page; badge count columns on the player XP list and coach list.
 - **App:** new shared Badges page (`/app/badges`) for players and coaches with summary, closest next badge, All/Earned/Locked filters, progress bars and a secret-badge card. Linked from the coach side menu, the coach dashboard Milestone card and Home "View all badges". The player profile badge rail and "All badges" sheet show progress and hints. Badge icons moved to `shared/badge-visuals.ts`.
 - **Verified:** 17 XP feature tests pass, including 4 new ones (catalog progress and secret hiding, game unlock, coach session unlock, venue accounts have none). On live: migration ran, backfill checked 21 accounts (none had met a threshold yet, so 0 unlocks and no notifications sent), admin badge, earners, player, coach and coach-list pages render. In the browser as a player, the Badges page and profile sheet show live progress (for example The Connector 1/50). The coach screens were not opened in the browser.
 - **Follow-up:** the live server has no cron running `php artisan schedule:run`, so no scheduled jobs run there (including the existing `bookings:expire-pending-approvals` and `wallets:ensure`); badges still unlock through the live triggers. Players cannot leave coach reviews in the app yet, so Top Rated can only be earned from reviews created elsewhere.
@@ -1309,3 +1309,9 @@
 - `home.page.html`: a badge card tap opens the pop-up instead of `/app/profile` (with an `aria-label` per card). Inline `ion-modal [isOpen]="!!selectedBadge"` shows the earned date (`date:'d MMM y'`) for unlocked badges, and current/threshold, the bar and the hint for locked ones.
 - **Verified:** `npx tsc --noEmit -p tsconfig.app.json` passes. In the browser all six descriptions are one line (three end in an ellipsis). Tapping Count On Me opens a centred 320x332 pop-up (Reliability, 0 / 25), and Close dismisses it. Frontend `94fa484` is on `master`.
 - **Pending review:** the Figma font and colour trial is on branch `trial/figma-font-colors` (`9542402`, with `master` merged in as `cd1cd15`). It switches the font from Lato to Inter with `@fontsource/inter` 400/500/600/700/900, maps 373 off-palette hex codes on player pages to the Figma palette, and changes font weights 650/750/800/850/950 to 700/900. `--app-success` is unchanged because it comes from the admin theme (`/app/theme`). Merge it into `master` if approved; otherwise delete the branch.
+
+# Completed: Explore by sport row shows exactly six whole tiles - 2 October 2026
+
+- `theme/player-home-v2.scss`: `.sport-rail.sport-rail-loop` moves the side spacing out of the scroller (`padding-inline: 0; margin-inline: var(--sport-rail-inset)`, 16px by default, 10px in the small-phone query and 24px at 600px and up), so the visible area holds exactly six tiles plus five gaps. Before, tiles from the next copy showed through the inner padding. Added `scroll-snap-type: x mandatory` on the rail and `scroll-snap-align: start` on the tiles, so a swipe always comes to rest on a whole tile.
+- `home.page.ts`: `onWindowResize` also calls `scheduleSportRailReset()`, which re-aligns to the start of the middle copy after rotation or resize, because the tile widths change.
+- **Verified:** `npx tsc --noEmit -p tsconfig.app.json` passes. Browser at 360, 393, 430 and 768px: 6 full and 0 partial tiles at the start, after a 1.4-tile swipe, after a 7.6-tile swipe back across the loop, and after each resize.

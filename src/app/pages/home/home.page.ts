@@ -613,6 +613,7 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
   @HostListener('window:resize')
   onWindowResize(): void {
     this.schedulePromoFit();
+    this.scheduleSportRailReset();
   }
 
   private observePromoSpace(): void {
