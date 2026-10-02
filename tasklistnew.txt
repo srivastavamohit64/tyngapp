@@ -86,6 +86,65 @@ ALL APP USERS
 - Get a quicker, more reliable current-location map, with a clear fallback when device location is unavailable.
 - Keep the Coach venue-booking screen available after refreshing the app.
 
+NEW WORK COMPLETED AFTER 25 SEPTEMBER 2026
+26 September - 2 October 2026
+
+PLAYER
+
+- See a redesigned Home screen with your photo, a greeting and your location at the top, a search bar, and a row of sports that always fits six across any phone screen.
+- Tap a sport to see nearby games for that sport, and keep scrolling to see more. Games you created say "Hosted by you" instead of showing a Join button.
+- Open More to search every sport, including other names such as soccer, futsal or ping pong.
+- Use the filter button beside search to jump straight to searching venues, players or coaches. The menu closes as soon as you pick one.
+- Use Quick Actions on Home to create a game, join a game, book a venue or hire a coach.
+- See nearby games sorted by distance, with a countdown to when each game starts.
+- See top venues near you, the next real tournament, and coaches picked for you with their real photo, rating and hourly price.
+- See your level, XP, reliability, rating and rank on Home, how you are doing in this month's race against other players, badges you recently unlocked, and a suggestion of nearby games with open spots.
+- Swipe through the promotion cards on Home. The TYNG team can now change these at any time.
+- See the advert banner again at the bottom of Home.
+- Choose your location from a smaller, tidier drawer, and get a more accurate current location on the map.
+- Discover players with swipeable cards: swipe right to connect, left to skip. Each card shows real details and the reasons you may be a good match, and you can add a message when connecting.
+- Filter players by sport, skill level, distance, reliability and when they are free.
+- Find coaches on a redesigned Coaches screen, filter by sport, session type, experience, price, availability, rating, language and verified coaches, and sort the list. Book opens the coach's booking form straight away.
+- See a loading placeholder while search results arrive, instead of an empty screen.
+- Choose a date and time, and whether it repeats, before requesting a coaching session.
+- Accept or decline when a coach invites you to become their student. Waiting invitations appear at the top of the Coaches screen.
+- See in the chat whether a coach has accepted or declined your session request.
+- See a redesigned leaderboard for your city, your friends, a sport or a venue, for this week, this month, the season or all time. It shows a top-three podium, your rank, the players just above and below you, real player photos and tips on how to climb.
+- Open your XP history and level progress from the progress card in the side menu.
+- Read the Privacy Policy and Terms & Conditions inside the app. The TYNG team can update the wording at any time.
+- Block a player from their profile so they cannot message you, invite you to games, add you as a friend or find you, and you will not see them either.
+- See everyone you have blocked, and unblock them, from Blocked Users in the side menu or in Settings.
+- Turn notifications on or off, either all at once or by type: bookings, chat, friends, wallet, XP, coaching and announcements. Every notification is on until you choose to turn it off.
+- Wallet is no longer listed in Settings. It is still in the side menu.
+- Use a back button at the top of every inner page. The bottom menu now only appears on the main screens.
+- See the side menu items in the same order as the new design: Wallet, Leaderboards, Coaches, Settings, Blocked Users and Support.
+- Keep the price, Chat and booking buttons clearly visible at the bottom of a game's details while scrolling.
+- Open the correct event page when tapping an event from a venue.
+
+COACH
+
+- See only the times that are actually free at the chosen venue court, grouped into morning, afternoon and evening, each with its end time.
+- Get a session title filled in automatically as you choose the sport, venue and students. A title you type yourself is kept.
+- See a clearer success screen that says whether the venue booking is confirmed or still waiting for the venue to approve it.
+- Players you add now receive an invitation and join your student list only after they accept. See who has not accepted yet in a Pending tab, and send a reminder or cancel the invitation.
+- Children without their own login are still added to your students straight away.
+- See the date, time and repeat details on every session request, and accept or decline it directly in the chat.
+- Stop seeing the Complete Profile option in the menu once your profile is complete.
+- See the same side menu style as players.
+
+VENUE STAFF
+
+- See the same side menu style as players.
+
+ADMIN
+
+- Create, edit, schedule, reorder, switch on or off and delete the promotion cards shown on players' Home screens, with a live preview while editing.
+- Edit the Privacy Policy and Terms & Conditions from the CMS Pages item in the admin menu. Changes appear in the app straight away.
+
+ALL APP USERS
+
+- See page titles and the buttons at the top of each screen at the same size everywhere in the app.
+
 Writing rule: Whenever work is finished, add a short note here explaining in everyday words what changed and how it helps players, coaches, or administrators. Write for someone who does not work in software. Avoid programming terms, internal names, and tool names. Describe what the person can now do.
 
 RECENT IMPROVEMENTS - 23 SEPTEMBER 2026
