@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { BackNavigationService } from '../../core/services/back-navigation.service';
 import { IonicModule, RefresherCustomEvent } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 import { XpLine, XpService, XpSummary } from '../../core/services/xp.service';
@@ -151,6 +152,7 @@ interface XpHistoryGroup {
 })
 export class XpHistoryPage implements OnInit {
   readonly router = inject(Router);
+  readonly backNavigation = inject(BackNavigationService);
   private readonly xp = inject(XpService);
 
   readonly summary = signal<XpSummary | null>(null);
@@ -219,7 +221,7 @@ export class XpHistoryPage implements OnInit {
   }
 
   goBack(): void {
-    void this.router.navigateByUrl('/app/profile');
+    this.backNavigation.back('/app/profile');
   }
 
   activityIcon(item: XpLine): string {

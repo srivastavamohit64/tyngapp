@@ -1,7 +1,8 @@
-import { CommonModule, Location } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, ElementRef, inject, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { BackNavigationService } from '../../core/services/back-navigation.service';
 import { Capacitor } from '@capacitor/core';
 import { ActionSheetController, IonicModule } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
@@ -486,7 +487,7 @@ export class EditProfilePage implements OnInit {
 
   readonly auth = inject(AuthService);
   readonly router = inject(Router);
-  private readonly navigationLocation = inject(Location);
+  readonly backNavigation = inject(BackNavigationService);
   private readonly actionSheetCtrl = inject(ActionSheetController);
   private readonly mediaPicker = inject(NativeMediaPickerService);
   private readonly savedAddressesService = inject(SavedAddressesService);
@@ -857,7 +858,7 @@ export class EditProfilePage implements OnInit {
   }
 
   back() {
-    this.navigationLocation.back();
+    this.backNavigation.back(this.auth.user()?.role === 'coach' ? '/app/coach/profile' : '/app/profile');
   }
 
   async save() {

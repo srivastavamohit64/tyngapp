@@ -1,7 +1,8 @@
-import { CommonModule, Location } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, ElementRef, OnDestroy, AfterViewInit, ViewChild, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { BackNavigationService } from '../../core/services/back-navigation.service';
 import { Capacitor } from '@capacitor/core';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
@@ -72,7 +73,7 @@ export class CheckInPage implements AfterViewInit, OnDestroy {
 
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  private readonly location = inject(Location);
+  readonly backNavigation = inject(BackNavigationService);
   private readonly bookings = inject(BookingService);
   private readonly toastCtrl = inject(ToastController);
   private readonly media = inject(MediaPermissionService);
@@ -103,11 +104,7 @@ export class CheckInPage implements AfterViewInit, OnDestroy {
   }
 
   goBack(): void {
-    if (typeof window !== 'undefined' && window.history.length > 1) {
-      this.location.back();
-      return;
-    }
-    void this.router.navigateByUrl('/app/my-bookings');
+    this.backNavigation.back('/app/my-bookings');
   }
 
   toggleCamera(): void {

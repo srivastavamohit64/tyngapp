@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, signal, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { BackNavigationService } from '../../../core/services/back-navigation.service';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
@@ -117,7 +118,7 @@ function buildDates() {
   imports: [CommonModule, IonicModule, FormsModule, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true">
-      <app-brand-header-shell title="Create Session" (back)="success() ? go('/app/coach/dashboard') : handleBack()">
+      <app-brand-header-shell title="Create Session" (back)="success() ? backNavigation.back('/app/coach/dashboard') : handleBack()">
       <button headerEnd *ngIf="!success()" type="button" aria-label="Close" (click)="go('/app/coach/dashboard')" class="app-header-btn flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
         <ion-icon name="close-outline" class="text-xl text-[#111827]"></ion-icon>
       </button>
@@ -1146,6 +1147,7 @@ function buildDates() {
 export class CoachPlanPage implements OnInit {
   readonly Math = Math;
   private readonly router = inject(Router);
+  readonly backNavigation = inject(BackNavigationService);
   private readonly coachService = inject(CoachService);
   loading = signal(false);
   publishing = signal(false);
@@ -1254,7 +1256,7 @@ export class CoachPlanPage implements OnInit {
 
   handleBack() {
     if (this.step() === 1) {
-      this.router.navigateByUrl('/app/coach/dashboard');
+      this.backNavigation.back('/app/coach/dashboard');
     } else {
       this.step.update(s => s - 1);
     }

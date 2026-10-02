@@ -1,4 +1,4 @@
-import { CommonModule, Location } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, computed, EventEmitter, inject, Input, Output } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router } from '@angular/router';
@@ -6,6 +6,7 @@ import { IonicModule, MenuController } from '@ionic/angular';
 import { filter, map, startWith } from 'rxjs/operators';
 import { isMainTabRoute } from '../../../core/constants/layout-routes';
 import { AuthService } from '../../../core/services/auth.service';
+import { BackNavigationService } from '../../../core/services/back-navigation.service';
 import { HeaderComponent } from '../header/header.component';
 
 /**
@@ -49,13 +50,13 @@ export class BrandHeaderShellComponent {
   private readonly menu = inject(MenuController);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
-  private readonly location = inject(Location);
+  private readonly backNavigation = inject(BackNavigationService);
 
   @Input() showBrand = true;
   /** Centred in the top bar on pages that show the back button. */
   @Input() title = '';
   @Input() notificationRoute?: string;
-  /** When bound, the header back button emits here instead of navigating back. */
+  /** When bound, the header back button emits here instead of navigating back (wizards use it to step back). */
   @Output() back = new EventEmitter<void>();
 
   private readonly url = toSignal(
@@ -97,10 +98,6 @@ export class BrandHeaderShellComponent {
       this.back.emit();
       return;
     }
-    if (typeof window !== 'undefined' && window.history.length > 1) {
-      this.location.back();
-      return;
-    }
-    void this.router.navigateByUrl(this.resolvedHomeRoute);
+    this.backNavigation.back(this.resolvedHomeRoute);
   }
 }

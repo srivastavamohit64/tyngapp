@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, signal, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { BackNavigationService } from '../../core/services/back-navigation.service';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { CoachService } from '../../core/services/coach.service';
@@ -624,6 +625,7 @@ const ACHIEVEMENT_COLORS: Record<string, { bg: string; color: string }> = {
 export class CoachStudentProfilePage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  readonly backNavigation = inject(BackNavigationService);
   private readonly coach = inject(CoachService);
   private readonly chat = inject(ChatService);
 
@@ -690,7 +692,7 @@ export class CoachStudentProfilePage implements OnInit {
   }
 
   back() {
-    this.router.navigateByUrl('/app/coach/students');
+    this.backNavigation.back('/app/coach/students');
   }
 
   go(path: string) {

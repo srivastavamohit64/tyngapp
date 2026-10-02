@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
+import { BackNavigationService } from '../../core/services/back-navigation.service';
 import { IonicModule } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
@@ -80,6 +81,7 @@ const WELCOME_FEATURES = ['Connect with athletes', 'Manage bookings', 'Grow your
 export class CoachOnboardingPage {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  readonly backNavigation = inject(BackNavigationService);
 
   readonly totalSteps = TOTAL_STEPS;
   readonly stepNumbers = [1, 2, 3, 4];
@@ -106,7 +108,7 @@ export class CoachOnboardingPage {
 
   back() {
     if (this.step === 1) {
-      void this.router.navigateByUrl('/welcome');
+      this.backNavigation.back('/welcome');
       return;
     }
     this.step -= 1;

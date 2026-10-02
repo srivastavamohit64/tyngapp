@@ -1,6 +1,7 @@
-import { CommonModule, Location } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, ViewChild, computed, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { BackNavigationService } from '../../core/services/back-navigation.service';
 import { IonicModule, ViewWillEnter } from '@ionic/angular';
 import { AuthService } from '../../core/services/auth.service';
 import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
@@ -16,8 +17,8 @@ import { PlayerProfileComponent } from './player-profile/player-profile.componen
 export class ProfilePage implements ViewWillEnter {
   readonly auth = inject(AuthService);
   readonly router = inject(Router);
+  readonly backNavigation = inject(BackNavigationService);
   private readonly route = inject(ActivatedRoute);
-  private readonly location = inject(Location);
 
   @ViewChild(PlayerProfileComponent) private playerProfile?: PlayerProfileComponent;
 
@@ -48,6 +49,6 @@ export class ProfilePage implements ViewWillEnter {
       void this.router.navigateByUrl('/app/coach/dashboard', { replaceUrl: true });
       return;
     }
-    this.location.back();
+    this.backNavigation.back(this.auth.user()?.role === 'coach' ? '/app/coach/dashboard' : '/app/home');
   }
 }

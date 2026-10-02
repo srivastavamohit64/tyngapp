@@ -1,6 +1,7 @@
-import { CommonModule, Location, TitleCasePipe } from '@angular/common';
+import { CommonModule, TitleCasePipe } from '@angular/common';
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { BackNavigationService } from '../../core/services/back-navigation.service';
 import { AlertController, IonicModule, RefresherCustomEvent, ToastController, ViewWillEnter } from '@ionic/angular';
 import { Subscription, firstValueFrom } from 'rxjs';
 import { BookingParticipant, BookingRecord, FriendItem } from '../../core/models/api.model';
@@ -331,7 +332,7 @@ import { PageSkeletonComponent } from '../../shared/components/skeleton';
 export class BookingDetailPage implements OnInit, OnDestroy, ViewWillEnter {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  private readonly location = inject(Location);
+  readonly backNavigation = inject(BackNavigationService);
   private readonly bookingService = inject(BookingService);
   private readonly chat = inject(ChatService);
   private readonly auth = inject(AuthService);
@@ -473,11 +474,7 @@ export class BookingDetailPage implements OnInit, OnDestroy, ViewWillEnter {
   }
 
   goBack(): void {
-    if (typeof window !== 'undefined' && window.history.length > 1) {
-      this.location.back();
-      return;
-    }
-    void this.router.navigateByUrl('/app/my-bookings');
+    this.backNavigation.back('/app/my-bookings');
   }
 
   bookAgain(booking: BookingRecord): void {

@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, signal, inject, ElementRef, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
+import { BackNavigationService } from '../../core/services/back-navigation.service';
 import { FormsModule } from '@angular/forms';
 import { Capacitor } from '@capacitor/core';
 import { ActionSheetController, AlertController, IonicModule, ViewWillEnter } from '@ionic/angular';
@@ -1230,6 +1231,8 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
   @ViewChild('galleryLibraryInput') galleryLibraryInput?: ElementRef<HTMLInputElement>;
 
   private readonly router = inject(Router);
+
+  readonly backNavigation = inject(BackNavigationService);
   private readonly route = inject(ActivatedRoute);
   private readonly auth = inject(AuthService);
   private readonly venueService = inject(VenueService);
@@ -1972,7 +1975,7 @@ export class VenueCompleteProfilePage implements ViewWillEnter {
   handleBack() {
     this.saveError.set('');
     if (this.step() === 1) {
-      void this.router.navigateByUrl('/app/venue/profile');
+      this.backNavigation.back('/app/venue/profile');
     } else {
       this.step.update((s) => Math.max(1, s - 1));
     }

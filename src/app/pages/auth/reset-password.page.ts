@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { BackNavigationService } from '../../core/services/back-navigation.service';
 import { IonicModule } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
@@ -15,7 +16,7 @@ import { TextInputComponent } from '../../shared/components/text-input/text-inpu
   template: `
     <ion-content fullscreen>
       <main class="auth-flow">
-        <button type="button" class="back-btn" (click)="router.navigateByUrl('/forgot-password')">
+        <button type="button" class="back-btn" (click)="backNavigation.back('/forgot-password')">
           <ion-icon name="chevron-back-outline"></ion-icon>
         </button>
         <h1 class="title">Reset Password</h1>
@@ -50,6 +51,7 @@ import { TextInputComponent } from '../../shared/components/text-input/text-inpu
 export class ResetPasswordPage implements OnInit {
   readonly auth = inject(AuthService);
   readonly router = inject(Router);
+  readonly backNavigation = inject(BackNavigationService);
   private readonly route = inject(ActivatedRoute);
 
   phone = '';

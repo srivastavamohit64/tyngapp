@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, inject, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { BackNavigationService } from '../../core/services/back-navigation.service';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, IonContent } from '@ionic/angular';
 import { CoachService } from '../../core/services/coach.service';
@@ -542,6 +543,7 @@ export class CoachSessionDetailPage implements OnInit {
   @ViewChild('attendanceSection') private attendanceSection?: ElementRef<HTMLElement>;
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  readonly backNavigation = inject(BackNavigationService);
   private readonly coachService = inject(CoachService);
 
   session: CoachSession | null = null;
@@ -671,7 +673,7 @@ export class CoachSessionDetailPage implements OnInit {
   }
 
   back() {
-    this.router.navigateByUrl('/app/coach/schedule');
+    this.backNavigation.back('/app/coach/schedule');
   }
 
   go(path: string) {

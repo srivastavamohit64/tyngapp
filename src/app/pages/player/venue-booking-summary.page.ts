@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { BackNavigationService } from '../../core/services/back-navigation.service';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
@@ -516,6 +517,7 @@ interface AppliedCoupon {
 })
 export class VenueBookingSummaryPage implements OnInit {
   private readonly router = inject(Router);
+  readonly backNavigation = inject(BackNavigationService);
   private readonly route = inject(ActivatedRoute);
   private readonly bookingService = inject(BookingService);
   private readonly walletService = inject(WalletService);
@@ -701,7 +703,7 @@ export class VenueBookingSummaryPage implements OnInit {
   }
 
   back() {
-    this.router.navigate([`/app/venue/${this.venueId}/book`], {
+    this.backNavigation.back(`/app/venue/${this.venueId}/book`, {
       state: {
         venue: this.venue,
         rentalItems: this.rentalQty,

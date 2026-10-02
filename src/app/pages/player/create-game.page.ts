@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, QueryList, ViewChildren, ElementRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { BackNavigationService } from '../../core/services/back-navigation.service';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 import { ApiService } from '../../core/services/api.service';
@@ -564,6 +565,7 @@ interface DateOption {
 })
 export class CreateGamePage implements OnInit {
   private readonly router = inject(Router);
+  readonly backNavigation = inject(BackNavigationService);
   readonly data = inject(DesignDataService);
   private readonly api = inject(ApiService);
   private readonly bookingService = inject(BookingService);
@@ -801,7 +803,7 @@ export class CreateGamePage implements OnInit {
 
   back() {
     if (this.currentStep === 1) {
-      void this.router.navigateByUrl('/app/home');
+      this.backNavigation.back('/app/home');
       return;
     }
     this.currentStep--;

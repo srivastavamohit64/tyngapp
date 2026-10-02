@@ -1238,3 +1238,14 @@
 - Main tab pages are unchanged, because their brand bar does not render `headerEnd`. Hero-image overlay buttons and the chat room pin stay in the content.
 - **Verified:** `npx tsc --noEmit -p tsconfig.app.json` passes and `ionic serve` compiles. In the browser: Notifications (mark all read in the header), Leaderboard (search and share in the header) and Wallet.
 - **Follow-up:** the live map's `calc(100vh - 334px ...)` map height may leave about 24px extra space now that its subtitle row is shorter. The coach teams Add button and the collab download/share buttons still have no click handlers, as before.
+
+# Completed: Back buttons navigate to the previous page - 2 October 2026
+
+- New `BackNavigationService` (`core/services/back-navigation.service.ts`) counts in-app history entries from router events (imperative navigations add one, `replaceUrl`/`skipLocationChange` add none, popstate removes one). `back(fallback, extras?)` calls `NavController.back()` when there is an earlier in-app entry, otherwise `navigateBack(fallback, extras)`, so deep links and refreshes never leave the app. It is injected in `AppComponent` so it sees the first navigation.
+- `BrandHeaderShellComponent.goBack()` and `HeaderComponent.onBack()` use it (the header used to go to `homeRoute`).
+- Fixed-route back handlers now go back with their old route as the fallback: venue detail, venue booking, venue booking summary (keeps the `state` on fallback), booking detail, check-in, coach profile detail, badges, TP/XP history, coach session detail, student profile, venue collab detail, booking requests, edit profile, profile, forgot/reset password.
+- Wizards keep their step-back logic; on the first step (and on success screens for plan, enroll student, coach venue booking) they go back: create game, plan, enroll student, coach venue booking, create event, venue complete profile, coach onboarding, venue onboarding.
+- Kept: coach profile opened with `?from=complete-profile` still replaces to the coach dashboard.
+- Removed now-unused `Location` injections.
+- **Verified:** `npx tsc --noEmit -p tsconfig.app.json` passes and `ionic serve` compiles. In the browser as a player: Home > venue > book > back > back lands on Home; Home > Notifications > back and Home > Create Game > back land on Home; `/app/venue/9` opened directly goes back to `/app/venues`.
+- **Note:** a browser tab that has hit the 50-entry history limit can step back past the app's first page; a fresh tab or the native app is not affected.

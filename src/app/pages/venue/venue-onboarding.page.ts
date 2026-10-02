@@ -3,6 +3,7 @@ import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Router } from '@angular/router';
+import { BackNavigationService } from '../../core/services/back-navigation.service';
 import { IonicModule } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
@@ -69,6 +70,7 @@ export class VenueOnboardingPage {
   private readonly auth = inject(AuthService);
   private readonly venueService = inject(VenueService);
   private readonly router = inject(Router);
+  readonly backNavigation = inject(BackNavigationService);
   private readonly sanitizer = inject(DomSanitizer);
 
   readonly totalSteps = TOTAL_STEPS;
@@ -106,7 +108,7 @@ export class VenueOnboardingPage {
 
   back() {
     if (this.step === 1) {
-      void this.router.navigateByUrl('/welcome');
+      this.backNavigation.back('/welcome');
       return;
     }
     this.step -= 1;

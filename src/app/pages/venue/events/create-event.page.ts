@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { BackNavigationService } from '../../../core/services/back-navigation.service';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 import { SponsorOption, VenueEventService } from '../../../core/services/venue-event.service';
@@ -235,6 +236,7 @@ const TYPES = [
 export class VenueCreateEventPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  readonly backNavigation = inject(BackNavigationService);
   private readonly eventsApi = inject(VenueEventService);
   private readonly venue = inject(VenueService);
   private readonly toastCtrl = inject(ToastController);
@@ -352,7 +354,7 @@ export class VenueCreateEventPage implements OnInit {
 
   back(): void {
     if (this.step() === 0) {
-      void this.router.navigateByUrl('/app/venue/events');
+      this.backNavigation.back('/app/venue/events');
       return;
     }
     this.step.set(this.step() - 1);

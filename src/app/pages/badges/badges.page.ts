@@ -1,6 +1,7 @@
-import { CommonModule, Location } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { BackNavigationService } from '../../core/services/back-navigation.service';
 import { IonicModule, RefresherCustomEvent } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
@@ -191,7 +192,7 @@ export class BadgesPage {
   private readonly xp = inject(XpService);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
-  private readonly location = inject(Location);
+  readonly backNavigation = inject(BackNavigationService);
 
   readonly catalog = signal<BadgeCatalog | null>(null);
   readonly error = signal('');
@@ -256,10 +257,6 @@ export class BadgesPage {
   }
 
   goBack(): void {
-    if (window.history.length > 1) {
-      this.location.back();
-      return;
-    }
-    void this.router.navigateByUrl(this.auth.user()?.role === 'coach' ? '/app/coach/dashboard' : '/app/profile');
+    this.backNavigation.back(this.auth.user()?.role === 'coach' ? '/app/coach/dashboard' : '/app/profile');
   }
 }

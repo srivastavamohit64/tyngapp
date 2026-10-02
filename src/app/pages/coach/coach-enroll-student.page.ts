@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { BackNavigationService } from '../../core/services/back-navigation.service';
 import { Capacitor } from '@capacitor/core';
 import { ActionSheetController, IonicModule } from '@ionic/angular';
 import { CoachService } from '../../core/services/coach.service';
@@ -45,7 +46,7 @@ const MEMBERSHIPS = ['Trial Student', 'Regular Student', 'Academy Student', 'Pri
   imports: [CommonModule, IonicModule, FormsModule, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true" class="enrollment-content">
-      <app-brand-header-shell title="Enroll Student" (back)="isSuccess() ? go('/app/coach/dashboard') : handleBack()">
+      <app-brand-header-shell title="Enroll Student" (back)="isSuccess() ? backNavigation.back('/app/coach/dashboard') : handleBack()">
       <button headerEnd *ngIf="!isSuccess()" type="button" class="header-close-btn" (click)="go('/app/coach/dashboard')" aria-label="Close enrolment">
         <ion-icon name="close-outline"></ion-icon>
       </button>
@@ -326,6 +327,8 @@ export class CoachEnrollStudentPage implements OnInit, OnDestroy {
   @ViewChild('cameraInput') cameraInput?: ElementRef<HTMLInputElement>;
 
   private readonly router = inject(Router);
+
+  readonly backNavigation = inject(BackNavigationService);
   private readonly coach = inject(CoachService);
   private readonly mediaPicker = inject(NativeMediaPickerService);
   private readonly actionSheet = inject(ActionSheetController);
@@ -425,7 +428,7 @@ export class CoachEnrollStudentPage implements OnInit, OnDestroy {
       this.managedStep = 1;
       return;
     }
-    void this.router.navigateByUrl('/app/coach/dashboard');
+    this.backNavigation.back('/app/coach/dashboard');
   }
 
   canProceed(): boolean {

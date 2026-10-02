@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { BackNavigationService } from '../../core/services/back-navigation.service';
 import { IonicModule } from '@ionic/angular';
 import { VENUE_DATA, type VenueDetail } from './venue-detail.page';
 import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
@@ -687,6 +688,7 @@ interface DateItem {
 })
 export class VenueBookingPage implements OnInit {
   private readonly router = inject(Router);
+  readonly backNavigation = inject(BackNavigationService);
   private readonly route = inject(ActivatedRoute);
 
   venueId: number | null = null;
@@ -875,7 +877,7 @@ export class VenueBookingPage implements OnInit {
   }
 
   back() {
-    this.router.navigateByUrl(`/app/venue/${this.venueId}`);
+    this.backNavigation.back(`/app/venue/${this.venueId}`);
   }
 
   continueToSummary() {

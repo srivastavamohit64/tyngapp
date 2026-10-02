@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { BackNavigationService } from '../../core/services/back-navigation.service';
 import { IonicModule } from '@ionic/angular';
 import { ChatService } from '../../core/services/chat.service';
 import { CoachService } from '../../core/services/coach.service';
@@ -129,6 +130,7 @@ export class CoachBookingRequestsPage implements OnInit {
   private readonly coach = inject(CoachService);
   private readonly chat = inject(ChatService);
   private readonly router = inject(Router);
+  readonly backNavigation = inject(BackNavigationService);
   readonly requests = signal<any[]>([]);
   readonly loading = signal(false);
   readonly error = signal('');
@@ -215,5 +217,5 @@ export class CoachBookingRequestsPage implements OnInit {
     }
   }
 
-  back(): void { void this.router.navigateByUrl('/app/coach/dashboard'); }
+  back(): void { this.backNavigation.back('/app/coach/dashboard'); }
 }

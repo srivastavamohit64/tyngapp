@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { BackNavigationService } from '../../core/services/back-navigation.service';
 import { IonicModule } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 import { CoachService } from '../../core/services/coach.service';
@@ -74,7 +75,7 @@ const DURATIONS = [
   imports: [CommonModule, IonicModule, FormsModule, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true" class="page-shell">
-      <app-brand-header-shell title="Book Venue" (back)="success() ? go('/app/coach/dashboard') : previous()">
+      <app-brand-header-shell title="Book Venue" (back)="success() ? backNavigation.back('/app/coach/dashboard') : previous()">
       <button headerEnd *ngIf="!success()" type="button" class="close" (click)="close()" aria-label="Close"><ion-icon name="close-outline"></ion-icon></button>
       <main *ngIf="!success(); else successScreen" class="booking-page">
         <header class="topbar">
@@ -208,6 +209,7 @@ const DURATIONS = [
 })
 export class CoachVenueBookingPage implements OnInit {
   private readonly router = inject(Router);
+  readonly backNavigation = inject(BackNavigationService);
   private readonly route = inject(ActivatedRoute);
   private readonly coach = inject(CoachService);
   private readonly navigationVenue = this.router.getCurrentNavigation()?.extras?.state?.['venue'];
@@ -322,7 +324,7 @@ export class CoachVenueBookingPage implements OnInit {
     if (this.step() < 6) { this.step.update(value => value + 1); return; }
     await this.submit();
   }
-  previous(): void { if (this.step() > 1) this.step.update(value => value - 1); else this.close(); }
+  previous(): void { if (this.step() > 1) this.step.update(value => value - 1); else this.backNavigation.back('/app/coach/book-venue'); }
   close(): void { void this.router.navigateByUrl('/app/coach/book-venue'); }
   go(path: string): void { void this.router.navigateByUrl(path); }
 

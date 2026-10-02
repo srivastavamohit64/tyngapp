@@ -13,6 +13,7 @@ import { RealtimeService } from './core/services/realtime.service';
 import { PushNotificationService } from './core/services/push-notification.service';
 import { TabBadgeService } from './core/services/tab-badge.service';
 import { ForegroundNotificationService } from './core/services/foreground-notification.service';
+import { BackNavigationService } from './core/services/back-navigation.service';
 
 interface CoachMenuItem {
   label: string;
@@ -51,6 +52,8 @@ export class AppComponent implements OnInit {
   private readonly pushNotifications = inject(PushNotificationService);
   private readonly tabBadges = inject(TabBadgeService);
   private readonly foregroundNotifications = inject(ForegroundNotificationService);
+  /** Created at startup so it counts every navigation. */
+  private readonly backNavigation = inject(BackNavigationService);
 
   showLogoutConfirm = false;
   private lastScrollPath = '';

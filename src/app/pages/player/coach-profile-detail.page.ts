@@ -1,6 +1,7 @@
-import { CommonModule, Location } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { BackNavigationService } from '../../core/services/back-navigation.service';
 import { FormsModule } from '@angular/forms';
 import { AlertController, IonicModule } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
@@ -179,8 +180,8 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
 })
 export class CoachProfileDetailPage implements OnInit {
   private readonly router = inject(Router);
+  readonly backNavigation = inject(BackNavigationService);
   private readonly route = inject(ActivatedRoute);
-  private readonly navigationLocation = inject(Location);
   private readonly coachService = inject(CoachService);
   private readonly chat = inject(ChatService);
   private readonly alertCtrl = inject(AlertController);
@@ -260,11 +261,7 @@ export class CoachProfileDetailPage implements OnInit {
   }
 
   back() {
-    if (typeof window !== 'undefined' && window.history.length > 1) {
-      this.navigationLocation.back();
-      return;
-    }
-    void this.router.navigateByUrl('/app/coaches');
+    this.backNavigation.back('/app/coaches');
   }
 
   photo(url?: string | null): string | null {

@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, signal, computed, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { BackNavigationService } from '../../core/services/back-navigation.service';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
@@ -506,6 +507,7 @@ const DOCS = [
 })
 export class VenueCollabDetailPage implements OnInit {
   private readonly router = inject(Router);
+  readonly backNavigation = inject(BackNavigationService);
   private readonly route = inject(ActivatedRoute);
 
   collabId = signal('1');
@@ -591,7 +593,7 @@ export class VenueCollabDetailPage implements OnInit {
   }
 
   back() {
-    this.router.navigateByUrl('/app/coach/earnings');
+    this.backNavigation.back('/app/coach/earnings');
   }
 
   go(path: string) {

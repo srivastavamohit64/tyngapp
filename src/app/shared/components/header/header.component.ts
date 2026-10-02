@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule, MenuController } from '@ionic/angular';
+import { BackNavigationService } from '../../../core/services/back-navigation.service';
 
 export type AppHeaderVariant = 'brand' | 'page' | 'venue';
 
@@ -256,6 +257,7 @@ export type AppHeaderVariant = 'brand' | 'page' | 'venue';
 export class HeaderComponent {
   private readonly router = inject(Router);
   private readonly menu = inject(MenuController);
+  private readonly backNavigation = inject(BackNavigationService);
 
   @Input() variant: AppHeaderVariant = 'brand';
   @Input() title = '';
@@ -285,7 +287,7 @@ export class HeaderComponent {
       this.back.emit();
       return;
     }
-    void this.router.navigateByUrl(this.homeRoute);
+    this.backNavigation.back(this.homeRoute);
   }
 
   goHome() {

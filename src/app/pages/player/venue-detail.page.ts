@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { BackNavigationService } from '../../core/services/back-navigation.service';
 import { IonicModule } from '@ionic/angular';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { firstValueFrom } from 'rxjs';
@@ -490,6 +491,7 @@ export const VENUE_DATA: VenueDetail[] = [
 export class VenueDetailPage implements OnInit {
   readonly Math = Math;
   private readonly router = inject(Router);
+  readonly backNavigation = inject(BackNavigationService);
   private readonly route = inject(ActivatedRoute);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly venueService = inject(VenueService);
@@ -626,7 +628,7 @@ export class VenueDetailPage implements OnInit {
   }
 
   back() {
-    void this.router.navigateByUrl('/app/venues');
+    this.backNavigation.back('/app/venues');
   }
 
   openDirections(address: string) {
