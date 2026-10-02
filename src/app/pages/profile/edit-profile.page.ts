@@ -7,7 +7,7 @@ import { Capacitor } from '@capacitor/core';
 import { ActionSheetController, IonicModule } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
-import { CoachGalleryCategory, CoachGalleryItem, CoachProfileDetails, CoachProfileDetailsPayload, CoachService, CoachVerificationDocument, CoachVerificationDocumentType } from '../../core/services/coach.service';
+import { CoachGalleryCategory, CoachGalleryItem, CoachOfferType, CoachProfileDetails, CoachProfileDetailsPayload, CoachService, CoachSportExperience, CoachVerificationDocument, CoachVerificationDocumentType } from '../../core/services/coach.service';
 import { LocationService } from '../../core/services/location.service';
 import { NativeMediaPickerService } from '../../core/services/native-media-picker.service';
 import {
@@ -37,6 +37,14 @@ const COACH_TIMES = ['Morning','Afternoon','Evening','Night'];
 const COACH_ACHIEVEMENTS = ['District Level','State Level','National Level','International Level','Former Professional Player','Current Professional Coach','Other'];
 const COACH_SPECIALITIES = ['Fitness','Technique','Beginners','Performance','Kids','Competition Prep','Position Training','Strength & Conditioning','Tactics','Mental Game'];
 const COACH_LEVELS = ['Children','Teenagers','Adults','Seniors','Beginners','Intermediate','Advanced','Professionals'];
+const COACH_OFFER_TYPES: Array<{ id: CoachOfferType; label: string }> = [
+  { id: 'individual', label: '1-to-1' },
+  { id: 'group', label: 'Group' },
+  { id: 'monthly', label: 'Monthly' },
+  { id: 'trial', label: 'Trial' },
+  { id: 'online', label: 'Online' },
+  { id: 'other', label: 'Other' },
+];
 
 @Component({
   selector: 'app-edit-profile-page',
@@ -159,6 +167,42 @@ const COACH_LEVELS = ['Children','Teenagers','Adults','Seniors','Beginners','Int
             <button type="button" class="detail-toggle-row" (click)="coachDetails.feesNegotiable = !coachDetails.feesNegotiable">
               <span>Pricing is negotiable</span><span class="mini-toggle" [class.mini-toggle-active]="coachDetails.feesNegotiable"><i></i></span>
             </button>
+          </div>
+
+          <div class="detail-group">
+            <div class="detail-group-heading"><h3>Session packages</h3><span>{{ coachDetails.sessionOffers.length }}/12</span></div>
+            <p class="detail-hint">Name each session you sell, for example "1-to-1 Performance Training, 60 min". Players pick one when they book. If you add none, players see the prices above.</p>
+            <div class="history-edit-list">
+              <div *ngFor="let offer of coachDetails.sessionOffers; let i = index" class="history-edit-row">
+                <input type="text" [(ngModel)]="offer.name" maxlength="80" placeholder="Session name, e.g. Beginner Football" />
+                <div class="offer-edit-grid">
+                  <select [(ngModel)]="offer.type" aria-label="Session type">
+                    <option *ngFor="let type of coachOfferTypes" [ngValue]="type.id">{{ type.label }}</option>
+                  </select>
+                  <label class="offer-edit-unit"><input type="number" [(ngModel)]="offer.durationMinutes" min="15" max="600" placeholder="60" /><span>min</span></label>
+                  <label class="offer-edit-unit"><span>₹</span><input type="number" [(ngModel)]="offer.price" min="0" placeholder="Price" /></label>
+                </div>
+                <input type="text" [(ngModel)]="offer.description" maxlength="120" placeholder="Short line, e.g. Fitness + Technique" />
+                <button type="button" class="detail-toggle-row offer-edit-toggle" (click)="offer.perPlayer = !offer.perPlayer">
+                  <span>Price is per player</span><span class="mini-toggle" [class.mini-toggle-active]="offer.perPlayer"><i></i></span>
+                </button>
+                <button type="button" class="history-edit-remove" (click)="removeSessionOffer(i)" aria-label="Remove session package"><ion-icon name="trash-outline"></ion-icon></button>
+              </div>
+            </div>
+            <button type="button" class="history-edit-add" (click)="addSessionOffer()" [disabled]="coachDetails.sessionOffers.length >= 12"><ion-icon name="add-outline"></ion-icon> Add a session package</button>
+          </div>
+
+          <div class="detail-group">
+            <div class="detail-group-heading"><h3>Coaching experience</h3><span>Shown on your profile</span></div>
+            <label class="offer-edit-unit experience-years"><input type="number" [(ngModel)]="coachDetails.experienceYears" min="0" max="60" placeholder="0" /><span>years coaching</span></label>
+            <textarea [(ngModel)]="coachDetails.experienceSummary" maxlength="1000" rows="3" placeholder="e.g. Coached youth teams, adult beginners and competitive players."></textarea>
+            <div class="history-edit-list sport-exp-list" *ngIf="coachDetails.sportExperience.length">
+              <div *ngFor="let row of coachDetails.sportExperience" class="sport-exp-row">
+                <strong>{{ row.sport }}</strong>
+                <label class="offer-edit-unit"><input type="number" [(ngModel)]="row.years" min="0" max="60" placeholder="0" /><span>yrs</span></label>
+                <input type="text" [(ngModel)]="row.focus" maxlength="80" placeholder="Focus, e.g. Fitness conditioning" />
+              </div>
+            </div>
           </div>
 
           <div class="detail-group">
@@ -417,6 +461,18 @@ const COACH_LEVELS = ['Children','Teenagers','Adults','Seniors','Beginners','Int
     .history-edit-row { position:relative; display:flex; flex-direction:column; gap:6px; padding:10px 42px 10px 10px; background:#fff; border:1px solid #edf0f2; border-radius:13px; }
     .history-edit-pair { display:grid; grid-template-columns:1.3fr 1fr; gap:6px; }
     .history-edit-remove { position:absolute; top:10px; right:8px; width:28px; height:28px; color:#dc2626; background:#fff; border:1px solid #fee2e2; border-radius:9px; }
+    .detail-hint { margin:-4px 0 10px; color:#6b7280; font-size:11px; line-height:1.5; }
+    .offer-edit-grid { display:grid; grid-template-columns:1.1fr .8fr 1fr; gap:6px; }
+    .offer-edit-grid select { min-width:0; width:100%; padding:9px 8px; color:#111827; background:#f8fafc; border:1px solid #edf0f2; border-radius:11px; font:inherit; font-size:12px; outline:0; }
+    .offer-edit-unit { display:flex; align-items:center; gap:4px; min-width:0; padding:0 10px; background:#f8fafc; border:1px solid #edf0f2; border-radius:11px; }
+    .offer-edit-unit input { min-width:0; width:100%; padding:9px 0; color:#111827; background:transparent; border:0; outline:0; font:inherit; font-size:12px; }
+    .offer-edit-unit span { flex-shrink:0; color:#6b7280; font-size:11px; font-weight:700; }
+    .offer-edit-toggle { margin-top:0 !important; }
+    .experience-years { max-width:180px; margin-bottom:8px; }
+    .sport-exp-list { margin-top:10px; }
+    .sport-exp-row { display:grid; grid-template-columns:80px 80px 1fr; align-items:center; gap:6px; }
+    .sport-exp-row strong { font-size:12px; text-transform:capitalize; }
+    .sport-exp-row > input { min-width:0; width:100%; box-sizing:border-box; padding:9px 11px; color:#111827; background:#f8fafc; border:1px solid #edf0f2; border-radius:11px; outline:0; font:inherit; font-size:12px; }
     .history-edit-add { display:flex; align-items:center; justify-content:center; gap:5px; width:100%; margin-top:8px; padding:10px; color:#111827; background:#f8fafc; border:1px dashed #d1d5db; border-radius:12px; font-size:11px; font-weight:800; }
     .verification-edit-list { display:flex; flex-direction:column; gap:8px; }
     .verification-edit-row { display:flex; align-items:center; gap:8px; padding:10px; background:#f8fafc; border:1px solid #edf0f2; border-radius:13px; }
@@ -571,6 +627,7 @@ export class EditProfilePage implements OnInit {
   readonly coachAchievementOptions = COACH_ACHIEVEMENTS;
   readonly coachSpecialityOptions = COACH_SPECIALITIES;
   readonly coachLevelOptions = COACH_LEVELS;
+  readonly coachOfferTypes = COACH_OFFER_TYPES;
   customSpeciality = '';
   coachDetailsLoaded = false;
   coachDetailsSaving = false;
@@ -634,8 +691,17 @@ export class EditProfilePage implements OnInit {
       languages: [], coachingLocations: [], serviceRadius: '', sessionTypes: [], equipment: [],
       trialEnabled: null, trialType: '', travelMode: '', weeklyAvailability: {},
       feeOptions: { individual: '', group: '', monthly: '' }, feesNegotiable: false,
-      achievements: [], specialities: [], coachingLevels: [], coachingHistory: [], bio: '',
+      achievements: [], specialities: [], coachingLevels: [], coachingHistory: [],
+      experienceYears: null, experienceSummary: '', sportExperience: [], sessionOffers: [], bio: '',
     };
+  }
+
+  private mergeSportExperience(saved: CoachSportExperience[]): CoachSportExperience[] {
+    const sports = (this.auth.user()?.sports ?? []).map((sport) => String(sport)).filter(Boolean);
+    return sports.map((sport) => {
+      const match = saved.find((row) => row?.sport?.toLowerCase() === sport.toLowerCase());
+      return { sport, years: match?.years ?? null, focus: match?.focus ?? '' };
+    });
   }
 
   private loadCoachDetails(): void {
@@ -656,6 +722,19 @@ export class EditProfilePage implements OnInit {
           coachingLevels: Array.isArray(result.data.coachingLevels) ? result.data.coachingLevels : [],
           coachingHistory: Array.isArray(result.data.coachingHistory)
             ? result.data.coachingHistory.map((entry) => ({ place: entry?.place || '', role: entry?.role || '', period: entry?.period || '' }))
+            : [],
+          experienceYears: result.data.experienceYears ?? null,
+          experienceSummary: result.data.experienceSummary || '',
+          sportExperience: this.mergeSportExperience(Array.isArray(result.data.sportExperience) ? result.data.sportExperience : []),
+          sessionOffers: Array.isArray(result.data.sessionOffers)
+            ? result.data.sessionOffers.map((offer) => ({
+              name: offer?.name || '',
+              type: offer?.type || 'individual',
+              durationMinutes: offer?.durationMinutes ?? null,
+              price: offer?.price ?? null,
+              perPlayer: !!offer?.perPlayer,
+              description: offer?.description || '',
+            }))
             : [],
         };
         this.coachDetailsLoaded = true;
@@ -691,6 +770,26 @@ export class EditProfilePage implements OnInit {
 
   removeCoachHistory(index: number): void {
     this.coachDetails.coachingHistory = this.coachDetails.coachingHistory.filter((_, i) => i !== index);
+    this.coachDetailsSuccess = '';
+  }
+
+  private wholeNumber(value: unknown): number | null {
+    if (value === null || value === undefined || value === '') return null;
+    const number = Math.round(Number(value));
+    return Number.isFinite(number) && number >= 0 ? number : null;
+  }
+
+  addSessionOffer(): void {
+    if (this.coachDetails.sessionOffers.length >= 12) return;
+    this.coachDetails.sessionOffers = [
+      ...this.coachDetails.sessionOffers,
+      { name: '', type: 'individual', durationMinutes: 60, price: null, perPlayer: false, description: '' },
+    ];
+    this.coachDetailsSuccess = '';
+  }
+
+  removeSessionOffer(index: number): void {
+    this.coachDetails.sessionOffers = this.coachDetails.sessionOffers.filter((_, i) => i !== index);
     this.coachDetailsSuccess = '';
   }
 
@@ -976,6 +1075,21 @@ export class EditProfilePage implements OnInit {
           coaching_history: this.coachDetails.coachingHistory
             .map((entry) => ({ place: entry.place.trim(), role: entry.role.trim(), period: entry.period.trim() }))
             .filter((entry) => entry.place),
+          experience_years: this.wholeNumber(this.coachDetails.experienceYears),
+          experience_summary: this.coachDetails.experienceSummary.trim(),
+          sport_experience: this.coachDetails.sportExperience
+            .map((row) => ({ sport: row.sport, years: this.wholeNumber(row.years), focus: (row.focus || '').trim() }))
+            .filter((row) => row.years !== null || row.focus),
+          session_offers: this.coachDetails.sessionOffers
+            .filter((offer) => offer.name.trim())
+            .map((offer) => ({
+              name: offer.name.trim(),
+              type: offer.type,
+              duration_minutes: this.wholeNumber(offer.durationMinutes),
+              price: offer.price === null || (offer.price as unknown) === '' || !Number.isFinite(Number(offer.price)) ? null : Number(offer.price),
+              per_player: offer.perPlayer,
+              description: offer.description.trim(),
+            })),
           bio: this.coachDetails.bio.trim(),
         };
         await firstValueFrom(this.coachService.saveMyCoachProfileDetails(detailsPayload));

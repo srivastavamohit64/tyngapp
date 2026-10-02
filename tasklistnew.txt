@@ -184,6 +184,11 @@ PLAYER
 - Book a coach from their profile in a few steps: pick a session type, tap one of their free times or choose your own, check the details and send. A chat with the coach opens so you can agree the place and time.
 - Rate and review a coach after you have finished a session with them. Your star rating counts towards the coach's overall rating, and you can change your review later.
 - Share a coach's profile with friends, or block a coach from the more button at the top of their profile.
+- Save a coach with the bookmark button on their profile, then see only your saved coaches by turning on "Saved only" in the Coaches filters.
+- Report a coach, or tell TYNG about a safety concern, from the more button on their profile. Pick what happened and add details. The coach does not see who sent it, and safety concerns are looked at first.
+- When you review a coach, you can also rate their coaching quality, communication, punctuality, professionalism and value. Each coach's profile shows the average for each one.
+- See a coach's exact free start times, such as 5 PM or 6 PM, instead of just "evening". Tap a time to book it straight away.
+- Choose from the session packages a coach offers, with their length and price, when you book.
 
 COACH
 
@@ -192,6 +197,8 @@ COACH
 - Earn coaching badges for completed sessions, growing your student list, writing player evaluations, great reviews and coaching every week. See your progress on the new Badges page from the side menu or the Milestone card on your dashboard.
 - Fill in three new parts of your profile in Edit Profile so players learn more about you: your specialities (pick from the list or type your own), who you coach (children, adults, beginners and so on), and your coaching history (where you coached, your role and when). They appear on the profile players see.
 - Players now see your training photos as your profile cover, your certificates, partner venues, free times and a reliability score worked out from how often you finish sessions, reply to requests and how well students turn up.
+- Add your own session packages in Edit Profile, such as a 60-minute one-to-one or a monthly plan, with a price, length and short description. Players pick one when they book, and your lowest price is shown on your profile.
+- Add your exact years of coaching, a short summary of your experience, and how many years you have coached each sport.
 
 VENUE STAFF
 
@@ -204,6 +211,9 @@ ADMIN
 - Edit the Privacy Policy and Terms & Conditions from the CMS Pages item in the admin menu. Changes appear in the app straight away.
 - See grey placeholder shapes on the dashboard numbers and activity list while they load, instead of zeros.
 - See every player and coach badge, how each one is earned and who has earned it. Change a badge's name, description or goal, hide or switch it off, and re-check everyone at once. Each player's and coach's page now shows their badges and progress.
+- Open any coach's public profile, exactly as players see it, with the new "View public profile" button on the coach list or the coach's page. It also shows how many players saved the coach, any open reports, and what the coach still needs to fill in.
+- Handle reports and safety concerns about coaches on the new Coach Reports page in the side menu. A number shows how many are waiting, and safety concerns appear first. Mark each one as being looked at, sorted or dismissed, and add a note.
+- See each coach's ratings for coaching quality, communication, punctuality, professionalism and value, plus their years of experience and session packages, on the coach's page.
 
 ALL APP USERS
 

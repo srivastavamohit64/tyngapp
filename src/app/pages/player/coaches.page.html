@@ -215,6 +215,22 @@
               <span></span>
             </button>
           </div>
+          <div class="cp-verified-row">
+            <div>
+              <p>SAVED ONLY</p>
+              <span>Show coaches you bookmarked</span>
+            </div>
+            <button
+              type="button"
+              class="cp-toggle"
+              role="switch"
+              [attr.aria-checked]="draftSaved"
+              [class.is-on]="draftSaved"
+              (click)="draftSaved = !draftSaved"
+            >
+              <span></span>
+            </button>
+          </div>
         </div>
         <div class="cp-sheet-actions">
           <button type="button" class="cp-btn-muted" (click)="clearDraft()">CLEAR</button>

@@ -96,12 +96,30 @@ export class CoachService {
     requested_start_time: string;
     is_recurring: boolean;
     recurring_end_date?: string | null;
+    session_offer?: string | null;
+    duration_minutes?: number | null;
+    quoted_price?: number | null;
   }): Observable<ApiResponse<any>> {
     return this.api.post(`/coaches/${coachId}/booking-requests`, payload);
   }
 
-  submitCoachReview(coachId: number, payload: { rating: number; comment?: string }): Observable<ApiResponse<any>> {
+  submitCoachReview(
+    coachId: number,
+    payload: { rating: number; comment?: string } & Partial<Record<CoachReviewCategory, number | null>>,
+  ): Observable<ApiResponse<any>> {
     return this.api.post(`/coaches/${coachId}/reviews`, payload);
+  }
+
+  saveCoach(coachId: number): Observable<ApiResponse<{ saved: boolean }>> {
+    return this.api.post<{ saved: boolean }>(`/coaches/${coachId}/save`);
+  }
+
+  unsaveCoach(coachId: number): Observable<ApiResponse<{ saved: boolean }>> {
+    return this.api.delete<{ saved: boolean }>(`/coaches/${coachId}/save`);
+  }
+
+  reportCoach(coachId: number, payload: { type: 'report' | 'safety'; reason: string; details?: string }): Observable<ApiResponse<unknown>> {
+    return this.api.post(`/coaches/${coachId}/reports`, payload);
   }
 
   getMyCoachStudentRequests(): Observable<ApiResponse<any>> {
@@ -290,6 +308,10 @@ export interface CoachProfileDetails {
   specialities: string[];
   coachingLevels: string[];
   coachingHistory: CoachHistoryEntry[];
+  experienceYears: number | null;
+  experienceSummary: string;
+  sportExperience: CoachSportExperience[];
+  sessionOffers: CoachSessionOffer[];
   bio: string;
 }
 
@@ -298,6 +320,33 @@ export interface CoachHistoryEntry {
   role: string;
   period: string;
 }
+
+export interface CoachSportExperience {
+  sport: string;
+  years: number | null;
+  focus: string;
+}
+
+export type CoachOfferType = 'individual' | 'group' | 'monthly' | 'trial' | 'online' | 'other';
+
+export interface CoachSessionOffer {
+  name: string;
+  type: CoachOfferType;
+  durationMinutes: number | null;
+  price: number | null;
+  perPlayer: boolean;
+  description: string;
+}
+
+export type CoachReviewCategory = 'quality_rating' | 'communication_rating' | 'punctuality_rating' | 'professionalism_rating' | 'value_rating';
+
+export const COACH_REVIEW_CATEGORIES: Array<{ key: CoachReviewCategory; label: string }> = [
+  { key: 'quality_rating', label: 'Coaching Quality' },
+  { key: 'communication_rating', label: 'Communication' },
+  { key: 'punctuality_rating', label: 'Punctuality' },
+  { key: 'professionalism_rating', label: 'Professionalism' },
+  { key: 'value_rating', label: 'Value' },
+];
 
 export interface CoachProfileDetailsPayload {
   languages: string[];
@@ -315,5 +364,16 @@ export interface CoachProfileDetailsPayload {
   specialities?: string[];
   coaching_levels?: string[];
   coaching_history?: CoachHistoryEntry[];
+  experience_years?: number | null;
+  experience_summary?: string;
+  sport_experience?: CoachSportExperience[];
+  session_offers?: Array<{
+    name: string;
+    type: CoachOfferType;
+    duration_minutes: number | null;
+    price: number | null;
+    per_player: boolean;
+    description: string;
+  }>;
   bio: string;
 }

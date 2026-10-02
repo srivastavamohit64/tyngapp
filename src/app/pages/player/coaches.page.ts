@@ -90,6 +90,8 @@ export class CoachesPage implements OnInit, OnDestroy {
   draft: Record<FilterKey, string[]> = this.emptyFilters();
   verifiedOnly = false;
   draftVerified = false;
+  savedOnly = false;
+  draftSaved = false;
   sheet: 'filters' | 'sort' | null = null;
 
   coaches: CoachCard[] = [];
@@ -139,7 +141,7 @@ export class CoachesPage implements OnInit, OnDestroy {
   }
 
   get hasFilters(): boolean {
-    return this.verifiedOnly || Object.values(this.selected).some((values) => values.length > 0);
+    return this.verifiedOnly || this.savedOnly || Object.values(this.selected).some((values) => values.length > 0);
   }
 
   get showFeatured(): boolean {
@@ -246,6 +248,7 @@ export class CoachesPage implements OnInit, OnDestroy {
   openFilters(): void {
     this.draft = this.cloneFilters(this.selected);
     this.draftVerified = this.verifiedOnly;
+    this.draftSaved = this.savedOnly;
     this.openSheet('filters');
   }
 
@@ -269,11 +272,13 @@ export class CoachesPage implements OnInit, OnDestroy {
   clearDraft(): void {
     this.draft = this.emptyFilters();
     this.draftVerified = false;
+    this.draftSaved = false;
   }
 
   applyFilters(): void {
     this.selected = this.cloneFilters(this.draft);
     this.verifiedOnly = this.draftVerified;
+    this.savedOnly = this.draftSaved;
     this.closeSheet();
     void this.load();
   }
@@ -282,6 +287,7 @@ export class CoachesPage implements OnInit, OnDestroy {
     this.query = '';
     this.selected = this.emptyFilters();
     this.verifiedOnly = false;
+    this.savedOnly = false;
     void this.load();
   }
 
@@ -373,6 +379,7 @@ export class CoachesPage implements OnInit, OnDestroy {
       min_rating: this.selected.min_rating[0],
       languages: join('languages'),
       verified: this.verifiedOnly ? 1 : undefined,
+      saved: this.savedOnly ? 1 : undefined,
     };
   }
 

@@ -5,7 +5,14 @@ import { FormsModule } from '@angular/forms';
 import { ActionSheetController, AlertController, IonicModule, ToastController } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 import { BackNavigationService } from '../../core/services/back-navigation.service';
-import { CoachHistoryEntry, CoachService } from '../../core/services/coach.service';
+import {
+  COACH_REVIEW_CATEGORIES,
+  CoachHistoryEntry,
+  CoachReviewCategory,
+  CoachService,
+  CoachSessionOffer,
+  CoachSportExperience,
+} from '../../core/services/coach.service';
 import { ChatService } from '../../core/services/chat.service';
 import { SocialService } from '../../core/services/social.service';
 import { resolveMediaUrl } from '../../core/utils/media-url.util';
@@ -16,10 +23,23 @@ type ProfileTab = 'overview' | 'sessions' | 'experience' | 'reviews';
 type BookingStep = 'session' | 'time' | 'review' | 'confirmed';
 
 interface GalleryItem { id: number; category: string; url: string; name?: string | null; mimeType?: string | null }
-interface AvailabilityDay { date: string; slots: { name: string; hours: string }[] }
-interface ReviewItem { id: number; rating: number; comment?: string | null; createdAt?: string | null; player: { name: string; profileImage?: string | null } }
-interface SessionOffer { id: string; name: string; copy: string; price: number | null; suffix: string }
-interface QuickSlot { date: string; slot: string; label: string; time: string }
+interface AvailabilityDay { date: string; slots: { name: string; hours: string; times: string[] }[] }
+interface ReviewItem {
+  id: number;
+  rating: number;
+  comment?: string | null;
+  createdAt?: string | null;
+  categories?: { label: string; value: number }[];
+  player: { name: string; profileImage?: string | null };
+}
+interface SessionOffer { id: string; name: string; copy: string; price: number | null; suffix: string; durationMinutes: number | null }
+interface TimeGroup { date: string; label: string; times: { value: string; label: string }[] }
+type ReportType = 'report' | 'safety';
+
+const REPORT_REASONS: Record<ReportType, string[]> = {
+  report: ['Fake or misleading profile', 'Inappropriate behaviour', 'Asked to pay outside TYNG', 'Did not turn up for a session', 'Spam or scam', 'Something else'],
+  safety: ['Felt unsafe during a session', 'Harassment or abuse', "Concern about a child's safety", 'Threats or violence', 'Something else'],
+};
 
 interface CoachProfile {
   id: number;
@@ -36,6 +56,8 @@ interface CoachProfile {
   activeStudents: number;
   experienceLabel?: string | null;
   experienceYears?: string | null;
+  experienceYearsExact?: number | null;
+  isSaved: boolean;
   idVerified: boolean;
   certified: boolean;
   pricePerHour?: number | null;
@@ -57,6 +79,9 @@ interface CoachProfile {
     specialities: string[];
     coachingLevels: string[];
     coachingHistory: CoachHistoryEntry[];
+    experienceSummary: string;
+    sportExperience: CoachSportExperience[];
+    sessionOffers: CoachSessionOffer[];
   };
   partnerVenues: { id: number; name: string; area?: string | null }[];
   upcomingAvailability: AvailabilityDay[];
@@ -65,18 +90,18 @@ interface CoachProfile {
   memberSince?: string | null;
   reviews: ReviewItem[];
   ratingBreakdown: Record<string, number>;
+  ratingCategories: { key: CoachReviewCategory; label: string; value: number }[];
   viewer: {
     isSelf: boolean;
     isStudent: boolean;
     studentRequestStatus: string | null;
     canMessage: boolean;
     canReview: boolean;
-    myReview: { rating: number; comment?: string | null } | null;
+    myReview: ({ rating: number; comment?: string | null } & Partial<Record<CoachReviewCategory, number | null>>) | null;
+    openReports: ReportType[];
   };
 }
 
-const SLOT_START: Record<string, number> = { Morning: 6, Afternoon: 12, Evening: 17, Night: 21 };
-const SLOT_END: Record<string, number> = { Morning: 12, Afternoon: 17, Evening: 21, Night: 24 };
 const WEEK_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 @Component({
@@ -100,6 +125,7 @@ const WEEK_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
               <img *ngIf="coverUrl" [src]="coverUrl" [alt]="c.name + ' coaching'" />
               <div class="cp-cover-shade"></div>
               <div class="cp-cover-actions">
+                <button type="button" *ngIf="!c.viewer.isSelf" [class.saved]="c.isSaved" [attr.aria-label]="c.isSaved ? 'Remove from saved coaches' : 'Save coach'" [attr.aria-pressed]="c.isSaved" [disabled]="saving" (click)="toggleSave()"><ion-icon [name]="c.isSaved ? 'bookmark' : 'bookmark-outline'"></ion-icon></button>
                 <button type="button" aria-label="Share coach" (click)="share()"><ion-icon name="share-social-outline"></ion-icon></button>
                 <button type="button" *ngIf="!c.viewer.isSelf" aria-label="Coach options" (click)="openMore()"><ion-icon name="ellipsis-horizontal"></ion-icon></button>
               </div>
@@ -175,7 +201,7 @@ const WEEK_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
                   <div class="cp-sport-icon" [class.alt]="!first"><ion-icon [name]="sportIcon(sport)"></ion-icon></div>
                   <div>
                     <div class="cp-sport-name"><b>{{ sport }}</b><span *ngIf="first" class="cp-primary">PRIMARY</span></div>
-                    <p>{{ first ? (c.experienceLabel || 'Coaching') + (c.experienceYears ? ' • ' + c.experienceYears : '') : 'Also coaches' }}</p>
+                    <p>{{ sportLine(sport, first) }}</p>
                   </div>
                 </div>
               </div>
@@ -256,15 +282,16 @@ const WEEK_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
             <section>
               <h2 class="app-section-title">Availability</h2>
-              <div class="cp-card cp-rows" *ngIf="c.upcomingAvailability.length; else noAvailability">
-                <div class="cp-avail" *ngFor="let day of c.upcomingAvailability">
-                  <span>{{ dayLabel(day.date) }}</span>
+              <div class="cp-card cp-rows" *ngIf="timeGroups.length; else noAvailability">
+                <div class="cp-avail" *ngFor="let day of timeGroups">
+                  <span>{{ day.label | uppercase }}</span>
                   <div>
-                    <button type="button" *ngFor="let slot of day.slots" (click)="pickSlotAndBook(day.date, slot.name)" [disabled]="c.viewer.isSelf">{{ slot.name }} · {{ slot.hours }}</button>
+                    <button type="button" *ngFor="let time of day.times | slice: 0 : 8" (click)="pickTimeAndBook(day.date, time.value)" [disabled]="c.viewer.isSelf">{{ time.label }}</button>
+                    <button type="button" class="cp-avail-more" *ngIf="day.times.length > 8" (click)="pickTimeAndBook(day.date)" [disabled]="c.viewer.isSelf">+{{ day.times.length - 8 }} MORE</button>
                   </div>
                 </div>
               </div>
-              <ng-template #noAvailability><div class="cp-card cp-pad"><p class="cp-body">This coach has not shared their weekly hours yet. Send a booking request with a time that suits you.</p></div></ng-template>
+              <ng-template #noAvailability><div class="cp-card cp-pad"><p class="cp-body">{{ weekRows.length ? 'This coach is fully booked for the next few days. Send a booking request with a time that suits you.' : 'This coach has not shared their weekly hours yet. Send a booking request with a time that suits you.' }}</p></div></ng-template>
               <button type="button" class="cp-outline-btn" *ngIf="weekRows.length" (click)="showWeek = !showWeek">{{ showWeek ? 'HIDE FULL SCHEDULE' : 'VIEW FULL SCHEDULE' }}</button>
               <div class="cp-card cp-rows cp-week" *ngIf="showWeek">
                 <div class="cp-row" *ngFor="let row of weekRows"><b>{{ row.day }}</b><span>{{ row.slots }}</span></div>
@@ -279,6 +306,7 @@ const WEEK_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
                 <div class="cp-exp-icon"><ion-icon name="school-outline"></ion-icon></div>
                 <div><p class="cp-exp-years">{{ c.experienceYears || 'New coach' }}</p><p class="cp-exp-label">{{ (c.experienceLabel || 'Coaching experience') | uppercase }}</p></div>
               </div>
+              <p class="cp-body cp-exp-copy" *ngIf="c.details.experienceSummary">{{ c.details.experienceSummary }}</p>
               <p class="cp-body cp-exp-copy" *ngIf="c.memberSince">Coaching on TYNG since {{ c.memberSince | date: 'MMMM yyyy' }}.</p>
             </div>
 
@@ -334,11 +362,18 @@ const WEEK_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
                 </div>
                 <ion-icon name="checkmark-circle"></ion-icon>
               </div>
-              <div class="cp-bars">
-                <div class="cp-bar cp-bar-stars" *ngFor="let star of [5, 4, 3, 2, 1]">
-                  <span>{{ star }} star</span><i><em [style.width.%]="breakdownPercent(star)"></em></i><b>{{ c.ratingBreakdown[star] || 0 }}</b>
+              <div class="cp-bars" *ngIf="c.ratingCategories.length; else starBars">
+                <div class="cp-bar" *ngFor="let cat of c.ratingCategories">
+                  <span>{{ cat.label }}</span><i><em [style.width.%]="cat.value * 20"></em></i><b>{{ cat.value | number: '1.1-1' }}</b>
                 </div>
               </div>
+              <ng-template #starBars>
+                <div class="cp-bars">
+                  <div class="cp-bar cp-bar-stars" *ngFor="let star of [5, 4, 3, 2, 1]">
+                    <span>{{ star }} star</span><i><em [style.width.%]="breakdownPercent(star)"></em></i><b>{{ c.ratingBreakdown[star] || 0 }}</b>
+                  </div>
+                </div>
+              </ng-template>
             </div>
 
             <section *ngIf="c.viewer.canReview">
@@ -348,6 +383,17 @@ const WEEK_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
                   <button type="button" *ngFor="let star of [1, 2, 3, 4, 5]" role="radio" [attr.aria-checked]="reviewRating === star" [attr.aria-label]="star + ' star'" (click)="reviewRating = star">
                     <ion-icon [name]="star <= reviewRating ? 'star' : 'star-outline'"></ion-icon>
                   </button>
+                </div>
+                <div class="cp-cat-ratings">
+                  <p class="cp-sheet-label">RATE EACH PART (OPTIONAL)</p>
+                  <div class="cp-cat-rating" *ngFor="let cat of reviewCategoryList">
+                    <span>{{ cat.label }}</span>
+                    <div role="radiogroup" [attr.aria-label]="cat.label">
+                      <button type="button" *ngFor="let star of [1, 2, 3, 4, 5]" role="radio" [attr.aria-checked]="reviewCategories[cat.key] === star" [attr.aria-label]="cat.label + ' ' + star + ' star'" (click)="setCategoryRating(cat.key, star)">
+                        <ion-icon [name]="star <= (reviewCategories[cat.key] || 0) ? 'star' : 'star-outline'"></ion-icon>
+                      </button>
+                    </div>
+                  </div>
                 </div>
                 <textarea name="reviewComment" [(ngModel)]="reviewComment" maxlength="1000" rows="3" placeholder="How were your sessions with this coach?"></textarea>
                 <p class="cp-form-error" *ngIf="reviewError">{{ reviewError }}</p>
@@ -366,6 +412,7 @@ const WEEK_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
                     <small>{{ relativeDate(review.createdAt) }}</small>
                   </div>
                   <p class="cp-review-text" *ngIf="review.comment">“{{ review.comment }}”</p>
+                  <p class="cp-review-cats" *ngIf="review.categories?.length">{{ categorySummary(review) }}</p>
                   <div class="cp-review-verified"><ion-icon name="checkmark-circle"></ion-icon> VERIFIED SESSION</div>
                 </div>
               </div>
@@ -405,12 +452,13 @@ const WEEK_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
             </div>
 
             <div class="cp-sheet-body" *ngIf="step === 'time'">
-              <div *ngIf="quickSlots.length">
-                <p class="cp-sheet-label">COACH IS AVAILABLE</p>
+              <div class="cp-time-group" *ngFor="let day of timeGroups">
+                <p class="cp-sheet-label">{{ day.label | uppercase }}</p>
                 <div class="cp-slot-chips">
-                  <button type="button" *ngFor="let q of quickSlots" [class.active]="sessionDate === q.date && sessionTime === q.time" (click)="applyQuickSlot(q)">{{ q.label }}</button>
+                  <button type="button" *ngFor="let time of day.times" [class.active]="sessionDate === day.date && sessionTime === time.value" (click)="applyTime(day.date, time.value)">{{ time.label }}</button>
                 </div>
               </div>
+              <p class="cp-sheet-label cp-own-time" *ngIf="timeGroups.length">OR PICK YOUR OWN TIME</p>
               <label class="cp-field"><span>Session date <b>*</b></span><input type="date" [(ngModel)]="sessionDate" [min]="today()" /></label>
               <label class="cp-field"><span>Time <b>*</b></span><input type="time" [(ngModel)]="sessionTime" /></label>
               <div class="cp-field">
@@ -431,6 +479,7 @@ const WEEK_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
               </div>
               <div class="cp-summary-rows">
                 <div><span>SESSION</span><b>{{ selectedOffer.name | titlecase }}</b></div>
+                <div *ngIf="selectedOffer.durationMinutes"><span>LENGTH</span><b>{{ selectedOffer.durationMinutes }} min</b></div>
                 <div><span>WHEN</span><b>{{ scheduleSummary }}</b></div>
                 <div><span>PRICE</span><b>{{ offerPrice(selectedOffer) }}{{ selectedOffer.price ? selectedOffer.suffix : '' }}</b></div>
                 <div><span>PAYMENT</span><b>Agreed with the coach</b></div>
@@ -450,6 +499,33 @@ const WEEK_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
               {{ step === 'review' ? (bookingBusy ? 'SENDING REQUEST…' : 'SEND BOOKING REQUEST') : 'CONTINUE' }}
             </button>
           </div>
+        </ng-template>
+      </ion-modal>
+
+      <ion-modal [isOpen]="!!reportType" [initialBreakpoint]="1" [breakpoints]="[0, 1]" class="cp-sheet-modal" (didDismiss)="closeReport()">
+        <ng-template>
+          <form class="cp-sheet" *ngIf="coach as c" (ngSubmit)="submitReport()">
+            <div class="cp-sheet-head">
+              <div><h2>{{ reportType === 'safety' ? 'SAFETY CONCERN' : 'REPORT COACH' }}</h2><p>{{ c.name }}</p></div>
+              <button type="button" aria-label="Close" (click)="closeReport()"><ion-icon name="close"></ion-icon></button>
+            </div>
+            <p class="cp-report-intro">{{ reportType === 'safety'
+              ? 'Tell us what happened. Our safety team reviews these first. If you are in danger right now, call 112.'
+              : 'Reports are private. The coach will not see who sent this.' }}</p>
+            <div class="cp-sheet-body">
+              <p class="cp-sheet-label">WHAT IS THE PROBLEM?</p>
+              <button type="button" class="cp-option" *ngFor="let reason of reportReasons" [class.active]="reportReason === reason" (click)="reportReason = reason">
+                <span class="cp-radio"><ion-icon *ngIf="reportReason === reason" name="checkmark"></ion-icon></span>
+                <div><b>{{ reason }}</b></div>
+              </button>
+              <label class="cp-field">
+                <span>Details {{ reportReason === 'Something else' ? '' : '(optional)' }}<b *ngIf="reportReason === 'Something else'">*</b></span>
+                <textarea name="reportDetails" [(ngModel)]="reportDetails" maxlength="2000" rows="4" placeholder="When did it happen and what was said or done?"></textarea>
+              </label>
+            </div>
+            <p class="cp-form-error" *ngIf="reportError" role="alert">{{ reportError }}</p>
+            <button type="submit" class="cp-sheet-cta" [disabled]="reportBusy || !reportReason">{{ reportBusy ? 'SENDING…' : 'SEND TO TYNG' }}</button>
+          </form>
         </ng-template>
       </ion-modal>
     </ion-content>
@@ -669,6 +745,20 @@ const WEEK_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     .cp-sheet-cta { margin-top:24px; width:100%; height:48px; border:0; border-radius:16px; background:var(--cp-green); color:var(--cp-dark); font-size:9px; font-weight:900; }
     .cp-sheet-cta:disabled { opacity:.6; }
     .cp-sheet .cp-form-error { margin-top:14px; }
+    .cp-cover-actions button.saved { background:var(--cp-green); color:var(--cp-dark); }
+    .cp-avail-more { border-style:dashed !important; background:#fff !important; }
+    .cp-time-group + .cp-time-group { margin-top:6px; }
+    .cp-own-time { margin-top:8px; }
+    .cp-cat-ratings { display:flex; flex-direction:column; gap:8px; }
+    .cp-cat-ratings .cp-sheet-label { margin:0; }
+    .cp-cat-rating { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+    .cp-cat-rating > span { color:var(--cp-muted); font-size:10px; font-weight:700; }
+    .cp-cat-rating > div { display:flex; gap:4px; }
+    .cp-cat-rating button { padding:0; border:0; background:transparent; color:#FF7A00; font-size:17px; line-height:1; }
+    .cp-review-cats { margin:8px 0 0; color:var(--cp-faint); font-size:8px; line-height:1.5; }
+    .cp-report-intro { margin:12px 0 0; color:var(--cp-muted); font-size:10px; line-height:1.5; }
+    .cp-field textarea { width:100%; box-sizing:border-box; padding:12px 14px; border:1px solid #E5E7EB; border-radius:14px; background:#F9FAFB; color:var(--cp-dark); font:inherit; font-size:13px; resize:vertical; }
+    .cp-field textarea:focus { outline:0; border-color:var(--cp-green); background:#fff; }
   `],
 })
 export class CoachProfileDetailPage implements OnInit {
@@ -710,7 +800,17 @@ export class CoachProfileDetailPage implements OnInit {
   certificates: GalleryItem[] = [];
   mediaItems: GalleryItem[] = [];
   weekRows: { day: string; slots: string }[] = [];
-  quickSlots: QuickSlot[] = [];
+  timeGroups: TimeGroup[] = [];
+  saving = false;
+
+  readonly reviewCategoryList = COACH_REVIEW_CATEGORIES;
+  reviewCategories: Partial<Record<CoachReviewCategory, number>> = {};
+
+  reportType: ReportType | null = null;
+  reportReason = '';
+  reportDetails = '';
+  reportBusy = false;
+  reportError = '';
 
   bookingOpen = false;
   step: BookingStep = 'session';
@@ -790,15 +890,22 @@ export class CoachProfileDetailPage implements OnInit {
       languages: list(item?.languages),
       sessionTypes: list(item?.sessionTypes),
       achievements: list(item?.achievements),
+      isSaved: !!item?.isSaved,
       reviewCount: Number(item?.reviewCount) || 0,
       sessionsCompleted: Number(item?.sessionsCompleted) || 0,
       activeStudents: Number(item?.activeStudents) || 0,
       gamesPlayed: Number(item?.gamesPlayed) || 0,
       gallery: Array.isArray(item?.gallery) ? item.gallery : [],
       partnerVenues: Array.isArray(item?.partnerVenues) ? item.partnerVenues : [],
-      upcomingAvailability: Array.isArray(item?.upcomingAvailability) ? item.upcomingAvailability : [],
+      upcomingAvailability: Array.isArray(item?.upcomingAvailability)
+        ? item.upcomingAvailability.map((day: AvailabilityDay) => ({
+          ...day,
+          slots: (day.slots || []).map((slot) => ({ ...slot, times: Array.isArray(slot.times) ? slot.times : [] })),
+        }))
+        : [],
       reviews: Array.isArray(item?.reviews) ? item.reviews : [],
       ratingBreakdown: item?.ratingBreakdown && typeof item.ratingBreakdown === 'object' ? item.ratingBreakdown : {},
+      ratingCategories: Array.isArray(item?.ratingCategories) ? item.ratingCategories : [],
       reliability: item?.reliability ?? null,
       details: {
         ...details,
@@ -808,6 +915,9 @@ export class CoachProfileDetailPage implements OnInit {
         specialities: list(details.specialities),
         coachingLevels: list(details.coachingLevels),
         coachingHistory: Array.isArray(details.coachingHistory) ? details.coachingHistory.filter((entry: CoachHistoryEntry) => entry?.place) : [],
+        experienceSummary: String(details.experienceSummary || ''),
+        sportExperience: Array.isArray(details.sportExperience) ? details.sportExperience.filter((row: CoachSportExperience) => row?.sport) : [],
+        sessionOffers: Array.isArray(details.sessionOffers) ? details.sessionOffers.filter((offer: CoachSessionOffer) => offer?.name) : [],
       },
       viewer: {
         isSelf: !!item?.viewer?.isSelf,
@@ -816,6 +926,7 @@ export class CoachProfileDetailPage implements OnInit {
         canMessage: !!item?.viewer?.canMessage,
         canReview: !!item?.viewer?.canReview,
         myReview: item?.viewer?.myReview ?? null,
+        openReports: Array.isArray(item?.viewer?.openReports) ? item.viewer.openReports : [],
       },
     };
   }
@@ -829,7 +940,9 @@ export class CoachProfileDetailPage implements OnInit {
     this.experienceTile = c.experienceYears ? c.experienceYears.replace(/\s*years?/i, ' YRS').toUpperCase() : '—';
     this.nextAvailableLabel = c.nextAvailable ? `${this.dayLabel(c.nextAvailable.date)} • ${c.nextAvailable.slot.toUpperCase()}` : 'ASK THE COACH';
     this.offers = this.buildOffers(c);
-    const perSession = [this.fee(c, 'individual'), this.fee(c, 'group')].filter((v): v is number => v !== null);
+    const perSession = c.details.sessionOffers.length
+      ? c.details.sessionOffers.filter((offer) => offer.type !== 'monthly' && offer.price).map((offer) => Number(offer.price))
+      : [this.fee(c, 'individual'), this.fee(c, 'group')].filter((v): v is number => v !== null);
     this.startingPrice = perSession.length ? Math.min(...perSession) : null;
     this.sessionTypeTiles = this.buildSessionTypes(c);
     this.locationRows = [
@@ -843,9 +956,14 @@ export class CoachProfileDetailPage implements OnInit {
     this.weekRows = WEEK_DAYS
       .map((day) => ({ day, slots: (c.details.weeklyAvailability[day] || []).join(', ') }))
       .filter((row) => row.slots);
-    this.quickSlots = this.buildQuickSlots(c);
+    this.timeGroups = this.buildTimeGroups(c);
     this.reviewRating = c.viewer.myReview?.rating ?? 0;
     this.reviewComment = c.viewer.myReview?.comment ?? '';
+    this.reviewCategories = {};
+    for (const cat of COACH_REVIEW_CATEGORIES) {
+      const value = c.viewer.myReview?.[cat.key];
+      if (value) this.reviewCategories[cat.key] = value;
+    }
   }
 
   private fee(c: CoachProfile, key: string): number | null {
@@ -854,16 +972,49 @@ export class CoachProfileDetailPage implements OnInit {
   }
 
   private buildOffers(c: CoachProfile): SessionOffer[] {
-    const offers: SessionOffer[] = [];
-    const individual = this.fee(c, 'individual');
-    const group = this.fee(c, 'group');
-    const monthly = this.fee(c, 'monthly');
-    if (individual) offers.push({ id: 'individual', name: '1-TO-1 SESSION', copy: `Personal coaching • ${this.primarySport.replace(/\b\w/g, (ch) => ch.toUpperCase())}`, price: individual, suffix: '' });
-    if (group) offers.push({ id: 'group', name: 'GROUP SESSION', copy: 'Train with other players', price: group, suffix: ' / player' });
-    if (monthly) offers.push({ id: 'monthly', name: 'MONTHLY PLAN', copy: 'Regular coaching through the month', price: monthly, suffix: ' / month' });
-    if (c.details.trialEnabled) offers.push({ id: 'trial', name: 'TRIAL SESSION', copy: c.details.trialType || 'Meet your coach first', price: null, suffix: '' });
-    if (!offers.length) offers.push({ id: 'standard', name: 'COACHING SESSION', copy: 'Price agreed with the coach', price: null, suffix: '' });
+    const firstTrial = c.details.sessionOffers.findIndex((offer) => offer.type === 'trial');
+    const offers: SessionOffer[] = c.details.sessionOffers.map((offer, index) => ({
+      id: index === firstTrial ? 'trial' : `offer-${index}`,
+      name: offer.name.toUpperCase(),
+      copy: [offer.durationMinutes ? `${offer.durationMinutes} min` : '', offer.description].filter(Boolean).join(' • '),
+      price: offer.price ? Number(offer.price) : null,
+      suffix: offer.perPlayer ? ' / player' : offer.type === 'monthly' ? ' / month' : '',
+      durationMinutes: offer.durationMinutes ?? null,
+    }));
+    if (!offers.length) {
+      const individual = this.fee(c, 'individual');
+      const group = this.fee(c, 'group');
+      const monthly = this.fee(c, 'monthly');
+      const sport = this.primarySport.replace(/\b\w/g, (ch) => ch.toUpperCase());
+      if (individual) offers.push({ id: 'individual', name: '1-TO-1 SESSION', copy: `Personal coaching • ${sport}`, price: individual, suffix: '', durationMinutes: null });
+      if (group) offers.push({ id: 'group', name: 'GROUP SESSION', copy: 'Train with other players', price: group, suffix: ' / player', durationMinutes: null });
+      if (monthly) offers.push({ id: 'monthly', name: 'MONTHLY PLAN', copy: 'Regular coaching through the month', price: monthly, suffix: ' / month', durationMinutes: null });
+    }
+    if (c.details.trialEnabled && !offers.some((offer) => offer.id === 'trial')) {
+      offers.push({ id: 'trial', name: 'TRIAL SESSION', copy: c.details.trialType || 'Meet your coach first', price: null, suffix: '', durationMinutes: null });
+    }
+    if (!offers.length) offers.push({ id: 'standard', name: 'COACHING SESSION', copy: 'Price agreed with the coach', price: null, suffix: '', durationMinutes: null });
     return offers;
+  }
+
+  sportLine(sport: string, first: boolean): string {
+    const coach = this.coach;
+    if (!coach) return '';
+    const exp = coach.details.sportExperience.find((row) => row.sport.toLowerCase() === sport.toLowerCase());
+    if (exp) {
+      const parts = [exp.focus, exp.years !== null && exp.years !== undefined ? `${exp.years} year${exp.years === 1 ? '' : 's'}` : ''].filter(Boolean);
+      if (parts.length) return parts.join(' • ');
+    }
+    if (!first) return 'Also coaches';
+    return [coach.experienceLabel || 'Coaching', coach.experienceYears].filter(Boolean).join(' • ');
+  }
+
+  categorySummary(review: ReviewItem): string {
+    return (review.categories || []).map((cat) => `${cat.label} ${cat.value}★`).join(' · ');
+  }
+
+  setCategoryRating(key: CoachReviewCategory, star: number) {
+    this.reviewCategories = { ...this.reviewCategories, [key]: this.reviewCategories[key] === star ? undefined : star };
   }
 
   private buildSessionTypes(c: CoachProfile): { label: string; icon: string }[] {
@@ -878,18 +1029,18 @@ export class CoachProfileDetailPage implements OnInit {
     return tiles;
   }
 
-  private buildQuickSlots(c: CoachProfile): QuickSlot[] {
-    const now = new Date();
-    const todayIso = this.today();
-    const slots: QuickSlot[] = [];
+  private buildTimeGroups(c: CoachProfile): TimeGroup[] {
+    const groups: TimeGroup[] = [];
     for (const day of c.upcomingAvailability) {
+      const times: TimeGroup['times'] = [];
       for (const slot of day.slots) {
-        let hour = SLOT_START[slot.name] ?? 9;
-        if (day.date === todayIso && now.getHours() >= hour) hour = Math.min(now.getHours() + 1, (SLOT_END[slot.name] ?? 24) - 1);
-        slots.push({ date: day.date, slot: slot.name, label: `${this.dayLabel(day.date, true)} • ${slot.name}`, time: `${String(hour).padStart(2, '0')}:00` });
+        for (const value of slot.times) {
+          times.push({ value, label: this.readableTime(value).replace(':00', '').toUpperCase() });
+        }
       }
+      if (times.length) groups.push({ date: day.date, label: this.dayLabel(day.date, true), times });
     }
-    return slots.slice(0, 8);
+    return groups;
   }
 
   offerPrice(offer: SessionOffer): string {
@@ -958,16 +1109,95 @@ export class CoachProfileDetailPage implements OnInit {
     }
   }
 
+  toggleSave() {
+    const coach = this.coach;
+    if (!coach || this.saving) return;
+    const wasSaved = coach.isSaved;
+    coach.isSaved = !wasSaved;
+    this.saving = true;
+    const request = wasSaved ? this.coachService.unsaveCoach(coach.id) : this.coachService.saveCoach(coach.id);
+    request.subscribe({
+      next: (response) => {
+        this.saving = false;
+        if (!response.success) {
+          coach.isSaved = wasSaved;
+          void this.toast(response.message || 'Could not update saved coaches.');
+          return;
+        }
+        void this.toast(wasSaved ? 'Removed from saved coaches' : 'Coach saved. Find them under Saved in the Coaches filters.');
+      },
+      error: (error) => {
+        this.saving = false;
+        coach.isSaved = wasSaved;
+        void this.toast(error?.error?.message || 'Could not update saved coaches.');
+      },
+    });
+  }
+
   async openMore(): Promise<void> {
     if (!this.coach) return;
     const sheet = await this.actionSheet.create({
       header: 'Coach options',
       buttons: [
+        { text: 'Report coach', icon: 'flag-outline', handler: () => { this.openReport('report'); } },
         { text: 'Block coach', role: 'destructive', icon: 'ban-outline', handler: () => { void this.confirmBlock(); } },
+        { text: 'Safety concern', icon: 'shield-checkmark-outline', handler: () => { this.openReport('safety'); } },
         { text: 'Cancel', role: 'cancel' },
       ],
     });
     await sheet.present();
+  }
+
+  get reportReasons(): string[] {
+    return this.reportType ? REPORT_REASONS[this.reportType] : [];
+  }
+
+  openReport(type: ReportType) {
+    if (!this.coach) return;
+    if (this.coach.viewer.openReports.includes(type)) {
+      void this.toast(type === 'safety'
+        ? 'You already told us about a safety concern. Our team is looking into it.'
+        : 'You already reported this coach. Our team is looking into it.');
+      return;
+    }
+    this.reportReason = '';
+    this.reportDetails = '';
+    this.reportError = '';
+    this.reportType = type;
+  }
+
+  closeReport() {
+    this.reportType = null;
+  }
+
+  submitReport() {
+    const coach = this.coach;
+    const type = this.reportType;
+    if (!coach || !type || !this.reportReason || this.reportBusy) return;
+    const details = this.reportDetails.trim();
+    if (this.reportReason === 'Something else' && !details) {
+      this.reportError = 'Please tell us what happened.';
+      return;
+    }
+    this.reportBusy = true;
+    this.reportError = '';
+    this.coachService.reportCoach(coach.id, { type, reason: this.reportReason, details: details || undefined }).subscribe({
+      next: (response) => {
+        this.reportBusy = false;
+        if (!response.success) {
+          this.reportError = response.message || 'Could not send your report.';
+          return;
+        }
+        coach.viewer.openReports = [...coach.viewer.openReports, type];
+        this.reportType = null;
+        void this.toast(response.message || 'Thanks. Our team will review this.');
+      },
+      error: (error) => {
+        this.reportBusy = false;
+        const fieldErrors = error?.error?.errors ? ([] as unknown[]).concat(...Object.values(error.error.errors)) : [];
+        this.reportError = String(fieldErrors[0] || error?.error?.message || 'Could not send your report.');
+      },
+    });
   }
 
   private async confirmBlock(): Promise<void> {
@@ -1002,15 +1232,15 @@ export class CoachProfileDetailPage implements OnInit {
     this.bookingOpen = true;
   }
 
-  pickSlotAndBook(date: string, slot: string) {
+  pickTimeAndBook(date: string, time?: string) {
     this.openBooking();
-    const quick = this.quickSlots.find((q) => q.date === date && q.slot === slot);
-    if (quick) this.applyQuickSlot(quick);
+    this.sessionDate = date;
+    this.sessionTime = time ?? '';
   }
 
-  applyQuickSlot(slot: QuickSlot) {
-    this.sessionDate = slot.date;
-    this.sessionTime = slot.time;
+  applyTime(date: string, time: string) {
+    this.sessionDate = date;
+    this.sessionTime = time;
     this.bookingError = '';
   }
 
@@ -1104,6 +1334,9 @@ export class CoachProfileDetailPage implements OnInit {
         requested_start_time: this.sessionTime,
         is_recurring: this.isRecurring,
         recurring_end_date: this.isRecurring ? this.recurringEndDate : null,
+        session_offer: offer.name.slice(0, 120),
+        duration_minutes: offer.durationMinutes,
+        quoted_price: offer.price,
       }));
       if (!requestResponse.success) throw new Error(requestResponse.message || 'Unable to send the booking request.');
       requestWasSent = true;
@@ -1178,7 +1411,9 @@ export class CoachProfileDetailPage implements OnInit {
     if (!this.coachId || !this.reviewRating || this.reviewSaving) return;
     this.reviewSaving = true;
     this.reviewError = '';
-    this.coachService.submitCoachReview(this.coachId, { rating: this.reviewRating, comment: this.reviewComment.trim() || undefined }).subscribe({
+    const categories: Partial<Record<CoachReviewCategory, number | null>> = {};
+    for (const cat of COACH_REVIEW_CATEGORIES) categories[cat.key] = this.reviewCategories[cat.key] ?? null;
+    this.coachService.submitCoachReview(this.coachId, { rating: this.reviewRating, comment: this.reviewComment.trim() || undefined, ...categories }).subscribe({
       next: (response) => {
         this.reviewSaving = false;
         if (!response.success) {
