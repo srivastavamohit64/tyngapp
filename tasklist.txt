@@ -880,3 +880,7 @@ TYNG — TODAY'S WORK SUMMARY
    - Notification settings are now real: one main switch plus a switch for each type (bookings, chat, social, wallet, XP, coaching, announcements). If a type is off, that user doesn't get those notifications. Everything is on by default for all users.
    - Live server updated and pushed. The app compiles; the logged-in screens were not clicked through in the test browser because it was logged out.
    - Still to do: the current Privacy Policy text on the live server belongs to another product ("Supper Shooper") and needs replacing in Admin > CMS Pages.
+143. PRIVACY POLICY AND TERMS NOW DESCRIBE TYNG - 2 October 2026
+   - The Privacy Policy and Terms & Conditions pages in the app were showing text from a different product. They now describe TYNG: what information is collected, how it is used and shared, location, payments, notifications, blocking, children, and the rules for using the app. (Live server updated and pushed.)
+   - The text can still be changed at any time in Admin > CMS Pages, and those changes will not be overwritten.
+   - Still to do: add a TYNG support email to the Contact sections once one exists, and have the wording checked by someone qualified before launch.
