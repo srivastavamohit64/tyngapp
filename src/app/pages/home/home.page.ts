@@ -78,8 +78,8 @@ interface SportRailLoopItem {
   sport: HomeSport;
 }
 
-const SPORT_RAIL_SPEED = 26;
-const SPORT_RAIL_RESUME_MS = 2500;
+const SPORT_RAIL_COPIES = 5;
+const SPORT_RAIL_HOME_COPY = 2;
 
 interface HomeSportGroup {
   name: string;
@@ -242,7 +242,7 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
     if (this.sportRailLoopKey !== key) {
       this.sportRailLoopKey = key;
       this.sportRailLoopItems = [];
-      for (let copy = 0; copy < 3; copy++) {
+      for (let copy = 0; copy < SPORT_RAIL_COPIES; copy++) {
         for (const sport of items) this.sportRailLoopItems.push({ key: `${copy}-${sport.id}`, copy, sport });
       }
       this.scheduleSportRailReset();
@@ -343,12 +343,7 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
     if (element) {
       this.zone.runOutsideAngular(() => {
         element.addEventListener('scroll', this.onSportRailScroll, { passive: true });
-        element.addEventListener('pointerdown', this.pauseSportRail, { passive: true });
-        element.addEventListener('touchstart', this.pauseSportRail, { passive: true });
-        element.addEventListener('wheel', this.onSportRailWheel, { passive: true });
-        for (const type of ['pointerup', 'pointercancel', 'touchend', 'touchcancel']) {
-          element.addEventListener(type, this.resumeSportRailSoon, { passive: true });
-        }
+        element.addEventListener('scrollend', this.recenterSportRail, { passive: true });
       });
       this.scheduleSportRailReset();
     }
@@ -356,12 +351,7 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
   private sportRailEl?: HTMLElement;
   private sportRailLoopKey = '';
   private sportRailLoopItems: SportRailLoopItem[] = [];
-  private sportRailPos = 0;
-  private sportRailFrame = 0;
-  private sportRailLastTime = 0;
-  private sportRailPaused = false;
-  private sportRailResumeTimer?: ReturnType<typeof setTimeout>;
-  private readonly sportRailReducedMotion = typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  private sportRailSettleTimer?: ReturnType<typeof setTimeout>;
   private promoWrapEl?: HTMLElement;
   private promoResizeObserver?: ResizeObserver;
   private promoFitFrame = 0;
@@ -567,7 +557,6 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
     }
     this.homeRefreshOnDidEnter = true;
     this.schedulePromoFit();
-    this.startSportRail();
   }
 
   private scheduleSportRailReset(): void {
@@ -576,96 +565,42 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
 
   private resetSportRail(): void {
     const rail = this.sportRailEl;
-    const segment = rail ? rail.scrollWidth / 3 : 0;
+    const segment = rail ? rail.scrollWidth / SPORT_RAIL_COPIES : 0;
     if (!rail || !segment) return;
-    this.sportRailPos = segment;
-    rail.scrollLeft = segment;
-    this.startSportRail();
+    rail.scrollLeft = segment * SPORT_RAIL_HOME_COPY;
   }
 
-  private startSportRail(): void {
-    if (this.sportRailFrame || this.sportRailReducedMotion || !this.sportRailEl) return;
-    this.sportRailLastTime = 0;
-    this.zone.runOutsideAngular(() => {
-      this.sportRailFrame = requestAnimationFrame(this.stepSportRail);
-    });
-  }
-
-  private stopSportRail(): void {
-    cancelAnimationFrame(this.sportRailFrame);
-    this.sportRailFrame = 0;
-  }
-
-  private readonly stepSportRail = (time: number): void => {
+  /** The copies are identical, so moving by whole copies back to the middle one is invisible. */
+  private readonly recenterSportRail = (): void => {
+    clearTimeout(this.sportRailSettleTimer);
     const rail = this.sportRailEl;
-    if (!rail || !rail.isConnected) {
-      this.sportRailFrame = 0;
-      return;
-    }
-    const elapsed = this.sportRailLastTime ? Math.min(64, time - this.sportRailLastTime) : 0;
-    this.sportRailLastTime = time;
-    if (!this.sportRailPaused && document.visibilityState === 'visible' && rail.getClientRects().length) {
-      this.sportRailPos += (SPORT_RAIL_SPEED * elapsed) / 1000;
-      this.wrapSportRail(rail);
-      rail.scrollLeft = this.sportRailPos;
-    }
-    this.sportRailFrame = requestAnimationFrame(this.stepSportRail);
+    const segment = rail ? rail.scrollWidth / SPORT_RAIL_COPIES : 0;
+    if (!rail || !segment) return;
+    const home = segment * SPORT_RAIL_HOME_COPY;
+    const offset = rail.scrollLeft - home;
+    const shift = Math.round(offset / segment) * segment;
+    if (shift) rail.scrollLeft -= shift;
   };
-
-  /** Keeps the position inside the middle copy; the copies are identical, so the jump is invisible. */
-  private wrapSportRail(rail: HTMLElement): boolean {
-    const segment = rail.scrollWidth / 3;
-    if (!segment) return false;
-    if (this.sportRailPos >= segment * 1.5) {
-      this.sportRailPos -= segment;
-      return true;
-    }
-    if (this.sportRailPos < segment * 0.5) {
-      this.sportRailPos += segment;
-      return true;
-    }
-    return false;
-  }
 
   private readonly onSportRailScroll = (): void => {
     const rail = this.sportRailEl;
-    if (!rail || !this.sportRailPaused) return;
-    this.sportRailPos = rail.scrollLeft;
-    if (this.wrapSportRail(rail)) rail.scrollLeft = this.sportRailPos;
-  };
-
-  private readonly pauseSportRail = (): void => {
-    this.sportRailPaused = true;
-    clearTimeout(this.sportRailResumeTimer);
-  };
-
-  private readonly resumeSportRailSoon = (): void => {
-    clearTimeout(this.sportRailResumeTimer);
-    this.sportRailResumeTimer = setTimeout(() => {
-      if (this.sportRailEl) this.sportRailPos = this.sportRailEl.scrollLeft;
-      this.sportRailLastTime = 0;
-      this.sportRailPaused = false;
-    }, SPORT_RAIL_RESUME_MS);
-  };
-
-  private readonly onSportRailWheel = (): void => {
-    this.pauseSportRail();
-    this.resumeSportRailSoon();
+    if (!rail) return;
+    const segment = rail.scrollWidth / SPORT_RAIL_COPIES;
+    const maxScroll = rail.scrollWidth - rail.clientWidth;
+    if (rail.scrollLeft < segment * 0.25 || rail.scrollLeft > maxScroll - segment * 0.25) {
+      this.recenterSportRail();
+      return;
+    }
+    clearTimeout(this.sportRailSettleTimer);
+    this.sportRailSettleTimer = setTimeout(this.recenterSportRail, 160);
   };
 
   private detachSportRail(): void {
     const rail = this.sportRailEl;
-    this.stopSportRail();
-    clearTimeout(this.sportRailResumeTimer);
-    this.sportRailPaused = false;
+    clearTimeout(this.sportRailSettleTimer);
     if (!rail) return;
     rail.removeEventListener('scroll', this.onSportRailScroll);
-    rail.removeEventListener('pointerdown', this.pauseSportRail);
-    rail.removeEventListener('touchstart', this.pauseSportRail);
-    rail.removeEventListener('wheel', this.onSportRailWheel);
-    for (const type of ['pointerup', 'pointercancel', 'touchend', 'touchcancel']) {
-      rail.removeEventListener(type, this.resumeSportRailSoon);
-    }
+    rail.removeEventListener('scrollend', this.recenterSportRail);
   }
 
   @HostListener('window:resize')
@@ -994,7 +929,6 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
   ionViewWillLeave() {
     this.homeVisible = false;
     this.stopPromotionSlider();
-    this.stopSportRail();
   }
 
   ngOnDestroy() {
