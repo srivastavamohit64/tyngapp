@@ -1,6 +1,7 @@
 import { CommonModule, Location } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { IonicModule, ToastController } from '@ionic/angular';
+import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 
 import { AccountSettingsService, NotificationSettings } from '../../core/services/account-settings.service';
@@ -82,6 +83,7 @@ const CATEGORY_ICONS: Record<string, string> = {
 export class NotificationSettingsPage implements OnInit {
   private readonly api = inject(AccountSettingsService);
   private readonly location = inject(Location);
+  private readonly router = inject(Router);
   private readonly toast = inject(ToastController);
 
   readonly settings = signal<NotificationSettings | null>(null);
@@ -119,7 +121,11 @@ export class NotificationSettingsPage implements OnInit {
   }
 
   back(): void {
-    this.location.back();
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      this.location.back();
+      return;
+    }
+    void this.router.navigateByUrl('/app/settings');
   }
 
   private async save(

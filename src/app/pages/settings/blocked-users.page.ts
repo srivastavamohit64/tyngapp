@@ -1,6 +1,7 @@
 import { CommonModule, Location } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { AlertController, IonicModule, ToastController } from '@ionic/angular';
+import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 
 import { BlockedUser, SocialService } from '../../core/services/social.service';
@@ -102,6 +103,7 @@ import { resolveMediaUrl } from '../../core/utils/media-url.util';
 export class BlockedUsersPage implements OnInit {
   private readonly social = inject(SocialService);
   private readonly location = inject(Location);
+  private readonly router = inject(Router);
   private readonly alerts = inject(AlertController);
   private readonly toast = inject(ToastController);
 
@@ -161,7 +163,11 @@ export class BlockedUsersPage implements OnInit {
   }
 
   back(): void {
-    this.location.back();
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      this.location.back();
+      return;
+    }
+    void this.router.navigateByUrl('/app/home');
   }
 
   private async showToast(message: string): Promise<void> {

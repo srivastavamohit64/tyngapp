@@ -884,3 +884,6 @@ TYNG — TODAY'S WORK SUMMARY
    - The Privacy Policy and Terms & Conditions pages in the app were showing text from a different product. They now describe TYNG: what information is collected, how it is used and shared, location, payments, notifications, blocking, children, and the rules for using the app. (Live server updated and pushed.)
    - The text can still be changed at any time in Admin > CMS Pages, and those changes will not be overwritten.
    - Still to do: add a TYNG support email to the Contact sections once one exists, and have the wording checked by someone qualified before launch.
+144. SETTINGS BACK BUTTON GOES BACK TO WHERE YOU CAME FROM - 2 October 2026
+   - The back button on Settings always opened the Profile page. It now returns to the screen you opened Settings from, such as Home when opened from the side menu.
+   - The back buttons on Notification settings and Blocked Users work the same way, and open a sensible page if there is nothing to go back to.

@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
@@ -15,6 +15,7 @@ import { AuthService } from '../../core/services/auth.service';
 export class SettingsPage {
   readonly router = inject(Router);
   readonly auth = inject(AuthService);
+  private readonly location = inject(Location);
 
   readonly options = [
     { name: 'Edit Profile', sub: 'Name, photo, location', icon: 'person-outline', path: '/app/profile/edit' },
@@ -24,6 +25,14 @@ export class SettingsPage {
     { name: 'Privacy Policy', sub: 'How we use and protect your data', icon: 'shield-checkmark-outline', path: '/app/legal/privacy-policy' },
     { name: 'Terms & Conditions', sub: 'Rules for using TYNG', icon: 'document-text-outline', path: '/app/legal/terms-conditions' },
   ];
+
+  back() {
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      this.location.back();
+      return;
+    }
+    void this.router.navigateByUrl('/app/home');
+  }
 
   openOption(path: string | null) {
     if (path) {
