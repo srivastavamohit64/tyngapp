@@ -47,6 +47,12 @@ interface HomeBadgeCard {
   color: string;
   tint: string;
   earned: boolean;
+  category: string;
+  earnedAt: string | null;
+  current: number | null;
+  threshold: number | null;
+  progressPct: number;
+  hint: string | null;
 }
 
 const HOME_SPORTS_COUNT = 5;
@@ -172,6 +178,7 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
   raceRows: HomeRaceRow[] = [];
   raceNote = '';
   homeBadges: HomeBadgeCard[] = [];
+  selectedBadge: HomeBadgeCard | null = null;
   progressLoading = true;
   quickSuggestion: QuickSuggestion | null = null;
   sportDrawerGames: HomeSportGameCard[] = [];
@@ -1890,7 +1897,26 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
       icon: this.badgeIcon(`${badge.category} ${badge.code}`),
       ...HOME_BADGE_PALETTES[index % HOME_BADGE_PALETTES.length],
       earned: badge.earned,
+      category: (badge.category || '').replace(/[_-]+/g, ' ').trim(),
+      earnedAt: badge.earnedAt,
+      current: badge.current ?? null,
+      threshold: badge.threshold,
+      progressPct: Math.max(0, Math.min(100, Math.round(Number(badge.progressPct ?? 0)))),
+      hint: badge.hint ?? null,
     }));
+  }
+
+  openBadgeDetail(badge: HomeBadgeCard): void {
+    this.selectedBadge = badge;
+  }
+
+  closeBadgeDetail(): void {
+    this.selectedBadge = null;
+  }
+
+  viewAllBadgesFromDetail(): void {
+    this.selectedBadge = null;
+    this.go('/app/badges');
   }
 
   get openGamesSuggestion(): string {

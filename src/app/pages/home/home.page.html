@@ -786,7 +786,7 @@
         <section class="home-feed-section" *ngIf="homeBadges.length">
           <div class="feed-section-heading"><h2>Recently unlocked</h2><button type="button" (click)="go('/app/badges')">View all badges <ion-icon name="chevron-forward-outline"></ion-icon></button></div>
           <div class="horizontal-card-row badge-card-row">
-            <button type="button" class="home-badge-card" *ngFor="let badge of homeBadges" [class.is-locked]="!badge.earned" [style.--badge-color]="badge.color" [style.--badge-tint]="badge.tint" (click)="go('/app/profile')">
+            <button type="button" class="home-badge-card" *ngFor="let badge of homeBadges" [class.is-locked]="!badge.earned" [style.--badge-color]="badge.color" [style.--badge-tint]="badge.tint" [attr.aria-label]="badge.name + ' badge details'" (click)="openBadgeDetail(badge)">
               <span class="home-badge-medal"><ion-icon [name]="badge.earned ? badge.icon : 'lock-closed-outline'"></ion-icon></span>
               <strong>{{ badge.name }}</strong>
               <small>{{ badge.description }}</small>
@@ -828,6 +828,32 @@
             <div *ngIf="sportDrawerGames.length" class="horizontal-card-row drawer-game-row" (scroll)="onSportDrawerScroll($event)"><article class="host-game-card" *ngFor="let booking of sportDrawerGames"><div class="host-card-head"><span class="host-avatar">{{ personInitials(booking.host.name) }}</span><div><strong>{{ booking.host.name || 'TYNG Player' }}</strong><small>Host · {{ booking.host.gamesPlayed || 0 }} games</small></div><span class="sport-chip">{{ formatSportName(booking.sport) }}</span></div><h3>{{ booking.title || formatSportName(booking.sport) + ' game' }}</h3><p><ion-icon name="time-outline"></ion-icon>{{ bookingDateTime(booking) }}</p><p><ion-icon name="location-outline"></ion-icon>{{ booking.venue.name || 'Venue TBD' }} · {{ booking.venue.location || 'Nearby' }}</p><div class="host-card-foot"><div class="player-stack"><span *ngFor="let player of booking.players.slice(0, 3)">{{ personInitials(player.user.name) }}</span><b *ngIf="booking.currentPlayers > 3">+{{ booking.currentPlayers - 3 }}</b></div><span class="spots-copy">{{ booking.isHost ? 'Hosted by you' : booking.availableSlots + ' spots left' }}</span><button *ngIf="!booking.isHost" type="button" (click)="openGame(booking)">Join {{ booking.costPerPlayer | currency:'INR':'symbol':'1.0-0' }}</button></div></article><div *ngIf="sportDrawerLoadingMore" class="drawer-load-card"><ion-spinner name="crescent"></ion-spinner><span>Loading next 4 games</span></div></div>
             <button *ngIf="sportDrawerError && sportDrawerGames.length" type="button" class="drawer-pagination-retry" (click)="loadSportDrawerGames(false)">Couldn’t load more · Retry</button>
           </div></ng-template>
+        </ion-modal>
+
+        <ion-modal class="badge-detail-modal" [isOpen]="!!selectedBadge" (didDismiss)="closeBadgeDetail()">
+          <ng-template>
+            <div class="badge-detail-card" *ngIf="selectedBadge as badge" [class.is-locked]="!badge.earned" [style.--badge-color]="badge.color" [style.--badge-tint]="badge.tint">
+              <button type="button" class="badge-detail-close" aria-label="Close" (click)="closeBadgeDetail()"><ion-icon name="close-outline"></ion-icon></button>
+              <span class="home-badge-medal badge-detail-medal"><ion-icon [name]="badge.earned ? badge.icon : 'lock-closed-outline'"></ion-icon></span>
+              <small class="badge-detail-category" *ngIf="badge.category">{{ badge.category }}</small>
+              <h2>{{ badge.name }}</h2>
+              <p class="badge-detail-description">{{ badge.description }}</p>
+              <div class="badge-detail-status is-earned" *ngIf="badge.earned">
+                <ion-icon name="checkmark-circle"></ion-icon>
+                <span>{{ badge.earnedAt ? 'Unlocked on ' + (badge.earnedAt | date:'d MMM y') : 'Unlocked' }}</span>
+              </div>
+              <div class="badge-detail-progress" *ngIf="!badge.earned">
+                <div class="badge-detail-progress-head">
+                  <span>Progress</span>
+                  <b *ngIf="badge.threshold">{{ (badge.current ?? 0) | number }} / {{ badge.threshold | number }}</b>
+                  <b *ngIf="!badge.threshold">{{ badge.progressPct }}%</b>
+                </div>
+                <div class="badge-detail-bar"><span [style.width.%]="badge.progressPct"></span></div>
+                <p *ngIf="badge.hint">{{ badge.hint }}</p>
+              </div>
+              <button type="button" class="badge-detail-action" (click)="viewAllBadgesFromDetail()">View all badges</button>
+            </div>
+          </ng-template>
         </ion-modal>
 
         <ion-modal class="sports-picker-modal" [isOpen]="sportsPickerOpen" (didDismiss)="onSportsPickerDidDismiss()">
