@@ -830,7 +830,7 @@
           </div></ng-template>
         </ion-modal>
 
-        <ion-modal class="badge-detail-modal" [isOpen]="!!selectedBadge" (didDismiss)="closeBadgeDetail()">
+        <ion-modal #badgeDetailModal class="badge-detail-modal" [isOpen]="!!selectedBadge" (didDismiss)="closeBadgeDetail()">
           <ng-template>
             <div class="badge-detail-card" *ngIf="selectedBadge as badge" [class.is-locked]="!badge.earned" [style.--badge-color]="badge.color" [style.--badge-tint]="badge.tint">
               <button type="button" class="badge-detail-close" aria-label="Close" (click)="closeBadgeDetail()"><ion-icon name="close-outline"></ion-icon></button>
@@ -856,7 +856,7 @@
           </ng-template>
         </ion-modal>
 
-        <ion-modal class="sports-picker-modal" [isOpen]="sportsPickerOpen" (didDismiss)="onSportsPickerDidDismiss()">
+        <ion-modal #sportsPickerModal class="sports-picker-modal" [isOpen]="sportsPickerOpen" (didDismiss)="onSportsPickerDidDismiss()">
           <ng-template><ion-content><div class="sports-picker-page" [class.is-editing]="homeSportsEditing">
             <div class="sports-picker-top">
               <button type="button" [attr.aria-label]="homeSportsEditing ? 'Stop editing Home sports' : 'Close sports'" (click)="closeSportsPicker()"><ion-icon name="chevron-back-outline"></ion-icon></button>

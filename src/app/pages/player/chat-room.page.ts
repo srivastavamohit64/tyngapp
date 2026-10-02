@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AlertController, IonicModule, ToastController, ViewWillEnter, ViewWillLeave } from '@ionic/angular';
+import { AlertController, IonModal, IonicModule, ToastController, ViewWillEnter, ViewWillLeave } from '@ionic/angular';
 import { PageSkeletonComponent } from '../../shared/components/skeleton';
 import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 import { Subscription, firstValueFrom } from 'rxjs';
@@ -209,7 +209,7 @@ interface GameChatDetails {
       </main>
       </app-brand-header-shell>
 
-      <ion-modal [isOpen]="!!viewedRequest" [initialBreakpoint]="1" [breakpoints]="[0, 1]" class="req-sheet-modal" (didDismiss)="viewedRequest = null">
+      <ion-modal #requestModal [isOpen]="!!viewedRequest" [initialBreakpoint]="1" [breakpoints]="[0, 1]" class="req-sheet-modal" (didDismiss)="viewedRequest = null">
         <ng-template>
           <section *ngIf="viewedRequest as req" class="req-sheet">
             <div class="req-sheet-head">
@@ -440,6 +440,7 @@ export class ChatRoomPage implements OnInit, OnDestroy, ViewWillEnter, ViewWillL
   private readonly toastCtrl = inject(ToastController);
   private readonly alertCtrl = inject(AlertController);
   private readonly coaching = inject(CoachService);
+  @ViewChild('requestModal') private requestModal?: IonModal;
 
   viewedRequest: any | null = null;
   respondingRequestId: number | null = null;
@@ -690,7 +691,8 @@ export class ChatRoomPage implements OnInit, OnDestroy, ViewWillEnter, ViewWillL
     this.viewedRequest = request;
   }
 
-  openAllRequests(): void {
+  async openAllRequests(): Promise<void> {
+    await this.requestModal?.dismiss();
     this.viewedRequest = null;
     void this.router.navigateByUrl('/app/coach/booking-requests');
   }

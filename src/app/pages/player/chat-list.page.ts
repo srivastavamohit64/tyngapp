@@ -651,12 +651,14 @@ export class ChatListPage implements OnInit, OnDestroy, ViewWillEnter, ViewWillL
         {
           text: 'Open chat',
           icon: 'chatbubble-outline',
-          handler: () => this.enterChat(chat.id),
+          data: 'open',
         },
         { text: 'Cancel', role: 'cancel' },
       ],
     });
     await sheet.present();
+    const { data } = await sheet.onDidDismiss();
+    if (data === 'open') this.enterChat(chat.id);
   }
 
   async togglePin(chat: ChatThread): Promise<void> {

@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, ViewChild, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AlertController, IonicModule, ViewWillEnter } from '@ionic/angular';
+import { AlertController, IonModal, IonicModule, ViewWillEnter } from '@ionic/angular';
 import { forkJoin } from 'rxjs';
 import { CoachService } from '../../core/services/coach.service';
 import { resolveMediaUrl } from '../../core/utils/media-url.util';
@@ -106,7 +106,7 @@ import { SkeletonListComponent } from '../../shared/components/skeleton';
         </main>
       </app-brand-header-shell>
 
-      <ion-modal [isOpen]="previewOpen()" (didDismiss)="closeStudentPreview()" [initialBreakpoint]="0.58" [breakpoints]="[0, 0.58, 0.84]">
+      <ion-modal #previewModal [isOpen]="previewOpen()" (didDismiss)="closeStudentPreview()" [initialBreakpoint]="0.58" [breakpoints]="[0, 0.58, 0.84]">
         <ng-template>
           <section class="student-preview" aria-live="polite">
             <div class="preview-handle"></div>
@@ -146,6 +146,7 @@ export class CoachStudentsPage implements ViewWillEnter {
   private readonly router = inject(Router);
   private readonly coach = inject(CoachService);
   private readonly alerts = inject(AlertController);
+  @ViewChild('previewModal') private previewModal?: IonModal;
 
   students = signal<any[]>([]);
   requests = signal<any[]>([]);
@@ -282,6 +283,6 @@ export class CoachStudentsPage implements ViewWillEnter {
   media(path: string | null | undefined) { return resolveMediaUrl(path) || 'assets/icon/avatar-placeholder.svg'; }
   sports(student: any) { return Array.isArray(student?.sports) && student.sports.length ? student.sports.join(', ') : 'Student'; }
   open(id: unknown) { if (id) void this.router.navigateByUrl('/app/coach/student/' + id); }
-  viewFullProfile(id: unknown) { this.closeStudentPreview(); this.open(id); }
+  async viewFullProfile(id: unknown) { await this.previewModal?.dismiss(); this.closeStudentPreview(); this.open(id); }
   openEnrollment() { void this.router.navigateByUrl('/app/coach/enroll-student'); }
 }

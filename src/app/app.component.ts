@@ -1,6 +1,13 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
-import { NavigationEnd, Router } from '@angular/router';
-import { MenuController, Platform } from '@ionic/angular';
+import { NavigationEnd, NavigationStart, Router } from '@angular/router';
+import {
+  ActionSheetController,
+  AlertController,
+  MenuController,
+  ModalController,
+  Platform,
+  PopoverController,
+} from '@ionic/angular';
 import { filter } from 'rxjs/operators';
 import { firstValueFrom } from 'rxjs';
 import { AuthUser } from './core/models/api.model';
@@ -46,6 +53,10 @@ export class AppComponent implements OnInit {
   readonly auth = inject(AuthService);
   private readonly menu = inject(MenuController);
   private readonly router = inject(Router);
+  private readonly modalCtrl = inject(ModalController);
+  private readonly popoverCtrl = inject(PopoverController);
+  private readonly actionSheetCtrl = inject(ActionSheetController);
+  private readonly alertCtrl = inject(AlertController);
   private readonly venueService = inject(VenueService);
   private readonly coachService = inject(CoachService);
   private readonly realtime = inject(RealtimeService);
@@ -126,6 +137,12 @@ export class AppComponent implements OnInit {
     this.router.events
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
       .subscribe((event) => this.resetPageScroll(event.urlAfterRedirects));
+    this.router.events
+      .pipe(filter((event): event is NavigationStart => event instanceof NavigationStart))
+      .subscribe((event) => {
+        if (this.routePath(event.url) === this.routePath(this.router.url)) return;
+        void this.dismissOpenOverlays();
+      });
     void this.platform.init();
     void this.realtime.connect().then(() => {
       const userId = this.auth.user()?.id;
@@ -303,6 +320,25 @@ export class AppComponent implements OnInit {
       return '/app/venue/complete-profile?resume=1';
     }
     return path;
+  }
+
+  private routePath(url: string): string {
+    return (url || '').split('?')[0].split('#')[0];
+  }
+
+  /** Inline modals closed here rely on their own (didDismiss) handler to reset their open flag. */
+  private async dismissOpenOverlays(): Promise<void> {
+    const controllers = [this.modalCtrl, this.popoverCtrl, this.actionSheetCtrl, this.alertCtrl];
+    await Promise.all(controllers.map(async (ctrl) => {
+      for (let i = 0; i < 10; i++) {
+        try {
+          const top = await ctrl.getTop();
+          if (!top || !(await top.dismiss())) return;
+        } catch {
+          return;
+        }
+      }
+    }));
   }
 
   private resetPageScroll(url: string): void {

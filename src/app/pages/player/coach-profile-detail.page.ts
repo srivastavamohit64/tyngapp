@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { ActionSheetController, AlertController, IonicModule, ToastController } from '@ionic/angular';
+import { ActionSheetController, AlertController, IonModal, IonicModule, ToastController } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 import { BackNavigationService } from '../../core/services/back-navigation.service';
 import {
@@ -445,7 +445,7 @@ const WEEK_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
         </div>
       </div>
 
-      <ion-modal [isOpen]="bookingOpen" [initialBreakpoint]="1" [breakpoints]="[0, 1]" class="cp-sheet-modal" (didDismiss)="closeBooking()">
+      <ion-modal #bookingModal [isOpen]="bookingOpen" [initialBreakpoint]="1" [breakpoints]="[0, 1]" class="cp-sheet-modal" (didDismiss)="closeBooking()">
         <ng-template>
           <div class="cp-sheet" *ngIf="coach as c">
             <div class="cp-sheet-head">
@@ -786,6 +786,7 @@ export class CoachProfileDetailPage implements OnInit {
   private readonly alertCtrl = inject(AlertController);
   private readonly actionSheet = inject(ActionSheetController);
   private readonly toastCtrl = inject(ToastController);
+  @ViewChild('bookingModal') private bookingModal?: IonModal;
 
   readonly tabs: { id: ProfileTab; label: string }[] = [
     { id: 'overview', label: 'OVERVIEW' },
@@ -1388,8 +1389,9 @@ export class CoachProfileDetailPage implements OnInit {
     }
   }
 
-  openBookingChat() {
+  async openBookingChat() {
     const chatId = this.bookingChatId;
+    await this.bookingModal?.dismiss();
     this.bookingOpen = false;
     this.step = 'session';
     if (chatId) void this.router.navigateByUrl(`/app/chat/${encodeURIComponent(chatId)}`);

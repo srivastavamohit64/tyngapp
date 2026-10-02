@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, HostListener, NgZone, OnDestroy, ViewChild, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { IonPopover, IonicModule, MenuController, Platform, ToastController, ViewWillEnter, ViewWillLeave } from '@ionic/angular';
+import { IonModal, IonPopover, IonicModule, MenuController, Platform, ToastController, ViewWillEnter, ViewWillLeave } from '@ionic/angular';
 import { PluginListenerHandle } from '@capacitor/core';
 import { App } from '@capacitor/app';
 import { Subscription, firstValueFrom } from 'rxjs';
@@ -338,6 +338,8 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
   searchFilterOpen = false;
   searchFilterEvent?: Event;
   @ViewChild('searchFilterPopover') private searchFilterPopover?: IonPopover;
+  @ViewChild('sportsPickerModal') private sportsPickerModal?: IonModal;
+  @ViewChild('badgeDetailModal') private badgeDetailModal?: IonModal;
   @ViewChild('promoCard') private set promoCardRef(ref: ElementRef<HTMLElement> | undefined) {
     this.promoCardEl = ref?.nativeElement;
     this.schedulePromoTitleFit();
@@ -1603,12 +1605,13 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
     await toast.present();
   }
 
-  chooseSportFromPicker(sport: HomeSport): void {
+  async chooseSportFromPicker(sport: HomeSport): Promise<void> {
     if (this.homeSportsEditing) {
       this.toggleHomeSportDraft(sport);
       return;
     }
     if (sport.id === 'suggest') {
+      await this.sportsPickerModal?.dismiss();
       this.sportsPickerOpen = false;
       void this.router.navigateByUrl('/app/profile/edit');
       return;
@@ -1874,7 +1877,8 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
     this.selectedBadge = null;
   }
 
-  viewAllBadgesFromDetail(): void {
+  async viewAllBadgesFromDetail(): Promise<void> {
+    await this.badgeDetailModal?.dismiss();
     this.selectedBadge = null;
     this.go('/app/badges');
   }

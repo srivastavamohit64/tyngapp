@@ -232,6 +232,7 @@ ALL APP USERS
 - On the Wallet screen, the passbook button is back in the top right corner.
 - All buttons that used to sit at the top right of a screen, such as mark all read, refresh, edit, add, filter, search, share and close, are back in the top bar where they were before.
 - The back arrow now always takes you to the screen you were just on, instead of jumping to a fixed screen such as Home or a list. In step-by-step forms it still goes back one step first. If you opened a screen straight from a link, the back arrow takes you to the most sensible screen instead of leaving the app.
+- Pop-up windows, sheets, menus and confirmation boxes now close by themselves when a button inside them takes you to another screen. For example, after booking a coach, "Open coach chat" closes the "Request sent" window and opens the chat. Nothing is left floating over the new screen.
 
 Writing rule: Whenever work is finished, add a short note here explaining in everyday words what changed and how it helps players, coaches, or administrators. Write for someone who does not work in software. Avoid programming terms, internal names, and tool names. Describe what the person can now do.
 

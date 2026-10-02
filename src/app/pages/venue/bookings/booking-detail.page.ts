@@ -987,15 +987,12 @@ export class VenueBookingDetailPage implements OnInit, OnDestroy {
       inputs: [{ name: 'text', type: 'textarea', placeholder: 'Message for all players…' }],
       buttons: [
         { text: 'Cancel', role: 'cancel' },
-        {
-          text: 'Send',
-          handler: (data) => {
-            void this.sendAnnounce(String(data?.text || ''));
-          },
-        },
+        { text: 'Send', role: 'confirm' },
       ],
     });
     await alert.present();
+    const { data, role } = await alert.onDidDismiss();
+    if (role === 'confirm') await this.sendAnnounce(String(data?.values?.text || ''));
   }
 
   async shareLocation(): Promise<void> {
