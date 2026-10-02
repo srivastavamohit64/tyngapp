@@ -27,6 +27,26 @@ export interface VenueCourtCard {
   address?: string | null;
 }
 
+export interface VenueListItem {
+  id: number;
+  name: string;
+  location?: string | null;
+  city?: string | null;
+  sports: string[];
+  venueType?: string | null;
+  profileImage?: string | null;
+  coverImage?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  distanceKm?: number | null;
+  distance?: string | null;
+  courtsCount: number;
+  price?: number | string | null;
+  rating?: number | null;
+  openTime?: string | null;
+  closeTime?: string | null;
+}
+
 export interface VenueCompletion {
   percent: number;
   ready: boolean;
@@ -257,6 +277,17 @@ export class VenueService {
     if (params?.sport && params.sport !== 'all') query.set('sport', params.sport);
     if (params?.q) query.set('q', params.q);
     return this.api.get<VenueCourtCard[]>(`/venues?${query.toString()}`);
+  }
+
+  getVenues(params?: { lat?: number | null; lng?: number | null; limit?: number }): Observable<ApiResponse<VenueListItem[]>> {
+    const query = new URLSearchParams();
+    if (Number.isFinite(params?.lat) && Number.isFinite(params?.lng)) {
+      query.set('lat', String(params!.lat));
+      query.set('lng', String(params!.lng));
+    }
+    if (params?.limit) query.set('limit', String(params.limit));
+    const suffix = query.toString();
+    return this.api.get<VenueListItem[]>(`/venues${suffix ? `?${suffix}` : ''}`);
   }
 
   getVenue(id: string | number): Observable<ApiResponse<Record<string, unknown>>> {

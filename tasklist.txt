@@ -894,3 +894,9 @@ TYNG — TODAY'S WORK SUMMARY
    - Players can edit their personal and medical details on the page, turn privacy options on or off, preview how others see their profile, mark recent games as won, lost or draw, and upload, view, download, replace or delete private documents.
    - Checked in the test browser while logged in: all tabs work and editing works. The app compiles.
    - Not available yet (no data behind it): rank movement such as "up 3 positions", phone verified status and a verified tick on documents. The hydration reminder is saved but no reminder is sent, and medical and document access choices are saved but not yet applied for coaches and venues.
+147. HOME "TOP VENUES NEAR YOU" SHOWS REAL VENUES - 2 October 2026
+   - The venues section on the player Home page was showing made-up sample venues. It now shows real TYNG venues that are open for booking, with their photo, area, distance from you, sports and starting price, nearest first.
+   - The server now works out each venue's map position from its address automatically when the address is saved. All existing venues with an address were located. (Live server updated and pushed.)
+   - The pretend review count and the heart button that did nothing were removed. Venues without a rating show "New".
+   - Checked in the test browser while logged in. Everything else on the Home page was already showing real information.
+   - Still to do: venue ratings and reviews, saving favourite venues, and the default "4.5" rating shown on the venue page.

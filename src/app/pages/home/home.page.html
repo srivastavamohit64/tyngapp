@@ -681,10 +681,17 @@
 
         <section class="home-feed-section">
           <div class="feed-section-heading"><h2>Top venues near you</h2><button type="button" (click)="go('/app/venues')">View all <ion-icon name="chevron-forward-outline"></ion-icon></button></div>
-          <div class="horizontal-card-row venue-card-row">
-            <article class="home-venue-card" *ngFor="let venue of homeVenues; let i = index">
-              <div class="venue-visual" [class.venue-visual-blue]="i % 2 === 1"><span class="venue-field-line"></span><button type="button" aria-label="Save venue"><ion-icon name="heart-outline"></ion-icon></button><b><ion-icon name="star"></ion-icon>{{ venue.rating }} ({{ 98 + i * 57 }})</b></div>
-              <div class="venue-card-copy"><h3>{{ venue.name }}</h3><p>{{ venue.location }} · {{ venue.distance }}</p><div class="venue-sport-chips"><span *ngFor="let sport of venue.sports">{{ sport }}</span></div><div class="venue-price-row"><span><small>From</small><strong>{{ venue.price | currency:'INR':'symbol':'1.0-0' }}/hr</strong></span><button type="button" (click)="go('/app/venue/' + venue.id)">Book</button></div></div>
+          <div class="home-inline-state" *ngIf="venuesLoading"><ion-spinner name="crescent"></ion-spinner><span>Finding venues near you…</span></div>
+          <div class="home-inline-state error" *ngIf="!venuesLoading && venuesError"><span>{{ venuesError }}</span><button type="button" (click)="loadHomeVenues()">Retry</button></div>
+          <div class="home-inline-state" *ngIf="!venuesLoading && !venuesError && !homeVenues.length"><span>No venues are listed near you yet.</span><button type="button" (click)="go('/app/venues')">Browse venues</button></div>
+          <div class="horizontal-card-row venue-card-row" *ngIf="homeVenues.length">
+            <article class="home-venue-card" *ngFor="let venue of homeVenues; let i = index" (click)="go('/app/venue/' + venue.id)">
+              <div class="venue-visual" [class.venue-visual-blue]="i % 2 === 1" [class.has-photo]="!!venue.image">
+                <img *ngIf="venue.image" [src]="venue.image" [alt]="venue.name" loading="lazy" (error)="venue.image = null" />
+                <span *ngIf="!venue.image" class="venue-field-line"></span>
+                <b><ion-icon name="star"></ion-icon>{{ venue.rating ?? 'New' }}</b>
+              </div>
+              <div class="venue-card-copy"><h3>{{ venue.name }}</h3><p>{{ venue.area }}<ng-container *ngIf="venue.distance"> · {{ venue.distance }}</ng-container></p><div class="venue-sport-chips" *ngIf="venue.sports.length"><span *ngFor="let sport of venue.sports">{{ sport }}</span></div><div class="venue-price-row"><span *ngIf="venue.price !== null; else venuePriceSoon"><small>From</small><strong>{{ venue.price | currency:'INR':'symbol':'1.0-0' }}/hr</strong></span><ng-template #venuePriceSoon><span><small>Pricing</small><strong>Coming soon</strong></span></ng-template><button type="button" (click)="$event.stopPropagation(); go('/app/venue/' + venue.id)">Book</button></div></div>
             </article>
           </div>
         </section>

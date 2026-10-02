@@ -10,7 +10,6 @@ import { AdService } from '../../core/services/ad.service';
 import { AuthService } from '../../core/services/auth.service';
 import { BookingService, HomeSportGameCard } from '../../core/services/booking.service';
 import { CoachService } from '../../core/services/coach.service';
-import { DesignDataService } from '../../core/services/design-data.service';
 import { RealtimeService } from '../../core/services/realtime.service';
 import { LocationService, UserLocation, LocationError, LocationErrorType } from '../../core/services/location.service';
 import { HomePromotionService } from '../../core/services/home-promotion.service';
@@ -27,6 +26,7 @@ import { resolveMediaUrl } from '../../core/utils/media-url.util';
 import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 import { EventGame } from '../../shared/models/app.models';
 import { VenueEventRecord, VenueEventService } from '../../core/services/venue-event.service';
+import { VenueListItem, VenueService } from '../../core/services/venue.service';
 import { XpService, XpSummary } from '../../core/services/xp.service';
 
 interface HomeRaceRow {
@@ -84,6 +84,17 @@ interface HomeCoachCard {
   price: string;
 }
 
+interface HomeVenueCard {
+  id: number;
+  name: string;
+  image: string | null;
+  area: string;
+  distance: string | null;
+  sports: string[];
+  price: number | null;
+  rating: string | null;
+}
+
 interface HomeTournamentCard {
   id: string;
   title: string;
@@ -105,8 +116,8 @@ interface HomeTournamentCard {
   templateUrl: './home.page.html',
 })
 export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
-  readonly data = inject(DesignDataService);
   readonly auth = inject(AuthService);
+  private readonly venueService = inject(VenueService);
   private readonly bookingService = inject(BookingService);
   private readonly coachService = inject(CoachService);
   private readonly venueEventService = inject(VenueEventService);
@@ -250,7 +261,10 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
     ] },
   ];
 
-  readonly homeVenues = this.data.venues.slice(0, 4);
+  homeVenues: HomeVenueCard[] = [];
+  venuesLoading = true;
+  venuesError = '';
+  private venuesRequestVersion = 0;
   homeCoaches: HomeCoachCard[] = [];
   coachesLoading = false;
   coachesError = '';
@@ -1051,6 +1065,7 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
   }
 
   async loadNearbyGames() {
+    void this.loadHomeVenues();
     this.nearbyLoading = true;
     this.nearbyError = '';
     try {
@@ -1425,6 +1440,65 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
       'martial-arts': ['combat'],
     };
     return aliases[sportId] || [];
+  }
+
+  async loadHomeVenues(): Promise<void> {
+    const version = ++this.venuesRequestVersion;
+    this.venuesLoading = !this.homeVenues.length;
+    this.venuesError = '';
+    const { latitude, longitude, city } = this.locationService.nearbyLocationQuery(this.auth.user()?.location);
+    const hasCoordinates = Number.isFinite(latitude) && Number.isFinite(longitude);
+    try {
+      const response = await firstValueFrom(
+        this.venueService.getVenues(hasCoordinates ? { lat: latitude, lng: longitude, limit: 6 } : {}),
+      );
+      if (version !== this.venuesRequestVersion) return;
+      let rows = Array.isArray(response.data) ? response.data : [];
+      const cityKey = (city || '').trim().toLowerCase();
+      if (!hasCoordinates && cityKey) {
+        const inCity = (venue: VenueListItem) => `${venue.city || ''} ${venue.location || ''}`.toLowerCase().includes(cityKey);
+        rows = [...rows.filter(inCity), ...rows.filter((venue) => !inCity(venue))];
+      }
+      this.homeVenues = rows.slice(0, 6).map((venue) => this.toHomeVenue(venue));
+    } catch {
+      if (version !== this.venuesRequestVersion) return;
+      this.homeVenues = [];
+      this.venuesError = 'Venues could not be loaded.';
+    } finally {
+      if (version === this.venuesRequestVersion) this.venuesLoading = false;
+    }
+  }
+
+  private toHomeVenue(venue: VenueListItem): HomeVenueCard {
+    const price = Number(venue.price);
+    const rating = Number(venue.rating);
+    return {
+      id: Number(venue.id),
+      name: venue.name || 'TYNG venue',
+      image: resolveMediaUrl(venue.coverImage || venue.profileImage) || null,
+      area: this.venueArea(venue),
+      distance: venue.distance || null,
+      sports: (venue.sports || []).slice(0, 3).map((sport) => this.formatSportName(sport)),
+      price: Number.isFinite(price) && price > 0 ? price : null,
+      rating: venue.rating != null && Number.isFinite(rating) && rating > 0 ? rating.toFixed(1) : null,
+    };
+  }
+
+  /** Locality + city from the venue address, skipping house numbers, plus codes, state/PIN and country. */
+  private venueArea(venue: VenueListItem): string {
+    const parts = String(venue.location || '')
+      .split(',')
+      .map((part) => part.trim())
+      .filter((part) => part
+        && !/^[A-Z0-9]{4,}\+[A-Z0-9]{2,}$/i.test(part)
+        && !/\b\d{6}\b/.test(part)
+        && !/^india$/i.test(part)
+        && !/^\d/.test(part)
+        && !part.includes('/'))
+      .filter((part, index, all) => all.findIndex((item) => item.toLowerCase() === part.toLowerCase()) === index);
+    if (parts.length) return parts.slice(-2).join(', ');
+    const city = String(venue.city || '').trim();
+    return /[a-z]{3,}/i.test(city) && !city.includes('+') ? city : 'Location not added';
   }
 
   async loadPlayerCoaches(): Promise<void> {
