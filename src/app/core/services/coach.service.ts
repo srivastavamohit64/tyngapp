@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ApiResponse, CoachDashboard, CoachInsightsPayload, CoachInsightsPeriod } from '../models/api.model';
+import { ApiResponse, CoachDashboard, CoachDirectoryResponse, CoachInsightsPayload, CoachInsightsPeriod } from '../models/api.model';
 import { ApiService } from './api.service';
 
 @Injectable({ providedIn: 'root' })
@@ -28,6 +28,15 @@ export class CoachService {
     if (sort) params.set('sort', sort);
     const query = params.toString();
     return this.api.get(`/coaches${query ? `?${query}` : ''}`);
+  }
+
+  listCoaches(query: Record<string, string | number | boolean | undefined>): Observable<ApiResponse<CoachDirectoryResponse>> {
+    const params = new URLSearchParams();
+    Object.entries(query).forEach(([key, value]) => {
+      if (value !== undefined && value !== '' && value !== false) params.set(key, String(value));
+    });
+    const suffix = params.toString();
+    return this.api.get<CoachDirectoryResponse>(`/coaches${suffix ? `?${suffix}` : ''}`);
   }
 
   getCoach(id: number): Observable<ApiResponse<any>> {

@@ -442,6 +442,13 @@ export interface DiscoverPlayer {
   preferredSports?: string[];
   mutualFriends?: number;
   lastSeen?: string | null;
+  username?: string | null;
+  area?: string | null;
+  level?: number;
+  levelTitle?: string | null;
+  reliabilityScore?: number | null;
+  verified?: boolean;
+  matchReasons?: string[];
 }
 
 export interface SearchVenue {
@@ -469,6 +476,52 @@ export interface DiscoverResponse {
     lastPage: number;
     perPage: number;
     total: number;
+  };
+}
+
+export interface CoachDirectoryItem {
+  id: number;
+  name: string;
+  username: string | null;
+  bio: string | null;
+  profileImage: string | null;
+  location: string | null;
+  area: string | null;
+  distanceKm: number | null;
+  sports: string[];
+  formats: string[];
+  sessionTypes: string[];
+  languages: string[];
+  achievements: string[];
+  experienceLevel: 'rising' | 'experienced' | 'elite' | null;
+  experienceLabel: string | null;
+  experienceYears: string | null;
+  rating: number | null;
+  reviewCount: number;
+  sessionsCompleted: number;
+  activeStudents: number;
+  pricePerHour: number | null;
+  groupPrice: number | null;
+  feesNegotiable: boolean;
+  idVerified: boolean;
+  certified: boolean;
+  isNew: boolean;
+  nextAvailable: { date: string; slot: string } | null;
+  sharesSport: boolean;
+}
+
+export interface CoachDirectoryResponse {
+  data: CoachDirectoryItem[];
+  current_page: number;
+  last_page: number;
+  per_page: number;
+  total: number;
+  facets: {
+    sports: string[];
+    sessionTypes: string[];
+    languages: string[];
+    experienceLevels: string[];
+    hasDistance: boolean;
   };
 }
 

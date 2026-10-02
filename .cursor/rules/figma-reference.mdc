@@ -1,0 +1,37 @@
+---
+description: Where to find the Figma design code when the user asks to copy or reference Figma
+alwaysApply: true
+---
+
+# Figma reference code
+
+When the user says to copy from Figma, take a reference from Figma, match the Figma design, or take colour codes from Figma, look **only** in:
+
+```
+C:\Users\sriva\Downloads\TYNG APP (Copy)
+```
+
+Do not ask where the Figma files are, and do not look in any other folder.
+
+## What is inside
+
+- A Figma Make export: React + Tailwind (Vite) under `src/`.
+- Player screens live in `src/app/components/player/` (for example, Home is `HomeScreen.tsx`).
+- Shared colours are constants near the top of each screen (for example `GREEN = '#8CF000'`, `ORANGE = '#FF7A00'`, `DARK = '#111827'`, `MUTED = '#6B7280'`). Exact sizes, radii and shadows are in the Tailwind classes (for example `rounded-[26px]`, `text-[10px]`, `shadow-[0_8px_28px_rgba(17,24,39,0.20)]`).
+
+## How to search it
+
+The folder is outside the workspace and the Glob tool times out on it, so use the shell:
+
+```powershell
+cd -LiteralPath "C:\Users\sriva\Downloads\TYNG APP (Copy)"
+rg -l -i "SECTION TITLE TEXT" src
+rg -n -i "SECTION TITLE TEXT" src\app\components\player\HomeScreen.tsx
+```
+
+Then read the matching component with the Read tool.
+
+## Applying it in this app
+
+- This app is Ionic/Angular with SCSS, so translate the Figma Tailwind classes into SCSS. Never copy React code directly.
+- Figma uses sample data. Wire every value to real API data, and tell the user about any Figma value that has no backend data behind it.

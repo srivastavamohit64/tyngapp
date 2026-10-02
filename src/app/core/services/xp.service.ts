@@ -74,19 +74,24 @@ export interface XpLeaderboard {
     playerId: string;
     name: string;
     username?: string;
+    avatar?: string | null;
+    profileImage?: string | null;
     level: number;
     levelTitle?: string | null;
     xp: number;
     gamesPlayed: number;
+    reliabilityScore?: number | null;
   }>;
   me: {
     rank: number | null;
     playerId: string;
     name: string;
+    avatar?: string | null;
     level: number;
     levelTitle?: string | null;
     xp: number;
     gamesPlayed: number;
+    reliabilityScore?: number | null;
   } | null;
 }
 
@@ -118,10 +123,24 @@ export class XpService {
       .pipe(map((res) => res.data?.items ?? []));
   }
 
-  leaderboard(period = 'all_time', sport?: string): Observable<XpLeaderboard | null> {
-    const params = new URLSearchParams({ period, scope: 'global', limit: '20' });
+  leaderboard(
+    period = 'all_time',
+    sport?: string,
+    options: { scope?: 'global' | 'city' | 'friends'; city?: string; venueId?: string | number; limit?: number } = {},
+  ): Observable<XpLeaderboard | null> {
+    const params = new URLSearchParams({
+      period,
+      scope: options.scope ?? 'global',
+      limit: String(options.limit ?? 20),
+    });
     if (sport && sport !== 'all') {
       params.set('sport', sport);
+    }
+    if (options.city) {
+      params.set('city', options.city);
+    }
+    if (options.venueId) {
+      params.set('venue_id', String(options.venueId));
     }
     return this.api.get<XpLeaderboard>(`/xp/leaderboard?${params.toString()}`).pipe(map((res) => res.data));
   }

@@ -1,0 +1,251 @@
+<ion-content fullscreen class="has-tabs cp-content">
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <app-brand-header-shell>
+    <main class="cp-page page-with-tab-bar">
+      <header class="cp-intro">
+        <h1 class="cp-title">Find coaches</h1>
+        <p class="cp-subtitle">Find the right coach for your game.</p>
+      </header>
+
+      <!-- Search -->
+      <div class="cp-pad">
+        <label class="cp-search">
+          <ion-icon name="search-outline" class="cp-search-icon"></ion-icon>
+          <input
+            type="search"
+            [(ngModel)]="query"
+            (ngModelChange)="onSearchInput()"
+            placeholder="Search coaches, sports or specialties"
+          />
+          <button type="button" class="cp-filter-btn" aria-label="Coach filters" (click)="openFilters()">
+            <ion-icon name="funnel-outline"></ion-icon>
+            <span *ngIf="hasFilters" class="cp-filter-dot"></span>
+          </button>
+        </label>
+      </div>
+
+      <!-- Sport chips -->
+      <div *ngIf="facets.sports.length" class="cp-sports">
+        <button
+          *ngFor="let chip of sportChips"
+          type="button"
+          class="cp-sport-chip"
+          [class.is-active]="activeSport === chip.value"
+          (click)="selectSport(chip.value)"
+        >
+          <ion-icon [name]="chip.icon"></ion-icon>{{ chip.label }}
+        </button>
+      </div>
+
+      <!-- Coaching invitations -->
+      <section *ngIf="invitations.length" class="cp-pad cp-invites" aria-label="Coaching invitations">
+        <div class="cp-invites-head">
+          <p>COACHING INVITATIONS</p>
+          <span>{{ invitations.length }} waiting</span>
+        </div>
+        <button type="button" class="cp-invite" *ngFor="let invite of invitations" (click)="openInvitation(invite.token)">
+          <span class="cp-invite-avatar">
+            <img *ngIf="photo(invite.coach?.profileImage) as src; else inviteIcon" [src]="src" alt="" />
+            <ng-template #inviteIcon><ion-icon name="person-outline"></ion-icon></ng-template>
+          </span>
+          <span class="cp-invite-copy">
+            <strong>{{ invite.coach?.name || 'A coach' }}</strong>
+            <small>Invited you to join as a student</small>
+          </span>
+          <span class="cp-invite-cta">REVIEW</span>
+        </button>
+      </section>
+
+      <!-- Featured coach -->
+      <div *ngIf="showFeatured && featured as coach" class="cp-pad cp-featured-wrap">
+        <article class="cp-featured">
+          <span class="cp-featured-glow"></span>
+          <div class="cp-featured-photo">
+            <img *ngIf="coach.photo" [src]="coach.photo" [alt]="coach.name" (error)="coach.photo = null" />
+            <span *ngIf="!coach.photo">{{ coach.initials }}</span>
+          </div>
+          <div class="cp-featured-body">
+            <span class="cp-featured-tag">RECOMMENDED FOR YOU</span>
+            <div class="cp-featured-name">
+              <p>{{ coach.name }}</p>
+              <ion-icon *ngIf="coach.idVerified" name="checkmark-circle"></ion-icon>
+            </div>
+            <p class="cp-featured-sport">{{ coach.sportLine }} COACH</p>
+            <p *ngIf="coach.specialties" class="cp-featured-spec">{{ coach.specialties }}</p>
+            <div class="cp-featured-stats">
+              <span>{{ coach.rating !== null ? '★ ' + coach.rating : 'No reviews yet' }}</span>
+              <span *ngIf="coach.experience">{{ coach.experience }}</span>
+              <span>{{ coach.sessions }} Sessions</span>
+            </div>
+            <div *ngIf="coach.next" class="cp-featured-next">
+              <p>NEXT AVAILABLE</p>
+              <p>{{ coach.next }}</p>
+            </div>
+            <div class="cp-featured-foot">
+              <p *ngIf="coach.price !== null">₹{{ coach.price | number: '1.0-0' }}<span> / session</span></p>
+              <p *ngIf="coach.price === null" class="cp-featured-ask">Price on request</p>
+              <button type="button" (click)="viewCoach(coach)">VIEW COACH</button>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <!-- List header -->
+      <div class="cp-list-head">
+        <div>
+          <p class="cp-list-title">COACHES FOR YOU</p>
+          <p class="cp-list-sub">{{ resultLabel }}</p>
+        </div>
+        <button type="button" class="cp-sort-btn" (click)="openSort()">
+          <ion-icon name="swap-vertical-outline"></ion-icon>{{ sortLabel }}<ion-icon name="chevron-down"></ion-icon>
+        </button>
+      </div>
+
+      <p *ngIf="error" class="cp-pad cp-error">{{ error }}</p>
+
+      <div class="cp-pad cp-list">
+        <ng-container *ngIf="loading">
+          <div *ngFor="let i of [1, 2, 3]" class="cp-skeleton"></div>
+        </ng-container>
+
+        <ng-container *ngIf="!loading">
+          <article *ngFor="let coach of coaches" class="cp-card">
+            <div class="cp-card-main">
+              <button type="button" class="cp-card-photo" (click)="viewCoach(coach)" [attr.aria-label]="'View ' + coach.name">
+                <img *ngIf="coach.photo" [src]="coach.photo" [alt]="coach.name" (error)="coach.photo = null" />
+                <span *ngIf="!coach.photo" class="cp-card-initials">{{ coach.initials }}</span>
+                <span *ngIf="coach.isNew" class="cp-card-new">NEW ON TYNG</span>
+              </button>
+              <div class="cp-card-info">
+                <div class="cp-card-name">
+                  <p>{{ coach.name }}</p>
+                  <ion-icon *ngIf="coach.idVerified" name="checkmark-circle"></ion-icon>
+                </div>
+                <p class="cp-card-sport">{{ coach.sportLine }}</p>
+                <p *ngIf="coach.specialties" class="cp-card-spec">{{ coach.specialties }}</p>
+                <div class="cp-card-meta">
+                  <span *ngIf="coach.rating !== null" class="cp-card-rating">★ {{ coach.rating }}<small *ngIf="coach.reviewCount"> ({{ coach.reviewCount }})</small></span>
+                  <span *ngIf="coach.rating === null" class="cp-card-fresh">NO REVIEWS YET</span>
+                  <ng-container *ngIf="coach.experience"><span>•</span><span>{{ coach.experience }}</span></ng-container>
+                </div>
+                <p class="cp-card-sub">
+                  {{ coach.sessions }} {{ coach.sessions === 1 ? 'session' : 'sessions' }} • {{ coach.students }} {{ coach.students === 1 ? 'student' : 'students' }}
+                </p>
+                <p *ngIf="coach.place" class="cp-card-sub"><ion-icon name="location-outline"></ion-icon> {{ coach.place }}</p>
+                <div *ngIf="coach.idVerified || coach.certified" class="cp-card-badges">
+                  <span *ngIf="coach.idVerified" class="cp-badge-id"><ion-icon name="shield-checkmark"></ion-icon> ID VERIFIED</span>
+                  <span *ngIf="coach.certified" class="cp-badge-cert"><ion-icon name="checkmark"></ion-icon> CERTIFIED</span>
+                </div>
+                <div class="cp-card-next">
+                  <p>NEXT AVAILABLE</p>
+                  <p>{{ coach.next || 'Ask the coach' }}</p>
+                </div>
+              </div>
+            </div>
+            <div class="cp-card-foot">
+              <div class="cp-card-price">
+                <p>STARTING FROM</p>
+                <p *ngIf="coach.price !== null">₹{{ coach.price | number: '1.0-0' }}<span> / session</span></p>
+                <p *ngIf="coach.price === null" class="cp-card-ask">On request</p>
+                <p *ngIf="coach.priceNote" class="cp-card-negotiable">{{ coach.priceNote }}</p>
+              </div>
+              <button type="button" class="cp-btn-outline" (click)="viewCoach(coach)">VIEW PROFILE</button>
+              <button type="button" class="cp-btn-lime" (click)="viewCoach(coach, true)">BOOK</button>
+            </div>
+          </article>
+
+          <div *ngIf="!coaches.length && !error" class="cp-empty">
+            <div class="cp-empty-icon"><ion-icon name="people-outline"></ion-icon></div>
+            <p class="cp-empty-title">NO COACHES MATCH THESE FILTERS.</p>
+            <p class="cp-empty-text">Try another sport, price or availability.</p>
+            <div class="cp-empty-actions">
+              <button type="button" class="cp-btn-muted" (click)="clearAll()">CLEAR FILTERS</button>
+              <button type="button" class="cp-btn-lime" (click)="openFilters()">EXPAND SEARCH</button>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+
+      <ion-infinite-scroll [disabled]="loading || page >= lastPage" (ionInfinite)="loadMore($event)">
+        <ion-infinite-scroll-content></ion-infinite-scroll-content>
+      </ion-infinite-scroll>
+    </main>
+  </app-brand-header-shell>
+
+  <div slot="fixed" class="cp-fixed-layer">
+    <!-- Filters sheet -->
+    <ng-container *ngIf="sheet === 'filters'">
+      <div class="cp-sheet-backdrop" (click)="closeSheet()"></div>
+      <div class="cp-sheet" role="dialog" aria-label="Coach filters">
+        <div class="cp-sheet-handle"></div>
+        <div class="cp-sheet-head">
+          <p>Coach filters</p>
+          <button type="button" class="cp-sheet-close" aria-label="Close" (click)="closeSheet()"><ion-icon name="close"></ion-icon></button>
+        </div>
+        <div class="cp-filter-groups">
+          <div *ngFor="let group of filterGroups">
+            <p class="cp-filter-title">{{ group.title }}</p>
+            <div class="cp-filter-options">
+              <button
+                *ngFor="let option of group.options"
+                type="button"
+                class="cp-filter-chip"
+                [class.is-active]="isDraftSelected(group.key, option.value)"
+                (click)="toggleDraft(group, option.value)"
+              >
+                <ion-icon *ngIf="isDraftSelected(group.key, option.value)" name="checkmark"></ion-icon>{{ option.label }}
+              </button>
+            </div>
+          </div>
+          <div class="cp-verified-row">
+            <div>
+              <p>VERIFIED ONLY</p>
+              <span>Show identity-verified coaches</span>
+            </div>
+            <button
+              type="button"
+              class="cp-toggle"
+              role="switch"
+              [attr.aria-checked]="draftVerified"
+              [class.is-on]="draftVerified"
+              (click)="draftVerified = !draftVerified"
+            >
+              <span></span>
+            </button>
+          </div>
+        </div>
+        <div class="cp-sheet-actions">
+          <button type="button" class="cp-btn-muted" (click)="clearDraft()">CLEAR</button>
+          <button type="button" class="cp-btn-lime" (click)="applyFilters()">SHOW COACHES</button>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Sort sheet -->
+    <ng-container *ngIf="sheet === 'sort'">
+      <div class="cp-sheet-backdrop" (click)="closeSheet()"></div>
+      <div class="cp-sheet" role="dialog" aria-label="Sort coaches">
+        <div class="cp-sheet-handle"></div>
+        <div class="cp-sheet-head">
+          <p>Sort coaches</p>
+          <button type="button" class="cp-sheet-close" aria-label="Close" (click)="closeSheet()"><ion-icon name="close"></ion-icon></button>
+        </div>
+        <div class="cp-sort-list">
+          <button
+            *ngFor="let option of sortOptions"
+            type="button"
+            class="cp-sort-option"
+            [class.is-active]="sort === option.value"
+            (click)="chooseSort(option.value)"
+          >
+            {{ option.label }}
+            <span *ngIf="sort === option.value"><ion-icon name="checkmark"></ion-icon></span>
+          </button>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</ion-content>

@@ -1,240 +1,246 @@
-<ion-content fullscreen class="has-tabs">
+<ion-content fullscreen class="has-tabs dp-content">
   <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
   <app-brand-header-shell>
-    <main class="discover-page">
-      <app-page-header title="Discover Players" [showActions]="true" [hasSubContent]="true">
-        <div actions class="header-actions">
-          <button type="button" class="icon-btn" (click)="toggleFilters(true)" aria-label="Open filters">
-            <ion-icon name="options-outline"></ion-icon>
+    <main class="dp-page page-with-tab-bar">
+      <!-- Header -->
+      <header class="dp-header">
+        <div>
+          <h1 class="dp-title">Discover players</h1>
+          <p class="dp-subtitle">{{ nearbyLabel }}</p>
+        </div>
+        <div class="dp-header-actions">
+          <button type="button" class="dp-icon-btn" [class.is-active]="searchOpen" aria-label="Search players" (click)="toggleSearch()">
+            <ion-icon name="search-outline"></ion-icon>
+          </button>
+          <button type="button" class="dp-icon-btn" aria-label="Discovery filters" (click)="openFilters()">
+            <ion-icon name="funnel-outline"></ion-icon>
+            <span *ngIf="hasFilters" class="dp-filter-dot"></span>
           </button>
         </div>
-        <p class="nearby-caption">{{ nearbyLabel }}</p>
-        <p class="error-line" *ngIf="errorMessage">{{ errorMessage }}</p>
-      </app-page-header>
+      </header>
 
-      <section class="discover-body">
-        <div *ngIf="!loading && currentIndex < filteredPlayers.length; else noPlayers" class="card-deck">
-          <div
-            *ngFor="let offset of [2, 1]"
-            class="deck-card"
-            [style.transform]="'translateY(' + (offset * 8) + 'px) scale(' + (1 - offset * 0.04) + ')'"
-            [style.zIndex]="10 - offset"
-          ></div>
-
-          <div
-            class="active-card"
-            [style.transform]="getTransformStyle()"
-            [style.opacity]="getOpacityStyle()"
-            [style.transition]="isDragging ? 'none' : 'transform 0.3s ease-out, opacity 0.3s ease-out'"
-            (touchstart)="onTouchStart($event)"
-            (touchmove)="onTouchMove($event)"
-            (touchend)="onTouchEnd()"
-            (mousedown)="onMouseDown($event)"
-            (mousemove)="onMouseMove($event)"
-            (mouseup)="onMouseUp()"
-            (mouseleave)="onMouseUp()"
-            (click)="openPlayer()"
-          >
-            <div class="player-card-photo relative h-64 w-full overflow-hidden bg-slate-100 pointer-events-none">
-              <img [src]="currentPlayer.photo" [alt]="currentPlayer.name" class="w-full h-full object-cover" draggable="false" />
-              <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent"></div>
-
-              <div class="absolute top-4 left-4">
-                <span class="px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 bg-[#FF7A00]/10 text-[#FF7A00] border border-[#FF7A00]/30">
-                  <ion-icon name="time-outline"></ion-icon>
-                  {{ currentPlayer.availability }}
+      <!-- Search -->
+      <section *ngIf="searchOpen" class="dp-search-wrap">
+        <label class="dp-search">
+          <ion-icon name="search-outline"></ion-icon>
+          <input
+            type="search"
+            [(ngModel)]="searchQuery"
+            (ngModelChange)="onSearchInput()"
+            placeholder="Name or username"
+            autofocus
+          />
+        </label>
+        <div *ngIf="searchQuery.trim()" class="dp-search-results">
+          <p *ngIf="searching" class="dp-search-note">Searching…</p>
+          <ng-container *ngIf="!searching">
+            <button *ngFor="let player of searchResults" type="button" class="dp-search-result" (click)="viewProfile(player)">
+              <span class="dp-search-avatar">
+                <img *ngIf="player.photo" [src]="player.photo" [alt]="player.name" (error)="player.photo = null" />
+                <span *ngIf="!player.photo">{{ player.initials }}</span>
+              </span>
+              <span class="dp-search-info">
+                <span class="dp-search-name">{{ player.name }}</span>
+                <span class="dp-search-meta">
+                  {{ player.username }}{{ player.distance !== null ? ' • ' + player.distance + ' km away' : player.area ? ' • ' + player.area : '' }}
                 </span>
-              </div>
-
-              <div class="absolute top-4 right-4 flex gap-1.5">
-                <div
-                  *ngFor="let badge of currentPlayer.mascotBadges"
-                  class="w-9 h-9 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 shadow-lg text-lg text-white"
-                >
-                  {{ badge }}
-                </div>
-              </div>
-
-              <div class="absolute bottom-4 right-4 px-3 py-1 bg-black/55 backdrop-blur-md rounded-full text-xs font-bold flex items-center gap-1 border border-white/10 text-white">
-                <ion-icon name="location-outline" class="text-[var(--app-primary)]"></ion-icon>
-                {{ currentPlayer.distance }}km away
-              </div>
-            </div>
-
-            <div class="player-card-content p-5 flex-1 flex flex-col justify-between space-y-4 pointer-events-none">
-              <div class="player-card-summary">
-                <div class="flex items-baseline gap-2 mb-1">
-                  <h3 class="text-2xl font-black text-slate-900">{{ currentPlayer.name }}</h3>
-                  <span class="text-lg text-slate-500 font-semibold">{{ currentPlayer.age }}</span>
-                </div>
-                <p class="text-xs text-slate-500 leading-relaxed line-clamp-2">{{ currentPlayer.bio }}</p>
-                <p class="text-[10px] text-slate-400 mt-1">{{ currentPlayer.city }} · {{ currentPlayer.preferredPosition }} · {{ currentPlayer.preferredTime }}</p>
-              </div>
-
-              <div class="player-sports-list flex flex-wrap gap-2">
-                <div *ngFor="let sport of currentPlayer.sports" class="player-sport-badge px-3 py-1.5 bg-[var(--app-primary)]/10 border border-[var(--app-primary)]/25 rounded-xl flex items-center gap-2">
-                  <span class="text-lg">{{ sport.emoji }}</span>
-                  <div class="text-left">
-                    <div class="text-[10px] font-black text-slate-900 leading-none">{{ sport.name }}</div>
-                    <div class="text-[9px] text-slate-500 leading-none mt-0.5">{{ sport.level }}</div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="player-stats-grid grid grid-cols-4 gap-2 pt-2 border-t border-slate-100">
-                <div class="player-stat bg-[#FAFBFC] rounded-xl p-2.5 text-center border border-slate-100">
-                  <ion-icon name="flash-outline" class="text-orange-500 text-lg mb-1"></ion-icon>
-                  <div class="text-sm font-black text-slate-900 leading-none">{{ currentPlayer.tp }}</div>
-                  <div class="text-[9px] text-slate-500 mt-1 leading-none">TP</div>
-                </div>
-                <div class="player-stat bg-[#FAFBFC] rounded-xl p-2.5 text-center border border-slate-100">
-                  <ion-icon name="shield-checkmark-outline" class="text-green-600 text-lg mb-1"></ion-icon>
-                  <div class="text-sm font-black text-slate-900 leading-none">{{ currentPlayer.reliabilityScore }}%</div>
-                  <div class="text-[9px] text-slate-500 mt-1 leading-none">Reliable</div>
-                </div>
-                <div class="player-stat bg-[#FAFBFC] rounded-xl p-2.5 text-center border border-slate-100">
-                  <ion-icon name="trophy-outline" class="text-[#73C000] text-lg mb-1"></ion-icon>
-                  <div class="text-sm font-black text-slate-900 leading-none">{{ currentPlayer.winRate }}%</div>
-                  <div class="text-[9px] text-slate-500 mt-1 leading-none">Win</div>
-                </div>
-                <div class="player-stat bg-[#FAFBFC] rounded-xl p-2.5 text-center border border-slate-100">
-                  <ion-icon name="disc-outline" class="text-violet-600 text-lg mb-1"></ion-icon>
-                  <div class="text-sm font-black text-slate-900 leading-none">{{ currentPlayer.gamesPlayed }}</div>
-                  <div class="text-[9px] text-slate-500 mt-1 leading-none">Games</div>
-                </div>
-              </div>
-
-              <div class="player-card-meta flex items-center justify-between text-[10px] text-slate-500 pt-1">
-                <span>Mutual friends: {{ currentPlayer.mutualFriends }}</span>
-                <span>Rating: {{ currentPlayer.rating | number: '1.1-1' }}</span>
-              </div>
-            </div>
-          </div>
+              </span>
+              <ion-icon name="chevron-forward"></ion-icon>
+            </button>
+            <p *ngIf="!searchResults.length" class="dp-search-note">No new players match "{{ searchQuery.trim() }}".</p>
+          </ng-container>
         </div>
-
-        <ng-template #noPlayers>
-          <div *ngIf="loading" class="loading-state px-2">
-            <app-page-skeleton variant="profile" label="Loading players"></app-page-skeleton>
-          </div>
-
-          <div *ngIf="!loading" class="state-card">
-            <div class="state-icon">🎯</div>
-            <h3>No more players nearby</h3>
-            <p>Try widening your distance or clearing filters to discover more players.</p>
-            <div class="state-actions">
-              <app-primary-button [block]="true" (pressed)="resetDiscovery()">Refresh players</app-primary-button>
-              <button type="button" class="state-link" (click)="toggleFilters(true)">Adjust filters</button>
-            </div>
-          </div>
-        </ng-template>
       </section>
 
-      <footer *ngIf="!loading && currentIndex < filteredPlayers.length" class="swipe-footer">
-        <button type="button" (click)="swipe('left')" class="swipe-btn swipe-btn--pass" aria-label="Pass">
-          <ion-icon name="close-outline"></ion-icon>
-        </button>
-        <button type="button" (click)="swipe('right')" class="swipe-btn swipe-btn--like" aria-label="Connect">
-          <ion-icon name="checkmark-outline"></ion-icon>
-        </button>
-      </footer>
+      <p *ngIf="errorMessage" class="dp-error">{{ errorMessage }}</p>
 
-      <div *ngIf="showFilters" class="filters-panel">
-        <div class="filters-inner">
-          <div class="filters-head">
-            <h2>Filters</h2>
-            <button type="button" class="filters-close" (click)="toggleFilters(false)" aria-label="Close filters">
-              <ion-icon name="close-outline"></ion-icon>
-            </button>
+      <section class="dp-deck-wrap">
+        <!-- Loading -->
+        <div *ngIf="loading" class="dp-skeleton"></div>
+
+        <!-- Card stack -->
+        <div *ngIf="!loading && current as card" class="dp-deck">
+          <div class="dp-stack">
+          <div *ngIf="next as behind" class="dp-behind">
+            <img *ngIf="behind.photo" [src]="behind.photo" alt="" />
+            <span *ngIf="!behind.photo" class="dp-behind-initials">{{ behind.initials }}</span>
           </div>
 
-          <div class="filter-section">
-            <label class="filter-label">Sport</label>
-            <div class="filter-options">
-              <button
-                type="button"
-                *ngFor="let s of ['All', 'Cricket', 'Football', 'Basketball', 'Tennis', 'Badminton']"
-                (click)="filters.sport = s"
-                class="filter-chip"
-                [class.active]="filters.sport === s"
-              >
-                {{ s }}
-              </button>
+          <article
+            class="dp-card"
+            [class.is-dragging]="dragging"
+            [style.transform]="cardTransform"
+            (pointerdown)="onPointerDown($event)"
+            (pointermove)="onPointerMove($event)"
+            (pointerup)="onPointerUp()"
+            (pointercancel)="onPointerUp()"
+          >
+            <div class="dp-photo">
+              <img *ngIf="card.photo" [src]="card.photo" [alt]="card.name" draggable="false" (error)="card.photo = null" />
+              <span *ngIf="!card.photo" class="dp-photo-initials">{{ card.initials }}</span>
+              <span class="dp-photo-shade"></span>
+
+              <span *ngIf="card.availabilityLabel" class="dp-availability">{{ card.availabilityLabel }}</span>
+              <div class="dp-photo-badges">
+                <span *ngIf="card.verified" class="dp-round-badge" title="Verified"><ion-icon name="shield-checkmark"></ion-icon></span>
+                <span class="dp-level-badge"><ion-icon name="trophy"></ion-icon> L{{ card.level }}</span>
+              </div>
+
+              <span class="dp-hint dp-hint-connect" [style.opacity]="connectHintOpacity">CONNECT</span>
+              <span class="dp-hint dp-hint-skip" [style.opacity]="skipHintOpacity">SKIP</span>
+
+              <div class="dp-identity">
+                <div class="dp-name-row">
+                  <p class="dp-name">{{ card.name }}</p>
+                  <p *ngIf="card.age" class="dp-age">{{ card.age }}</p>
+                  <ion-icon *ngIf="card.verified" name="checkmark-circle" class="dp-verified"></ion-icon>
+                </div>
+                <p *ngIf="card.username" class="dp-username">{{ card.username }}</p>
+                <div *ngIf="card.area || card.distance !== null" class="dp-place">
+                  <span *ngIf="card.area"><ion-icon name="location-outline"></ion-icon> {{ card.area }}</span>
+                  <span *ngIf="card.area && card.distance !== null">•</span>
+                  <span *ngIf="card.distance !== null">{{ card.distance }} km away</span>
+                </div>
+              </div>
             </div>
+
+            <div class="dp-body">
+              <p *ngIf="card.bio" class="dp-bio">{{ card.bio }}</p>
+
+              <div *ngIf="card.sports.length" class="dp-sports">
+                <button *ngFor="let sport of card.sports" type="button" class="dp-sport-chip" (click)="filterBySport(sport.id)">
+                  <ion-icon [name]="sport.icon"></ion-icon>
+                  <span>
+                    <span class="dp-sport-name">{{ sport.name | uppercase }}</span>
+                    <span *ngIf="sport.level" class="dp-sport-level">{{ sport.level }}</span>
+                  </span>
+                </button>
+              </div>
+
+              <div class="dp-stats">
+                <div>
+                  <p>{{ card.reliability !== null ? card.reliability + '%' : '—' }}</p>
+                  <span>RELIABILITY</span>
+                </div>
+                <div>
+                  <p>{{ card.rating !== null ? (card.rating | number: '1.1-1') + '★' : '—' }}</p>
+                  <span>RATING</span>
+                </div>
+                <div>
+                  <p>{{ card.games }}</p>
+                  <span>GAMES</span>
+                </div>
+                <div>
+                  <p>L{{ card.level }}</p>
+                  <span>LEVEL</span>
+                </div>
+              </div>
+
+              <div *ngIf="card.reasons.length" class="dp-reasons">
+                <p class="dp-reasons-title">WHY YOU MAY MATCH</p>
+                <div class="dp-reasons-list">
+                  <span *ngFor="let reason of card.reasons"><ion-icon name="checkmark"></ion-icon>{{ reason }}</span>
+                </div>
+              </div>
+
+              <div class="dp-actions">
+                <button type="button" class="dp-btn-skip" (click)="skip()"><ion-icon name="play-skip-forward-outline"></ion-icon> SKIP</button>
+                <button type="button" class="dp-btn-profile" (click)="viewProfile(card)">VIEW PROFILE</button>
+                <button type="button" class="dp-btn-connect" (click)="startConnect()"><ion-icon name="person-add-outline"></ion-icon> CONNECT</button>
+              </div>
+            </div>
+          </article>
           </div>
 
-          <div class="filter-section">
-            <label class="filter-label">Skill level</label>
-            <div class="filter-options">
-              <button
-                type="button"
-                *ngFor="let lvl of ['All', 'Beginner', 'Intermediate', 'Advanced', 'Expert']"
-                (click)="filters.skill = lvl"
-                class="filter-chip"
-                [class.active]="filters.skill === lvl"
-              >
-                {{ lvl }}
-              </button>
-            </div>
-          </div>
+          <p *ngIf="next" class="dp-swipe-note">SWIPE FOR MORE</p>
+        </div>
 
-          <div class="filter-section">
-            <div class="filter-range-label">
-              <span>Maximum distance</span>
-              <strong>{{ filters.distance }} km</strong>
-            </div>
-            <input type="range" min="1" max="50" [(ngModel)]="filters.distance" class="range-input" />
-          </div>
-
-          <div class="filter-section">
-            <div class="filter-range-label">
-              <span>Age range</span>
-              <strong>{{ filters.ageMin }} – {{ filters.ageMax }} yrs</strong>
-            </div>
-            <div class="range-row">
-              <input type="range" min="18" max="50" [(ngModel)]="filters.ageMin" class="range-input" />
-              <input type="range" min="18" max="50" [(ngModel)]="filters.ageMax" class="range-input" />
-            </div>
-          </div>
-
-          <div class="filter-section">
-            <label class="filter-label">Competitive level</label>
-            <div class="filter-options">
-              <button
-                type="button"
-                *ngFor="let comp of ['All', 'Recreational', 'Competitive', 'Professional']"
-                (click)="filters.competitiveLevel = comp"
-                class="filter-chip filter-chip--wide"
-                [class.active]="filters.competitiveLevel === comp"
-              >
-                {{ comp }}
-              </button>
-            </div>
-          </div>
-
-          <div class="filter-section">
-            <label class="filter-label">Availability</label>
-            <div class="filter-options">
-              <button
-                type="button"
-                *ngFor="let avail of ['All', 'Available Now', 'Available Today', 'This Week']"
-                (click)="filters.availability = avail"
-                class="filter-chip filter-chip--wide"
-                [class.active]="filters.availability === avail"
-              >
-                {{ avail }}
-              </button>
-            </div>
-          </div>
-
-          <div class="filters-footer">
-            <app-primary-button variant="outline" [block]="true" (pressed)="resetFilters()">Clear all</app-primary-button>
-            <app-primary-button [block]="true" (pressed)="applyFilters()">Apply filters</app-primary-button>
+        <!-- Empty -->
+        <div *ngIf="!loading && !current" class="dp-empty">
+          <div class="dp-empty-icon"><ion-icon name="people-outline"></ion-icon></div>
+          <p class="dp-empty-title">{{ hasFilters ? 'NO PLAYERS MATCH THESE FILTERS.' : 'NO PLAYERS HERE YET.' }}</p>
+          <p class="dp-empty-text">
+            {{ hasFilters ? 'Try widening your filters or explore another sport.' : "You've seen everyone nearby. Check back soon for new players." }}
+          </p>
+          <div class="dp-empty-actions">
+            <button type="button" class="dp-btn-muted" (click)="clearFilters()">{{ hasFilters ? 'CLEAR FILTERS' : 'REFRESH' }}</button>
+            <button type="button" class="dp-btn-lime" (click)="openFilters()">CHANGE SPORT</button>
           </div>
         </div>
-      </div>
+      </section>
     </main>
   </app-brand-header-shell>
+
+  <div slot="fixed" class="dp-fixed-layer">
+    <!-- Filters sheet -->
+    <ng-container *ngIf="sheet === 'filters'">
+      <div class="dp-sheet-backdrop" (click)="closeSheet()"></div>
+      <div class="dp-sheet" role="dialog" aria-label="Discovery filters">
+        <div class="dp-sheet-handle"></div>
+        <div class="dp-sheet-head">
+          <p>Discovery filters</p>
+          <button type="button" class="dp-sheet-close" aria-label="Close" (click)="closeSheet()"><ion-icon name="close"></ion-icon></button>
+        </div>
+        <div class="dp-filter-groups">
+          <div *ngFor="let group of filterGroups">
+            <p class="dp-filter-title">{{ group.title }}</p>
+            <div class="dp-filter-options">
+              <button
+                *ngFor="let option of group.options"
+                type="button"
+                class="dp-filter-chip"
+                [class.is-active]="isDraftSelected(group.key, option.value)"
+                (click)="toggleDraft(group, option.value)"
+              >
+                <ion-icon *ngIf="isDraftSelected(group.key, option.value)" name="checkmark"></ion-icon>{{ option.label }}
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="dp-sheet-actions">
+          <button type="button" class="dp-btn-muted" (click)="clearDraft()">CLEAR</button>
+          <button type="button" class="dp-btn-lime" (click)="applyFilters()">SHOW PLAYERS</button>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Connect sheet -->
+    <ng-container *ngIf="sheet === 'connect' && connectTarget as target">
+      <div class="dp-sheet-backdrop" (click)="closeSheet()"></div>
+      <div class="dp-sheet" role="dialog" aria-label="Connect">
+        <div class="dp-sheet-handle"></div>
+        <div class="dp-sheet-head">
+          <p>Connect with {{ target.firstName }}?</p>
+          <button type="button" class="dp-sheet-close" aria-label="Close" (click)="closeSheet()"><ion-icon name="close"></ion-icon></button>
+        </div>
+        <div class="dp-connect-player">
+          <span class="dp-search-avatar dp-connect-avatar">
+            <img *ngIf="target.photo" [src]="target.photo" [alt]="target.name" />
+            <span *ngIf="!target.photo">{{ target.initials }}</span>
+          </span>
+          <div>
+            <p class="dp-connect-name">{{ target.name }}</p>
+            <p class="dp-connect-meta">
+              {{ target.sports[0]?.name || 'Player' }}{{ target.distance !== null ? ' • ' + target.distance + ' km away' : target.area ? ' • ' + target.area : '' }}
+            </p>
+          </div>
+        </div>
+        <p class="dp-filter-title dp-message-label">OPTIONAL MESSAGE</p>
+        <textarea class="dp-message" [(ngModel)]="connectMessage" rows="4" maxlength="500"></textarea>
+        <div class="dp-sheet-actions">
+          <button type="button" class="dp-btn-muted" (click)="closeSheet()">CANCEL</button>
+          <button type="button" class="dp-btn-lime" [disabled]="sending" (click)="sendConnection()">
+            {{ sending ? 'SENDING…' : 'SEND CONNECTION' }}
+          </button>
+        </div>
+      </div>
+    </ng-container>
+
+    <div *ngIf="toastLabel" class="dp-toast">
+      <span><ion-icon name="checkmark"></ion-icon></span>{{ toastLabel }}
+    </div>
+  </div>
 </ion-content>

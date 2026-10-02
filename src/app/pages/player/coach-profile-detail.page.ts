@@ -224,6 +224,7 @@ export class CoachProfileDetailPage implements OnInit {
               price: 'Discuss with Coach',
               distance: item.location || 'Location not set',
             };
+            if (this.route.snapshot.queryParamMap.get('book') === '1') this.bookSession();
           },
           error: () => { this.coach = null; },
         });

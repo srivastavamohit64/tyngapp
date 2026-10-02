@@ -18,7 +18,7 @@ export type AppHeaderVariant = 'brand' | 'page' | 'venue';
       <div class="app-header-inner">
         <!-- Brand: menu -->
         <button
-          *ngIf="variant === 'brand' || variant === 'venue'"
+          *ngIf="(variant === 'brand' || variant === 'venue') && !showBack"
           type="button"
           class="hdr-btn"
           aria-label="Open menu"
@@ -31,9 +31,9 @@ export type AppHeaderVariant = 'brand' | 'page' | 'venue';
           </span>
         </button>
 
-        <!-- Page: back -->
+        <!-- Back (page variant, or brand variant off the main tabs) -->
         <button
-          *ngIf="variant === 'page' && showBack"
+          *ngIf="showBack"
           type="button"
           class="hdr-btn"
           aria-label="Go back"

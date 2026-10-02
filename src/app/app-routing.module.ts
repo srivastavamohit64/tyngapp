@@ -100,6 +100,20 @@ const routes: Routes = [
     loadComponent: () => import('./pages/settings/settings.page').then((m) => m.SettingsPage),
   },
   {
+    path: 'app/settings/notifications',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/settings/notification-settings.page').then((m) => m.NotificationSettingsPage),
+  },
+  {
+    path: 'app/blocked-users',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/settings/blocked-users.page').then((m) => m.BlockedUsersPage),
+  },
+  {
+    path: 'app/legal/:slug',
+    loadComponent: () => import('./pages/settings/legal-page.page').then((m) => m.LegalPagePage),
+  },
+  {
     path: 'app/profile/edit',
     canActivate: [authGuard],
     loadComponent: () => import('./pages/profile/edit-profile.page').then((m) => m.EditProfilePage),

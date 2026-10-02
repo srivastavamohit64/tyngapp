@@ -574,23 +574,24 @@
       <section class="player-home player-home-v2">
         <div class="player-home-intro">
         <header class="player-home-header">
+          <button type="button" class="player-header-action profile-action" aria-label="Open profile" (click)="go('/app/profile')">
+            <img *ngIf="auth.user()?.profileImage" [src]="auth.user()?.profileImage" alt="" />
+            <ion-icon *ngIf="!auth.user()?.profileImage" name="person-outline"></ion-icon>
+            <span class="profile-online-dot" aria-hidden="true"></span>
+          </button>
           <div class="home-location-block">
-            <small class="home-location-caption">Your location</small>
+            <h1 class="home-greeting-title">Hey, {{ helloName }} <span aria-hidden="true">👋</span></h1>
             <button type="button" class="home-location-trigger" aria-label="Change your location" (click)="openLocationPicker()">
-              <ion-icon name="location-outline"></ion-icon>
-              <strong [style.font-size.px]="locationChipFontSize">{{ locationLabel }}</strong>
+              <ion-icon name="location-outline" class="home-location-pin"></ion-icon>
+              <strong>{{ locationLabel }}</strong>
               <ion-icon name="chevron-down-outline" class="home-location-chevron"></ion-icon>
             </button>
           </div>
-          <div class="player-header-actions">
-            <!-- <button type="button" class="player-header-action notification-action" aria-label="Open notifications" (click)="go('/app/notifications')">
+          <!-- <div class="player-header-actions">
+            <button type="button" class="player-header-action notification-action" aria-label="Open notifications" (click)="go('/app/notifications')">
               <ion-icon name="notifications-outline"></ion-icon><span class="notification-dot"></span>
-            </button> -->
-            <button type="button" class="player-header-action profile-action" aria-label="Open profile" (click)="go('/app/profile')">
-              <img *ngIf="auth.user()?.profileImage" [src]="auth.user()?.profileImage" alt="" />
-              <ion-icon *ngIf="!auth.user()?.profileImage" name="person-outline"></ion-icon>
             </button>
-          </div>
+          </div> -->
         </header>
         <!-- <div class="home-greeting-copy">
           <h1>Hey, {{ helloName }} <span aria-hidden="true">👋</span></h1>
@@ -624,8 +625,9 @@
           </ng-template>
         </ion-modal>
 
-        <nav id="home-sport-rail" class="sport-rail" aria-label="Choose a sport" (scroll)="onSportRailScroll($event)">
-          <button type="button" class="sport-rail-item" *ngFor="let sport of loopingSportRailItems" (click)="activateHomeSport(sport)" [attr.aria-hidden]="sport.railCycle !== 1 ? 'true' : null" [attr.tabindex]="sport.railCycle !== 1 ? -1 : 0"><span class="sport-rail-icon"><ion-icon *ngIf="sport.id === 'home-more'; else sportIcon" name="grid-outline"></ion-icon><ng-template #sportIcon><img [src]="sport.icon" alt="" /></ng-template></span><span>{{ sport.name }}</span></button>
+        <div class="feed-section-heading sport-rail-heading"><h2>Explore by sport</h2></div>
+        <nav id="home-sport-rail" class="sport-rail" aria-label="Choose a sport">
+          <button type="button" class="sport-rail-item" *ngFor="let sport of sportRailItems" (click)="activateHomeSport(sport)"><span class="sport-rail-icon"><ion-icon *ngIf="sport.id === 'home-more'; else sportIcon" name="grid-outline"></ion-icon><ng-template #sportIcon><img [src]="sport.icon" alt="" /></ng-template></span><span>{{ sport.name }}</span></button>
         </nav>
 
         <section class="promotion-wrap" *ngIf="promotionsLoading || homePromotions.length" aria-label="Highlights" aria-live="polite">
@@ -648,28 +650,37 @@
           </ng-container>
         </section>
 
-        <section class="home-action-grid" aria-label="Player actions">
-          <button type="button" class="home-action-card action-play" (click)="go('/app/ongoing')"><span class="home-action-icon"><ion-icon name="play-circle-outline"></ion-icon></span><strong>Play</strong><small>Join live games</small></button>
-          <button type="button" class="home-action-card action-book" (click)="go('/app/venues')"><span class="home-action-icon"><ion-icon name="calendar-outline"></ion-icon></span><strong>Book</strong><small>Turfs &amp; courts</small></button>
-          <button type="button" class="home-action-card action-train" (click)="go('/app/coaches')"><span class="home-action-icon"><ion-icon name="radio-button-on-outline"></ion-icon></span><strong>Train</strong><small>Hire coaches</small></button>
+        <section class="home-quick-actions" aria-labelledby="home-quick-actions-title">
+          <h2 id="home-quick-actions-title" class="home-quick-title">Quick actions</h2>
+          <div class="home-action-grid">
+            <button type="button" class="home-action-card action-create" (click)="go('/app/game/create')"><span class="home-action-icon"><ion-icon name="flash-outline"></ion-icon></span><strong>Create game</strong><small>Start a game nearby</small></button>
+            <button type="button" class="home-action-card action-join" (click)="go('/app/ongoing')"><span class="home-action-icon"><ion-icon name="people-outline"></ion-icon></span><strong>Join game</strong><small>Find an open spot</small></button>
+            <button type="button" class="home-action-card action-book" (click)="go('/app/venues')"><span class="home-action-icon"><ion-icon name="calendar-outline"></ion-icon></span><strong>Book venue</strong><small>Reserve a court</small></button>
+            <button type="button" class="home-action-card action-coach" (click)="go('/app/coaches')"><span class="home-action-icon"><ion-icon name="radio-button-on-outline"></ion-icon></span><strong>Hire a coach</strong><small>Train with a pro</small></button>
+          </div>
         </section>
 
         <section class="home-feed-section">
-          <div class="feed-section-heading"><h2>Games near you</h2><button type="button" (click)="go('/app/ongoing')">View all</button></div>
+          <div class="feed-section-heading"><h2>Games near you</h2><button type="button" (click)="go('/app/ongoing')">View all <ion-icon name="chevron-forward-outline"></ion-icon></button></div>
           <div *ngIf="nearbyLoading" class="feed-state"><ion-spinner name="crescent"></ion-spinner><span>Finding games near you…</span></div>
           <div *ngIf="!nearbyLoading && nearbyError" class="feed-state feed-state-error"><span>{{ nearbyError }}</span><button type="button" (click)="loadNearbyGames()">Retry</button></div>
           <div *ngIf="!nearbyLoading && !nearbyError && !nearbyBookings.length" class="feed-state"><span>No ongoing games found nearby.</span><button type="button" (click)="go('/app/game/create')">Host the first game</button></div>
           <div *ngIf="nearbyBookings.length" class="horizontal-card-row game-card-row">
             <article class="host-game-card" *ngFor="let booking of nearbyBookings.slice(0, 8)">
-              <div class="host-card-head"><span class="host-avatar">{{ personInitials(booking.host.name) }}</span><div><strong>{{ booking.host.name || 'TYNG Player' }}</strong><small>Host · {{ booking.host.gamesPlayed || 0 }} games</small></div><span class="sport-chip">{{ formatSportName(booking.sport) }}</span></div>
-              <h3>{{ booking.title || formatSportName(booking.sport) + ' game' }}</h3><p class="game-meta-row game-meta-time"><ion-icon name="time-outline"></ion-icon>{{ bookingDateTime(booking) }}</p><p class="game-meta-row game-meta-location"><ion-icon name="location-outline"></ion-icon><span>{{ booking.venue.name || 'Venue TBD' }} · {{ booking.venue.location || 'Nearby' }}</span></p>
+              <div class="game-card-hero">
+                <span class="game-card-hero-field" aria-hidden="true"><i></i></span>
+                <div class="game-card-hero-top"><span class="game-card-kicker">{{ formatSportName(booking.sport) }} game</span><span class="game-card-starts" *ngIf="gameStartsInLabel(booking) as startsIn">{{ startsIn }}</span></div>
+                <h3>{{ booking.title || formatSportName(booking.sport) + ' game' }}</h3>
+                <p><ion-icon name="location-outline"></ion-icon><span>{{ booking.slot?.courtName || booking.venue.name || 'Venue TBD' }}<ng-container *ngIf="gameDistanceLabel(booking) as distance"> • {{ distance }}</ng-container></span></p>
+              </div>
+              <p class="game-meta-row game-meta-time"><ion-icon name="time-outline"></ion-icon>{{ bookingDateTime(booking) }}</p><p class="game-meta-row game-meta-location"><ion-icon name="location-outline"></ion-icon><span>{{ booking.venue.name || 'Venue TBD' }} · {{ booking.venue.location || 'Nearby' }}</span></p>
               <div class="host-card-foot"><div class="player-stack"><span *ngFor="let player of gamePlayers(booking).slice(0, 3)">{{ personInitials(player.user.name) }}</span><b *ngIf="booking.currentPlayers > 3">+{{ booking.currentPlayers - 3 }}</b></div><span class="spots-copy">{{ booking.availableSlots }} spots left</span><button type="button" (click)="openGame(booking)"><ng-container *ngIf="booking.bookingStatus === 'pending'; else joinGameLabel">View game</ng-container><ng-template #joinGameLabel>Join {{ gamePrice(booking) | currency:'INR':'symbol':'1.0-0' }}</ng-template></button></div>
             </article>
           </div>
         </section>
 
         <section class="home-feed-section">
-          <div class="feed-section-heading"><h2>Venues near you</h2><button type="button" (click)="go('/app/venues')">View all</button></div>
+          <div class="feed-section-heading"><h2>Top venues near you</h2><button type="button" (click)="go('/app/venues')">View all <ion-icon name="chevron-forward-outline"></ion-icon></button></div>
           <div class="horizontal-card-row venue-card-row">
             <article class="home-venue-card" *ngFor="let venue of homeVenues; let i = index">
               <div class="venue-visual" [class.venue-visual-blue]="i % 2 === 1"><span class="venue-field-line"></span><button type="button" aria-label="Save venue"><ion-icon name="heart-outline"></ion-icon></button><b><ion-icon name="star"></ion-icon>{{ venue.rating }} ({{ 98 + i * 57 }})</b></div>
@@ -679,17 +690,87 @@
         </section>
 
         <section class="home-feed-section" *ngIf="tournamentLoading || homeTournament">
-          <div class="feed-section-heading"><h2>Tournaments</h2><button type="button" (click)="go('/app/events/upcoming')">View all</button></div>
+          <div class="feed-section-heading"><h2>Tournaments</h2><button type="button" (click)="go('/app/events/upcoming')">View all <ion-icon name="chevron-forward-outline"></ion-icon></button></div>
           <article class="tournament-card tournament-card-loading" *ngIf="tournamentLoading"><ion-spinner name="crescent"></ion-spinner><span>Loading upcoming tournaments…</span></article>
           <article class="tournament-card" *ngIf="!tournamentLoading && homeTournament as tournament"><span class="tournament-icon"><ion-icon name="trophy-outline"></ion-icon></span><div><small class="tournament-kicker">{{ tournament.sportLabel }} · {{ tournament.formatLabel }}</small><h3 class="tournament-title">{{ tournament.title }}</h3><p class="tournament-meta">{{ tournament.dateLabel }} · {{ tournament.detailLabel }}</p></div><button type="button" (click)="openTournament(tournament.id)">Register</button></article>
         </section>
 
         <section class="home-feed-section coaches-section">
-          <div class="feed-section-heading"><h2>Top coaches</h2><button type="button" (click)="go('/app/coaches')">View all</button></div>
+          <div class="feed-section-heading"><h2>Coaches for you</h2><button type="button" (click)="go('/app/coaches')">View all <ion-icon name="chevron-forward-outline"></ion-icon></button></div>
           <div class="home-inline-state" *ngIf="coachesLoading"><ion-spinner name="crescent"></ion-spinner><span>Finding top coaches…</span></div>
           <div class="home-inline-state error" *ngIf="!coachesLoading && coachesError"><span>{{ coachesError }}</span><button type="button" (click)="loadPlayerCoaches()">Retry</button></div>
           <div class="home-inline-state" *ngIf="!coachesLoading && !coachesError && !homeCoaches.length"><span>No coaches with pricing are available right now.</span><button type="button" (click)="go('/app/coaches')">View directory</button></div>
-          <button type="button" class="coach-home-card" *ngFor="let coach of homeCoaches" (click)="go('/app/coaches/' + coach.id)"><span class="coach-home-avatar"><img *ngIf="coach.image" [src]="coach.image" [alt]="coach.name" (error)="coach.image = null" /><em *ngIf="!coach.image">{{ personInitials(coach.name) }}</em></span><div><strong>{{ coach.name }}</strong><small>{{ coach.sport }} · {{ coach.experience }} · ★ {{ coach.rating }}</small></div><b>{{ coach.price }}<small>{{ coach.priceCaption }}</small></b></button>
+          <div class="horizontal-card-row coach-card-row" *ngIf="homeCoaches.length">
+            <button type="button" class="coach-for-you-card" *ngFor="let coach of homeCoaches" (click)="go('/app/coaches/' + coach.id)">
+              <span class="coach-for-you-photo"><img *ngIf="coach.image" [src]="coach.image" [alt]="coach.name" (error)="coach.image = null" /><em *ngIf="!coach.image">{{ personInitials(coach.name) }}</em></span>
+              <span class="coach-for-you-copy">
+                <strong>{{ coach.name }}<ion-icon *ngIf="coach.verified" name="checkmark-circle-outline" aria-label="Verified"></ion-icon></strong>
+                <span class="coach-for-you-sport">{{ coach.sport }} Coach</span>
+                <span class="coach-for-you-tags" *ngIf="coach.specialties">{{ coach.specialties }}</span>
+                <span class="coach-for-you-meta"><ion-icon name="star"></ion-icon>{{ coach.rating }} • {{ coach.experience }}</span>
+                <span class="coach-for-you-price">From {{ coach.price }}/hr</span>
+                <span class="coach-for-you-link">View coach <ion-icon name="arrow-forward-outline"></ion-icon></span>
+              </span>
+            </button>
+          </div>
+        </section>
+
+        <section class="home-feed-section home-progress-section" *ngIf="xpSummary as xp">
+          <div class="feed-section-heading"><h2>Your performance</h2></div>
+          <article class="performance-card">
+            <div class="performance-top">
+              <div><small>Level {{ xp.level }}</small><strong>{{ xp.levelTitle || 'Player' }}</strong></div>
+              <div class="performance-xp"><strong>{{ xp.lifetimeXp | number }}</strong><small>XP</small></div>
+            </div>
+            <div class="performance-progress-meta">
+              <span>{{ xp.xpProgressPct | number:'1.0-0' }}% complete</span>
+              <span *ngIf="xp.nextLevel; else maxLevel">{{ xp.xpToNextLevel | number }} XP to Level {{ xp.nextLevel.level }}</span>
+              <ng-template #maxLevel><span>Top level reached</span></ng-template>
+            </div>
+            <div class="performance-progress"><span [style.width.%]="xp.xpProgressPct"></span></div>
+            <div class="performance-stats">
+              <div><strong>{{ xp.reliabilityScore | number:'1.0-0' }}</strong><small>Reliability</small></div>
+              <div><strong>{{ xp.rating !== null ? (xp.rating | number:'1.1-1') : '—' }}</strong><small>Rating</small></div>
+              <div><strong>{{ (xp.seasonRank ?? xp.rank) ? '#' + (xp.seasonRank ?? xp.rank) : '—' }}</strong><small>Rank</small></div>
+            </div>
+            <div class="performance-foot">
+              <div><b>+{{ xp.seasonXp | number }} XP</b><span>{{ xp.gamesPlayed }} game{{ xp.gamesPlayed === 1 ? '' : 's' }} played</span></div>
+              <button type="button" (click)="go('/app/stats')">View stats →</button>
+            </div>
+          </article>
+        </section>
+
+        <section class="home-feed-section home-progress-section" *ngIf="raceRows.length">
+          <div class="feed-section-heading"><h2>Your race</h2><button type="button" (click)="go('/app/leaderboard')">View leaderboard <ion-icon name="chevron-forward-outline"></ion-icon></button></div>
+          <article class="race-card">
+            <div class="race-scope"><span><ion-icon name="trophy-outline"></ion-icon>All players</span><small>This month</small></div>
+            <div class="race-row" *ngFor="let row of raceRows" [class.is-me]="row.me">
+              <span class="race-rank">#{{ row.rank }}</span>
+              <span class="race-avatar">{{ row.initials }}</span>
+              <span class="race-name"><strong>{{ row.name }} <em *ngIf="row.me">You</em></strong><small>{{ row.caption }}</small></span>
+              <b>{{ row.xp | number }} XP</b>
+            </div>
+            <p class="race-note"><ion-icon name="sparkles-outline"></ion-icon>{{ raceNote }}</p>
+          </article>
+        </section>
+
+        <section class="home-feed-section" *ngIf="homeBadges.length">
+          <div class="feed-section-heading"><h2>Recently unlocked</h2><button type="button" (click)="go('/app/profile')">View all badges <ion-icon name="chevron-forward-outline"></ion-icon></button></div>
+          <div class="horizontal-card-row badge-card-row">
+            <button type="button" class="home-badge-card" *ngFor="let badge of homeBadges" [class.is-locked]="!badge.earned" [style.--badge-color]="badge.color" [style.--badge-tint]="badge.tint" (click)="go('/app/profile')">
+              <span class="home-badge-medal"><ion-icon [name]="badge.earned ? badge.icon : 'lock-closed-outline'"></ion-icon></span>
+              <strong>{{ badge.name }}</strong>
+              <small>{{ badge.description }}</small>
+            </button>
+          </div>
+        </section>
+
+        <section class="home-feed-section home-progress-section" *ngIf="openGamesSuggestion as suggestion">
+          <article class="home-suggestion-card">
+            <span class="home-suggestion-icon"><ion-icon name="sparkles-outline"></ion-icon></span>
+            <div><small>TYNG thinks you'll like</small><p>{{ suggestion }}</p></div>
+            <button type="button" (click)="go('/app/ongoing')">Join</button>
+          </article>
         </section>
 
         <section class="home-ads player-home-ads" *ngIf="adsLoading || homeAds.length > 0" aria-label="Promotions">
@@ -727,6 +808,7 @@
     </ng-container>
 
     <ion-popover
+      #searchFilterPopover
       class="search-filter-popover"
       [isOpen]="searchFilterOpen"
       [event]="searchFilterEvent"

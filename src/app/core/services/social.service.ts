@@ -32,4 +32,30 @@ export class SocialService {
   removeFriend(playerId: string): Observable<ApiResponse<null>> {
     return this.api.delete<null>(`/friends/remove/${playerId}`);
   }
+
+  getBlockedUsers(): Observable<ApiResponse<{ items: BlockedUser[] }>> {
+    return this.api.get<{ items: BlockedUser[] }>('/blocked-users');
+  }
+
+  getBlockStatus(userId: string): Observable<ApiResponse<{ blocked: boolean }>> {
+    return this.api.get<{ blocked: boolean }>(`/users/${userId}/block`);
+  }
+
+  blockUser(userId: string): Observable<ApiResponse<{ blocked: boolean }>> {
+    return this.api.post<{ blocked: boolean }>(`/users/${userId}/block`);
+  }
+
+  unblockUser(userId: string): Observable<ApiResponse<{ blocked: boolean }>> {
+    return this.api.delete<{ blocked: boolean }>(`/users/${userId}/block`);
+  }
+}
+
+export interface BlockedUser {
+  id: string;
+  name: string;
+  username: string;
+  profileImage: string | null;
+  role: string;
+  location: string | null;
+  blockedAt: string | null;
 }

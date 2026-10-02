@@ -800,3 +800,83 @@ TYNG — TODAY'S WORK SUMMARY
    - Tapping View opens all the request details, and coaches can jump from there to their full list of session requests.
    - Once the coach answers, a short reply is posted in the chat automatically, and the player gets a notification that includes the session date and time.
    - Players see on the same card whether the coach is still deciding, has accepted, or has declined.
+130. HOME PROMOTION CARD MATCHES THE DARK DESIGN - 1 October 2026
+   - The big promotion card on the Home screen now has a dark navy background with faint pitch lines, a lime badge, a white uppercase headline, a gray subtitle and a glowing lime button.
+   - Every promotion uses this look, whatever its theme setting (green, blue or orange).
+   - The app compiled successfully. The screen still needs a visual check while logged in.
+131. PLAYER HOME GREETING MATCHES THE NEW DESIGN - 1 October 2026
+   - The top of the player Home screen now shows the profile photo on the left with a green online dot.
+   - Right of the photo are two lines: "HEY, NAME 👋" in bold capitals, then the current location. Tapping the location still lets the player change it.
+   - Long names or locations are shortened with "..." so both lines always fit beside the photo.
+   - The app compiled successfully. The screen still needs a visual check while logged in.
+   - Refined again to match the reference: the photo now has a lime border, the greeting is a bit larger, and the location sits further below it in smaller dark-gray text.
+   - Simplified again: a plain round photo, "Hey Name!" in normal dark text, and the location in gray with a small dropdown arrow. No border, online dot, pin icon, emoji or capitals.
+   - Checked on the real Home screen while logged in and fixed it: an older location "pill" style was still showing a white box around the location. It now shows as plain gray text with a dropdown arrow, as in the reference.
+   - The greeting is now "HEY, NAME 👋" in bold capitals; the photo and gray location are unchanged.
+   - The location under the greeting now has a green pin, smaller bold dark-gray text and a small arrow.
+   - The profile photo is now a rounded square with a lime border and a green online dot.
+   - The top of Home now sits on the plain light page background (no white card). The search bar is white with a soft shadow, and the filter button is a dark navy square with a lime funnel icon.
+   - The three coloured Play / Book / Train cards on Home are replaced by a "Quick Actions" grid of four white cards: Create Game, Join Game, Book Venue and Hire a Coach.
+   - The top of each "Games near you" card on Home is now a dark band showing the sport, an orange "starts in" countdown, the game title, and the court and distance. The host name and sport chip that used to be there are gone; the rest of the card is unchanged.
+   - The placeholder picture on each "Venues near you" card is now dark navy with faint pitch lines, instead of alternating green and blue.
+   - The "Book" button on each "Venues near you" card is now a dark navy pill with bold lime capital letters.
+   - When there is only one game in "Games near you", its card is now centred on the screen instead of sitting on the left.
+   - The "Top coaches" list on Home is now a sideways-scrolling "Coaches for you" row of cards. Each card shows the photo, name, verified tick, sport, specialties, rating, experience, price per hour and a "View coach" link.
+   - Swipeable card rows on Home (games, venues, coaches) now keep the first card lined up with the section heading instead of touching the screen edge.
+132. HOME SHOWS YOUR PERFORMANCE, RACE, BADGES AND A SUGGESTION - 1 October 2026
+   - Below "Coaches for you", players now see a dark "Your performance" card with their level, XP, progress to the next level, reliability, rating and rank, plus a "View stats" link.
+   - "Your race" shows this month's XP leaderboard: the top players, the player's own position highlighted, and how much XP they need to pass the next person. "View leaderboard" opens the full list.
+   - "Recently unlocked" shows the player's badges, earned ones first and locked ones greyed out. "View all badges" opens the profile.
+   - A green "TYNG thinks you'll like" card says how many nearby games have open spots, with a "Join" button.
+   - Each section only appears when there is real data to show.
+133. LEADERBOARD NOW MATCHES THE FIGMA DESIGN - 1 October 2026
+   - The Leaderboard page has the new Figma look: a big title with search and share buttons, City / Friends / Sport / Venue tabs, and This week / This month / Season / All time chips.
+   - A dark "Your rank" card shows your position, XP, level, games played, reliability and rating, and how much XP you need to pass the player above you.
+   - Below it are "Your next move", a "Top three" podium, the full rankings, "Your rivals" (the players just above and below you), the top XP earner this week, and season progress when Season is picked.
+   - The search button finds players on the board, the share button shares your rank, and "How XP works" explains how XP is earned.
+   - If nobody in your city is ranked yet, the page shows all of TYNG with a short note instead of an empty screen.
+   - Player photos and each player's reliability now come from the server, so the board shows real photos and "100 Reliability" style captions. The city board now works with "Area > City" locations. (Live server updated and pushed.)
+134. DISCOVER PLAYERS NOW MATCHES THE FIGMA DESIGN - 1 October 2026
+   - The Discover page has the new Figma look: "Discover players" with a live count of nearby players, a search button and a filter button.
+   - Players appear as a swipeable card stack: swipe right to connect, swipe left to skip. Each card shows the player's photo, availability, level, age, username, area, distance, bio, sports, reliability, rating, games and level.
+   - A "Why you may match" box gives real reasons, such as sports you both play, the same skill level, the same free times, mutual players, or being in the same city.
+   - Filters cover sport, skill level, distance (when your location is set), reliability and availability. Tapping a sport on a card filters by that sport.
+   - Connect opens a sheet with an optional message. The connection is made straight away, and the message is sent as a private chat.
+   - The server was updated so all of this is real data: the fake 4.5 rating and "Intermediate" defaults are gone. (Live server updated and pushed.)
+   - Not in the app because there is no data for it yet: a play-style filter and ID verification ("verified" means a verified email).
+135. FIND COACHES NOW MATCHES THE FIGMA DESIGN - 1 October 2026
+   - The Find Coaches page has the new Figma look: a big title, a search bar with a filter button, sport chips, a "Recommended for you" coach card, and "Coaches for you" with a sort button.
+   - Each coach card shows real details: photo, sports, session types, rating (or "No reviews yet"), experience, sessions, students, area, when they are next free, and their price per session.
+   - Filters cover sport, session type, coach experience, price, availability (today, tomorrow, this week, weekend), rating, language and "verified only". Sort by recommended, top rated, available soonest, price or most experienced.
+   - "Book" opens the coach's page with the booking form already open.
+   - The server was updated to send all of this data and to do the filtering and sorting. The sport filter now works with any capitalisation. (Live server updated and pushed.)
+   - Still to do: admins have no way to approve coach ID and certificate documents yet, so the "ID verified" and "certified" badges won't appear until that is added.
+136. HOME SECTION HEADINGS NOW MATCH FIGMA - 2 October 2026
+   - Every section heading on the player Home page now has the Figma look: bold capital letters at the same size, with a grey "View all >" link.
+   - Added the "Explore by sport" heading above the sports row, and "Venues near you" is now "Top venues near you".
+   - "Games near you" and "Tournaments" keep their names because the Figma design has no matching section.
+137. PLAYER SIDE MENU NOW MATCHES FIGMA - 2 October 2026
+   - The player side menu now has the same five items as the Figma design, in the same order: Wallet, Leaderboards, Coaches, Settings and Support, with the Figma descriptions.
+   - My Friends, Personal Stats and History were removed from the menu. They can still be opened from the chat list, the Home page and the My Bookings tab.
+   - Still to do: the app has no Support page yet, so Support opens the Home page for now.
+138. BACK BUTTON AND NO BOTTOM MENU ON INNER PAGES - 2 October 2026
+   - The bottom tab menu now shows only on the main tab pages (for players: Home, Players, My Bookings and Chat).
+   - Every other page, including the side menu pages (Wallet, Leaderboards, Coaches, Settings, Profile) and inner pages, has a back button at the top instead of the menu button, and no bottom tab menu.
+   - Coaches, venues and admins work the same way, using their own main tabs.
+139. HOME SEARCH POPOVER, FILTER ICON AND SPORTS ROW - 2 October 2026
+   - The "Search for" popover on Home now closes as soon as you pick an option.
+   - The search filter button now shows a dark sliders icon on a light button.
+   - The sports row on Home always fits exactly 6 sports across the screen; swipe to see more.
+140. SEARCH SHOWS A LOADING SKELETON - 2 October 2026
+   - While a search is running, the Search page shows grey shimmering placeholder rows instead of an empty or old list.
+141. PLAYER PROFILE DATA ON THE SERVER - 2 October 2026
+   - The server can now store and send everything the new Figma player profile needs: personal info, medical and fitness details, documents, game results, player ratings and privacy toggles. (Live server updated and pushed.)
+   - Still to do: the new player profile screen in the app, a way to enter game results and rate players, and applying the medical, document and "allow messages" privacy toggles.
+142. SETTINGS, PRIVACY POLICY, BLOCKING AND NOTIFICATION SETTINGS - 2 October 2026
+   - Wallet was removed from Settings.
+   - Privacy Policy and Terms & Conditions now open a page whose text comes from the Laravel admin (Admin > CMS Pages), so it can be changed without updating the app.
+   - Players can block or unblock someone from that player's profile (the "..." button at the top). Blocked people can't message you, invite you to games, add you as a friend or find you in search, and you won't see them either.
+   - A new "Blocked Users" option in the side menu and in Settings lists everyone you have blocked, with an Unblock button.
+   - Notification settings are now real: one main switch plus a switch for each type (bookings, chat, social, wallet, XP, coaching, announcements). If a type is off, that user doesn't get those notifications. Everything is on by default for all users.
+   - Live server updated and pushed. The app compiles; the logged-in screens were not clicked through in the test browser because it was logged out.
+   - Still to do: the current Privacy Policy text on the live server belongs to another product ("Supper Shooper") and needs replacing in Admin > CMS Pages.

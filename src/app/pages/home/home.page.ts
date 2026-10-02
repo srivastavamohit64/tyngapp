@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, computed, inject, signal } from '@angular/core';
+import { Component, OnDestroy, ViewChild, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { IonicModule, MenuController, Platform, ViewWillEnter, ViewWillLeave } from '@ionic/angular';
+import { IonPopover, IonicModule, MenuController, Platform, ViewWillEnter, ViewWillLeave } from '@ionic/angular';
 import { PluginListenerHandle } from '@capacitor/core';
 import { App } from '@capacitor/app';
 import { Subscription, firstValueFrom } from 'rxjs';
@@ -27,6 +27,32 @@ import { resolveMediaUrl } from '../../core/utils/media-url.util';
 import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 import { EventGame } from '../../shared/models/app.models';
 import { VenueEventRecord, VenueEventService } from '../../core/services/venue-event.service';
+import { XpService, XpSummary } from '../../core/services/xp.service';
+
+interface HomeRaceRow {
+  rank: number;
+  name: string;
+  initials: string;
+  caption: string;
+  xp: number;
+  me: boolean;
+}
+
+interface HomeBadgeCard {
+  name: string;
+  description: string;
+  icon: string;
+  color: string;
+  tint: string;
+  earned: boolean;
+}
+
+const HOME_BADGE_PALETTES = [
+  { color: '#D97706', tint: '#FFFBEB' },
+  { color: '#7C3AED', tint: '#F5F3FF' },
+  { color: '#2563EB', tint: '#EFF6FF' },
+  { color: '#16A34A', tint: '#F0FDF4' },
+];
 
 interface QuickSuggestion {
   id: string;
@@ -39,7 +65,6 @@ interface HomeSport {
   name: string;
   icon: string;
   box?: boolean;
-  railCycle?: number;
 }
 
 interface HomeSportGroup {
@@ -52,10 +77,11 @@ interface HomeCoachCard {
   name: string;
   image: string | null;
   sport: string;
+  specialties: string;
   experience: string;
   rating: string;
+  verified: boolean;
   price: string;
-  priceCaption: string;
 }
 
 interface HomeTournamentCard {
@@ -86,6 +112,7 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
   private readonly venueEventService = inject(VenueEventService);
   private readonly adService = inject(AdService);
   private readonly homePromotionService = inject(HomePromotionService);
+  private readonly xpService = inject(XpService);
   private readonly realtime = inject(RealtimeService);
   private readonly router = inject(Router);
   private readonly menu = inject(MenuController);
@@ -108,6 +135,10 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
   nearbyBookings: BookingRecord[] = [];
   nearbyLoading = false;
   nearbyError = '';
+  xpSummary: XpSummary | null = null;
+  raceRows: HomeRaceRow[] = [];
+  raceNote = '';
+  homeBadges: HomeBadgeCard[] = [];
   quickSuggestion: QuickSuggestion | null = null;
   sportDrawerGames: HomeSportGameCard[] = [];
   sportDrawerLoading = false;
@@ -156,17 +187,11 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
         }
       }
       return a.name.localeCompare(b.name);
-    }).slice(0, 4);
+    }).slice(0, 5);
   }
 
-  get loopingSportRailItems(): HomeSport[] {
-    const more: HomeSport = { id: 'home-more', name: 'More', icon: '', railCycle: 0 };
-    const items: HomeSport[] = [];
-    for (let cycle = 0; cycle < 3; cycle += 1) {
-      items.push(...this.homeSports.map((sport) => ({ ...sport, railCycle: cycle })));
-      items.push({ ...more, railCycle: cycle });
-    }
-    return items;
+  get sportRailItems(): HomeSport[] {
+    return [...this.homeSports, { id: 'home-more', name: 'More', icon: '' }];
   }
 
   activateHomeSport(sport: HomeSport): void {
@@ -179,29 +204,6 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
 
   private normalizeSportPreference(value: string): string {
     return value.toLowerCase().replace(/[^a-z0-9]/g, '');
-  }
-
-  onSportRailScroll(event: Event): void {
-    const rail = event.currentTarget as HTMLElement;
-    const cycleWidth = this.sportRailCycleWidth(rail);
-    if (cycleWidth <= 0) return;
-    if (rail.scrollLeft < cycleWidth * 0.5) {
-      rail.scrollLeft += cycleWidth;
-    } else if (rail.scrollLeft > cycleWidth * 2.5) {
-      rail.scrollLeft -= cycleWidth;
-    }
-  }
-
-  private centerSportRailLoop(): void {
-    const rail = document.getElementById('home-sport-rail');
-    if (rail) rail.scrollLeft = this.sportRailCycleWidth(rail);
-  }
-
-  private sportRailCycleWidth(rail: HTMLElement): number {
-    const cycleItemCount = this.homeSports.length + 1;
-    const first = rail.children.item(0) as HTMLElement | null;
-    const nextCycle = rail.children.item(cycleItemCount) as HTMLElement | null;
-    return first && nextCycle ? nextCycle.offsetLeft - first.offsetLeft : 0;
   }
 
   homePromotions: HomePromotion[] = [];
@@ -259,6 +261,7 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
   sportsPickerOpen = false;
   searchFilterOpen = false;
   searchFilterEvent?: Event;
+  @ViewChild('searchFilterPopover') private searchFilterPopover?: IonPopover;
   selectedSport: HomeSport | null = null;
   sportSearch = '';
   private pendingDrawerSport: HomeSport | null = null;
@@ -456,7 +459,6 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
 
   ionViewWillEnter() {
     this.refreshGreeting();
-    setTimeout(() => this.centerSportRailLoop());
     const role = this.auth.user()?.role;
     if (role === 'coach') {
       void this.loadCoachDashboard();
@@ -467,6 +469,7 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
       void this.loadHomePromotions();
       void this.loadPlayerCoaches();
       void this.loadPlayerTournament();
+      void this.loadPlayerProgress();
       void this.resetToGpsOnOpen();
       this.listenForNearbyGames();
     }
@@ -949,14 +952,6 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
     return this.locationLoading ? 'Detecting location…' : 'Set your location';
   }
 
-  get locationChipFontSize(): number {
-    const length = this.locationLabel.trim().length;
-    if (length > 30) return 12.35;
-    if (length > 24) return 13.3;
-    if (length > 18) return 14.25;
-    return 15.2;
-  }
-
   get playerLocation(): string {
     return this.locationLabel === 'Detecting location…' || this.locationLabel === 'Set your location'
       ? ''
@@ -1142,21 +1137,7 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
     latitude = this.locationService.nearbyLocationQuery(this.auth.user()?.location).latitude,
     longitude = this.locationService.nearbyLocationQuery(this.auth.user()?.location).longitude,
   ): BookingRecord[] {
-    const originIsValid = Number.isFinite(latitude) && Number.isFinite(longitude);
-    const distance = (booking: BookingRecord): number | null => {
-      const rawLat = booking.venue?.coordinates?.lat;
-      const rawLng = booking.venue?.coordinates?.lng;
-      if (!originIsValid || rawLat == null || rawLng == null) return null;
-      const lat = Number(rawLat);
-      const lng = Number(rawLng);
-      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
-      const radians = (degrees: number) => (degrees * Math.PI) / 180;
-      const dLat = radians(lat - Number(latitude));
-      const dLng = radians(lng - Number(longitude));
-      const a = Math.sin(dLat / 2) ** 2
-        + Math.cos(radians(Number(latitude))) * Math.cos(radians(lat)) * Math.sin(dLng / 2) ** 2;
-      return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    };
+    const distance = (booking: BookingRecord): number | null => this.bookingDistanceKm(booking, latitude, longitude);
     const startTimestamp = (booking: BookingRecord) =>
       Date.parse(`${booking.bookingDate || ''}T${booking.startTime || '00:00:00'}`) || Number.MAX_SAFE_INTEGER;
 
@@ -1361,6 +1342,39 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
     return `${formatBookingDate(booking.bookingDate)} · ${formatBookingTime(booking.startTime)}`;
   }
 
+  gameDistanceLabel(booking: BookingRecord): string {
+    const { latitude, longitude } = this.locationService.nearbyLocationQuery(this.auth.user()?.location);
+    const km = this.bookingDistanceKm(booking, latitude, longitude);
+    if (km === null) return '';
+    return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`;
+  }
+
+  gameStartsInLabel(booking: BookingRecord): string {
+    const start = Date.parse(`${booking.bookingDate || ''}T${booking.startTime || '00:00:00'}`);
+    if (!Number.isFinite(start)) return '';
+    const minutes = Math.round((start - Date.now()) / 60000);
+    if (minutes <= 0) return 'Live now';
+    if (minutes < 60) return `Starts in ${minutes}m`;
+    if (minutes < 1440) return `Starts in ${Math.floor(minutes / 60)}h ${minutes % 60}m`;
+    const days = Math.floor(minutes / 1440);
+    return `Starts in ${days} day${days > 1 ? 's' : ''}`;
+  }
+
+  private bookingDistanceKm(booking: BookingRecord, latitude?: number | null, longitude?: number | null): number | null {
+    const rawLat = booking.venue?.coordinates?.lat;
+    const rawLng = booking.venue?.coordinates?.lng;
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude) || rawLat == null || rawLng == null) return null;
+    const lat = Number(rawLat);
+    const lng = Number(rawLng);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+    const radians = (degrees: number) => (degrees * Math.PI) / 180;
+    const dLat = radians(lat - Number(latitude));
+    const dLng = radians(lng - Number(longitude));
+    const a = Math.sin(dLat / 2) ** 2
+      + Math.cos(radians(Number(latitude))) * Math.cos(radians(lat)) * Math.sin(dLng / 2) ** 2;
+    return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
   gamePlayers(booking: BookingRecord): BookingRecord['players'] {
     return booking.acceptedPlayers?.length ? booking.acceptedPlayers : (booking.players || []);
   }
@@ -1421,22 +1435,92 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
       const payload: any = response.data;
       const rows = Array.isArray(payload) ? payload : (Array.isArray(payload?.data) ? payload.data : []);
       const pricedRows = rows.filter((coach: any) => this.coachPriceAmount(coach) > 0);
-      this.homeCoaches = pricedRows.slice(0, 4).map((coach: any, index: number) => ({
-        id: Number(coach.id || index + 1),
-        name: String(coach.name || coach.displayName || 'TYNG Coach'),
-        image: resolveMediaUrl(coach.profileImage || coach.profile_image || coach.photo || coach.avatar),
-        sport: Array.isArray(coach.sports) ? String(coach.sports[0] || 'Multi-sport') : String(coach.sport || 'Multi-sport'),
-        experience: String(coach.experience || coach.experienceYears || 'Experienced'),
-        rating: String(coach.rating ?? 'New'),
-        price: this.coachPriceLabel(coach),
-        priceCaption: 'per hour',
-      }));
+      this.homeCoaches = pricedRows.slice(0, 4).map((coach: any, index: number) => {
+        const sports: string[] = Array.isArray(coach.sports) ? coach.sports.map(String).filter(Boolean) : [];
+        const specialties: string[] = Array.isArray(coach.specialties) && coach.specialties.length ? coach.specialties.map(String) : sports.slice(1);
+        const years = Number(coach.experienceYears ?? coach.experience_years);
+        return {
+          id: Number(coach.id || index + 1),
+          name: String(coach.name || coach.displayName || 'TYNG Coach'),
+          image: resolveMediaUrl(coach.profileImage || coach.profile_image || coach.photo || coach.avatar),
+          sport: this.formatSportName(sports[0] || coach.sport || 'Multi-sport'),
+          specialties: specialties.slice(0, 2).map((item) => this.formatSportName(item)).join(' • '),
+          experience: Number.isFinite(years) && years > 0
+            ? `${years} yr${years === 1 ? '' : 's'} experience`
+            : this.formatSportName(String(coach.experience || 'Experienced')),
+          rating: String(coach.rating ?? 'New'),
+          verified: Boolean(coach.verified ?? coach.isVerified ?? coach.is_verified),
+          price: this.coachPriceLabel(coach),
+        };
+      });
     } catch {
       this.homeCoaches = [];
       this.coachesError = 'Coaches could not be loaded.';
     } finally {
       this.coachesLoading = false;
     }
+  }
+
+  private async loadPlayerProgress(): Promise<void> {
+    const [summary, board, badges] = await Promise.all([
+      firstValueFrom(this.xpService.summary()).catch(() => null),
+      firstValueFrom(this.xpService.leaderboard('month')).catch(() => null),
+      firstValueFrom(this.xpService.badges()).catch(() => []),
+    ]);
+    this.xpSummary = summary;
+
+    const rows = board?.items ?? [];
+    const me = board?.me ?? null;
+    const myRank = me?.rank ?? null;
+    const toRow = (row: { rank: number | null; name: string; level: number; levelTitle?: string | null; xp: number }, isMe: boolean): HomeRaceRow => ({
+      rank: Number(row.rank || 0),
+      name: row.name || 'TYNG Player',
+      initials: this.personInitials(row.name),
+      caption: isMe ? `${row.levelTitle || 'Player'} • Level ${row.level}` : `Level ${row.level}${row.levelTitle ? ` • ${row.levelTitle}` : ''}`,
+      xp: Number(row.xp || 0),
+      me: isMe,
+    });
+    if (me && myRank && myRank > 3) {
+      this.raceRows = [...rows.slice(0, 2).map((row) => toRow(row, false)), toRow(me, true)];
+    } else {
+      this.raceRows = rows.slice(0, 3).map((row) => toRow(row, !!me && row.playerId === me.playerId));
+    }
+    const ahead = myRank && myRank > 1 ? rows.find((row) => row.rank === myRank - 1) : undefined;
+    this.raceNote = !me || !myRank
+      ? 'Play a game this month to join the race.'
+      : myRank === 1
+        ? "You're leading the race this month."
+        : ahead
+          ? `${Math.max(1, ahead.xp - me.xp + 1).toLocaleString('en-IN')} XP to pass ${ahead.name}.`
+          : `You're #${myRank} this month. Keep playing to climb.`;
+
+    const ordered = [...badges.filter((badge) => badge.earned), ...badges.filter((badge) => !badge.earned)].slice(0, 6);
+    this.homeBadges = ordered.map((badge, index) => ({
+      name: badge.name,
+      description: badge.description || (badge.earned ? 'Unlocked' : 'Not unlocked yet'),
+      icon: this.badgeIcon(`${badge.category} ${badge.code}`),
+      ...HOME_BADGE_PALETTES[index % HOME_BADGE_PALETTES.length],
+      earned: badge.earned,
+    }));
+  }
+
+  get openGamesSuggestion(): string {
+    const open = this.nearbyBookings.filter((booking) => Number(booking.availableSlots) > 0);
+    if (!open.length) return '';
+    const counts = new Map<string, number>();
+    open.forEach((booking) => counts.set(booking.sport, (counts.get(booking.sport) || 0) + 1));
+    const [sport, count] = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+    return `${count} ${this.formatSportName(sport).toLowerCase()} game${count === 1 ? '' : 's'} near you ${count === 1 ? 'has' : 'have'} spots open.`;
+  }
+
+  private badgeIcon(key: string): string {
+    const value = key.toLowerCase();
+    if (/time|punctual|reliab|clock/.test(value)) return 'time-outline';
+    if (/sport|fair|rating|respect/.test(value)) return 'shield-checkmark-outline';
+    if (/venue|ground|explor|travel/.test(value)) return 'location-outline';
+    if (/host|organi|create|captain/.test(value)) return 'flash-outline';
+    if (/community|friend|social|team/.test(value)) return 'people-outline';
+    return 'trophy-outline';
   }
 
   private async loadPlayerTournament(): Promise<void> {
@@ -1521,9 +1605,14 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
     this.searchFilterOpen = false;
   }
 
-  searchByType(type: 'venues' | 'players' | 'coaches'): void {
+  async searchByType(type: 'venues' | 'players' | 'coaches'): Promise<void> {
+    try {
+      await this.searchFilterPopover?.dismiss();
+    } catch {
+      // Already dismissed.
+    }
     this.searchFilterOpen = false;
-    void this.router.navigate(['/app/search'], { queryParams: { type } });
+    await this.router.navigate(['/app/search'], { queryParams: { type } });
   }
 
   async loadHomeAds() {

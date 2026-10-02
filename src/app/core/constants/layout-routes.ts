@@ -28,6 +28,20 @@ export const VENUE_BRAND_HEADER_ROUTES = [
   '/app/chat',
 ];
 
+/** Bottom tab destinations per role. Only these exact routes show the tab bar and the menu button. */
+export const MAIN_TAB_ROUTES: Record<string, string[]> = {
+  player: ['/app/home', '/app/discover', '/app/my-bookings', '/app/chat'],
+  coach: ['/app/coach/dashboard', '/app/coach/students', '/app/coach/schedule', '/app/coach/chat'],
+  venue: ['/app/venue/dashboard', '/app/venue/bookings', '/app/venue/events', '/app/chat'],
+  admin: ['/app/admin/dashboard', '/app/admin/users', '/app/admin/venues', '/app/admin/settings'],
+};
+
+export function isMainTabRoute(path: string, role?: string): boolean {
+  const normalized = (path || '').split('?')[0].split('#')[0].replace(/\/+$/, '');
+  const routes = MAIN_TAB_ROUTES[role ?? 'player'] ?? MAIN_TAB_ROUTES['player'];
+  return routes.includes(normalized);
+}
+
 export function shouldShowBrandHeader(path: string, role?: string): boolean {
   if (!path) return false;
   const normalized = path.split('?')[0];

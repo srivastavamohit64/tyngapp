@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IonicModule } from '@ionic/angular';
+import { ActionSheetController, AlertController, IonicModule, ToastController } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 import { DiscoverPlayer } from '../../core/models/api.model';
 import { SocialService } from '../../core/services/social.service';
@@ -34,8 +34,15 @@ import { PageSkeletonComponent } from '../../shared/components/skeleton';
         <header class="hdr">
           <button type="button" class="back" (click)="back()"><ion-icon name="chevron-back"></ion-icon></button>
           <h1>Player</h1>
-          <span class="spacer"></span>
+          <button type="button" class="back" (click)="openActions()" [disabled]="blockBusy" aria-label="More options">
+            <ion-icon name="ellipsis-horizontal"></ion-icon>
+          </button>
         </header>
+
+        <div class="blocked-banner" *ngIf="blocked">
+          <ion-icon name="ban-outline"></ion-icon>
+          You have blocked this player. They can't message you or invite you to games.
+        </div>
 
         <div class="hero">
           <img class="avatar" [src]="player.profileImage || fallbackPhoto" [alt]="player.name" />
@@ -118,6 +125,26 @@ import { PageSkeletonComponent } from '../../shared/components/skeleton';
         place-items: center;
         color: #111827;
         font-size: 20px;
+      }
+      .back:disabled {
+        opacity: 0.5;
+      }
+      .blocked-banner {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 16px;
+        padding: 12px 14px;
+        border-radius: 14px;
+        background: #fef2f2;
+        color: #b91c1c;
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1.4;
+      }
+      .blocked-banner ion-icon {
+        flex-shrink: 0;
+        font-size: 18px;
       }
       .state {
         text-align: center;
@@ -218,21 +245,89 @@ export class PlayerViewPage implements OnInit {
   private readonly router = inject(Router);
   private readonly social = inject(SocialService);
 
+  private readonly actionSheets = inject(ActionSheetController);
+  private readonly alerts = inject(AlertController);
+  private readonly toast = inject(ToastController);
+
   player: DiscoverPlayer | null = null;
   loading = true;
   error = '';
+  blocked = false;
+  blockBusy = false;
   readonly fallbackPhoto = 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200';
   readonly sportEmoji = sportEmoji;
 
   ngOnInit() {
     const navPlayer = history.state?.player as DiscoverPlayer | undefined;
     const id = this.route.snapshot.paramMap.get('id') || '';
+    void this.loadBlockStatus(id);
     if (navPlayer && String(navPlayer.id) === id) {
       this.player = navPlayer;
       this.loading = false;
       return;
     }
     void this.loadPlayer(id);
+  }
+
+  async openActions() {
+    if (!this.player) return;
+    const sheet = await this.actionSheets.create({
+      header: this.player.name,
+      buttons: [
+        this.blocked
+          ? { text: 'Unblock player', icon: 'checkmark-circle-outline', data: 'unblock' }
+          : { text: 'Block player', icon: 'ban-outline', role: 'destructive', data: 'block' },
+        { text: 'Cancel', role: 'cancel' },
+      ],
+    });
+    await sheet.present();
+    const { data } = await sheet.onDidDismiss();
+    if (data === 'block') await this.confirmBlock();
+    if (data === 'unblock') await this.setBlocked(false);
+  }
+
+  private async confirmBlock() {
+    const alert = await this.alerts.create({
+      header: `Block ${this.player?.name}?`,
+      message: "They won't be able to message you, invite you to games or find you in search. You'll also be removed from each other's friends.",
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        { text: 'Block', role: 'confirm' },
+      ],
+    });
+    await alert.present();
+    const { role } = await alert.onDidDismiss();
+    if (role === 'confirm') await this.setBlocked(true);
+  }
+
+  private async setBlocked(block: boolean) {
+    if (!this.player) return;
+    const id = String(this.player.id);
+    this.blockBusy = true;
+    try {
+      await firstValueFrom(block ? this.social.blockUser(id) : this.social.unblockUser(id));
+      this.blocked = block;
+      await this.showToast(block ? `${this.player.name} blocked` : `${this.player.name} unblocked`);
+    } catch {
+      await this.showToast(block ? "Couldn't block. Please try again." : "Couldn't unblock. Please try again.");
+    } finally {
+      this.blockBusy = false;
+    }
+  }
+
+  private async loadBlockStatus(id: string) {
+    if (!id) return;
+    try {
+      const res = await firstValueFrom(this.social.getBlockStatus(id));
+      this.blocked = !!res.data?.blocked;
+    } catch {
+      this.blocked = false;
+    }
+  }
+
+  private async showToast(message: string) {
+    const toast = await this.toast.create({ message, duration: 2200, position: 'bottom' });
+    await toast.present();
   }
 
   formatSport(sport: string) {

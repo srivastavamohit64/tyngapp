@@ -995,3 +995,114 @@
 
 - Changed the drawer XP/progression card click, Enter and Space actions to open `/app/xp/history`; updated its accessible role and label.
 - Preserved the card's display and visual styling. `git diff --check` passed.
+
+# Completed: Restyle Home promotion card to dark navy design - 1 October 2026
+
+- Changed the Home promotion slider card in `src/theme/player-home-v2.scss` to the reference design: dark navy gradient background, faint field lines, a lime-tinted badge, a white uppercase headline, a gray subtitle and a glowing lime button with dark text.
+- Every promotion now uses this look, whatever its theme setting (green, blue or orange).
+- The dev server recompiled successfully. The page wasn't checked in a browser because the preview browser wasn't logged in.
+
+# Completed: Player Home greeting header matches reference - 1 October 2026
+
+- Rebuilt the player Home header: the profile photo is now on the left as a 52px rounded square with a green online dot. To its right are two lines: "HEY, NAME 👋" in bold uppercase, then the location (green pin, gray text, chevron) that opens the location picker.
+- Removed the "Your location" caption and the unused `locationChipFontSize` getter. Long names and locations are cut off with "..." so both lines always fit beside the photo.
+- The dev server recompiled successfully. Not checked in a browser because the preview browser wasn't logged in.
+- Refined it to match the full reference: the photo is now 48px with a 2.5px lime border and a smaller online dot. The greeting is 18px, there's more space between the two lines, and the location is smaller, bolder dark-gray text. Checked against the reference in a standalone test page that used the same styles.
+- Simplified it again at the user's request: a plain 52px round photo (no border or online dot), "Hey Name!" in 20px regular-weight dark text, and the location in 16px gray text with just a dropdown arrow (no pin icon, emoji or capitals). Checked in the standalone test page.
+- Fixed it on the live dev page (checked while logged in): the dev server had kept an old copy of the global stylesheet, and once it rebuilt, a generic `.home-location-trigger` pill style from `home.page.scss` was still winning. Made the header's location selectors more specific so it shows as plain gray text with a dropdown arrow.
+- Changed the greeting to "HEY, NAME 👋" in heavy uppercase (19px, weight 900), keeping the plain round photo and gray location. Checked on the logged-in Home page.
+- Restyled the Home location line to match the reference: green pin, 12.5px bold dark-gray text and a small gray chevron, with a little more space below the greeting. Checked on the logged-in Home page.
+- Changed the Home profile photo to the reference style: a 50px rounded square with a 2.5px lime border and a green online dot at the bottom-right. Checked on the logged-in Home page.
+- Matched the Home background and search bar to the reference: removed the white glass card behind the header so it sits on the flat light page background (#fafbfc). The search bar is now white with a soft shadow and 16px corners, with a dark navy (#111827) rounded filter button holding a lime funnel icon. Compiled; not yet checked on screen because the preview browser session was logged out.
+- Replaced the three coloured Play / Book / Train cards on player Home with a "QUICK ACTIONS" 2x2 grid of white cards, each with its own colour: Create game (orange, /app/game/create), Join game (lime, /app/ongoing), Book venue (blue, /app/venues) and Hire a coach (purple, /app/coaches). Each card has a tinted icon tile, an uppercase title, a gray subtitle and a soft border and shadow in its colour. Compiled; checked in a test page using the compiled app styles, as the preview browser was logged out.
+- Redesigned the header of the Home "Games near you" cards to match the reference. It now has a dark navy band with faint pitch lines, a lime uppercase "{SPORT} GAME" label, an orange "STARTS IN 2H 14M" countdown pill ("Live now" once started, days if over 24 hours), the game title in white, and the court (or venue) with distance from the player in gray. This replaces the host avatar, host name and sport chip. The time, address and footer are unchanged, and the matching card in the sport drawer is untouched. Moved the venue distance maths into a shared `bookingDistanceKm` helper used by both sorting and the label. Compiled with no lint errors; checked in a test page using the compiled app styles, as the preview browser was logged out.
+- Changed the "Venues near you" placeholder images on player Home from alternating green and blue to the reference dark navy (#161e2d to #18212f), with faint pitch lines and a translucent white rating pill. Checked in a test page using the compiled app styles.
+- Restyled the "Book" button on the Home "Venues near you" cards to the reference: a fully rounded navy (#111827) pill with bold lime uppercase text and a soft shadow. The label still says "Book". Checked in a test page using the compiled app styles.
+- Centred the "Games near you" card when there is only one game (`:only-child` with auto side margins). With two or more games, the row still scrolls sideways from the left as before. Checked in a test page using the compiled app styles.
+- Replaced the vertical "Top coaches" list on player Home with a swipeable "COACHES FOR YOU" row matching the reference. Each white card has a rounded photo (or initials), the name in uppercase with a green verified tick (only when the coach record has a verified flag), "{Sport} Coach" in green, up to two specialties (or extra sports) in gray, rating plus experience (years when known, otherwise the level), "From ₹X/hr" and a lime "VIEW COACH →" link. The heading is uppercase with a gray "VIEW ALL >". Removed the unused `priceCaption` field and old `.coach-home-card` styles. Also added matching scroll padding to every swipeable Home row so snapping no longer pushes the first card against the screen edge. Compiled with no lint errors; checked in a test page using the compiled app styles.
+
+# Completed: Player Home performance, race, badges and suggestion sections - 1 October 2026
+
+- Added four sections below "Coaches for you" on player Home, built from the Figma Make export (`TYNG APP (Copy)/src/app/components/player/HomeScreen.tsx`) using its colours: navy #111827 to #1F2937, lime #8CF000, orange #FF7A00, and the light card tints.
+- **Your performance:** dark card with level, level title, lifetime XP, a progress bar and "X XP to Level N", Reliability / Rating / Rank tiles, season XP, games played and "VIEW STATS" (opens `/app/stats`). Data comes from `/xp/me`; the section is hidden if it fails to load.
+- **Your race:** this month's XP leaderboard (`/xp/leaderboard?period=month`), showing the top 3, or the top 2 plus you when you're outside the top 3. Your row is highlighted, and an orange note shows the XP needed to pass the player above you. "VIEW LEADERBOARD" opens `/app/leaderboard`.
+- **Recently unlocked:** up to 6 badges from `/xp/badges` (earned first, then locked ones greyed out with a lock), with an icon and colour picked from the badge category or code. "VIEW ALL BADGES" opens Profile.
+- **TYNG thinks you'll like:** green suggestion card counting nearby games with open spots, grouped by the most common sport, with a "JOIN" button to `/app/ongoing`. Hidden when no nearby games have spots.
+- Figma's sample stats with no backend data (the city name on the leaderboard, "moved up 3 places", "6-game streak") were swapped for real values: "All players", the XP gap to the player above, and games played.
+- Compiled with no new warnings or lint errors. Checked each section in a test page using the compiled app styles; not yet checked on the live Home page because the preview browser was logged out.
+
+# Completed: Player leaderboard redesigned to match Figma - 1 October 2026
+
+- Rebuilt `/app/leaderboard` (`src/app/pages/events/leaderboard.page.*`) from the Figma Make `LeaderboardScreen.tsx`, using its colours (navy #111827 to #1F2937, lime #8CF000, orange #FF7A00, page #FAFBFC).
+- **Sections:** intro with search and share buttons and "HOW XP WORKS"; CITY / FRIENDS / SPORT / VENUE mode tabs; THIS WEEK / THIS MONTH / SEASON / ALL TIME chips; a location line; sport circles (Sport mode); a venue picker (Venue mode, venues from `/venues/courts`); the dark "Your rank" card with an XP chase bar to the player above; "Your next move"; "Top three" podium with crown and gold/silver/bronze rings; "Rankings"; "Your rivals" (two places either side); "This week" highlight; and "Season progress" (Season chip only). Also a floating rank pill that appears once the rank card scrolls away, plus How XP works, Search players and Share your rank bottom sheets. The tab bar hides while a sheet is open.
+- **Data:** `/xp/leaderboard` (scope city/friends/global, period, sport, venue_id, limit 50) and `/xp/me`. `XpService.leaderboard()` now takes an options object (scope, city, venueId, limit). Home's existing call is unchanged.
+- **City fix:** the backend's city scope matched the whole profile location ("Preeti Nagar > Lucknow") against venue cities, so it never matched. The app now sends the parsed city ("Lucknow") as `city`. When the city board is empty it falls back to the all-TYNG board with a note.
+- **Figma values with no backend data, replaced:** rank movement arrows (removed), "game streak" (now games played), "biggest climber" (now this week's top XP earner), "best rank" (now lifetime XP). Player photos and per-player reliability are now real (see the follow-up below).
+- Compiled with no lint errors. Checked on the logged-in dev page with live data at phone width: every section, both sheets, search, the floating pill and all four modes.
+- **Follow-up done (backend, live, commit `4603065` on `developer`):** `XpLeaderboardService` now returns `avatar` and `reliabilityScore` for each row and for `me`, and `viewerCity()` parses "area > city". Rows show real photos, and the podium and ranking captions show "{n} Reliability" (games played only when a player has no score). Checked with live data.
+
+# Completed: Discover players redesigned to match Figma, fully dynamic - 1 October 2026
+
+- Rebuilt `/app/discover` (`src/app/pages/discover/discover.page.*`) from the Figma Make `PlayerDiscoveryScreen.tsx`.
+- **Header and search:** "DISCOVER PLAYERS" with a live "{n} players nearby" count; a search button (searches `/discover?q=`, results show photo, @username and area or distance); a filter button with an orange dot when filters are on.
+- **Swipeable card stack:** the next player peeks behind. Drag right to connect, drag left to skip, with CONNECT / SKIP stamps. The photo area shows the availability pill, verified shield, level pill, name, age, @username, area and distance. The body shows bio, sport chips (tap one to filter by that sport), Reliability / Rating / Games / Level tiles, a "WHY YOU MAY MATCH" box, and SKIP / VIEW PROFILE / CONNECT. Loads more pages when 3 cards remain.
+- **Sheets:** Discovery filters (sport, skill level, distance only when the user has a location, reliability 80+/90+/95+, availability) and "Connect with {name}?" with an optional message. Sending creates the connection (`/discover/swipe`) and, when a message is set, opens a private chat and sends it. The tab bar hides while a sheet is open. Empty state: "NO PLAYERS HERE YET." with Clear filters / Change sport.
+- **Backend (live, commit `4603065` on `developer`):** `DiscoverPlayerResource` drops the fake fallbacks (rating 4.5, "Intermediate") and adds `username`, `area`, `level`, `levelTitle`, `reliabilityScore`, `verified`, real `distance` and `matchReasons` (shared sports, same skill, shared availability, mutual players, within 5 km or same city). `SocialService::discover()` accepts `sports`, `skill`, `availability`, `min_reliability` and `max_distance` filters.
+- **Figma values with no backend data:** play-style filter (players have no play-style field, so it's left out); "verified" is based on a verified email (there is no ID verification); the availability pill is hidden when a player hasn't set availability; connecting adds a friend immediately (there is no pending-request state), so the badge reads "CONNECTED".
+- Compiled with no lint errors. Checked on the logged-in dev page at phone width with live data: cards, filters (5 players to 4 with Cricket), search, connect sheet (opened and cancelled; no real connection sent).
+
+# Completed: Back button and no tab bar on non-main pages - 2 October 2026
+
+- New `MAIN_TAB_ROUTES` / `isMainTabRoute()` in `src/app/core/constants/layout-routes.ts`, listing only the bottom-tab destinations per role (player: home, discover, my-bookings, chat; coach: dashboard, students, schedule, chat; venue: dashboard, bookings, events, chat; admin: dashboard, users, venues, settings). Exact matches only, so inner pages such as `/app/chat/:id` or `/app/my-bookings/:id` count as inner.
+- `TabsPage` shows the bottom tab bar only on those routes. This replaces the old per-page hide list, which showed the bar on side-menu pages such as leaderboard, coaches, profile and stats, and on venue calendar, facilities, earnings, analytics and profile.
+- `BrandHeaderShellComponent` passes `showBack` when the route isn't a main tab. `HeaderComponent` then shows a back button (history back, otherwise the role's home) in place of the menu button. The tyng wordmark and bell stay the same. No CSS changed.
+- Compiled with no lint errors. Not checked visually: the preview browser was logged out.
+
+# Completed: Player side menu items match Figma - 2 October 2026
+
+- Player drawer (`src/app/app.component.html`) now lists exactly the Figma `LeftDrawer` items, in order, with Figma descriptions: Wallet (Balance, TP Points & transactions), Leaderboards (City, friends & sport rankings), Coaches (Find & book coaches), Settings (Account & preferences), Support (Help, reports & contact us). Removed My Friends, Personal Stats, History and the divider before Support. Those pages are still reachable from the chat list, Home "View stats" and the My Bookings tab. No CSS changed.
+- **Follow-up:** the app has no Support page (Figma links to `/app/support`), so Support still opens Home.
+
+# Completed: Player Home section headings match Figma - 2 October 2026
+
+- All Home section headings now use the Figma `SectionTitle` style (16px, weight 900, uppercase, -0.02em, #111827), with grey uppercase "View all ›" links (11px, #6B7280). Changed in `src/theme/player-home-v2.scss`; the separate caps variant was merged into the base heading.
+- Added the "Explore by sport" heading above the sport rail and renamed "Venues near you" to "Top venues near you" (`home.page.html`).
+- "Games near you" and "Tournaments" keep their titles because Figma has no matching section. Figma's "Next up" is the player's own next booking, which Home doesn't show yet.
+- Compiled successfully. Not checked visually: the preview browser was logged out.
+
+# Completed: Find coaches redesigned to match Figma, fully dynamic - 1 October 2026
+
+- Rebuilt `/app/coaches` (`src/app/pages/player/coaches.page.*`, now separate HTML/SCSS) from the Figma Make `CoachesScreen.tsx`.
+- **Sections:** "FIND COACHES" intro; search bar with a dark filter button (orange dot when filters are on); sport chips built from the sports coaches actually teach; coaching invitations (kept); "RECOMMENDED FOR YOU" dark featured card (hidden while searching or filtering); "COACHES FOR YOU" list with a sort pill; coach cards (photo, NEW ON TYNG, verified tick, sports, session types, rating or "No reviews yet", experience range, sessions and students, area or distance, ID VERIFIED / CERTIFIED, next available, price or "On request", NEGOTIABLE, VIEW PROFILE and BOOK); empty state; Coach filters sheet (sport, session type, coach experience, distance, price, session availability, rating, language, verified-only toggle); Sort coaches sheet. Infinite scroll and pull to refresh. The tab bar hides while a sheet is open.
+- BOOK opens `/app/coaches/:id?book=1`, which now opens the existing booking sheet straight away.
+- **Backend (live, commit `f36829b` on `developer`):** `CoachController::index` now returns, per coach: `area` (short form of the saved address), `distanceKm`, experience level/label/years, `sessionTypes`, `languages`, `achievements`, `groupPrice`, rating and `reviewCount` from published reviews, `sessionsCompleted`, `activeStudents`, `idVerified` / `certified` (approved verification documents), `isNew` (joined in the last 30 days), `nextAvailable` (next open weekly slot, India time), today/tomorrow/weekend availability and `sharesSport`. It also returns `facets` (sports, session types, languages present). New filters: `sports`, `session_types`, `experience`, `languages`, `price` bands, `min_rating`, `availability`, `verified`, `max_distance`; sorts: recommended, top, nearest, soonest, price, experience. Sport matching now ignores case, which fixes the old filter that never matched lowercase sports. Home's existing `sort=top` call still works.
+- **Figma values with no backend data:** sponsored badge, specialisation and skill-level filters (shown as session type and coach experience instead), exact years (shown as the onboarding range, e.g. "4–10 Years"), exact next-session times (shown as the weekly slot, e.g. "Today • Night"). NEAREST sort and distance filter only appear once coaches have saved coordinates (none do yet).
+- **Follow-up:** there is no admin approval step for coach verification documents (all stay "submitted"), so ID VERIFIED / CERTIFIED badges and "Verified only" show nothing until an admin approve action sets them to `approved`.
+- Compiled with no lint errors. Checked on the logged-in dev page at phone width with live data: list (10 coaches), Cricket chip (5), Today + English filter (1), price sort, BOOK opening the booking sheet (closed without sending).
+
+# Completed: Home search popover, filter icon and sport rail - 2 October 2026
+
+- The Home "Search for" popover now closes as soon as an option is picked.
+- The search filter button now uses the dark `options-outline` sliders icon on a light button, matching the reference.
+- The Home sport rail always fits exactly 6 sports across the screen width (6 equal columns), with the rest reachable by swiping.
+- Compiled successfully on the dev server.
+
+# Completed: Search results loading skeleton - 2 October 2026
+
+- `/app/search` now shows shimmering skeleton rows (avatar, name and detail lines) while a search is running, instead of a blank or stale list. The results list only appears once loading finishes.
+- Compiled successfully on the dev server.
+
+# Completed: Player profile backend for the Figma profile tabs - 2 October 2026
+
+- **Backend, live and pushed (commit `adf48d1` on `developer`):** new `player_profile_details`, `player_documents` and `player_ratings` tables; `GET/PUT /player/profile`, `PUT /player/profile/medical`, game results (`/player/games/{bookingId}/result`), player ratings (`/booking/{bookingId}/player-ratings`) and player documents (list, upload, update, view file, delete). Profile visibility toggles are respected in Discover.
+- **Still to do:** the frontend player profile screen with the five Figma tabs (Overview, Personal Info, Stats, Medical & Fitness, Documents); a screen to enter game results and rate players; sharing medical details and documents according to their visibility toggles; enforcing the "allow messages" toggle in chat.
+
+# Completed: Settings cleanup, CMS privacy policy, blocking and notification preferences - 2 October 2026
+
+- **Settings page:** removed Wallet. Options are now Edit Profile, Change Password, Notifications, Blocked Users, Privacy Policy and Terms & Conditions.
+- **Privacy Policy / Terms (CMS):** new `/app/legal/:slug` page loads the content from `GET /pages/{slug}`, with a skeleton, "Last updated" date, styled rich text and a not-found state. Admins edit the text in Laravel at `/admin/pages` (a "CMS Pages" link was added to the admin sidebar). Checked in the browser against the live API.
+- **Blocking:** players can block or unblock from a player's profile (the "..." button at the top, with confirmation). A red banner shows when a player is blocked. New "Blocked Users" item in the side menu and in Settings opens `/app/blocked-users`, listing blocked people with an Unblock button. On the server, blocked people can't message each other privately, invite each other to games, add each other as friends, or see each other in search, Discover or friends lists, and blocking removes the friendship.
+- **Notification settings:** new `/app/settings/notifications` page with a master switch and per-category switches (bookings, chat, social, wallet, XP, coaching, announcements). Changes save instantly and roll back if saving fails. On the server every push notification checks the user's preferences first; everything is on by default for all users, and logging in no longer resets preferences.
+- **Backend, live and pushed (commit `9ddf127` on `developer`):** `NotificationPreferenceService`, `NotificationSettingsController`, `PageController`, block endpoints in `SocialController`, enforcement in chat, social, booking and push services, and migration `2026_10_02_000002`. Verified on live: notification update/allow checks, block, block status, blocked list and unblock.
+- **Frontend:** type check passes and the dev server compiles. The logged-in pages (blocked users, notifications, block action) were not clicked through in the browser because the preview browser was logged out.
+- **Follow-up:** the live Privacy Policy content is placeholder text from another product ("Supper Shooper", eyewear) and should be replaced in `/admin/pages`. Opening a blocked player's profile directly by link shows "Player not found", because blocked players are hidden from the friends and Discover lists it loads from.

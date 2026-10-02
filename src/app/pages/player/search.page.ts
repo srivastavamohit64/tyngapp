@@ -9,8 +9,6 @@ import { BookingService } from '../../core/services/booking.service';
 import { SocialService } from '../../core/services/social.service';
 import { VenueService } from '../../core/services/venue.service';
 import { resolveMediaUrl } from '../../core/utils/media-url.util';
-import { SkeletonListComponent } from '../../shared/components/skeleton';
-
 type SearchTab = 'all' | 'venues' | 'players' | 'coaches';
 type ResultKind = 'venue' | 'player' | 'coach';
 
@@ -27,7 +25,7 @@ interface SearchRow {
 @Component({
   selector: 'app-search-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule, SkeletonListComponent],
+  imports: [CommonModule, FormsModule, IonicModule],
   template: `
     <ion-content [fullscreen]="true" class="has-tabs">
       <div class="search-page">
@@ -61,14 +59,24 @@ interface SearchRow {
               (click)="setTab(item.id)"
             >
               {{ item.label }}
-              <span *ngIf="countFor(item.id)">{{ countFor(item.id) }}</span>
+              <span *ngIf="!loading && countFor(item.id)">{{ countFor(item.id) }}</span>
             </button>
           </div>
         </div>
 
         <div class="sp-body">
-          <div *ngIf="loading && visibleRows.length === 0" class="sp-skel">
-            <app-skeleton-list [count]="6"></app-skeleton-list>
+          <div *ngIf="loading" class="sp-skel" aria-busy="true" aria-label="Searching">
+            <div class="sp-skel-row" *ngFor="let item of skeletonRows; let i = index" [style.animation-delay.ms]="i * 60">
+              <span class="sp-skel-avatar sp-shimmer"></span>
+              <span class="sp-skel-copy">
+                <span class="sp-skel-top">
+                  <span class="sp-skel-line sp-skel-title sp-shimmer" [style.width.%]="item"></span>
+                  <span class="sp-skel-pill sp-shimmer"></span>
+                </span>
+                <span class="sp-skel-line sp-skel-sub sp-shimmer" [style.width.%]="item - 18"></span>
+              </span>
+              <span class="sp-skel-chevron sp-shimmer"></span>
+            </div>
           </div>
 
           <div class="sp-empty" *ngIf="!loading && visibleRows.length === 0">
@@ -81,7 +89,7 @@ interface SearchRow {
             </p>
           </div>
 
-          <div class="sp-list" *ngIf="visibleRows.length">
+          <div class="sp-list" *ngIf="!loading && visibleRows.length">
             <button
               type="button"
               class="sp-row"
@@ -219,7 +227,87 @@ interface SearchRow {
 
     .sp-body { padding: 0 16px; }
 
-    .sp-skel { padding-top: 8px; }
+    .sp-skel {
+      padding-top: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .sp-skel-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 12px;
+      box-shadow: 0 8px 20px rgba(17, 24, 39, 0.05);
+      opacity: 0;
+      animation: sp-skel-in 0.28s ease forwards;
+    }
+
+    .sp-skel-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      flex-shrink: 0;
+    }
+
+    .sp-skel-copy {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .sp-skel-top {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sp-skel-line {
+      display: block;
+      border-radius: 999px;
+    }
+
+    .sp-skel-title { height: 13px; max-width: 70%; }
+    .sp-skel-sub { height: 10px; }
+
+    .sp-skel-pill {
+      width: 46px;
+      height: 16px;
+      border-radius: 999px;
+      flex-shrink: 0;
+    }
+
+    .sp-skel-chevron {
+      width: 10px;
+      height: 16px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+
+    .sp-shimmer {
+      background: linear-gradient(90deg, #f1f3f5 0%, #f1f3f5 30%, #e4e7eb 50%, #f1f3f5 70%, #f1f3f5 100%);
+      background-size: 220% 100%;
+      animation: sp-shimmer 1.2s ease-in-out infinite;
+    }
+
+    @keyframes sp-shimmer {
+      0% { background-position: 120% 0; }
+      100% { background-position: -120% 0; }
+    }
+
+    @keyframes sp-skel-in {
+      to { opacity: 1; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .sp-shimmer { animation: none; }
+      .sp-skel-row { animation: none; opacity: 1; }
+    }
 
     .sp-hint {
       margin: 18px 4px 0;
@@ -369,6 +457,8 @@ export class SearchPage implements OnInit, AfterViewInit, OnDestroy {
     { id: 'players', label: 'Players' },
     { id: 'coaches', label: 'Coaches' },
   ];
+
+  readonly skeletonRows = [62, 48, 70, 55, 66, 44, 58];
 
   query = '';
   tab: SearchTab = 'all';

@@ -17,11 +17,12 @@ export class SettingsPage {
   readonly auth = inject(AuthService);
 
   readonly options = [
-    { name: 'Wallet', sub: 'Balance, top-up & transactions', icon: 'wallet-outline', path: '/app/wallet' },
     { name: 'Edit Profile', sub: 'Name, photo, location', icon: 'person-outline', path: '/app/profile/edit' },
     { name: 'Change Password', sub: 'Update your password', icon: 'lock-closed-outline', path: '/app/change-password' },
-    { name: 'Notifications', sub: 'Alerts and reminders', icon: 'notifications-outline', path: null },
-    { name: 'Privacy', sub: 'Data and visibility', icon: 'shield-checkmark-outline', path: null },
+    { name: 'Notifications', sub: 'Choose which alerts you receive', icon: 'notifications-outline', path: '/app/settings/notifications' },
+    { name: 'Blocked Users', sub: 'People you have blocked', icon: 'ban-outline', path: '/app/blocked-users' },
+    { name: 'Privacy Policy', sub: 'How we use and protect your data', icon: 'shield-checkmark-outline', path: '/app/legal/privacy-policy' },
+    { name: 'Terms & Conditions', sub: 'Rules for using TYNG', icon: 'document-text-outline', path: '/app/legal/terms-conditions' },
   ];
 
   openOption(path: string | null) {

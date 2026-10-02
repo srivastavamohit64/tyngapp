@@ -1,388 +1,505 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, OnDestroy, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { IonicModule, MenuController, RefresherCustomEvent, ToastController } from '@ionic/angular';
+import { IonicModule, RefresherCustomEvent, ToastController } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 import { DiscoverPlayer } from '../../core/models/api.model';
+import { AuthService } from '../../core/services/auth.service';
+import { ChatService } from '../../core/services/chat.service';
 import { SocialService } from '../../core/services/social.service';
+import { UiChromeService } from '../../core/services/ui-chrome.service';
+import { resolveMediaUrl } from '../../core/utils/media-url.util';
 import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
-import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
-import { PageSkeletonComponent } from '../../shared/components/skeleton';
-import { PrimaryButtonComponent } from '../../shared/components/primary-button/primary-button.component';
 
-interface PlayerSportBadge {
-  name: string;
-  emoji: string;
-  level: string;
-}
-
-interface DiscoverPlayerCard {
+interface SportChip {
   id: string;
   name: string;
-  age: number;
-  photo: string;
-  sports: PlayerSportBadge[];
-  tp: number;
-  reliabilityScore: number;
-  winRate: number;
-  distance: number;
-  availability: string;
-  mascotBadges: string[];
-  bio: string;
-  gamesPlayed: number;
-  gender: string;
-  city: string;
-  rating: number;
-  preferredPosition: string;
-  preferredTime: string;
-  mutualFriends: number;
+  level: string | null;
+  icon: string;
 }
+
+interface DiscoverCard {
+  id: string;
+  name: string;
+  firstName: string;
+  initials: string;
+  username: string | null;
+  age: number | null;
+  photo: string | null;
+  area: string | null;
+  distance: number | null;
+  availabilityLabel: string | null;
+  verified: boolean;
+  level: number;
+  bio: string | null;
+  sports: SportChip[];
+  reliability: number | null;
+  rating: number | null;
+  games: number;
+  reasons: string[];
+}
+
+type FilterKey = 'sports' | 'skill' | 'distance' | 'reliability' | 'availability';
+
+interface FilterGroup {
+  key: FilterKey;
+  title: string;
+  multi: boolean;
+  options: Array<{ value: string; label: string }>;
+}
+
+const SPORT_ICONS: Record<string, string> = {
+  football: 'football-outline',
+  cricket: 'locate-outline',
+  badminton: 'pulse-outline',
+  basketball: 'basketball-outline',
+  tennis: 'tennisball-outline',
+  swimming: 'water-outline',
+  volleyball: 'baseball-outline',
+};
+
+const AVAILABILITY_LABELS: Record<string, string> = {
+  morning: 'AVAILABLE MORNINGS',
+  afternoon: 'AVAILABLE AFTERNOONS',
+  evening: 'AVAILABLE EVENINGS',
+  night: 'AVAILABLE NIGHTS',
+  weekend: 'AVAILABLE WEEKENDS',
+  flexible: 'FLEXIBLE SCHEDULE',
+};
+
+const SWIPE_THRESHOLD = 110;
 
 @Component({
   selector: 'app-discover-page',
   standalone: true,
-  imports: [
-    CommonModule,
-    IonicModule,
-    FormsModule,
-    BrandHeaderShellComponent,
-    PageHeaderComponent,
-    PrimaryButtonComponent,
-    PageSkeletonComponent,
-  ],
+  imports: [CommonModule, IonicModule, FormsModule, BrandHeaderShellComponent],
   styleUrls: ['./discover.page.scss'],
   templateUrl: './discover.page.html',
 })
-export class DiscoverPage {
+export class DiscoverPage implements OnDestroy {
   private readonly router = inject(Router);
-  private readonly menu = inject(MenuController);
   private readonly social = inject(SocialService);
+  private readonly chat = inject(ChatService);
+  private readonly auth = inject(AuthService);
+  private readonly chrome = inject(UiChromeService);
   private readonly toastCtrl = inject(ToastController);
 
-  currentIndex = 0;
-  swipeDirection: 'left' | 'right' | null = null;
-  swiping = false;
+  cards: DiscoverCard[] = [];
+  index = 0;
+  total = 0;
+  page = 1;
+  lastPage = 1;
   loading = true;
   loadingMore = false;
   errorMessage = '';
 
-  // Drag gesture states
-  startX = 0;
-  currentX = 0;
-  isDragging = false;
+  searchOpen = false;
+  searchQuery = '';
+  searchResults: DiscoverCard[] = [];
+  searching = false;
+  private searchTimer?: ReturnType<typeof setTimeout>;
 
-  // Pagination
-  page = 1;
-  lastPage = 1;
+  sheet: 'filters' | 'connect' | null = null;
+  selected: Record<FilterKey, string[]> = this.emptyFilters();
+  draft: Record<FilterKey, string[]> = this.emptyFilters();
+  connectTarget: DiscoverCard | null = null;
+  connectMessage = '';
+  sending = false;
+  toastLabel = '';
+  private toastTimer?: ReturnType<typeof setTimeout>;
 
-  // Advanced Filters State
-  showFilters = false;
-  filters = {
-    sport: 'All',
-    skill: 'All',
-    gender: 'All',
-    distance: 15,
-    ageMin: 18,
-    ageMax: 45,
-    competitiveLevel: 'All',
-    availability: 'All',
-  };
-
-  players: DiscoverPlayerCard[] = [];
+  dragX = 0;
+  dragging = false;
+  leaving: 'left' | 'right' | null = null;
+  private startX = 0;
+  private startY = 0;
+  private moved = false;
 
   constructor() {
-    void this.fetchDiscoverPlayers(true);
+    void this.load(true);
   }
 
-  get filteredPlayers() {
-    return this.players.filter((player) => {
-      const matchesSport =
-        this.filters.sport === 'All' || player.sports.some((s) => s.name === this.filters.sport);
-      const matchesSkill =
-        this.filters.skill === 'All' || player.sports.some((s) => s.level === this.filters.skill);
-      const matchesDistance = player.distance <= this.filters.distance;
-      const matchesAge = player.age >= this.filters.ageMin && player.age <= this.filters.ageMax;
-      const matchesAvailability =
-        this.filters.availability === 'All' || player.availability === this.filters.availability;
-      const matchesGender = this.filters.gender === 'All' || player.gender === this.filters.gender;
-
-      return matchesSport && matchesSkill && matchesDistance && matchesAge && matchesAvailability && matchesGender;
-    });
+  get current(): DiscoverCard | undefined {
+    return this.cards[this.index];
   }
 
-  get currentPlayer() {
-    return this.filteredPlayers[this.currentIndex];
+  get next(): DiscoverCard | undefined {
+    return this.cards[this.index + 1];
   }
 
   get nearbyLabel(): string {
-    const remaining = Math.max(this.filteredPlayers.length - this.currentIndex, 0);
-    if (this.loading) {
-      return 'Finding players near you…';
-    }
-    if (remaining === 0) {
-      return 'No players in this view';
-    }
-    if (remaining === 1) {
-      return '1 player nearby';
-    }
-    return `${remaining} players nearby`;
+    if (this.loading) return 'Finding players near you…';
+    const remaining = Math.max(0, this.total - this.index);
+    return `${remaining} ${remaining === 1 ? 'player' : 'players'} nearby`;
   }
 
-  async fetchDiscoverPlayers(reset = false): Promise<void> {
+  get hasFilters(): boolean {
+    return Object.values(this.selected).some((values) => values.length > 0);
+  }
+
+  get filterGroups(): FilterGroup[] {
+    const groups: FilterGroup[] = [
+      {
+        key: 'sports',
+        title: 'SPORT',
+        multi: true,
+        options: ['Football', 'Cricket', 'Badminton', 'Basketball', 'Tennis'].map((s) => ({ value: s.toLowerCase(), label: s })),
+      },
+      {
+        key: 'skill',
+        title: 'SKILL LEVEL',
+        multi: true,
+        options: ['Beginner', 'Intermediate', 'Advanced', 'Expert'].map((s) => ({ value: s.toLowerCase(), label: s })),
+      },
+    ];
+    const me = this.auth.user();
+    if (me?.latitude != null && me?.longitude != null) {
+      groups.push({
+        key: 'distance',
+        title: 'DISTANCE',
+        multi: false,
+        options: [
+          { value: '2', label: 'Nearby' },
+          { value: '5', label: '< 5 km' },
+          { value: '10', label: '< 10 km' },
+          { value: '20', label: '< 20 km' },
+        ],
+      });
+    }
+    groups.push(
+      {
+        key: 'reliability',
+        title: 'RELIABILITY',
+        multi: false,
+        options: ['80', '90', '95'].map((v) => ({ value: v, label: `${v}+` })),
+      },
+      {
+        key: 'availability',
+        title: 'AVAILABILITY',
+        multi: true,
+        options: [
+          { value: 'morning', label: 'Morning' },
+          { value: 'evening', label: 'Evening' },
+          { value: 'night', label: 'Night' },
+          { value: 'weekend', label: 'Weekends' },
+          { value: 'flexible', label: 'Flexible' },
+        ],
+      },
+    );
+    return groups;
+  }
+
+  get cardTransform(): string {
+    if (this.leaving === 'right') return 'translateX(140%) rotate(14deg)';
+    if (this.leaving === 'left') return 'translateX(-140%) rotate(-14deg)';
+    return `translateX(${this.dragX}px) rotate(${(this.dragX / 220) * 4}deg)`;
+  }
+
+  get connectHintOpacity(): number {
+    return Math.min(1, Math.max(0, (this.dragX - 30) / 90));
+  }
+
+  get skipHintOpacity(): number {
+    return Math.min(1, Math.max(0, (-this.dragX - 30) / 90));
+  }
+
+  async refresh(event: Event): Promise<void> {
+    await this.load(true);
+    (event as RefresherCustomEvent).target.complete();
+  }
+
+  toggleSearch(): void {
+    this.searchOpen = !this.searchOpen;
+    if (!this.searchOpen) {
+      this.searchQuery = '';
+      this.searchResults = [];
+    }
+  }
+
+  onSearchInput(): void {
+    clearTimeout(this.searchTimer);
+    const query = this.searchQuery.trim();
+    if (!query) {
+      this.searchResults = [];
+      this.searching = false;
+      return;
+    }
+    this.searching = true;
+    this.searchTimer = setTimeout(() => void this.runSearch(query), 300);
+  }
+
+  openFilters(): void {
+    this.draft = this.cloneFilters(this.selected);
+    this.openSheet('filters');
+  }
+
+  isDraftSelected(key: FilterKey, value: string): boolean {
+    return this.draft[key].includes(value);
+  }
+
+  toggleDraft(group: FilterGroup, value: string): void {
+    const values = this.draft[group.key];
+    if (values.includes(value)) {
+      this.draft[group.key] = values.filter((v) => v !== value);
+    } else {
+      this.draft[group.key] = group.multi ? [...values, value] : [value];
+    }
+  }
+
+  clearDraft(): void {
+    this.draft = this.emptyFilters();
+  }
+
+  async applyFilters(): Promise<void> {
+    this.selected = this.cloneFilters(this.draft);
+    this.closeSheet();
+    await this.load(true);
+  }
+
+  async clearFilters(): Promise<void> {
+    this.selected = this.emptyFilters();
+    await this.load(true);
+  }
+
+  async filterBySport(sportId: string): Promise<void> {
+    this.selected = { ...this.emptyFilters(), sports: [sportId] };
+    await this.load(true);
+  }
+
+  viewProfile(card: DiscoverCard): void {
+    void this.router.navigateByUrl(`/app/player/${card.id}`);
+  }
+
+  skip(): void {
+    const card = this.current;
+    if (!card || this.leaving) return;
+    this.animateOut('left');
+    void firstValueFrom(this.social.swipePlayer(card.id, 'left')).catch(() => null);
+  }
+
+  startConnect(): void {
+    const card = this.current;
+    if (!card || this.leaving) return;
+    this.connectTarget = card;
+    this.connectMessage = 'Hey! Would be great to play sometime.';
+    this.openSheet('connect');
+  }
+
+  async sendConnection(): Promise<void> {
+    const target = this.connectTarget;
+    if (!target || this.sending) return;
+    this.sending = true;
+    try {
+      const res = await firstValueFrom(this.social.swipePlayer(target.id, 'right'));
+      if (!res.success) {
+        await this.presentError(res.message || 'Could not connect right now.');
+        return;
+      }
+      const message = this.connectMessage.trim();
+      if (message) {
+        const thread = await this.chat.openPrivate(target.id);
+        if (thread.success && thread.data?.id) {
+          await this.chat.sendMessage(thread.data.id, message);
+        }
+      }
+      this.closeSheet();
+      this.showBadge(res.data?.friendAdded ? 'CONNECTED' : 'REQUEST SENT');
+      if (this.current?.id === target.id) this.animateOut('right');
+    } catch (error: any) {
+      await this.presentError(error?.error?.message || 'Could not connect right now.');
+    } finally {
+      this.sending = false;
+    }
+  }
+
+  openSheet(sheet: 'filters' | 'connect'): void {
+    if (!this.sheet) this.chrome.openOverlay();
+    this.sheet = sheet;
+  }
+
+  closeSheet(): void {
+    if (this.sheet) this.chrome.closeOverlay();
+    this.sheet = null;
+  }
+
+  ionViewWillLeave(): void {
+    this.closeSheet();
+  }
+
+  ngOnDestroy(): void {
+    this.closeSheet();
+    clearTimeout(this.searchTimer);
+    clearTimeout(this.toastTimer);
+  }
+
+  onPointerDown(event: PointerEvent): void {
+    if (this.leaving || (event.target as HTMLElement).closest('button')) return;
+    this.dragging = true;
+    this.moved = false;
+    this.startX = event.clientX;
+    this.startY = event.clientY;
+    (event.currentTarget as HTMLElement).setPointerCapture?.(event.pointerId);
+  }
+
+  onPointerMove(event: PointerEvent): void {
+    if (!this.dragging) return;
+    const dx = event.clientX - this.startX;
+    const dy = event.clientY - this.startY;
+    if (!this.moved && Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 8) {
+      this.dragging = false;
+      this.dragX = 0;
+      return;
+    }
+    if (Math.abs(dx) > 6) this.moved = true;
+    this.dragX = dx;
+  }
+
+  onPointerUp(): void {
+    if (!this.dragging) return;
+    this.dragging = false;
+    if (this.dragX > SWIPE_THRESHOLD) {
+      this.dragX = 0;
+      this.startConnect();
+    } else if (this.dragX < -SWIPE_THRESHOLD) {
+      this.skip();
+    } else {
+      this.dragX = 0;
+    }
+  }
+
+  private animateOut(direction: 'left' | 'right'): void {
+    this.leaving = direction;
+    setTimeout(() => {
+      this.index += 1;
+      this.leaving = null;
+      this.dragX = 0;
+      if (this.cards.length - this.index <= 3 && this.page < this.lastPage && !this.loadingMore) {
+        void this.load(false);
+      }
+    }, 280);
+  }
+
+  private async load(reset: boolean): Promise<void> {
     if (reset) {
       this.loading = true;
       this.errorMessage = '';
       this.page = 1;
-      this.lastPage = 1;
-      this.players = [];
-      this.currentIndex = 0;
+      this.index = 0;
+      this.cards = [];
     } else {
       this.loadingMore = true;
+      this.page += 1;
     }
-
     try {
-      const query = new URLSearchParams({
-        page: String(this.page),
-        per_page: '20',
-        sport: this.filters.sport,
-        skill: this.filters.skill,
-        gender: this.filters.gender,
-      });
-
-      const response = await firstValueFrom(this.social.getDiscoverPlayers(query.toString()));
-      if (!response.success || !response.data) {
-        this.errorMessage = response.message || 'Failed to load discover players.';
+      const res = await firstValueFrom(this.social.getDiscoverPlayers(this.buildQuery(this.page)));
+      if (!res.success || !res.data) {
+        this.errorMessage = res.message || 'Unable to load players.';
         return;
       }
-
-      const cards = response.data.items.map((player) => this.mapPlayer(player));
-      this.players = reset ? cards : [...this.players, ...cards];
-      this.lastPage = response.data.pagination.lastPage;
-      this.page = response.data.pagination.currentPage;
+      const next = res.data.items.map((player) => this.toCard(player));
+      const known = new Set(this.cards.map((c) => c.id));
+      this.cards = [...this.cards, ...next.filter((c) => !known.has(c.id))];
+      this.lastPage = res.data.pagination.lastPage;
+      this.total = res.data.pagination.total;
     } catch (error: any) {
-      this.errorMessage = error?.error?.message || 'Unable to fetch players right now.';
+      this.errorMessage = error?.error?.message || 'Unable to load players right now.';
     } finally {
       this.loading = false;
       this.loadingMore = false;
     }
   }
 
-  async refresh(event: Event): Promise<void> {
-    await this.fetchDiscoverPlayers(true);
-    (event as RefresherCustomEvent).target.complete();
+  private async runSearch(query: string): Promise<void> {
+    const params = new URLSearchParams({ q: query, per_page: '8' });
+    const res = await firstValueFrom(this.social.getDiscoverPlayers(params.toString())).catch(() => null);
+    if (query !== this.searchQuery.trim()) return;
+    this.searchResults = (res?.data?.items ?? []).map((player) => this.toCard(player));
+    this.searching = false;
   }
 
-  toggleFilters(show: boolean) {
-    this.showFilters = show;
+  private buildQuery(page: number): string {
+    const params = new URLSearchParams({ page: String(page), per_page: '20' });
+    if (this.selected.sports.length) params.set('sports', this.selected.sports.join(','));
+    if (this.selected.skill.length) params.set('skill', this.selected.skill.join(','));
+    if (this.selected.availability.length) params.set('availability', this.selected.availability.join(','));
+    if (this.selected.reliability[0]) params.set('min_reliability', this.selected.reliability[0]);
+    if (this.selected.distance[0]) params.set('max_distance', this.selected.distance[0]);
+    return params.toString();
   }
 
-  async applyFilters() {
-    this.showFilters = false;
-    await this.fetchDiscoverPlayers(true);
-  }
-
-  resetFilters() {
-    this.filters = {
-      sport: 'All',
-      skill: 'All',
-      gender: 'All',
-      distance: 15,
-      ageMin: 18,
-      ageMax: 45,
-      competitiveLevel: 'All',
-      availability: 'All',
-    };
-  }
-
-  getTransformStyle() {
-    if (this.swiping) {
-      if (this.swipeDirection === 'left') {
-        return 'translateX(-150%) rotate(-30deg)';
-      }
-      if (this.swipeDirection === 'right') {
-        return 'translateX(150%) rotate(30deg)';
-      }
-    }
-    if (this.isDragging) {
-      return `translateX(${this.currentX}px) rotate(${this.currentX * 0.08}deg)`;
-    }
-    return 'none';
-  }
-
-  getOpacityStyle() {
-    if (this.swiping) return 0;
-    if (this.isDragging) {
-      const dragPercent = Math.min(Math.abs(this.currentX) / 250, 1);
-      return 1 - dragPercent * 0.4;
-    }
-    return 1;
-  }
-
-  // Touch Event Handlers
-  onTouchStart(event: TouchEvent) {
-    this.startX = event.touches[0].clientX;
-    this.isDragging = true;
-    this.currentX = 0;
-  }
-
-  onTouchMove(event: TouchEvent) {
-    if (!this.isDragging) return;
-    this.currentX = event.touches[0].clientX - this.startX;
-    if (Math.abs(this.currentX) > 10) {
-      event.preventDefault();
-    }
-  }
-
-  onTouchEnd() {
-    if (!this.isDragging) return;
-    this.isDragging = false;
-
-    if (this.currentX > 100) {
-      void this.swipe('right');
-    } else if (this.currentX < -100) {
-      void this.swipe('left');
-    } else {
-      this.currentX = 0;
-    }
-  }
-
-  // Mouse Event Handlers
-  onMouseDown(event: MouseEvent) {
-    if (event.button !== 0) return;
-    this.startX = event.clientX;
-    this.isDragging = true;
-    this.currentX = 0;
-    event.preventDefault();
-  }
-
-  onMouseMove(event: MouseEvent) {
-    if (!this.isDragging) return;
-    this.currentX = event.clientX - this.startX;
-  }
-
-  onMouseUp() {
-    this.onTouchEnd();
-  }
-
-  async swipe(direction: 'left' | 'right') {
-    if (this.swiping || !this.currentPlayer) return;
-
-    this.swiping = true;
-    this.swipeDirection = direction;
-
-    try {
-      await firstValueFrom(this.social.swipePlayer(this.currentPlayer.id, direction));
-    } catch (error: any) {
-      await this.presentToast(error?.error?.message || 'Failed to save swipe action.', 'danger');
-      this.swiping = false;
-      this.swipeDirection = null;
-      this.currentX = 0;
-      return;
-    }
-
-    setTimeout(async () => {
-      this.currentIndex += 1;
-      this.swiping = false;
-      this.swipeDirection = null;
-      this.currentX = 0;
-
-      if (this.currentIndex >= this.filteredPlayers.length && this.page < this.lastPage) {
-        this.page += 1;
-        await this.fetchDiscoverPlayers(false);
-      }
-    }, 300);
-  }
-
-  async resetDiscovery() {
-    this.resetFilters();
-    await this.fetchDiscoverPlayers(true);
-  }
-
-  goHome() {
-    void this.router.navigateByUrl('/app/home');
-  }
-
-  async openMenu() {
-    await this.menu.open();
-  }
-
-  openPlayer() {
-    if (!this.currentPlayer) return;
-    void this.router.navigateByUrl('/app/profile');
-  }
-
-  private mapPlayer(player: DiscoverPlayer): DiscoverPlayerCard {
-    const sports = (player.sports?.length ? player.sports : ['Cricket']).slice(0, 3);
-
-    return {
-      id: player.id,
-      name: player.name || 'Unknown Player',
-      age: player.age ?? 24,
-      photo: player.profileImage || 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400',
-      sports: sports.map((sport) => ({
-        name: this.formatSportName(sport),
-        emoji: this.sportEmoji(sport),
-        level: player.skillLevel || 'Intermediate',
-      })),
-      tp: Math.max(100, Math.round((player.rating ?? 4.5) * 250)),
-      reliabilityScore: Math.min(100, Math.max(80, Math.round((player.rating ?? 4.5) * 20))),
-      winRate: Math.min(95, Math.max(40, Math.round((player.rating ?? 4.5) * 15))),
-      distance: player.distance ?? 3.2,
-      availability: this.resolveAvailability(player.availability),
-      mascotBadges: this.resolveBadges(player.rating ?? 4.5, player.gamesPlayed ?? 0),
-      bio: player.bio || 'Passionate player looking for quality matches and good team vibes.',
-      gamesPlayed: player.gamesPlayed ?? 0,
-      gender: player.gender || 'Not specified',
-      city: player.city || 'City not shared',
-      rating: player.rating ?? 4.5,
-      preferredPosition: player.preferredPosition || 'Any Position',
-      preferredTime: player.preferredTime || 'Flexible',
-      mutualFriends: player.mutualFriends ?? 0,
-    };
-  }
-
-  private resolveAvailability(availability?: string[]): string {
-    if (!availability || availability.length === 0) return 'Available This Week';
-    return availability[0] || 'Available This Week';
-  }
-
-  private formatSportName(value: string): string {
-    return value
-      .split('-')
-      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-      .join(' ');
-  }
-
-  private sportEmoji(sport: string): string {
-    const key = sport.toLowerCase();
-    if (key.includes('cricket')) return '🏏';
-    if (key.includes('football')) return '⚽';
-    if (key.includes('basketball')) return '🏀';
-    if (key.includes('tennis')) return '🎾';
-    if (key.includes('badminton')) return '🏸';
-    if (key.includes('volleyball')) return '🏐';
-    return '🎯';
-  }
-
-  private resolveBadges(rating: number, gamesPlayed: number): string[] {
-    const badges: string[] = [];
-    if (rating >= 4.7) badges.push('🏆');
-    if (rating >= 4.4) badges.push('⭐');
-    if (gamesPlayed >= 100) badges.push('🔥');
-    if (gamesPlayed >= 50) badges.push('⚡');
-
-    return badges.length ? badges : ['🌟'];
-  }
-
-  private async presentToast(message: string, color: 'danger' | 'success') {
-    const toast = await this.toastCtrl.create({
-      message,
-      color,
-      duration: 2200,
-      position: 'bottom',
+  private toCard(player: DiscoverPlayer): DiscoverCard {
+    const name = (player.name || 'TYNG Player').trim();
+    const level = player.skillLevel || null;
+    const sports = (player.sports ?? []).slice(0, 3).map((sport) => {
+      const id = String(sport).toLowerCase();
+      return {
+        id,
+        name: id.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
+        level,
+        icon: SPORT_ICONS[id] ?? 'trophy-outline',
+      };
     });
+    const availability = (player.availability ?? []).map((slot) => String(slot).toLowerCase());
+    const slot = availability.find((s) => s !== 'flexible' && AVAILABILITY_LABELS[s]) ?? availability.find((s) => AVAILABILITY_LABELS[s]);
+    return {
+      id: String(player.id),
+      name,
+      firstName: name.split(/\s+/)[0],
+      initials: name
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase() ?? '')
+        .join(''),
+      username: player.username ? `@${player.username}` : null,
+      age: player.age ?? null,
+      photo: resolveMediaUrl(player.profileImage ?? null),
+      area: this.formatArea(player.area ?? null),
+      distance: player.distance ?? null,
+      availabilityLabel: slot ? AVAILABILITY_LABELS[slot] : null,
+      verified: !!player.verified,
+      level: Number(player.level || 1),
+      bio: player.bio || null,
+      sports,
+      reliability: player.reliabilityScore ?? null,
+      rating: player.rating ?? null,
+      games: Number(player.gamesPlayed || 0),
+      reasons: player.matchReasons ?? [],
+    };
+  }
 
+  private formatArea(area: string | null): string | null {
+    if (!area) return null;
+    return area
+      .split('>')
+      .map((part) => part.trim())
+      .filter(Boolean)
+      .join(', ');
+  }
+
+  private emptyFilters(): Record<FilterKey, string[]> {
+    return { sports: [], skill: [], distance: [], reliability: [], availability: [] };
+  }
+
+  private cloneFilters(source: Record<FilterKey, string[]>): Record<FilterKey, string[]> {
+    return {
+      sports: [...source.sports],
+      skill: [...source.skill],
+      distance: [...source.distance],
+      reliability: [...source.reliability],
+      availability: [...source.availability],
+    };
+  }
+
+  private showBadge(label: string): void {
+    this.toastLabel = label;
+    clearTimeout(this.toastTimer);
+    this.toastTimer = setTimeout(() => (this.toastLabel = ''), 1400);
+  }
+
+  private async presentError(message: string): Promise<void> {
+    const toast = await this.toastCtrl.create({ message, color: 'danger', duration: 2200, position: 'bottom' });
     await toast.present();
   }
 }

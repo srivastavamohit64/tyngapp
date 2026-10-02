@@ -1,136 +1,457 @@
-<ion-content fullscreen class="has-tabs">
+<ion-content fullscreen class="has-tabs lb-content" [scrollEvents]="true" (ionScroll)="onContentScroll()">
   <app-brand-header-shell>
-  <main class="page-with-tab-bar min-h-full bg-[#FAFBFC] text-slate-900">
-    
-    <div class="app-header-bar px-5 flex items-center justify-between">
-      <h1 class="app-header-title text-[#111827] m-0">Leaderboard</h1>
-      <div class="app-header-btn rounded-xl bg-[var(--app-primary)]/20 flex items-center justify-center text-[#111827]">
-        <ion-icon name="trophy" class="text-xl"></ion-icon>
-      </div>
-    </div>
-
-    <!-- Horizontal Sport Tabs -->
-    <section class="px-5 mb-5">
-      <app-sport-tabs
-        [tabs]="sportTabs"
-        [value]="selectedSport"
-        (valueChange)="selectSport($event)"
-      ></app-sport-tabs>
-    </section>
-
-    <!-- Podium (Top 3 Players) -->
-    <section class="px-5 mb-6">
-      <div class="grid grid-cols-3 gap-3 items-end">
-        
-        <!-- Rank #2 (Rahul) -->
-        <div *ngIf="topThree[1]" class="order-1 flex flex-col items-center">
-          <div class="podium-card w-full p-4 rounded-3xl border border-white/10 text-center bg-card relative">
-            <div class="relative inline-block mb-3">
-              <div class="w-14 h-14 text-2.5xl rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center mx-auto shadow-md">
-                {{ topThree[1].avatar }}
-              </div>
-              <div class="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-slate-700/80 border border-white/10 flex items-center justify-center">
-                <ion-icon name="medal-outline" class="text-slate-300 text-xs"></ion-icon>
-              </div>
+    <main class="lb-page page-with-tab-bar">
+      <!-- Intro -->
+      <header class="lb-intro">
+        <div class="lb-intro-row">
+          <div>
+            <div class="lb-title-row">
+              <ion-icon name="trophy-outline" class="lb-title-icon"></ion-icon>
+              <h1 class="lb-title">Leaderboard</h1>
             </div>
-            <div class="text-sm font-bold text-[#111827] mb-0.5 truncate">{{ topThree[1].name.split(' ')[0] }}</div>
-            <div class="text-xs font-bold text-[#FF7A00] mb-1">{{ topThree[1].points | number }}</div>
-            <div class="text-[10px] font-bold text-slate-500">#2</div>
+            <p class="lb-subtitle">See who's making moves on TYNG.</p>
+          </div>
+          <div class="lb-intro-actions">
+            <button type="button" class="lb-icon-btn" aria-label="Search players" (click)="openSheet('search')">
+              <ion-icon name="search-outline"></ion-icon>
+            </button>
+            <button type="button" class="lb-icon-btn" aria-label="Share your rank" (click)="openSheet('share')">
+              <ion-icon name="share-social-outline"></ion-icon>
+            </button>
           </div>
         </div>
+        <button type="button" class="lb-xp-info-btn" (click)="openSheet('xp')">
+          <ion-icon name="information-circle-outline"></ion-icon> HOW XP WORKS
+        </button>
+      </header>
 
-        <!-- Rank #1 (Amit) - Highlighted & Taller -->
-        <div *ngIf="topThree[0]" class="order-2 flex flex-col items-center scale-105">
-          <div class="podium-card podium-card-gold w-full p-5 rounded-3xl border border-accent/20 text-center bg-accent/10 relative shadow-xl shadow-accent/5">
-            <div class="relative inline-block mb-3">
-              <div class="w-18 h-18 text-3.5xl rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center mx-auto shadow-lg border-2 border-accent/30">
-                {{ topThree[0].avatar }}
-              </div>
-              <div class="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-accent border border-accent/50 flex items-center justify-center shadow-lg">
-                <ion-icon name="ribbon" class="text-white text-xs"></ion-icon>
-              </div>
-            </div>
-            <div class="text-base font-extrabold text-[#111827] mb-0.5 truncate">{{ topThree[0].name.split(' ')[0] }}</div>
-            <div class="text-sm font-extrabold text-[#FF7A00] mb-1">{{ topThree[0].points | number }}</div>
-            <div class="text-xs font-extrabold text-[var(--app-primary)]">#1</div>
+      <!-- Filters -->
+      <section class="lb-filters">
+        <div class="lb-inner">
+          <div class="lb-mode-tabs">
+            <button
+              *ngFor="let item of modes"
+              type="button"
+              class="lb-mode-tab"
+              [class.is-active]="mode === item.id"
+              (click)="selectMode(item.id)"
+            >
+              {{ item.label }}
+            </button>
+          </div>
+          <div class="lb-period-row">
+            <button
+              *ngFor="let item of periods"
+              type="button"
+              class="lb-period-chip"
+              [class.is-active]="period === item.id"
+              (click)="selectPeriod(item.id)"
+            >
+              {{ item.label }}
+            </button>
+          </div>
+          <p class="lb-scope-line">
+            <ion-icon name="location-outline"></ion-icon>
+            <span>{{ scopeLabel }}</span>
+            <span>•</span>
+            <span>{{ periodLabel }}</span>
+          </p>
+          <p *ngIf="cityFallback" class="lb-fallback-note">
+            No ranked players in {{ userCity || 'your city' }} yet, so you're seeing all of TYNG.
+          </p>
+        </div>
+
+        <div *ngIf="mode === 'sport'" class="lb-sport-row">
+          <button
+            *ngFor="let item of sports"
+            type="button"
+            class="lb-sport"
+            [class.is-active]="sport === item.id"
+            (click)="selectSport(item.id)"
+          >
+            <span class="lb-sport-circle"><ion-icon [name]="item.icon"></ion-icon></span>
+            <span class="lb-sport-label">{{ item.label }}</span>
+          </button>
+        </div>
+
+        <div *ngIf="mode === 'venue'" class="lb-inner">
+          <button type="button" class="lb-venue-select" (click)="venuePickerOpen = !venuePickerOpen" [disabled]="!venues.length">
+            <span class="lb-venue-icon"><ion-icon name="location-outline"></ion-icon></span>
+            <span class="lb-venue-text">
+              <span class="lb-venue-kicker">VENUE LEADERBOARD</span>
+              <span class="lb-venue-name">{{ selectedVenue?.name || 'No venues found nearby' }}</span>
+            </span>
+            <ion-icon name="chevron-down-outline" class="lb-venue-chevron" [class.is-open]="venuePickerOpen"></ion-icon>
+          </button>
+          <div *ngIf="venuePickerOpen" class="lb-venue-list">
+            <button
+              *ngFor="let venue of venues"
+              type="button"
+              class="lb-venue-option"
+              [class.is-active]="selectedVenue?.id === venue.id"
+              (click)="selectVenue(venue)"
+            >
+              {{ venue.name }}
+              <ion-icon *ngIf="selectedVenue?.id === venue.id" name="checkmark-outline"></ion-icon>
+            </button>
           </div>
         </div>
+      </section>
 
-        <!-- Rank #3 (Priya) -->
-        <div *ngIf="topThree[2]" class="order-3 flex flex-col items-center">
-          <div class="podium-card w-full p-4 rounded-3xl border border-white/10 text-center bg-card relative">
-            <div class="relative inline-block mb-3">
-              <div class="w-14 h-14 text-2.5xl rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center mx-auto shadow-md">
-                {{ topThree[2].avatar }}
+      <!-- Your rank -->
+      <section class="lb-inner lb-block-tight">
+        <div #rankCard class="lb-rank-card">
+          <span class="lb-blob lb-blob-lime"></span>
+          <span class="lb-blob lb-blob-orange"></span>
+          <div class="lb-rel">
+            <div class="lb-rank-head">
+              <div class="lb-rank-kicker">
+                <ion-icon name="flash"></ion-icon>
+                <span>YOUR RANK</span>
               </div>
-              <div class="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-slate-700/80 border border-white/10 flex items-center justify-center">
-                <ion-icon name="award-outline" class="text-accent/60 text-xs"></ion-icon>
+              <span class="lb-rank-period">{{ periodLabel }}</span>
+            </div>
+
+            <div class="lb-rank-main">
+              <div>
+                <p class="lb-rank-number">{{ me?.rank ? '#' + me?.rank : '—' }}</p>
+                <p class="lb-rank-place">{{ rankPlaceLabel }}</p>
+              </div>
+              <div class="lb-rank-xp-wrap">
+                <p class="lb-rank-xp">{{ (me?.xp ?? 0) | number }} <span>XP</span></p>
+                <p class="lb-rank-level">
+                  LEVEL {{ me?.level || summary?.level || 1 }} • {{ (me?.levelTitle || summary?.levelTitle || 'Player') | uppercase }}
+                </p>
               </div>
             </div>
-            <div class="text-sm font-bold text-[#111827] mb-0.5 truncate">{{ topThree[2].name.split(' ')[0] }}</div>
-            <div class="text-xs font-bold text-[#FF7A00] mb-1">{{ topThree[2].points | number }}</div>
-            <div class="text-[10px] font-bold text-slate-500">#3</div>
+
+            <div class="lb-rank-stats">
+              <div class="lb-rank-stat">
+                <p>{{ summary?.gamesPlayed ?? me?.gamesPlayed ?? 0 }}</p>
+                <span>GAMES PLAYED</span>
+              </div>
+              <div class="lb-rank-stat">
+                <p>{{ summary?.reliabilityScore ?? '—' }}</p>
+                <span>RELIABILITY</span>
+              </div>
+              <div class="lb-rank-stat">
+                <p>{{ summary?.rating ? (summary?.rating | number: '1.1-1') : '—' }}</p>
+                <span>RATING</span>
+              </div>
+            </div>
+
+            <div class="lb-chase">
+              <ng-container *ngIf="me?.rank; else unranked">
+                <div class="lb-chase-side">
+                  <span>YOU • #{{ me?.rank }}</span>
+                  <p>{{ (me?.xp ?? 0) | number }} XP</p>
+                </div>
+                <div class="lb-chase-bar-wrap">
+                  <div class="lb-chase-bar"><span [style.width.%]="chaseProgressPct"></span></div>
+                  <p class="lb-chase-note">
+                    {{ playerAhead ? (xpToAhead | number) + ' XP TO #' + playerAhead.rank : me?.rank === 1 ? "YOU'RE #1" : 'KEEP CLIMBING' }}
+                  </p>
+                </div>
+                <div class="lb-chase-side lb-chase-right" *ngIf="playerAhead">
+                  <span>{{ playerAhead.firstName | uppercase }} • #{{ playerAhead.rank }}</span>
+                  <p>{{ playerAhead.xp | number }} XP</p>
+                </div>
+              </ng-container>
+              <ng-template #unranked>
+                <p class="lb-chase-empty">Play a verified game{{ periodSuffix }} to get on this board.</p>
+              </ng-template>
+            </div>
+
+            <button type="button" class="lb-lime-btn" (click)="openXpHistory()">VIEW MY XP →</button>
           </div>
         </div>
+      </section>
 
-      </div>
-    </section>
-
-    <section class="px-5 mb-4" *ngIf="me()">
-      <div class="player-card" style="border:1px solid var(--app-primary)">
-        <div class="rank-number">#{{ me()?.rank || '—' }}</div>
-        <div class="player-info">
-          <div class="name-row"><h3>You · {{ me()?.name }}</h3></div>
-          <div class="stats-row"><span>{{ me()?.xp | number }} XP</span></div>
+      <!-- Next move -->
+      <section class="lb-inner lb-block">
+        <div class="lb-next-move">
+          <div class="lb-next-icon"><ion-icon name="flash"></ion-icon></div>
+          <div class="lb-next-copy">
+            <p class="lb-next-kicker">YOUR NEXT MOVE</p>
+            <ng-container *ngIf="playerAhead; else nextMoveOther">
+              <p class="lb-next-title">You're {{ xpToAhead | number }} XP away from #{{ playerAhead.rank }}.</p>
+              <p class="lb-next-text">Complete one verified game on time and you could move up.</p>
+            </ng-container>
+            <ng-template #nextMoveOther>
+              <p class="lb-next-title">{{ me?.rank === 1 ? "You're top of the board." : 'Get on the board.' }}</p>
+              <p class="lb-next-text">
+                {{ me?.rank === 1 ? 'Keep playing verified games to defend #1.' : 'Join a verified game near you to start earning XP.' }}
+              </p>
+            </ng-template>
+          </div>
+          <button type="button" class="lb-next-btn" (click)="findGame()">FIND A GAME</button>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- Leaderboard List (Rank #4+) -->
-    <section class="px-5 space-y-3 pb-4">
-      <article 
-        *ngFor="let player of listPlayers"
-        class="player-card"
-      >
-        <!-- Rank -->
-        <div class="rank-number">
-          #{{ player.rank }}
+      <!-- Loading -->
+      <section *ngIf="loading" class="lb-inner lb-block">
+        <div class="lb-skeleton lb-skeleton-podium"></div>
+        <div class="lb-skeleton lb-skeleton-row" *ngFor="let _ of [1, 2, 3]"></div>
+      </section>
+
+      <ng-container *ngIf="!loading">
+        <!-- Empty -->
+        <section *ngIf="!rows.length" class="lb-inner lb-block">
+          <div class="lb-empty">
+            <ion-icon name="trophy-outline"></ion-icon>
+            <p class="lb-empty-title">No rankings yet</p>
+            <p class="lb-empty-text">
+              {{
+                mode === 'friends'
+                  ? 'Add friends on TYNG to compare XP with your crew.'
+                  : mode === 'venue' && !selectedVenue
+                    ? 'No venues are available for a venue leaderboard yet.'
+                    : 'Nobody has earned verified XP here' + periodSuffix + '. Be the first.'
+              }}
+            </p>
+            <button *ngIf="period !== 'all_time'" type="button" class="lb-empty-btn" (click)="selectPeriod('all_time')">
+              VIEW ALL TIME
+            </button>
+          </div>
+        </section>
+
+        <!-- Podium -->
+        <section *ngIf="topThree.length" class="lb-inner lb-block">
+          <p class="lb-section-title">Top three</p>
+          <div class="lb-podium">
+            <span class="lb-podium-glow"></span>
+            <div class="lb-podium-grid">
+              <button
+                *ngFor="let player of podiumOrder; trackBy: trackPlayer"
+                type="button"
+                class="lb-podium-card"
+                [class.is-first]="player.rank === 1"
+                [style.--accent]="podiumAccent(player.rank)"
+                (click)="openPlayer(player)"
+              >
+                <svg *ngIf="player.rank === 1" class="lb-crown" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z" />
+                  <path d="M5 21h14" />
+                </svg>
+                <span class="lb-podium-avatar-wrap">
+                  <span class="lb-podium-avatar">
+                    <img *ngIf="player.avatar" [src]="player.avatar" [alt]="player.name" (error)="player.avatar = null" />
+                    <span *ngIf="!player.avatar">{{ player.initials }}</span>
+                  </span>
+                  <span class="lb-podium-rank">#{{ player.rank }}</span>
+                </span>
+                <span class="lb-podium-name">{{ player.me ? 'YOU' : (player.firstName | uppercase) }}</span>
+                <span class="lb-podium-xp">{{ player.xp | number }} XP</span>
+                <span class="lb-podium-level">Level {{ player.level }} • {{ player.levelTitle }}</span>
+                <span class="lb-podium-games">
+                  {{ player.reliability !== null ? player.reliability + ' Reliability' : player.gamesPlayed + ' games' }}
+                </span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Rankings -->
+        <section *ngIf="rankingRows.length" class="lb-inner lb-block">
+          <p class="lb-section-title">{{ rankingsTitle }}</p>
+          <div class="lb-rank-list">
+            <button
+              *ngFor="let player of rankingRows; trackBy: trackPlayer"
+              type="button"
+              class="lb-rank-row"
+              [class.is-me]="player.me"
+              (click)="openPlayer(player)"
+            >
+              <span class="lb-row-rank">#{{ player.rank }}</span>
+              <span class="lb-row-avatar-wrap">
+                <span class="lb-row-avatar">
+                  <img *ngIf="player.avatar" [src]="player.avatar" [alt]="player.name" (error)="player.avatar = null" />
+                  <span *ngIf="!player.avatar">{{ player.initials }}</span>
+                </span>
+                <span class="lb-row-check"><ion-icon name="checkmark"></ion-icon></span>
+              </span>
+              <span class="lb-row-info">
+                <span class="lb-row-name">{{ player.me ? 'You' : player.name }}</span>
+                <span class="lb-row-caption">Level {{ player.level }} • {{ player.levelTitle }} •
+                  {{ player.reliability !== null ? player.reliability + ' Reliability' : player.gamesPlayed + ' games' }}</span>
+              </span>
+              <span class="lb-row-xp">{{ player.xp | number }} <small>XP</small></span>
+            </button>
+          </div>
+        </section>
+
+        <!-- Rivals -->
+        <section *ngIf="rivals.length" class="lb-block">
+          <p class="lb-section-title lb-inner">Your rivals</p>
+          <div class="lb-rival-row">
+            <button
+              *ngFor="let player of rivals; trackBy: trackPlayer"
+              type="button"
+              class="lb-rival"
+              [class.is-me]="player.me"
+              (click)="openPlayer(player)"
+            >
+              <span class="lb-rival-rank">#{{ player.rank }}</span>
+              <span class="lb-rival-avatar">
+                <img *ngIf="player.avatar" [src]="player.avatar" [alt]="player.name" (error)="player.avatar = null" />
+                <span *ngIf="!player.avatar">{{ player.initials }}</span>
+              </span>
+              <span class="lb-rival-name">{{ player.me ? 'YOU' : player.name }}</span>
+              <span class="lb-rival-xp">{{ player.xp | number }} XP</span>
+              <span class="lb-rival-gap" [ngClass]="'is-' + player.gapTone">{{ player.gap }}</span>
+              <span *ngIf="!player.me" class="lb-rival-link">VIEW PROFILE →</span>
+            </button>
+          </div>
+        </section>
+      </ng-container>
+
+      <!-- Weekly highlight -->
+      <section *ngIf="weeklyTop" class="lb-inner lb-block">
+        <button type="button" class="lb-weekly" (click)="openPlayer(weeklyTop)">
+          <span class="lb-weekly-blob"></span>
+          <span class="lb-weekly-icon"><ion-icon name="sparkles"></ion-icon></span>
+          <span class="lb-weekly-copy">
+            <span class="lb-weekly-kicker">THIS WEEK • TOP PERFORMER</span>
+            <span class="lb-weekly-name">{{ weeklyTop.me ? 'You' : weeklyTop.name }}</span>
+            <span class="lb-weekly-meta">+{{ weeklyTop.xp | number }} XP • Level {{ weeklyTop.level }}</span>
+          </span>
+          <ion-icon name="trophy-outline" class="lb-weekly-trophy"></ion-icon>
+        </button>
+      </section>
+
+      <!-- Season -->
+      <section *ngIf="period === 'season'" class="lb-inner lb-block">
+        <p class="lb-section-title">Season progress</p>
+        <div class="lb-season">
+          <div class="lb-season-head">
+            <div>
+              <p class="lb-season-name">{{ (summary?.season?.name || 'TYNG Season') | uppercase }}</p>
+              <p *ngIf="seasonDates" class="lb-season-dates">{{ seasonDates }}</p>
+            </div>
+            <span *ngIf="seasonDaysLeft !== null" class="lb-season-left">{{ seasonDaysLeft }} DAYS LEFT</span>
+          </div>
+          <div class="lb-season-stats">
+            <div>
+              <p>{{ (summary?.seasonXp ?? 0) | number }}</p>
+              <span>SEASON XP</span>
+            </div>
+            <div>
+              <p>{{ summary?.seasonRank ? '#' + summary?.seasonRank : '—' }}</p>
+              <span>CURRENT RANK</span>
+            </div>
+            <div>
+              <p>{{ (summary?.lifetimeXp ?? 0) | number }}</p>
+              <span>LIFETIME XP</span>
+            </div>
+          </div>
+          <div class="lb-season-note">
+            <ion-icon name="information-circle-outline"></ion-icon>
+            <p>Season rankings reset each season. Your Lifetime XP stays forever.</p>
+          </div>
+          <p class="lb-season-honours-title">SEASON HONOURS</p>
+          <div class="lb-season-honours">
+            <div *ngFor="let honour of seasonHonours" class="lb-season-honour">
+              <ion-icon [name]="honour.icon"></ion-icon>
+              <span>{{ honour.label }}</span>
+            </div>
+          </div>
         </div>
+      </section>
+    </main>
+  </app-brand-header-shell>
 
-        <!-- Avatar Circle -->
-        <div class="avatar-circle">
-          {{ player.avatar }}
+  <div slot="fixed" class="lb-fixed-layer">
+    <!-- Floating rank pill -->
+    <button
+      *ngIf="hasSeenRankCard && !rankCardVisible && me?.rank && !sheet"
+      type="button"
+      class="lb-float-rank"
+      (click)="scrollToRankCard()"
+    >
+      <span class="lb-float-number">#{{ me?.rank }}</span>
+      <span class="lb-float-divider"></span>
+      <span class="lb-float-you">YOU</span>
+      <span class="lb-float-xp">{{ (me?.xp ?? 0) | number }} XP</span>
+      <ion-icon name="chevron-forward"></ion-icon>
+    </button>
+
+    <!-- How XP works -->
+    <ng-container *ngIf="sheet === 'xp'">
+      <div class="lb-sheet-backdrop" (click)="closeSheet()"></div>
+      <div class="lb-sheet" role="dialog" aria-label="How XP works">
+        <div class="lb-sheet-handle"></div>
+        <div class="lb-sheet-head">
+          <p>How XP works</p>
+          <button type="button" class="lb-sheet-close" aria-label="Close" (click)="closeSheet()"><ion-icon name="close"></ion-icon></button>
         </div>
-
-        <!-- Player Profile Info -->
-        <div class="player-info">
-          <div class="name-row">
-            <h3>{{ player.name }}</h3>
-            <span class="badge">
-              {{ player.badge }}
+        <p class="lb-sheet-intro">TYNG XP comes only from verified activity. It has no monetary value.</p>
+        <div class="lb-pillars">
+          <div *ngFor="let pillar of xpPillars" class="lb-pillar" [style.--pillar]="pillar.color">
+            <span class="lb-pillar-icon"><ion-icon [name]="pillar.icon"></ion-icon></span>
+            <span>
+              <span class="lb-pillar-title">{{ pillar.title }}</span>
+              <span class="lb-pillar-copy">{{ pillar.copy }}</span>
             </span>
           </div>
-          
-          <div class="stats-row">
-            <div class="stat-item">
-              <ion-icon name="trophy-outline"></ion-icon>
-              <span>{{ player.gamesPlayed }} games</span>
-            </div>
-            <div class="stat-item">
-              <ion-icon name="flash-outline"></ion-icon>
-              <span>Level {{ player.badge }}</span>
-            </div>
-          </div>
         </div>
+        <button type="button" class="lb-dark-btn" (click)="openXpHistory()">VIEW MY XP HISTORY</button>
+      </div>
+    </ng-container>
 
-        <!-- Points / Rating -->
-        <div class="points-container">
-          <ion-icon name="star"></ion-icon>
-          <span>{{ player.points | number }}</span>
+    <!-- Search players -->
+    <ng-container *ngIf="sheet === 'search'">
+      <div class="lb-sheet-backdrop" (click)="closeSheet()"></div>
+      <div class="lb-sheet" role="dialog" aria-label="Search players">
+        <div class="lb-sheet-handle"></div>
+        <div class="lb-sheet-head">
+          <p>Search players</p>
+          <button type="button" class="lb-sheet-close" aria-label="Close" (click)="closeSheet()"><ion-icon name="close"></ion-icon></button>
         </div>
-      </article>
-    </section>
+        <label class="lb-search">
+          <ion-icon name="search-outline"></ion-icon>
+          <input type="search" [(ngModel)]="searchQuery" placeholder="Search this leaderboard" />
+        </label>
+        <div class="lb-search-results">
+          <button *ngFor="let player of searchResults; trackBy: trackPlayer" type="button" class="lb-search-result" (click)="openPlayer(player)">
+            <span class="lb-row-avatar">
+              <img *ngIf="player.avatar" [src]="player.avatar" [alt]="player.name" (error)="player.avatar = null" />
+              <span *ngIf="!player.avatar">{{ player.initials }}</span>
+            </span>
+            <span class="lb-search-info">
+              <span class="lb-search-name">{{ player.me ? 'You' : player.name }}</span>
+              <span class="lb-search-level">Level {{ player.level }} • {{ player.levelTitle }}</span>
+            </span>
+            <span class="lb-search-rank">
+              <span>#{{ player.rank }}</span>
+              <small>{{ player.xp | number }} XP</small>
+            </span>
+          </button>
+          <p *ngIf="!searchResults.length" class="lb-search-empty">No players match "{{ searchQuery }}" on this board.</p>
+        </div>
+      </div>
+    </ng-container>
 
-  </main>
-  </app-brand-header-shell>
+    <!-- Share rank -->
+    <ng-container *ngIf="sheet === 'share'">
+      <div class="lb-sheet-backdrop" (click)="closeSheet()"></div>
+      <div class="lb-sheet" role="dialog" aria-label="Share your rank">
+        <div class="lb-sheet-handle"></div>
+        <div class="lb-sheet-head">
+          <p>Share your rank</p>
+          <button type="button" class="lb-sheet-close" aria-label="Close" (click)="closeSheet()"><ion-icon name="close"></ion-icon></button>
+        </div>
+        <div class="lb-share-card">
+          <span class="lb-blob lb-blob-lime"></span>
+          <p class="lb-share-kicker">{{ cityFallback && mode === 'city' ? 'TYNG' : 'TYNG • ' + rankPlaceLabel }}</p>
+          <p class="lb-share-rank">{{ me?.rank ? '#' + me?.rank : '—' }}</p>
+          <p class="lb-share-period">{{ periodLabel }}</p>
+          <p class="lb-share-meta">{{ (me?.xp ?? 0) | number }} VERIFIED XP • LEVEL {{ me?.level || summary?.level || 1 }}</p>
+          <p class="lb-share-name">{{ myName | uppercase }}</p>
+        </div>
+        <button type="button" class="lb-lime-btn lb-share-btn" (click)="shareRank()">
+          <ion-icon name="share-social-outline"></ion-icon> SHARE ACHIEVEMENT
+        </button>
+      </div>
+    </ng-container>
+  </div>
 </ion-content>

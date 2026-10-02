@@ -169,20 +169,11 @@
         </div>
 
         <div class="drawer-menu">
-          <button class="menu-item" (click)="navigateTo('/app/friends')">
-            <div class="menu-icon"><ion-icon name="people-outline"></ion-icon></div>
+          <button class="menu-item" (click)="navigateTo('/app/wallet')">
+            <div class="menu-icon"><ion-icon name="wallet-outline"></ion-icon></div>
             <div class="menu-text">
-              <div class="menu-label">My Friends</div>
-              <div class="menu-desc">View friends &amp; start a chat</div>
-            </div>
-            <ion-icon name="chevron-forward-outline" class="menu-chevron"></ion-icon>
-          </button>
-
-          <button class="menu-item" (click)="navigateTo('/app/stats')">
-            <div class="menu-icon"><ion-icon name="analytics-outline"></ion-icon></div>
-            <div class="menu-text">
-              <div class="menu-label">Personal Stats</div>
-              <div class="menu-desc">Height, weight, fitness &amp; more</div>
+              <div class="menu-label">Wallet</div>
+              <div class="menu-desc">Balance, TP Points &amp; transactions</div>
             </div>
             <ion-icon name="chevron-forward-outline" class="menu-chevron"></ion-icon>
           </button>
@@ -196,29 +187,11 @@
             <ion-icon name="chevron-forward-outline" class="menu-chevron"></ion-icon>
           </button>
 
-          <button class="menu-item" (click)="navigateTo('/app/my-bookings')">
-            <div class="menu-icon"><ion-icon name="time-outline"></ion-icon></div>
-            <div class="menu-text">
-              <div class="menu-label">History</div>
-              <div class="menu-desc">Games, bookings &amp; payments</div>
-            </div>
-            <ion-icon name="chevron-forward-outline" class="menu-chevron"></ion-icon>
-          </button>
-
-          <button class="menu-item" (click)="navigateTo('/app/wallet')">
-            <div class="menu-icon"><ion-icon name="wallet-outline"></ion-icon></div>
-            <div class="menu-text">
-              <div class="menu-label">Wallet</div>
-              <div class="menu-desc">Balance, top-up &amp; transactions</div>
-            </div>
-            <ion-icon name="chevron-forward-outline" class="menu-chevron"></ion-icon>
-          </button>
-
           <button class="menu-item" (click)="navigateTo('/app/coaches')">
             <div class="menu-icon"><ion-icon name="school-outline"></ion-icon></div>
             <div class="menu-text">
               <div class="menu-label">Coaches</div>
-              <div class="menu-desc">Book sessions, reviews, ratings</div>
+              <div class="menu-desc">Find &amp; book coaches</div>
             </div>
             <ion-icon name="chevron-forward-outline" class="menu-chevron"></ion-icon>
           </button>
@@ -227,18 +200,25 @@
             <div class="menu-icon"><ion-icon name="settings-outline"></ion-icon></div>
             <div class="menu-text">
               <div class="menu-label">Settings</div>
-              <div class="menu-desc">Notifications, privacy, theme</div>
+              <div class="menu-desc">Account &amp; preferences</div>
             </div>
             <ion-icon name="chevron-forward-outline" class="menu-chevron"></ion-icon>
           </button>
 
-          <div class="menu-divider"></div>
+          <button class="menu-item" (click)="navigateTo('/app/blocked-users')">
+            <div class="menu-icon"><ion-icon name="ban-outline"></ion-icon></div>
+            <div class="menu-text">
+              <div class="menu-label">Blocked Users</div>
+              <div class="menu-desc">People you have blocked</div>
+            </div>
+            <ion-icon name="chevron-forward-outline" class="menu-chevron"></ion-icon>
+          </button>
 
           <button class="menu-item" (click)="navigateTo('/app/home')">
             <div class="menu-icon"><ion-icon name="headset-outline"></ion-icon></div>
             <div class="menu-text">
               <div class="menu-label">Support</div>
-              <div class="menu-desc">FAQs, report, contact us</div>
+              <div class="menu-desc">Help, reports &amp; contact us</div>
             </div>
             <ion-icon name="chevron-forward-outline" class="menu-chevron"></ion-icon>
           </button>

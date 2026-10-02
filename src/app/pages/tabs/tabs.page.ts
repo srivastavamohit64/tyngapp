@@ -4,6 +4,7 @@ import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map, startWith } from 'rxjs/operators';
+import { isMainTabRoute } from '../../core/constants/layout-routes';
 import { DesignDataService } from '../../core/services/design-data.service';
 import { AuthService } from '../../core/services/auth.service';
 import { TabBadgeService } from '../../core/services/tab-badge.service';
@@ -71,52 +72,7 @@ export class TabsPage {
       return false;
     }
 
-    // Hide on workflow / form pages (Figma AppLayout)
-    if (path.startsWith('/app/game/create')) return false;
-    if (path === '/app/wallet' || path.startsWith('/app/wallet/')) return false;
-    if (path === '/app/venues' || path.startsWith('/app/venues/')) return false;
-    if (path.startsWith('/app/map')) return false;
-    if (path.includes('/complete-profile')) return false;
-    if (path.includes('/enroll-student')) return false;
-    if (path.includes('/create-session')) return false;
-    if (path.includes('/venue-booking')) return false;
-    if (path.includes('/book-venue')) return false;
-    if (path.startsWith('/app/venue/events/create')) return false;
-    if (/^\/app\/venue\/bookings\/[^/]+$/.test(path)) return false;
-    if (/^\/app\/my-bookings\/[^/]+$/.test(path)) return false;
-    if (/^\/app\/(coach\/)?chat\/.+/.test(path)) return false;
-    if (path.startsWith('/app/check-in')) return false;
-    // Player venue detail / book / payment summary (e.g. /app/venue/14, /app/venue/14/book)
-    if (/^\/app\/venue\/\d+(\/(book|summary))?$/.test(path)) return false;
-
-    if (user?.role === 'coach') {
-      const coachPrimary = [
-        '/app/coach/dashboard',
-        '/app/coach/students',
-        '/app/coach/schedule',
-        '/app/coach/chat',
-      ];
-      return coachPrimary.some((p) => path === p || path.startsWith(p + '/'));
-    }
-    if (user?.role === 'venue') {
-      const venuePrimary = [
-        '/app/venue/dashboard',
-        '/app/home',
-        '/app/venue/bookings',
-        '/app/venue/events',
-        '/app/venue/calendar',
-        '/app/venue/facilities',
-        '/app/venue/earnings',
-        '/app/venue/analytics',
-        '/app/venue/profile',
-        '/app/chat',
-      ];
-      return venuePrimary.some((p) => path === p || path.startsWith(p + '/'));
-    }
-    if (user?.role === 'admin') {
-      return path.startsWith('/app/admin');
-    }
-    return true;
+    return isMainTabRoute(path, user?.role);
   });
 
   readonly tabs = computed<TabItem[]>(() => {

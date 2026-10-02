@@ -1,11 +1,16 @@
-import { CommonModule } from '@angular/common';
-import { Component, inject, Input } from '@angular/core';
+import { CommonModule, Location } from '@angular/common';
+import { Component, computed, inject, Input } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router } from '@angular/router';
 import { IonicModule, MenuController } from '@ionic/angular';
+import { filter, map, startWith } from 'rxjs/operators';
+import { isMainTabRoute } from '../../../core/constants/layout-routes';
 import { AuthService } from '../../../core/services/auth.service';
 import { HeaderComponent } from '../header/header.component';
 
 /**
- * Wraps page content with the Figma top bar on primary tab routes.
+ * Wraps page content with the Figma top bar. Main tab routes get the menu button;
+ * every other page gets a back button instead.
  */
 @Component({
   selector: 'app-brand-header-shell',
@@ -26,9 +31,11 @@ import { HeaderComponent } from '../header/header.component';
     <app-header
       *ngIf="showBrand"
       [variant]="headerVariant"
+      [showBack]="!isMainTab()"
       [notificationRoute]="resolvedNotificationRoute"
       [homeRoute]="resolvedHomeRoute"
       (menuClick)="openMenu()"
+      (back)="goBack()"
     ></app-header>
     <ng-content></ng-content>
   `,
@@ -36,9 +43,22 @@ import { HeaderComponent } from '../header/header.component';
 export class BrandHeaderShellComponent {
   private readonly menu = inject(MenuController);
   private readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly location = inject(Location);
 
   @Input() showBrand = true;
   @Input() notificationRoute?: string;
+
+  private readonly url = toSignal(
+    this.router.events.pipe(
+      filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+      map((e) => e.urlAfterRedirects),
+      startWith(this.router.url),
+    ),
+    { initialValue: this.router.url },
+  );
+
+  readonly isMainTab = computed(() => isMainTabRoute(this.url(), this.auth.user()?.role));
 
   get headerVariant(): 'brand' | 'venue' {
     return this.auth.user()?.role === 'venue' ? 'venue' : 'brand';
@@ -61,5 +81,13 @@ export class BrandHeaderShellComponent {
 
   async openMenu() {
     await this.menu.open();
+  }
+
+  goBack(): void {
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      this.location.back();
+      return;
+    }
+    void this.router.navigateByUrl(this.resolvedHomeRoute);
   }
 }
