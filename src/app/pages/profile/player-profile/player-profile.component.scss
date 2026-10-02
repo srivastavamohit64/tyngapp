@@ -705,6 +705,46 @@ button {
   font-weight: 800;
 }
 
+.pp-badge-progress {
+  margin-top: 8px;
+}
+
+.pp-badge-progress-bar {
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e5e7eb;
+
+  span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: $green;
+  }
+}
+
+.pp-badge-progress-label {
+  margin-top: 4px;
+  color: $dark;
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.pp-badge-hint {
+  margin-top: 2px;
+  color: #b45309;
+  font-size: 8px;
+  line-height: 1.3;
+}
+
+.pp-badge-note {
+  margin-top: 14px;
+  color: $faint;
+  font-size: 11px;
+  line-height: 1.4;
+  text-align: center;
+}
+
 .pp-list > * + * {
   margin-top: 10px;
 }

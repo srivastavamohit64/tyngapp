@@ -179,11 +179,13 @@ PLAYER
 - Choose which 5 sports appear in the sports row on your Home page: tap More, then Edit Home, pick your 5 favourites and save. Your choice stays on every phone you sign in on.
 - See just your area under your name on the Home page, for example "Preeti Nagar" instead of "Preeti Nagar > Lucknow". If your area is not known, your city is shown.
 - See grey placeholder shapes while Home, the leaderboard, coach profiles, chats, bookings and other screens load, instead of sample text or a "nothing found" message that then changes. A coach profile now shows the real number of reviews.
+- Earn badges automatically as you play. Each badge shows how close you are, for example 1 of 50, and you get a notification the moment you unlock one. Open the new Badges page from Home or your notification. The Good Sport and Fan Favourite badges, earned through good ratings from other players, are now switched on.
 
 COACH
 
 - Use a back button on inner pages. The bottom menu now only appears on your main screens.
 - See grey placeholder shapes on your dashboard, students, schedule, insights, earnings and student pages while they load, instead of sample sessions and requests. Today's completion on your schedule is now worked out from your real sessions.
+- Earn coaching badges for completed sessions, growing your student list, writing player evaluations, great reviews and coaching every week. See your progress on the new Badges page from the side menu or the Milestone card on your dashboard.
 
 VENUE STAFF
 
@@ -195,6 +197,7 @@ ADMIN
 
 - Edit the Privacy Policy and Terms & Conditions from the CMS Pages item in the admin menu. Changes appear in the app straight away.
 - See grey placeholder shapes on the dashboard numbers and activity list while they load, instead of zeros.
+- See every player and coach badge, how each one is earned and who has earned it. Change a badge's name, description or goal, hide or switch it off, and re-check everyone at once. Each player's and coach's page now shows their badges and progress.
 
 ALL APP USERS
 

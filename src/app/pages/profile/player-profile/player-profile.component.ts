@@ -19,6 +19,7 @@ import {
   ProfileMedical,
   ProfileVisibility,
 } from '../../../core/services/player-profile.service';
+import { badgeVisual } from '../../../shared/badge-visuals';
 import { ChipOption, PpChipsComponent, PpFieldComponent, PpToggleComponent } from './profile-ui.components';
 
 type Tab = 'overview' | 'personal' | 'stats' | 'medical' | 'documents';
@@ -73,21 +74,6 @@ const POSITIONS: Record<string, string[]> = {
   badminton: ['Singles', 'Doubles', 'Mixed Doubles'],
   tennis: ['Singles', 'Doubles', 'Mixed Doubles'],
   'table tennis': ['Singles', 'Doubles'],
-};
-
-const BADGE_VISUALS: Record<string, { icon: string; color: string; bg: string }> = {
-  clockwork: { icon: 'time-outline', color: '#D97706', bg: '#FFFBEB' },
-  good_sport: { icon: 'shield-checkmark-outline', color: '#7C3AED', bg: '#F5F3FF' },
-  ground_hopper: { icon: 'location-outline', color: '#2563EB', bg: '#EFF6FF' },
-  game_maker: { icon: 'flash-outline', color: '#16A34A', bg: '#F0FDF4' },
-  count_on_me: { icon: 'checkmark-done-circle-outline', color: '#0EA5E9', bg: '#F0F9FF' },
-  early_bird: { icon: 'sunny-outline', color: '#F59E0B', bg: '#FFFBEB' },
-  explorer: { icon: 'compass-outline', color: '#0891B2', bg: '#ECFEFF' },
-  fan_favourite: { icon: 'heart-outline', color: '#DB2777', bg: '#FDF2F8' },
-  new_faces: { icon: 'people-outline', color: '#7C3AED', bg: '#F5F3FF' },
-  the_connector: { icon: 'git-network-outline', color: '#2563EB', bg: '#EFF6FF' },
-  unbroken: { icon: 'flame-outline', color: '#FF7A00', bg: '#FFF7ED' },
-  venue_favourite: { icon: 'star-outline', color: '#CA8A04', bg: '#FEFCE8' },
 };
 
 const XP_CATEGORY_ICONS: Record<string, string> = {
@@ -780,7 +766,7 @@ export class PlayerProfileComponent implements OnInit {
   }
 
   badgeVisual(badge: ProfileBadge) {
-    return BADGE_VISUALS[badge.code] ?? { icon: 'ribbon-outline', color: '#16A34A', bg: '#F0FDF4' };
+    return badgeVisual(badge);
   }
 
   xpIcon(category: string | null): string {

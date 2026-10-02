@@ -926,3 +926,11 @@ TYNG — TODAY'S WORK SUMMARY
    - Admin: dashboard numbers and operations list.
    - Type check passes and the app compiles. Home was checked in the browser as a player on a slowed-down connection. Coach, venue and admin screens were not opened in the browser.
    - Still to do: some screens have no server data at all yet (Stats, coach Profile tab, upcoming events, admin users/venues/revenue/disputes, venue analytics, coach teams and settings, venue collab), and a few values are always made up (venue weather, coach earnings chart, venue rating 4.5 and opening hours fallback, bell red dot, venue booking summary slots, coach side menu rating 4.8).
+153. BADGES FOR PLAYERS AND COACHES - 2 October 2026
+   - Players and coaches now earn badges automatically. A badge unlocks the moment its goal is reached (after a game, a rating, a coaching session, a new student, an evaluation or a review), and everyone is re-checked each day. Each unlock sends a notification that opens the Badges page.
+   - Every locked badge shows how far along you are (for example 1 / 50) and a tip when something else is needed, such as a 4.8 rating. Secret badges stay hidden until earned.
+   - Coaches have 8 new badges: First Whistle, Session Pro, Century Coach, Squad Builder, Academy Builder, Talent Scout, Top Rated and a secret Iron Coach. Players' Good Sport and Fan Favourite badges are now switched on.
+   - New Badges page for players and coaches, reachable from the coach side menu, the coach dashboard and Home.
+   - Admin: the Badges screen now separates player and coach badges, explains how each is earned, shows how many people earned it, lists those people, and has a "Re-check now" button. Player and coach pages in admin show their badges and progress.
+   - Server updated and pushed. 17 automatic checks pass. The player screens were checked in the browser. Coach screens were not opened in the browser.
+   - Still to do: the live server has no scheduled-task timer set up, so the daily re-check (and the other existing daily jobs) do not run yet. Players cannot leave coach reviews in the app yet, so the Top Rated coach badge cannot be earned through the app.

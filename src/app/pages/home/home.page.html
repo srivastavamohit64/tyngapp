@@ -344,6 +344,7 @@
                   <p class="coach-milestone-title">{{ coachMilestone.title }}</p>
                   <p class="coach-milestone-description">{{ coachMilestone.description }}</p>
                 </ng-container>
+                <button type="button" class="coach-milestone-link" (click)="go('/app/badges')">View badges <ion-icon name="chevron-forward-outline"></ion-icon></button>
                 <ng-template #milestoneSkel><ion-skeleton-text animated class="coach-skel-line coach-skel-line--light"></ion-skeleton-text><ion-skeleton-text animated class="coach-skel-line coach-skel-line--light coach-skel-line--short"></ion-skeleton-text></ng-template>
               </div>
             </div>
@@ -781,7 +782,7 @@
         </section>
 
         <section class="home-feed-section" *ngIf="homeBadges.length">
-          <div class="feed-section-heading"><h2>Recently unlocked</h2><button type="button" (click)="go('/app/profile')">View all badges <ion-icon name="chevron-forward-outline"></ion-icon></button></div>
+          <div class="feed-section-heading"><h2>Recently unlocked</h2><button type="button" (click)="go('/app/badges')">View all badges <ion-icon name="chevron-forward-outline"></ion-icon></button></div>
           <div class="horizontal-card-row badge-card-row">
             <button type="button" class="home-badge-card" *ngFor="let badge of homeBadges" [class.is-locked]="!badge.earned" [style.--badge-color]="badge.color" [style.--badge-tint]="badge.tint" (click)="go('/app/profile')">
               <span class="home-badge-medal"><ion-icon [name]="badge.earned ? badge.icon : 'lock-closed-outline'"></ion-icon></span>

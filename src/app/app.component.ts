@@ -88,6 +88,7 @@ export class AppComponent implements OnInit {
     { label: 'Coach Community', sub: 'Connect with active coaches', path: '/app/coach/community', icon: 'people-circle-outline' },
     { label: 'Earnings', sub: 'Revenue & payouts', path: '/app/coach/earnings', icon: 'cash-outline' },
     { label: 'Analytics', sub: 'Profile & booking stats', path: '/app/coach/insights', icon: 'bar-chart-outline' },
+    { label: 'Badges', sub: 'Achievements & progress', path: '/app/badges', icon: 'ribbon-outline' },
     { label: 'Settings', sub: 'Preferences & privacy', path: '/app/coach/settings', icon: 'settings-outline' },
   ];
 

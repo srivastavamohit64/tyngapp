@@ -163,6 +163,10 @@ const routes: Routes = [
         loadComponent: () => import('./pages/events/leaderboard.page').then((m) => m.LeaderboardPage),
       },
       {
+        path: 'badges',
+        loadComponent: () => import('./pages/badges/badges.page').then((m) => m.BadgesPage),
+      },
+      {
         path: 'profile',
         loadComponent: () => import('./pages/profile/profile.page').then((m) => m.ProfilePage),
       },

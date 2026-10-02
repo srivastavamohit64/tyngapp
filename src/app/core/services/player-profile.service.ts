@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { ApiResponse } from '../models/api.model';
+import { BadgeItem } from '../../shared/badge-visuals';
 import { ApiService } from './api.service';
 
 export interface HomeSportsSetting {
@@ -104,16 +105,7 @@ export interface ProfileMedical {
   wellness: { smoking: string | null; alcohol: string | null; diet: string | null; sleepHours: number | null };
 }
 
-export interface ProfileBadge {
-  code: string;
-  name: string;
-  description: string | null;
-  category: string;
-  threshold: number | null;
-  visibility: string;
-  earned: boolean;
-  earnedAt: string | null;
-}
+export type ProfileBadge = BadgeItem;
 
 export interface ProfileGame {
   bookingId: string;

@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { BadgeCatalog, BadgeItem } from '../../shared/badge-visuals';
 import { ApiService } from './api.service';
 
 export interface XpLine {
@@ -109,10 +110,12 @@ export class XpService {
     );
   }
 
-  badges(): Observable<Array<{ code: string; name: string; description?: string; category: string; earned: boolean }>> {
-    return this.api.get<{ items: Array<{ code: string; name: string; description?: string; category: string; earned: boolean }> }>('/xp/badges').pipe(
-      map((res) => res.data?.items ?? []),
-    );
+  badges(): Observable<BadgeItem[]> {
+    return this.badgeCatalog().pipe(map((catalog) => catalog?.items ?? []));
+  }
+
+  badgeCatalog(): Observable<BadgeCatalog | null> {
+    return this.api.get<BadgeCatalog>('/xp/badges').pipe(map((res) => res.data));
   }
 
   challenges(): Observable<Array<{ id: number; name: string; description?: string; threshold: number; current: number; rewardXp: number; completed: boolean }>> {

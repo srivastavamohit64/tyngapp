@@ -111,6 +111,7 @@
             </span>
             <p class="pp-badge-title">{{ badge.name | uppercase }}</p>
             <p class="pp-badge-sub">{{ badge.description || (badge.earned ? 'Unlocked' : 'Not unlocked yet') }}</p>
+            <ng-container *ngTemplateOutlet="badgeProgress; context: { $implicit: badge }"></ng-container>
           </button>
         </div>
       </section>
@@ -715,9 +716,19 @@
           <p class="pp-badge-title">{{ badge.name | uppercase }}</p>
           <p class="pp-badge-sub">{{ badge.description }}</p>
           <p class="pp-badge-when" *ngIf="badge.earnedAt">Earned {{ badge.earnedAt | date: 'd MMM yyyy' }}</p>
+          <ng-container *ngTemplateOutlet="badgeProgress; context: { $implicit: badge }"></ng-container>
         </div>
       </div>
+      <p class="pp-badge-note">Badges unlock automatically as you play. Secret badges appear once you earn them.</p>
     </div>
+
+    <ng-template #badgeProgress let-badge>
+      <div class="pp-badge-progress" *ngIf="!badge.earned && badge.threshold">
+        <div class="pp-badge-progress-bar"><span [style.width.%]="badge.progressPct || 0"></span></div>
+        <p class="pp-badge-progress-label">{{ badge.current || 0 }} / {{ badge.threshold }}</p>
+        <p class="pp-badge-hint" *ngIf="badge.hint">{{ badge.hint }}</p>
+      </div>
+    </ng-template>
   </ng-container>
 
   <!-- Edit bar -->
