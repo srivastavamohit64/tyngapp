@@ -272,15 +272,23 @@
 
 .sport-rail-loop {
   --sport-rail-gap: clamp(4px, 1.6vw, 10px);
+  --sport-rail-inset: 16px;
   display: flex;
   gap: var(--sport-rail-gap);
   overflow-x: auto;
   overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
   scrollbar-width: none;
+}
+
+.sport-rail.sport-rail-loop {
+  margin-inline: var(--sport-rail-inset);
+  padding-inline: 0;
 }
 
 .sport-rail-loop .sport-rail-item {
   flex: 0 0 calc((100% - 5 * var(--sport-rail-gap)) / 6);
+  scroll-snap-align: start;
 }
 
 .sport-rail::-webkit-scrollbar,
@@ -896,7 +904,7 @@ ion-modal.sports-picker-modal::part(content) { border-radius: 0; }
   .player-home-v2 .home-search { width: calc(100% - 48px); margin-inline: 24px; padding-inline: 14px; }
   .player-home-v2 .home-search span { font-size: 14px; }
   .sport-rail { gap: 4px; padding-inline: 10px; }
-  .sport-rail-loop { --sport-rail-gap: 4px; }
+  .sport-rail-loop { --sport-rail-gap: 4px; --sport-rail-inset: 10px; }
   .promotion-wrap { padding-inline: 14px; }
   .promo-copy { width: min(78%, 270px); padding-inline: 15px; }
   .promo-copy h2 { font-size: 20px; }
@@ -950,6 +958,7 @@ ion-modal.sports-picker-modal::part(content) { border-radius: 0; }
   .feed-section-heading,
   .horizontal-card-row { padding-inline: 24px; }
   .horizontal-card-row { scroll-padding-inline: 24px; }
+  .sport-rail-loop { --sport-rail-inset: 24px; }
   .feed-state,
   .home-inline-state { margin-inline: 24px; }
   .tournament-card,
