@@ -163,12 +163,12 @@ PLAYER
 - See a dark sliders icon on the search filter button. The search options menu now closes as soon as you pick one.
 - See grey loading placeholders while search results arrive, instead of an empty or old list.
 - Use a back button at the top of every inner page. The bottom menu now only appears on the main screens: Home, Players, My Bookings and Chat.
-- Use a simpler side menu with Wallet, Leaderboards, Coaches, Settings, Blocked Users and Support. My Friends, Personal Stats and History can still be opened from Chat, Home and My Bookings.
+- Use a simpler side menu with Wallet, Leaderboards, Coaches, Settings and Support. My Friends, Personal Stats and History can still be opened from Chat, Home and My Bookings.
 - Tap the back button on Settings to return to the screen you came from, instead of always landing on your Profile.
 - Settings now offers Edit Profile, Change Password, Notifications, Blocked Users, Privacy Policy and Terms & Conditions. Wallet is no longer listed there but is still in the side menu.
 - Read the TYNG Privacy Policy and Terms & Conditions inside the app, explaining what information TYNG collects, how it is used and the rules for using the app. The TYNG team can update the wording at any time.
 - Block a player from the button at the top of their profile. Blocked players cannot message you, invite you to games, add you as a friend or find you in search, and you will not see them either.
-- See everyone you have blocked, and unblock them, from Blocked Users in the side menu or in Settings.
+- See everyone you have blocked, and unblock them, from Blocked Users in Settings.
 - Turn notifications on or off, either all at once or by type: bookings, chat, friends, wallet, XP, coaching and announcements. Every notification is on until you choose to turn it off.
 
 COACH

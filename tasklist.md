@@ -1118,3 +1118,7 @@
 - The Settings back button was hard-coded to open `/app/profile` (left over from when Settings was only reached from Profile). Now that Settings opens from the side menu, it goes back through navigation history like other inner pages, falling back to `/app/home` when there is no history.
 - Gave Notification settings (fallback `/app/settings`) and Blocked Users (fallback `/app/home`) the same fallback so their back buttons never leave the app on a direct visit.
 - TypeScript check passes and the dev server compiles. Not clicked through in the browser because the preview browser is logged out.
+
+# Completed: Blocked Users removed from the side menu - 2 October 2026
+
+- Removed the Blocked Users item from the player side menu in `src/app/app.component.html`, as requested, because it is already in Settings. The side menu is back to the five Figma items: Wallet, Leaderboards, Coaches, Settings and Support. `/app/blocked-users` is still opened from Settings.
