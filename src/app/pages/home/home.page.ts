@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, ViewChild, computed, inject, signal } from '@angular/core';
+import { Component, ElementRef, HostListener, NgZone, OnDestroy, ViewChild, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonPopover, IonicModule, MenuController, Platform, ToastController, ViewWillEnter, ViewWillLeave } from '@ionic/angular';
 import { PluginListenerHandle } from '@capacitor/core';
@@ -72,6 +72,15 @@ interface HomeSport {
   box?: boolean;
 }
 
+interface SportRailLoopItem {
+  key: string;
+  copy: number;
+  sport: HomeSport;
+}
+
+const SPORT_RAIL_SPEED = 26;
+const SPORT_RAIL_RESUME_MS = 2500;
+
 interface HomeSportGroup {
   name: string;
   sports: HomeSport[];
@@ -128,6 +137,7 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
   private readonly venueService = inject(VenueService);
   private readonly playerProfileService = inject(PlayerProfileService);
   private readonly toasts = inject(ToastController);
+  private readonly zone = inject(NgZone);
   private readonly bookingService = inject(BookingService);
   private readonly coachService = inject(CoachService);
   private readonly venueEventService = inject(VenueEventService);
@@ -226,6 +236,24 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
     return [...this.homeSports, { id: 'home-more', name: 'More', icon: '' }];
   }
 
+  get sportRailLoop(): SportRailLoopItem[] {
+    const items = this.sportRailItems;
+    const key = items.map((sport) => `${sport.id}|${sport.icon}`).join(',');
+    if (this.sportRailLoopKey !== key) {
+      this.sportRailLoopKey = key;
+      this.sportRailLoopItems = [];
+      for (let copy = 0; copy < 3; copy++) {
+        for (const sport of items) this.sportRailLoopItems.push({ key: `${copy}-${sport.id}`, copy, sport });
+      }
+      this.scheduleSportRailReset();
+    }
+    return this.sportRailLoopItems;
+  }
+
+  trackSportRailItem(_index: number, item: SportRailLoopItem): string {
+    return item.key;
+  }
+
   activateHomeSport(sport: HomeSport): void {
     if (sport.id === 'home-more') {
       this.openSportsPicker();
@@ -303,6 +331,42 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
   searchFilterOpen = false;
   searchFilterEvent?: Event;
   @ViewChild('searchFilterPopover') private searchFilterPopover?: IonPopover;
+  @ViewChild('promoWrap') private set promoWrapRef(ref: ElementRef<HTMLElement> | undefined) {
+    this.promoWrapEl = ref?.nativeElement;
+    this.observePromoSpace();
+  }
+  @ViewChild('sportRail') private set sportRailRef(ref: ElementRef<HTMLElement> | undefined) {
+    const element = ref?.nativeElement;
+    if (element === this.sportRailEl) return;
+    this.detachSportRail();
+    this.sportRailEl = element;
+    if (element) {
+      this.zone.runOutsideAngular(() => {
+        element.addEventListener('scroll', this.onSportRailScroll, { passive: true });
+        element.addEventListener('pointerdown', this.pauseSportRail, { passive: true });
+        element.addEventListener('touchstart', this.pauseSportRail, { passive: true });
+        element.addEventListener('wheel', this.onSportRailWheel, { passive: true });
+        for (const type of ['pointerup', 'pointercancel', 'touchend', 'touchcancel']) {
+          element.addEventListener(type, this.resumeSportRailSoon, { passive: true });
+        }
+      });
+      this.scheduleSportRailReset();
+    }
+  }
+  private sportRailEl?: HTMLElement;
+  private sportRailLoopKey = '';
+  private sportRailLoopItems: SportRailLoopItem[] = [];
+  private sportRailPos = 0;
+  private sportRailFrame = 0;
+  private sportRailLastTime = 0;
+  private sportRailPaused = false;
+  private sportRailResumeTimer?: ReturnType<typeof setTimeout>;
+  private readonly sportRailReducedMotion = typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  private promoWrapEl?: HTMLElement;
+  private promoResizeObserver?: ResizeObserver;
+  private promoFitFrame = 0;
+  private promoFitRetries = 0;
+  private promoFitRetryTimer?: ReturnType<typeof setTimeout>;
   selectedSport: HomeSport | null = null;
   sportSearch = '';
   private pendingDrawerSport: HomeSport | null = null;
@@ -502,6 +566,157 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
       this.refreshHomeData();
     }
     this.homeRefreshOnDidEnter = true;
+    this.schedulePromoFit();
+    this.startSportRail();
+  }
+
+  private scheduleSportRailReset(): void {
+    this.zone.runOutsideAngular(() => requestAnimationFrame(() => this.resetSportRail()));
+  }
+
+  private resetSportRail(): void {
+    const rail = this.sportRailEl;
+    const segment = rail ? rail.scrollWidth / 3 : 0;
+    if (!rail || !segment) return;
+    this.sportRailPos = segment;
+    rail.scrollLeft = segment;
+    this.startSportRail();
+  }
+
+  private startSportRail(): void {
+    if (this.sportRailFrame || this.sportRailReducedMotion || !this.sportRailEl) return;
+    this.sportRailLastTime = 0;
+    this.zone.runOutsideAngular(() => {
+      this.sportRailFrame = requestAnimationFrame(this.stepSportRail);
+    });
+  }
+
+  private stopSportRail(): void {
+    cancelAnimationFrame(this.sportRailFrame);
+    this.sportRailFrame = 0;
+  }
+
+  private readonly stepSportRail = (time: number): void => {
+    const rail = this.sportRailEl;
+    if (!rail || !rail.isConnected) {
+      this.sportRailFrame = 0;
+      return;
+    }
+    const elapsed = this.sportRailLastTime ? Math.min(64, time - this.sportRailLastTime) : 0;
+    this.sportRailLastTime = time;
+    if (!this.sportRailPaused && document.visibilityState === 'visible' && rail.getClientRects().length) {
+      this.sportRailPos += (SPORT_RAIL_SPEED * elapsed) / 1000;
+      this.wrapSportRail(rail);
+      rail.scrollLeft = this.sportRailPos;
+    }
+    this.sportRailFrame = requestAnimationFrame(this.stepSportRail);
+  };
+
+  /** Keeps the position inside the middle copy; the copies are identical, so the jump is invisible. */
+  private wrapSportRail(rail: HTMLElement): boolean {
+    const segment = rail.scrollWidth / 3;
+    if (!segment) return false;
+    if (this.sportRailPos >= segment * 1.5) {
+      this.sportRailPos -= segment;
+      return true;
+    }
+    if (this.sportRailPos < segment * 0.5) {
+      this.sportRailPos += segment;
+      return true;
+    }
+    return false;
+  }
+
+  private readonly onSportRailScroll = (): void => {
+    const rail = this.sportRailEl;
+    if (!rail || !this.sportRailPaused) return;
+    this.sportRailPos = rail.scrollLeft;
+    if (this.wrapSportRail(rail)) rail.scrollLeft = this.sportRailPos;
+  };
+
+  private readonly pauseSportRail = (): void => {
+    this.sportRailPaused = true;
+    clearTimeout(this.sportRailResumeTimer);
+  };
+
+  private readonly resumeSportRailSoon = (): void => {
+    clearTimeout(this.sportRailResumeTimer);
+    this.sportRailResumeTimer = setTimeout(() => {
+      if (this.sportRailEl) this.sportRailPos = this.sportRailEl.scrollLeft;
+      this.sportRailLastTime = 0;
+      this.sportRailPaused = false;
+    }, SPORT_RAIL_RESUME_MS);
+  };
+
+  private readonly onSportRailWheel = (): void => {
+    this.pauseSportRail();
+    this.resumeSportRailSoon();
+  };
+
+  private detachSportRail(): void {
+    const rail = this.sportRailEl;
+    this.stopSportRail();
+    clearTimeout(this.sportRailResumeTimer);
+    this.sportRailPaused = false;
+    if (!rail) return;
+    rail.removeEventListener('scroll', this.onSportRailScroll);
+    rail.removeEventListener('pointerdown', this.pauseSportRail);
+    rail.removeEventListener('touchstart', this.pauseSportRail);
+    rail.removeEventListener('wheel', this.onSportRailWheel);
+    for (const type of ['pointerup', 'pointercancel', 'touchend', 'touchcancel']) {
+      rail.removeEventListener(type, this.resumeSportRailSoon);
+    }
+  }
+
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    this.schedulePromoFit();
+  }
+
+  private observePromoSpace(): void {
+    this.promoResizeObserver?.disconnect();
+    this.promoResizeObserver = undefined;
+    const wrap = this.promoWrapEl;
+    if (!wrap) return;
+    if (typeof ResizeObserver !== 'undefined') {
+      const home = wrap.closest('.player-home');
+      this.promoResizeObserver = new ResizeObserver(() => this.schedulePromoFit());
+      if (home) this.promoResizeObserver.observe(home);
+    }
+    this.schedulePromoFit();
+  }
+
+  private schedulePromoFit(): void {
+    cancelAnimationFrame(this.promoFitFrame);
+    this.promoFitFrame = requestAnimationFrame(() => void this.fitPromoCard());
+  }
+
+  /** Sizes the promo card so it (and its dots) ends just above the floating tab bar when Home is scrolled to the top. */
+  private async fitPromoCard(): Promise<void> {
+    const wrap = this.promoWrapEl;
+    if (!wrap) return;
+    const tabBar = document.querySelector<HTMLElement>('nav.tab-bar-outer');
+    if (!this.homeVisible || !tabBar || !tabBar.offsetHeight) {
+      if (this.promoFitRetries++ < 20) {
+        clearTimeout(this.promoFitRetryTimer);
+        this.promoFitRetryTimer = setTimeout(() => this.schedulePromoFit(), 250);
+      }
+      return;
+    }
+    this.promoFitRetries = 0;
+    const content = wrap.closest('ion-content') as HTMLIonContentElement | null;
+    let scrollTop = 0;
+    try {
+      if (content) scrollTop = (await content.getScrollElement()).scrollTop;
+    } catch {
+      scrollTop = 0;
+    }
+    const cardTop = wrap.getBoundingClientRect().top + scrollTop;
+    const tabBarTop = window.innerHeight - tabBar.offsetHeight;
+    const dots = this.homePromotions.length > 1 ? 22 : 0;
+    const height = Math.round(Math.min(420, Math.max(136, tabBarTop - cardTop - dots - 12)));
+    wrap.style.setProperty('--promo-card-height', `${height}px`);
+    wrap.classList.toggle('promo-compact', height < 186);
   }
 
   private refreshHomeData(): void {
@@ -779,6 +994,7 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
   ionViewWillLeave() {
     this.homeVisible = false;
     this.stopPromotionSlider();
+    this.stopSportRail();
   }
 
   ngOnDestroy() {
@@ -788,6 +1004,10 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
     void this.appStateHandle?.remove();
     this.stopAdSlider();
     this.stopPromotionSlider();
+    this.promoResizeObserver?.disconnect();
+    cancelAnimationFrame(this.promoFitFrame);
+    clearTimeout(this.promoFitRetryTimer);
+    this.detachSportRail();
   }
 
   /** Open / reopen: force current GPS selection, then refresh nearby data. */
@@ -1251,6 +1471,7 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
       this.stopPromotionSlider();
     } finally {
       this.promotionsLoading = false;
+      this.schedulePromoFit();
     }
   }
 

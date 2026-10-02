@@ -270,6 +270,19 @@
   padding: 18px 16px 16px;
 }
 
+.sport-rail-loop {
+  --sport-rail-gap: clamp(4px, 1.6vw, 10px);
+  display: flex;
+  gap: var(--sport-rail-gap);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+
+.sport-rail-loop .sport-rail-item {
+  flex: 0 0 calc((100% - 5 * var(--sport-rail-gap)) / 6);
+}
+
 .sport-rail::-webkit-scrollbar,
 .horizontal-card-row::-webkit-scrollbar { display: none; }
 
@@ -319,8 +332,8 @@
 .promo-card {
   position: relative;
   width: 100%;
-  height: clamp(190px, 54vw, 220px);
-  min-height: 190px;
+  height: var(--promo-card-height, clamp(190px, 54vw, 220px));
+  min-height: 136px;
   overflow: hidden;
   border: 1px solid rgba(255,255,255,.06);
   border-radius: 22px;
@@ -384,6 +397,16 @@
 .promo-copy h2 { max-width: 240px; margin: 12px 0 6px; color: #fff !important; font-size: clamp(20px, 5.6vw, 26px); font-weight: 900; line-height: 1.02; letter-spacing: -.02em; text-transform: uppercase; }
 .promo-copy p { max-width: 218px; margin: 0; color: #9aa3b2 !important; font-size: 12.35px; font-weight: 500; line-height: 1.35; }
 .promo-copy button { height: 40px; min-height: 40px; margin-top: auto; padding: 0 18px; border: 0; border-radius: 11px; background: #9cf21b; color: #101620; box-shadow: 0 0 18px rgba(156,242,27,.45), 0 6px 16px rgba(156,242,27,.25); font-size: 12.35px; font-weight: 900; letter-spacing: .04em; text-transform: uppercase; }
+
+.promo-compact .promo-copy { width: min(86%, 300px); padding: 13px 16px 14px; }
+.promo-compact .promo-new { height: 22px; font-size: 9.5px; }
+.promo-compact .promo-copy h2 { display: -webkit-box; max-width: none; margin: 8px 0 0; overflow: hidden; font-size: clamp(16px, 4.6vw, 19px); -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.promo-compact .promo-copy p { display: none; }
+.promo-compact .promo-copy button { height: 34px; min-height: 34px; padding: 0 14px; font-size: 11px; }
+.promo-compact .promo-card-loading { padding: 13px 16px 14px; }
+.promo-compact .promo-loading-title { height: 36px; margin-top: 8px; }
+.promo-compact .promo-loading-copy { display: none; }
+.promo-compact .promo-loading-button { height: 34px; }
 
 .promo-field { position: absolute; z-index: 1; top: -38px; right: -8px; width: 190px; height: 190px; border: 2px solid rgba(255,255,255,.07); border-radius: 50%; }
 .promo-field::before { content: ''; position: absolute; top: 145px; left: -24px; width: 230px; height: 105px; border: 2px solid rgba(255,255,255,.07); }
@@ -853,6 +876,7 @@ ion-modal.sports-picker-modal::part(content) { border-radius: 0; }
   .player-home-v2 .home-search { width: calc(100% - 48px); margin-inline: 24px; padding-inline: 14px; }
   .player-home-v2 .home-search span { font-size: 14px; }
   .sport-rail { gap: 4px; padding-inline: 10px; }
+  .sport-rail-loop { --sport-rail-gap: 4px; }
   .promotion-wrap { padding-inline: 14px; }
   .promo-copy { width: min(78%, 270px); padding-inline: 15px; }
   .promo-copy h2 { font-size: 20px; }

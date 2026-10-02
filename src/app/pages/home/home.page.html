@@ -641,11 +641,13 @@
 
         <div class="feed-section-heading sport-rail-heading"><h2>Explore by sport</h2></div>
         <div *ngIf="!homeSportsReady" class="sport-rail home-sport-rail-skeleton" aria-busy="true" aria-label="Loading sports"><span class="sport-rail-item" *ngFor="let i of [1,2,3,4,5,6]"><ion-skeleton-text animated class="sport-rail-icon"></ion-skeleton-text><ion-skeleton-text animated class="home-skel-label"></ion-skeleton-text></span></div>
-        <nav *ngIf="homeSportsReady" id="home-sport-rail" class="sport-rail" aria-label="Choose a sport">
-          <button type="button" class="sport-rail-item" *ngFor="let sport of sportRailItems" (click)="activateHomeSport(sport)"><span class="sport-rail-icon"><ion-icon *ngIf="sport.id === 'home-more'; else sportIcon" name="grid-outline"></ion-icon><ng-template #sportIcon><img [src]="sport.icon" alt="" /></ng-template></span><span>{{ sport.name }}</span></button>
+        <nav #sportRail *ngIf="homeSportsReady" id="home-sport-rail" class="sport-rail sport-rail-loop" aria-label="Choose a sport">
+          <button type="button" class="sport-rail-item" *ngFor="let item of sportRailLoop; trackBy: trackSportRailItem"
+                  [attr.aria-hidden]="item.copy !== 1 ? 'true' : null" [attr.tabindex]="item.copy !== 1 ? -1 : null"
+                  (click)="activateHomeSport(item.sport)"><ng-container *ngIf="item.sport as sport"><span class="sport-rail-icon"><ion-icon *ngIf="sport.id === 'home-more'; else sportIcon" name="grid-outline"></ion-icon><ng-template #sportIcon><img [src]="sport.icon" alt="" /></ng-template></span><span>{{ sport.name }}</span></ng-container></button>
         </nav>
 
-        <section class="promotion-wrap" *ngIf="promotionsLoading || homePromotions.length" aria-label="Highlights" aria-live="polite">
+        <section #promoWrap class="promotion-wrap" *ngIf="promotionsLoading || homePromotions.length" aria-label="Highlights" aria-live="polite">
           <article *ngIf="promotionsLoading" class="promo-card promo-card-loading" aria-label="Loading promotions">
             <span class="promo-loading-line promo-loading-badge"></span>
             <span class="promo-loading-line promo-loading-title"></span>
