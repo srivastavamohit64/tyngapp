@@ -169,22 +169,17 @@ const DOCS = [
   template: `
     <ion-content [fullscreen]="true">
       <app-brand-header-shell title="Venue Collaboration" (back)="back()">
+      <div headerEnd class="hdr-actions">
+        <button type="button" aria-label="Download" class="app-header-btn flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
+          <ion-icon name="download-outline" class="text-[#111827] text-lg"></ion-icon>
+        </button>
+        <button type="button" aria-label="Share" class="app-header-btn flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
+          <ion-icon name="share-social-outline" class="text-[#111827] text-lg"></ion-icon>
+        </button>
+      </div>
       <div class="collab-detail-page pb-36 text-left">
-        <!-- Sticky Header -->
-        <div class="sticky-header bg-white border-b border-[#F3F4F6]">
-          <div class="app-header-bar flex items-center justify-between px-5">
-            <div class="min-w-0">
-              <p class="text-[12px] text-[#9CA3AF] m-0 font-bold">{{ data().venueName }}</p>
-            </div>
-            <div class="flex gap-1.5">
-              <button class="app-header-btn flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
-                <ion-icon name="download-outline" class="text-[#111827] text-lg"></ion-icon>
-              </button>
-              <button class="app-header-btn flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
-                <ion-icon name="share-social-outline" class="text-[#111827] text-lg"></ion-icon>
-              </button>
-            </div>
-          </div>
+        <div class="min-w-0 px-5 pt-4">
+          <p class="text-[12px] text-[#9CA3AF] m-0 font-bold">{{ data().venueName }}</p>
         </div>
 
         <div class="px-5 pt-4 space-y-4">
@@ -478,11 +473,10 @@ const DOCS = [
       min-height: 100%;
     }
 
-    .sticky-header {
-      position: sticky;
-      top: 0;
-      z-index: 30;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    .hdr-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
     .section-card {

@@ -1227,3 +1227,14 @@
 - Wallet moved its passbook button from the content row into the header with `headerEnd`, and the extra row was removed.
 - **Follow-up option:** other pages that moved header actions into content rows (Mark all read, Add facility, Edit, Refresh, filters) can use `headerEnd` the same way.
 - **Verified:** type check passes, the dev server compiles, and in the browser the passbook button sits in the Wallet top bar.
+
+# Completed: Original header action buttons restored to the top bar - 2 October 2026
+
+- Using the `headerEnd` slot on `<app-brand-header-shell>`, every action button that was in a page's own header before the brand-header work (compared against `0c95e05`) is back on the right of the top bar on 27 pages (28 including wallet). Pages with two buttons wrap them in `.hdr-actions`.
+- **Player:** notifications, create game, live map, ongoing games, player view, stats, team management, leaderboard and coach profile.
+- **Coach:** book venue, complete profile, earnings, enroll student, insights, notifications, settings, venue booking, evaluate, plan, teams and venue collab detail.
+- **Venue:** calendar, booking detail, earnings, facilities, notifications and venue profile.
+- Empty content rows were removed. Rows with information (step counters, counts, Live badge, booking #id, location, date range) were kept as plain rows. Sticky offsets that depended on removed rows were set to `top: 0`: coach book venue search, earnings period grid, enroll progress, insights tabs, venue booking progress.
+- Main tab pages are unchanged, because their brand bar does not render `headerEnd`. Hero-image overlay buttons and the chat room pin stay in the content.
+- **Verified:** `npx tsc --noEmit -p tsconfig.app.json` passes and `ionic serve` compiles. In the browser: Notifications (mark all read in the header), Leaderboard (search and share in the header) and Wallet.
+- **Follow-up:** the live map's `calc(100vh - 334px ...)` map height may leave about 24px extra space now that its subtitle row is shorter. The coach teams Add button and the collab download/share buttons still have no click handlers, as before.

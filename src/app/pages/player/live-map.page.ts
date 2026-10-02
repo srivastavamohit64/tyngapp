@@ -61,14 +61,12 @@ const SPORT_COLORS: Record<string, string> = {
   template: `
     <ion-content fullscreen>
       <app-brand-header-shell title="Live Sports Map">
+      <button headerEnd type="button" class="layers-btn" (click)="toggleMapType()" aria-label="Change map type">
+        <ion-icon name="layers-outline"></ion-icon>
+      </button>
       <div class="map-page page-safe-bottom">
         <div class="lm-title-row">
-          <div>
-            <p class="lm-subtitle">{{ mapSubtitle }}</p>
-          </div>
-          <button type="button" class="layers-btn" (click)="toggleMapType()" aria-label="Change map type">
-            <ion-icon name="layers-outline"></ion-icon>
-          </button>
+          <p class="lm-subtitle">{{ mapSubtitle }}</p>
         </div>
 
         <app-filter-chips
@@ -131,10 +129,6 @@ const SPORT_COLORS: Record<string, string> = {
       }
 
       .lm-title-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
         padding: 14px 20px 0;
       }
 
@@ -157,6 +151,11 @@ const SPORT_COLORS: Record<string, string> = {
         color: #111827;
         font-size: 20px;
         padding: 0;
+      }
+
+      .layers-btn {
+        width: var(--app-header-btn-size);
+        height: var(--app-header-btn-size);
       }
 
       .close-btn {

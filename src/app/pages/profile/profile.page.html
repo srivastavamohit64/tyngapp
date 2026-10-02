@@ -1,14 +1,11 @@
 <ion-content fullscreen [class.has-tabs]="auth.user()?.role !== 'coach'">
   <!-- COACH PROFILE -->
   <app-brand-header-shell *ngIf="auth.user()?.role === 'coach'" title="Profile" (back)="goBack()">
+  <button headerEnd type="button" class="app-header-btn grid place-items-center rounded-full bg-white shadow-sm text-slate-800 border-none" aria-label="Settings" (click)="router.navigateByUrl('/app/coach/settings')">
+    <ion-icon name="settings-outline" class="text-xl"></ion-icon>
+  </button>
   <main class="min-h-full bg-[#FAFBFC] text-slate-800 select-none">
-    <section class="coach-profile-hero px-6 pt-0 pb-8 bg-gradient-to-b from-[var(--app-primary)]/20 to-transparent">
-      <div class="app-header-bar flex items-center justify-end mb-6">
-        <button type="button" class="app-header-btn grid place-items-center rounded-full bg-white shadow-sm text-slate-800 border-none" (click)="router.navigateByUrl('/app/coach/settings')">
-          <ion-icon name="settings-outline" class="text-xl"></ion-icon>
-        </button>
-      </div>
-
+    <section class="coach-profile-hero px-6 pt-6 pb-8 bg-gradient-to-b from-[var(--app-primary)]/20 to-transparent">
       <div class="flex flex-col items-center">
         <div class="relative mb-4 grid h-24 w-24 place-items-center rounded-full bg-gradient-to-br from-[var(--app-primary)] to-[#FF7A00] text-5xl shadow-md overflow-hidden">
           <img *ngIf="profileImage()" [src]="profileImage()!" alt="" class="h-full w-full object-cover" />

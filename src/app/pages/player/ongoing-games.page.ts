@@ -86,16 +86,14 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
   template: `
     <ion-content [fullscreen]="true">
       <app-brand-header-shell title="Ongoing Games">
+      <button headerEnd type="button" class="og-filter-btn" aria-label="Filter">
+        <ion-icon name="options-outline"></ion-icon>
+      </button>
       <div class="ongoing-page">
 
         <!-- Header -->
-        <div class="og-header">
-          <div class="og-header-text">
-            <p class="og-location" *ngIf="locationLabel">Near {{ locationLabel }}</p>
-          </div>
-          <button class="og-filter-btn">
-            <ion-icon name="options-outline"></ion-icon>
-          </button>
+        <div class="og-header" *ngIf="locationLabel">
+          <p class="og-location">Near {{ locationLabel }}</p>
         </div>
 
         <!-- Search -->
@@ -260,9 +258,6 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
     }
 
     .og-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
       padding: 14px 20px 6px;
       box-sizing: border-box;
       background: #FFFFFF;
@@ -275,12 +270,6 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
       border: none;
       display: flex; align-items: center; justify-content: center;
       font-size: 18px; cursor: pointer;
-    }
-
-    .og-header-text {
-      flex: 1;
-      min-width: 0;
-      padding: 0 8px 0 0;
     }
 
     .og-location {

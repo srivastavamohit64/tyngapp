@@ -19,6 +19,9 @@ type PeriodKey = 'today' | 'week' | 'month' | 'year';
   template: `
     <ion-content [fullscreen]="true" class="has-tabs">
       <app-brand-header-shell title="Earnings & Payouts">
+      <button headerEnd type="button" class="icon-btn" (click)="reload()" aria-label="Refresh">
+        <ion-icon name="refresh-outline"></ion-icon>
+      </button>
       <div class="earnings-page text-left">
         <div class="sticky-header">
           <div class="header-row">
@@ -28,9 +31,6 @@ type PeriodKey = 'today' | 'week' | 'month' | 'year';
                 Live
               </span>
             </div>
-            <button type="button" class="icon-btn" (click)="reload()" aria-label="Refresh">
-              <ion-icon name="refresh-outline"></ion-icon>
-            </button>
           </div>
 
           <div class="period-row">
@@ -366,7 +366,7 @@ type PeriodKey = 'today' | 'week' | 'month' | 'year';
 
       .header-row {
         display: grid;
-        grid-template-columns: 1fr var(--app-header-btn-size);
+        grid-template-columns: 1fr;
         align-items: center;
         gap: 10px;
       }

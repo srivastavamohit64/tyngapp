@@ -33,13 +33,10 @@ interface CoachEarningsData {
   template: `
     <ion-content [fullscreen]="true" class="has-tabs">
       <app-brand-header-shell title="Earnings">
+      <button headerEnd type="button" class="header-button" aria-label="Open your schedule" (click)="go('/app/coach/schedule')">
+        <ion-icon name="calendar-outline"></ion-icon>
+      </button>
       <div class="earnings-page">
-        <header class="sticky-header">
-          <button type="button" class="header-button" aria-label="Open your schedule" (click)="go('/app/coach/schedule')">
-            <ion-icon name="calendar-outline"></ion-icon>
-          </button>
-        </header>
-
         <nav class="period-grid" role="tablist" aria-label="Choose earnings period">
           <button *ngFor="let period of periods" type="button" role="tab"
             [attr.aria-selected]="selectedPeriod() === period.key"
@@ -150,9 +147,8 @@ interface CoachEarningsData {
   styles: [`
     :host { display:block; }
     .earnings-page { min-height:100%; padding-bottom:calc(120px + var(--safe-area-bottom, 0px)); background:#F7F9FC; color:#172033; }
-    .sticky-header { position:sticky; top:0; z-index:20; display:flex; justify-content:flex-end; align-items:center; min-height:var(--app-header-height); padding:0 16px; border-bottom:1px solid #EEF1F5; background:#fff; }
     .header-button { display:grid; place-items:center; width:var(--app-header-btn-size); height:var(--app-header-btn-size); border:0; border-radius:15px; background:#F3F5F8; color:#172033; font-size:20px; }
-    .period-grid { position:sticky; top:var(--app-header-height); z-index:19; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; padding:10px 14px; border-bottom:1px solid #EEF1F5; background:#fff; }
+    .period-grid { position:sticky; top:0; z-index:19; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; padding:10px 14px; border-bottom:1px solid #EEF1F5; background:#fff; }
     .period-grid button { min-width:0; min-height:36px; padding:5px 3px; border:0; border-radius:12px; background:#F3F5F8; color:#687386; font-size:11px; font-weight:700; white-space:nowrap; }
     .period-grid button.selected { background:#69D900; color:#14210A; box-shadow:0 3px 10px #69d90030; }
     .earnings-content { display:grid; gap:16px; padding:16px 18px 0; }

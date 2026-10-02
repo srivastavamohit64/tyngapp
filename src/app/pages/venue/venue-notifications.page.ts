@@ -13,19 +13,17 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
   template: `
     <ion-content [fullscreen]="true">
       <app-brand-header-shell title="Notifications">
+      <button
+        headerEnd
+        type="button"
+        class="mark-btn"
+        (click)="markAllRead()"
+        [disabled]="unreadCount() === 0"
+        aria-label="Mark all read"
+      >
+        <ion-icon name="checkmark-done-outline"></ion-icon>
+      </button>
       <div class="venue-notifications">
-        <header class="venue-notifications-header">
-          <button
-            type="button"
-            class="mark-btn"
-            (click)="markAllRead()"
-            [disabled]="unreadCount() === 0"
-            aria-label="Mark all read"
-          >
-            <ion-icon name="checkmark-done-outline"></ion-icon>
-          </button>
-        </header>
-
         <div class="px-4 pt-3" *ngIf="loading() && notifications().length === 0">
           <app-skeleton-list [count]="6"></app-skeleton-list>
         </div>
@@ -61,19 +59,6 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
         min-height: 100%;
         background: #fafbfc;
         padding-bottom: calc(24px + var(--safe-area-bottom));
-      }
-      .venue-notifications-header {
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-        gap: 12px;
-        padding: 12px 20px 6px;
-        box-sizing: border-box;
-        background: #fff;
-        border-bottom: 1px solid #f3f4f6;
-        position: sticky;
-        top: 0;
-        z-index: 10;
       }
       .mark-btn {
         width: var(--app-header-btn-size);

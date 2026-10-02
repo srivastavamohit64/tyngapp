@@ -30,13 +30,17 @@ const FILTERS: { id: FilterId; label: string; emoji: string }[] = [
   template: `
     <ion-content [fullscreen]="true">
       <app-brand-header-shell title="Notifications">
+      <button
+        headerEnd
+        type="button"
+        class="mark-read-btn"
+        aria-label="Mark all read"
+        (click)="markAllRead()"
+        [disabled]="unreadCount() === 0"
+      >
+        <ion-icon name="checkmark-done-outline"></ion-icon>
+      </button>
       <main class="notifications-page">
-        <div class="notif-header">
-          <button class="mark-read-btn" (click)="markAllRead()" [disabled]="unreadCount() === 0">
-            <ion-icon name="checkmark-done-outline"></ion-icon>
-          </button>
-        </div>
-
         <div class="filter-scroll">
           <div class="filter-track">
             <button
@@ -209,15 +213,6 @@ const FILTERS: { id: FilterId; label: string; emoji: string }[] = [
       .notifications-page {
         background: #fafbfc;
         min-height: 100%;
-      }
-      .notif-header {
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-        padding: 14px 20px 6px;
-        box-sizing: border-box;
-        background: #ffffff;
-        border-bottom: 1px solid #f3f4f6;
       }
       .mark-read-btn {
         width: var(--app-header-btn-size);

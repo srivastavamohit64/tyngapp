@@ -11,14 +11,17 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
   template: `
     <ion-content [fullscreen]="true">
       <app-brand-header-shell title="Personal Stats">
+      <button
+        headerEnd
+        type="button"
+        class="edit-btn"
+        [attr.aria-label]="editing ? 'Done editing' : 'Edit stats'"
+        (click)="editing = !editing"
+        [style.background]="editing ? 'var(--app-primary)' : '#F3F4F6'"
+      >
+        <ion-icon [name]="editing ? 'checkmark-outline' : 'pencil-outline'"></ion-icon>
+      </button>
       <div class="stats-page">
-
-        <!-- Header -->
-        <div class="stats-header">
-          <button class="edit-btn" (click)="editing = !editing" [style.background]="editing ? 'var(--app-primary)' : '#F3F4F6'">
-            <ion-icon [name]="editing ? 'checkmark-outline' : 'pencil-outline'"></ion-icon>
-          </button>
-        </div>
 
         <!-- Profile Hero -->
         <div class="profile-hero">
@@ -249,15 +252,6 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
     .stats-page {
       background: #FAFBFC;
       min-height: 100%;
-    }
-
-    .stats-header {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      padding: 14px 20px 6px;
-      box-sizing: border-box;
-      background: #FFFFFF;
     }
 
     .edit-btn {

@@ -1,7 +1,6 @@
 :host { display:block; --lime:var(--app-primary,#7cf000); --ink:#0f1728; --muted:#74819a; --line:#e1e6ec; }
 .evaluation-shell { --background:#fff; }
 .evaluation-page { min-height:100%; color:var(--ink); background:#fff; padding-bottom:calc(32px + var(--app-tab-bar-height,72px) + env(safe-area-inset-bottom)); }
-.page-header { position:sticky; top:0; z-index:20; padding:14px 16px 6px; display:flex; justify-content:flex-end; align-items:center; background:rgba(255,255,255,.97); border-bottom:1px solid var(--line); backdrop-filter:blur(12px); }
 .history-button { position:relative; z-index:2; justify-self:end; width:var(--app-header-btn-size); height:var(--app-header-btn-size); padding:0; border:1px solid #c9f5aa; border-radius:13px; display:grid; place-items:center; color:#319500; background:#edffdf; box-shadow:0 3px 10px rgba(77,174,0,.12); opacity:1; visibility:visible; }
 .history-button svg { width:23px; height:23px; display:block; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
 .history-button:active { transform:scale(.95); }

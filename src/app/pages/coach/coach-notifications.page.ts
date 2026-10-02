@@ -32,18 +32,15 @@ const FILTERS = [
   template: `
     <ion-content [fullscreen]="true">
       <app-brand-header-shell title="Notifications">
+      <button headerEnd type="button" aria-label="Mark all notifications as read" title="Mark all as read" (click)="markAllRead()" [disabled]="totalUnread() === 0" class="header-action">
+        <ion-icon name="checkmark-done-outline" class="text-[#6B7280] text-lg"></ion-icon>
+      </button>
       <div class="notifications-page pb-28">
         <!-- Sticky Header -->
         <div class="sticky-header bg-white border-b border-[#F3F4F6]">
-          <div class="notif-header app-header-bar flex items-center justify-end px-5">
-            <div *ngIf="totalUnread() > 0" class="mr-auto min-w-[22px] h-[22px] rounded-full bg-[#FF7A00] flex items-center justify-center px-2">
+          <div *ngIf="totalUnread() > 0" class="notif-header flex items-center">
+            <div class="min-w-[22px] h-[22px] rounded-full bg-[#FF7A00] flex items-center justify-center px-2">
               <span class="text-[11px] font-black text-white">{{ totalUnread() }} unread</span>
-            </div>
-
-            <div class="flex items-center gap-1.5">
-              <button type="button" aria-label="Mark all notifications as read" title="Mark all as read" (click)="markAllRead()" [disabled]="totalUnread() === 0" class="header-action">
-                <ion-icon name="checkmark-done-outline" class="text-[#6B7280] text-lg"></ion-icon>
-              </button>
             </div>
           </div>
 
@@ -201,9 +198,8 @@ const FILTERS = [
     }
 
     .notif-header {
-      min-height: var(--app-header-height);
       padding-top: 0;
-      padding-bottom: 0;
+      padding-bottom: 10px;
       padding-left: max(16px, var(--safe-area-left, 0px));
       padding-right: max(16px, var(--safe-area-right, 0px));
       box-sizing: border-box;
@@ -213,6 +209,7 @@ const FILTERS = [
       position: sticky;
       top: 0;
       z-index: 30;
+      padding-top: 12px;
       background: rgba(255,255,255,.97);
       box-shadow: 0 5px 18px rgba(20,32,50,.06);
       backdrop-filter: blur(12px);

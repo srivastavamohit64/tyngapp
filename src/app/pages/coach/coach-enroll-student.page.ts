@@ -46,6 +46,9 @@ const MEMBERSHIPS = ['Trial Student', 'Regular Student', 'Academy Student', 'Pri
   template: `
     <ion-content [fullscreen]="true" class="enrollment-content">
       <app-brand-header-shell title="Enroll Student" (back)="isSuccess() ? go('/app/coach/dashboard') : handleBack()">
+      <button headerEnd *ngIf="!isSuccess()" type="button" class="header-close-btn" (click)="go('/app/coach/dashboard')" aria-label="Close enrolment">
+        <ion-icon name="close-outline"></ion-icon>
+      </button>
       <main *ngIf="isSuccess(); else enrollmentWizard" class="success-page">
         <div class="success-mark"><ion-icon [name]="enrollType === 'invite' || invitationSent() ? 'paper-plane-outline' : 'checkmark-outline'"></ion-icon></div>
         <p class="eyebrow">{{ invitationSent() ? 'WAITING FOR PLAYER' : enrollType === 'invite' ? 'INVITATION READY' : 'ENROLMENT COMPLETE' }}</p>
@@ -99,13 +102,8 @@ const MEMBERSHIPS = ['Trial Student', 'Regular Student', 'Academy Student', 'Pri
 
       <ng-template #enrollmentWizard>
         <main class="enroll-page">
-          <header class="page-header">
-            <div>
-              <p *ngIf="enrollType === 'managed'">Step {{ managedStep }} of 6</p>
-            </div>
-            <button type="button" (click)="go('/app/coach/dashboard')" aria-label="Close enrolment">
-              <ion-icon name="close-outline"></ion-icon>
-            </button>
+          <header *ngIf="enrollType === 'managed'" class="page-header">
+            <p>Step {{ managedStep }} of 6</p>
           </header>
 
           <div *ngIf="enrollType === 'managed'" class="progress-track" aria-label="Managed profile progress">

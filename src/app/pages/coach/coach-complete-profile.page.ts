@@ -36,6 +36,7 @@ const ALL_SECTIONS = [
   template: `
     <ion-content [fullscreen]="true">
       <app-brand-header-shell title="Complete Profile">
+      <button headerEnd *ngIf="!showDone() && !detailsLoading && getProgress() < 100" type="button" (click)="back()" class="text-[13px] font-semibold text-[#9CA3AF] bg-transparent border-none">Skip</button>
       <!-- SUCCESS SCREEN -->
       <div *ngIf="showDone()" class="done-shell px-6">
         <div class="mb-6 flex flex-col items-center">
@@ -75,10 +76,6 @@ const ALL_SECTIONS = [
 
         <!-- Header -->
         <div class="sticky-header">
-          <div *ngIf="!detailsLoading && getProgress() < 100" class="flex items-center justify-end px-5 pt-3 bg-white">
-            <button (click)="back()" class="text-[13px] font-semibold text-[#9CA3AF] bg-transparent border-none">Skip</button>
-          </div>
-
           <!-- Progress bar info -->
           <div class="px-5 pb-4 pt-3 bg-white">
             <div class="flex items-center justify-between mb-2">

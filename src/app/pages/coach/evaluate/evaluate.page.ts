@@ -27,16 +27,13 @@ interface CategoryItem {
   template: `
     <ion-content [fullscreen]="true" class="evaluation-shell">
       <app-brand-header-shell title="Player Evaluation">
+      <button headerEnd type="button" class="history-button" aria-label="View past evaluations" title="Past evaluations" (click)="openEvaluationHistory()">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M9 5.5H6.8A1.8 1.8 0 0 0 5 7.3v12A1.8 1.8 0 0 0 6.8 21h10.4a1.8 1.8 0 0 0 1.8-1.8v-12a1.8 1.8 0 0 0-1.8-1.8H15" />
+          <rect x="8.5" y="3" width="7" height="5" rx="1.5" />
+        </svg>
+      </button>
       <main class="evaluation-page">
-        <header class="page-header">
-          <button type="button" class="history-button" aria-label="View past evaluations" title="Past evaluations" (click)="openEvaluationHistory()">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M9 5.5H6.8A1.8 1.8 0 0 0 5 7.3v12A1.8 1.8 0 0 0 6.8 21h10.4a1.8 1.8 0 0 0 1.8-1.8v-12a1.8 1.8 0 0 0-1.8-1.8H15" />
-              <rect x="8.5" y="3" width="7" height="5" rx="1.5" />
-            </svg>
-          </button>
-        </header>
-
         <div class="page-body">
           <div *ngIf="loadingPlayers()" class="loading-state" aria-live="polite">
             <ion-spinner name="crescent"></ion-spinner>

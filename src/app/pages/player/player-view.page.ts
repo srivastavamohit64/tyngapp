@@ -16,6 +16,17 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
   template: `
     <ion-content fullscreen>
       <app-brand-header-shell title="Player Profile">
+      <button
+        headerEnd
+        *ngIf="!loading && player"
+        type="button"
+        class="icon-btn"
+        (click)="openActions()"
+        [disabled]="blockBusy"
+        aria-label="More options"
+      >
+        <ion-icon name="ellipsis-horizontal"></ion-icon>
+      </button>
       <div class="page" *ngIf="loading">
         <div class="px-4">
           <app-page-skeleton variant="profile" label="Loading player"></app-page-skeleton>
@@ -27,12 +38,6 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
       </div>
 
       <div class="page" *ngIf="!loading && player">
-        <header class="hdr">
-          <button type="button" class="icon-btn" (click)="openActions()" [disabled]="blockBusy" aria-label="More options">
-            <ion-icon name="ellipsis-horizontal"></ion-icon>
-          </button>
-        </header>
-
         <div class="blocked-banner" *ngIf="blocked">
           <ion-icon name="ban-outline"></ion-icon>
           You have blocked this player. They can't message you or invite you to games.
@@ -87,14 +92,6 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
         min-height: 100%;
         background: #fafbfc;
         padding: 14px 20px 32px;
-      }
-      .hdr {
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-        gap: 12px;
-        box-sizing: border-box;
-        margin-bottom: 12px;
       }
       .icon-btn {
         width: var(--app-header-btn-size);

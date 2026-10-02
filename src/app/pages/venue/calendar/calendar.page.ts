@@ -41,12 +41,10 @@ interface CalendarBookingItem {
   template: `
     <ion-content [fullscreen]="true" class="has-tabs">
       <app-brand-header-shell title="Calendar">
+      <button headerEnd type="button" class="icon-btn" (click)="loadMonth()" aria-label="Refresh">
+        <ion-icon name="refresh-outline"></ion-icon>
+      </button>
       <div class="cal-page">
-        <header class="cal-header">
-          <button type="button" class="icon-btn" (click)="loadMonth()" aria-label="Refresh">
-            <ion-icon name="refresh-outline"></ion-icon>
-          </button>
-        </header>
 
         <section class="month-card">
           <div class="month-nav">
@@ -161,15 +159,6 @@ interface CalendarBookingItem {
       min-height: 100%;
       background: #FAFBFC;
       padding-bottom: calc(120px + var(--safe-area-bottom));
-    }
-
-    .cal-header {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      padding: 12px 16px 0;
-      box-sizing: border-box;
-      background: #fff;
     }
 
     .icon-btn {

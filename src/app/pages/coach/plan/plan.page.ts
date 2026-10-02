@@ -118,6 +118,9 @@ function buildDates() {
   template: `
     <ion-content [fullscreen]="true">
       <app-brand-header-shell title="Create Session" (back)="success() ? go('/app/coach/dashboard') : handleBack()">
+      <button headerEnd *ngIf="!success()" type="button" aria-label="Close" (click)="go('/app/coach/dashboard')" class="app-header-btn flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
+        <ion-icon name="close-outline" class="text-xl text-[#111827]"></ion-icon>
+      </button>
       <!-- SUCCESS SCREEN -->
       <div *ngIf="success()" class="success-shell">
         <div class="success-hero">
@@ -160,11 +163,8 @@ function buildDates() {
       <div *ngIf="!success()" class="plan-page">
         <!-- Sticky Wizard Header -->
         <div class="sticky-header">
-          <div class="app-header-bar flex items-center justify-between px-5 bg-white border-b border-[#F3F4F6]">
+          <div class="px-5 pt-3 bg-white">
             <p class="text-[12px] text-[#9CA3AF] font-bold m-0">Step {{ step() }} of 8</p>
-            <button (click)="go('/app/coach/dashboard')" class="app-header-btn flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
-              <ion-icon name="close-outline" class="text-xl text-[#111827]"></ion-icon>
-            </button>
           </div>
           <div class="py-3 bg-white flex justify-center">
             <!-- Progress indicator dots -->

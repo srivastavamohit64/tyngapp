@@ -48,14 +48,12 @@ interface DateOption {
   template: `
     <ion-content fullscreen>
       <app-brand-header-shell title="Create Game" (back)="back()">
+      <button headerEnd type="button" class="icon-btn" aria-label="Next step" (click)="next()" [disabled]="!canProceed()">
+        <ion-icon name="chevron-forward"></ion-icon>
+      </button>
       <div class="create-page page-safe-bottom">
         <div class="cg-title-row">
-          <div>
-            <p class="cg-subtitle">Step {{ currentStep }} of {{ steps.length }}</p>
-          </div>
-          <button type="button" class="icon-btn" (click)="next()" [disabled]="!canProceed()">
-            <ion-icon name="chevron-forward"></ion-icon>
-          </button>
+          <p class="cg-subtitle">Step {{ currentStep }} of {{ steps.length }}</p>
         </div>
 
         <div class="stepper">
@@ -225,10 +223,6 @@ interface DateOption {
       }
 
       .cg-title-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
         padding: 14px 24px 0;
       }
 
@@ -240,8 +234,8 @@ interface DateOption {
       }
 
       .icon-btn {
-        width: 40px;
-        height: 40px;
+        width: var(--app-header-btn-size);
+        height: var(--app-header-btn-size);
         min-height: unset;
         border-radius: 12px;
         display: grid;

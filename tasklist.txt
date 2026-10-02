@@ -953,3 +953,7 @@ TYNG — TODAY'S WORK SUMMARY
 157. PASSBOOK BUTTON BACK IN THE WALLET TOP BAR - 2 October 2026
    - The book (passbook) button on the Wallet screen is back in the top bar on the right, as before, instead of sitting in a row under it. Other screens can now place their own buttons in the same spot.
    - Checked in the browser as a player.
+158. ALL TOP-RIGHT BUTTONS BACK IN THE TOP BAR - 2 October 2026
+   - Every button that used to sit at the top right of a screen is back in the top bar on the right. Player: Notifications (mark all read), Create Game (next step), Live Map (map type), Ongoing Games (filter), Player Profile (more options), Stats (edit), Friends (refresh), Leaderboard (search and share), coach Profile (settings). Coach: Book Venue (search and filter), Complete Profile (skip), Earnings and Insights (calendar), Enroll Student, Book a Venue and Create Session (close), Notifications (mark all read), Settings (help), Player Evaluation (history), My Teams (add), Venue Collaboration (download and share). Venue staff: Calendar and Earnings (refresh), Booking Details (more), Facilities (add), Notifications (mark all read), Venue Profile (edit).
+   - The rows that held those buttons inside the screens were removed. Useful lines such as step numbers, counts, location and booking number were kept.
+   - Type check passes and the app compiles. Notifications, Leaderboard and Wallet were checked in the browser as a player. Coach and venue screens were not opened in the browser.

@@ -62,15 +62,15 @@ const STATUS_OPTIONS: StatusOption[] = [
   template: `
     <ion-content [fullscreen]="true" class="has-tabs">
       <app-brand-header-shell title="Facilities & Amenities">
+      <button headerEnd type="button" class="fac-icon-btn fac-icon-btn--add" (click)="addFacility()" aria-label="Add facility">
+        <ion-icon name="add-outline"></ion-icon>
+      </button>
       <div class="fac-page" [class.has-save]="hasChanges() || saved()">
         <header class="sticky-header fac-header">
           <div class="fac-header-copy">
             <p *ngIf="!loading() || facilityList().length; else courtCountSkel">{{ facilityList().length }} court{{ facilityList().length === 1 ? '' : 's' }}</p>
             <ng-template #courtCountSkel><ion-skeleton-text animated style="display:block;width:64px;height:12px;margin:4px 0 0;border-radius:999px"></ion-skeleton-text></ng-template>
           </div>
-          <button type="button" class="fac-icon-btn fac-icon-btn--add" (click)="addFacility()" aria-label="Add facility">
-            <ion-icon name="add-outline"></ion-icon>
-          </button>
         </header>
 
         <div class="fac-track no-scrollbar" *ngIf="facilityList().length">

@@ -11,15 +11,10 @@ import { BrandHeaderShellComponent } from '../../../shared/components/brand-head
   template: `
     <ion-content fullscreen>
       <app-brand-header-shell title="My Teams">
+      <button headerEnd type="button" aria-label="Add team" class="app-header-btn rounded-full bg-primary/20 flex items-center justify-center">
+        <ion-icon name="add-outline" class="text-xl text-primary"></ion-icon>
+      </button>
       <main class="page-with-tab-bar min-h-full bg-background text-white">
-        <header class="app-header-bar bg-card border-b border-white/10 px-6 flex items-center sticky top-0 z-10">
-          <div class="flex w-full items-center justify-end">
-            <button class="app-header-btn rounded-full bg-primary/20 flex items-center justify-center">
-              <ion-icon name="add-outline" class="text-xl text-primary"></ion-icon>
-            </button>
-          </div>
-        </header>
-
         <section class="px-6 py-6 space-y-4">
           <div
             *ngFor="let team of teams"

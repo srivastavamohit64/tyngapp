@@ -27,15 +27,15 @@ type DetailTab = 'overview' | 'players' | 'amenities' | 'live';
   template: `
     <ion-content [fullscreen]="true" class="bd-content">
       <app-brand-header-shell title="Booking Details">
+      <button headerEnd type="button" class="bd-icon-btn" (click)="openMenu()" aria-label="More">
+        <ion-icon name="ellipsis-horizontal"></ion-icon>
+      </button>
       <div class="bd-page">
         <div class="bd-sticky">
         <header class="bd-header">
           <div class="bd-header-title">
             <p *ngIf="booking()">#{{ booking()!.id }}</p>
           </div>
-          <button type="button" class="bd-icon-btn" (click)="openMenu()" aria-label="More">
-            <ion-icon name="ellipsis-horizontal"></ion-icon>
-          </button>
         </header>
           <div class="bd-tabs" *ngIf="booking()">
             <div class="bd-tabs-scroll">
@@ -428,7 +428,7 @@ type DetailTab = 'overview' | 'players' | 'amenities' | 'live';
     }
     .bd-header {
       display: grid;
-      grid-template-columns: 1fr var(--app-header-btn-size);
+      grid-template-columns: 1fr;
       align-items: center;
       gap: 10px;
       padding: 14px 16px 6px;

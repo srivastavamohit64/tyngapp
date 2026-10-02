@@ -59,13 +59,10 @@ const DOC_LABELS: Record<string, string> = {
   template: `
     <ion-content [fullscreen]="true" class="has-tabs">
       <app-brand-header-shell title="Venue Profile">
+      <button headerEnd type="button" (click)="editProfile()" class="edit-icon-btn app-header-btn" aria-label="Edit profile">
+        <ion-icon name="create-outline"></ion-icon>
+      </button>
       <div class="venue-profile-page pb-32 text-left">
-
-        <div class="sticky-header flex items-center justify-end px-5 bg-white border-b border-[#F3F4F6]">
-          <button type="button" (click)="editProfile()" class="edit-icon-btn app-header-btn" aria-label="Edit profile">
-            <ion-icon name="create-outline"></ion-icon>
-          </button>
-        </div>
 
         <div *ngIf="showSkeleton()" class="venue-profile-skel" aria-busy="true" aria-label="Loading profile">
           <div class="profile-hero bg-gradient-to-b from-[var(--app-primary)]/10 to-transparent px-6 pt-6 pb-8 flex flex-col items-center text-center">
@@ -277,16 +274,6 @@ const DOC_LABELS: Record<string, string> = {
       background: #FAFBFC;
       min-height: 100%;
       padding-bottom: calc(112px + var(--safe-area-bottom));
-    }
-
-    .sticky-header {
-      position: sticky;
-      top: 0;
-      z-index: 30;
-      padding-top: 12px;
-      padding-bottom: 6px;
-      box-sizing: border-box;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
     }
 
     .edit-icon-btn {

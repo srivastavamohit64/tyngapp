@@ -28,13 +28,10 @@ const STATUSES: StatusItem[] = [
   template: `
     <ion-content [fullscreen]="true">
       <app-brand-header-shell title="Settings">
+      <button headerEnd type="button" aria-label="Help" (click)="go('/app/coach/notifications')" class="app-header-btn flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
+        <ion-icon name="help-circle-outline" class="text-xl text-[#111827]"></ion-icon>
+      </button>
       <div class="settings-page pb-32">
-        <!-- Sticky Header -->
-        <div class="sticky-header app-header-bar flex items-center justify-end px-5 bg-white border-b border-[#F3F4F6]">
-          <button (click)="go('/app/coach/notifications')" class="app-header-btn flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
-            <ion-icon name="help-circle-outline" class="text-xl text-[#111827]"></ion-icon>
-          </button>
-        </div>
 
         <div class="px-4 pt-4 space-y-4">
           <!-- Coach status card -->
@@ -310,13 +307,6 @@ const STATUSES: StatusItem[] = [
     .settings-page {
       background: #FAFBFC;
       min-height: 100%;
-    }
-
-    .sticky-header {
-      position: sticky;
-      top: 0;
-      z-index: 30;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
     }
 
     .section-card {

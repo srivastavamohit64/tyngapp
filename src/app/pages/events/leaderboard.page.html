@@ -1,19 +1,17 @@
 <ion-content fullscreen class="has-tabs lb-content" [scrollEvents]="true" (ionScroll)="onContentScroll()">
   <app-brand-header-shell title="Leaderboard">
+    <div headerEnd class="lb-intro-actions">
+      <button type="button" class="lb-icon-btn" aria-label="Search players" (click)="openSheet('search')">
+        <ion-icon name="search-outline"></ion-icon>
+      </button>
+      <button type="button" class="lb-icon-btn" aria-label="Share your rank" (click)="openSheet('share')">
+        <ion-icon name="share-social-outline"></ion-icon>
+      </button>
+    </div>
     <main class="lb-page page-with-tab-bar">
       <!-- Intro -->
       <header class="lb-intro">
-        <div class="lb-intro-row">
-          <p class="lb-subtitle">See who's making moves on TYNG.</p>
-          <div class="lb-intro-actions">
-            <button type="button" class="lb-icon-btn" aria-label="Search players" (click)="openSheet('search')">
-              <ion-icon name="search-outline"></ion-icon>
-            </button>
-            <button type="button" class="lb-icon-btn" aria-label="Share your rank" (click)="openSheet('share')">
-              <ion-icon name="share-social-outline"></ion-icon>
-            </button>
-          </div>
-        </div>
+        <p class="lb-subtitle">See who's making moves on TYNG.</p>
         <button type="button" class="lb-xp-info-btn" (click)="openSheet('xp')">
           <ion-icon name="information-circle-outline"></ion-icon> HOW XP WORKS
         </button>

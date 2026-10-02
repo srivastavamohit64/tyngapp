@@ -20,13 +20,10 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
       </ion-refresher>
 
       <app-brand-header-shell title="My Friends">
+      <button headerEnd type="button" class="icon-btn" (click)="loadFriends()" aria-label="Refresh">
+        <ion-icon name="refresh-outline"></ion-icon>
+      </button>
       <main class="page-with-tab-bar friends-page">
-        <header class="friends-header">
-          <button type="button" class="icon-btn" (click)="loadFriends()" aria-label="Refresh">
-            <ion-icon name="refresh-outline"></ion-icon>
-          </button>
-        </header>
-
         <div *ngIf="loading && friends.length === 0" class="state-block">
           <app-skeleton-list [count]="5"></app-skeleton-list>
         </div>
@@ -86,20 +83,6 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
         min-height: 100%;
         background: #fafbfc;
         color: #111827;
-      }
-
-      .friends-header {
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-        gap: 12px;
-        padding: 14px 16px 10px;
-        box-sizing: border-box;
-        background: #fff;
-        border-bottom: 1px solid #f1f5f9;
-        position: sticky;
-        top: 0;
-        z-index: 10;
       }
 
       .icon-btn {

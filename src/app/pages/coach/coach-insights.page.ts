@@ -20,14 +20,14 @@ type ColouredMetric = CoachInsightMetric & { color: string };
   template: `
     <ion-content [fullscreen]="true" class="insights-content-shell">
       <app-brand-header-shell title="Coach Insights">
+      <button headerEnd type="button" class="icon-button" (click)="openCalendar()" aria-label="Choose insights date">
+        <ion-icon name="calendar-outline"></ion-icon>
+      </button>
       <main class="insights-page">
         <header class="insights-header">
           <div class="header-copy">
             <p>{{ rangeLabel() }}</p>
           </div>
-          <button type="button" class="icon-button" (click)="openCalendar()" aria-label="Choose insights date">
-            <ion-icon name="calendar-outline"></ion-icon>
-          </button>
         </header>
 
         <nav class="period-tabs" role="tablist" aria-label="Insights period">
@@ -213,11 +213,11 @@ type ColouredMetric = CoachInsightMetric & { color: string };
     :host { --ink:#101828; --muted:#7d8aa5; --line:#e9edf2; --surface:#fff; --lime:var(--app-primary,#7cf000); display:block; }
     .insights-content-shell { --background:#f6f8fa; }
     .insights-page { min-height:100%; background:#f6f8fa; color:var(--ink); padding-bottom:calc(96px + env(safe-area-inset-bottom)); }
-    .insights-header { position:sticky; top:0; z-index:30; height:var(--app-header-height); padding:0 16px; display:grid; grid-template-columns:minmax(0,1fr) var(--app-header-btn-size); align-items:center; background:rgba(255,255,255,.96); border-bottom:1px solid var(--line); backdrop-filter:blur(14px); }
+    .insights-header { padding:12px 16px 0; background:#fff; }
     .icon-button { width:var(--app-header-btn-size); height:var(--app-header-btn-size); border:0; border-radius:14px; display:grid; place-items:center; color:var(--ink); background:#f2f4f7; font-size:21px; }
-    .header-copy { min-width:0; text-align:left; padding:0 8px 0 0; }
+    .header-copy { min-width:0; text-align:left; }
     .header-copy p { margin:0; color:var(--muted); font-size:12px; line-height:1.2; font-weight:650; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .period-tabs { position:sticky; top:var(--app-header-height); z-index:25; display:flex; gap:8px; padding:10px 16px 12px; overflow-x:auto; background:#fff; border-bottom:1px solid var(--line); scrollbar-width:none; }
+    .period-tabs { position:sticky; top:0; z-index:25; display:flex; gap:8px; padding:10px 16px 12px; overflow-x:auto; background:#fff; border-bottom:1px solid var(--line); scrollbar-width:none; }
     .period-tabs::-webkit-scrollbar { display:none; }
     .period-chip { flex:0 0 auto; min-height:36px; padding:0 14px; border:1px solid transparent; border-radius:999px; background:#f1f3f6; color:#667085; font-size:12px; line-height:1; font-weight:800; white-space:nowrap; }
     .period-chip.active { background:var(--lime); color:#101828; box-shadow:0 5px 14px rgba(116,230,0,.22); }

@@ -73,13 +73,6 @@ $page: #fafbfc;
   padding: 14px 16px 20px;
 }
 
-.lb-intro-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
 .lb-subtitle {
   margin: 0 !important;
   font-size: 11px;
@@ -89,15 +82,16 @@ $page: #fafbfc;
 
 .lb-intro-actions {
   display: flex;
-  gap: 4px;
+  align-items: center;
+  gap: 6px;
 }
 
 .lb-icon-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: var(--app-header-btn-size);
+  height: var(--app-header-btn-size);
   border: 0;
   border-radius: 12px;
   background: #fff;
