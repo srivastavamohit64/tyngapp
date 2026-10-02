@@ -191,6 +191,7 @@ PLAYER
 - Choose from the session packages a coach offers, with their length and price, when you book.
 - On Discover Players, the player card now fits your screen, so the Skip, View Profile and Connect buttons always sit above the bottom menu instead of being hidden behind it.
 - Swipe the sports in "Explore by sport" on Home left or right as far as you like. They go round in an endless loop and only move when you swipe them.
+- In "Recently unlocked" on Home, each badge's short description now fits on one line. Tap a badge to see its full details in a small window: what it is for, how close you are (for example 0 of 25), or the date you unlocked it. From there you can open all your badges.
 
 COACH
 
