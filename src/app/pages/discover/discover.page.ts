@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, inject } from '@angular/core';
+import { Component, ElementRef, NgZone, OnDestroy, ViewChild, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { IonicModule, RefresherCustomEvent, ToastController } from '@ionic/angular';
@@ -84,6 +84,7 @@ export class DiscoverPage implements OnDestroy {
   private readonly auth = inject(AuthService);
   private readonly chrome = inject(UiChromeService);
   private readonly toastCtrl = inject(ToastController);
+  private readonly zone = inject(NgZone);
 
   cards: DiscoverCard[] = [];
   index = 0;
@@ -115,6 +116,12 @@ export class DiscoverPage implements OnDestroy {
   private startX = 0;
   private startY = 0;
   private moved = false;
+
+  @ViewChild('deckWrap') deckWrap?: ElementRef<HTMLElement>;
+  cardHeight: number | null = null;
+  private fitFrame = 0;
+  private resizeObserver?: ResizeObserver;
+  private readonly onWindowResize = () => this.scheduleFit();
 
   constructor() {
     void this.load(true);
@@ -323,14 +330,64 @@ export class DiscoverPage implements OnDestroy {
     this.sheet = null;
   }
 
+  ionViewDidEnter(): void {
+    window.addEventListener('resize', this.onWindowResize);
+    const page = this.deckWrap?.nativeElement.closest('main');
+    if (page && typeof ResizeObserver !== 'undefined') {
+      this.resizeObserver?.disconnect();
+      this.resizeObserver = new ResizeObserver(() => this.scheduleFit());
+      this.resizeObserver.observe(page);
+    }
+    this.scheduleFit();
+  }
+
   ionViewWillLeave(): void {
     this.closeSheet();
+    this.stopFitting();
   }
 
   ngOnDestroy(): void {
     this.closeSheet();
+    this.stopFitting();
     clearTimeout(this.searchTimer);
     clearTimeout(this.toastTimer);
+  }
+
+  private stopFitting(): void {
+    window.removeEventListener('resize', this.onWindowResize);
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = undefined;
+    cancelAnimationFrame(this.fitFrame);
+  }
+
+  private scheduleFit(): void {
+    cancelAnimationFrame(this.fitFrame);
+    this.fitFrame = requestAnimationFrame(() => void this.fitCard());
+  }
+
+  private async fitCard(): Promise<void> {
+    const wrap = this.deckWrap?.nativeElement;
+    if (!wrap || !wrap.getClientRects().length) return;
+    const content = wrap.closest('ion-content') as HTMLIonContentElement | null;
+    const scrollTop = content ? (await content.getScrollElement()).scrollTop : 0;
+    const top = wrap.getBoundingClientRect().top + scrollTop;
+
+    const tabBar = Array.from(document.querySelectorAll<HTMLElement>('.tab-bar-pill'))
+      .map((element) => element.getBoundingClientRect())
+      .find((rect) => rect.height > 0 && rect.top < window.innerHeight);
+    const barTop = tabBar ? tabBar.top : window.innerHeight - 112;
+
+    const deck = wrap.querySelector<HTMLElement>('.dp-deck');
+    const card = wrap.querySelector<HTMLElement>('.dp-card');
+    const body = wrap.querySelector<HTMLElement>('.dp-body');
+    const belowCard = deck && card ? deck.offsetHeight - card.offsetHeight : 12;
+    const bodyHeight = body?.offsetHeight ?? 260;
+
+    const available = Math.floor(barTop - top - belowCard - 12);
+    const minHeight = bodyHeight + 130;
+    const maxHeight = bodyHeight + 460;
+    const height = Math.min(maxHeight, Math.max(minHeight, available));
+    if (height !== this.cardHeight) this.zone.run(() => (this.cardHeight = height));
   }
 
   onPointerDown(event: PointerEvent): void {

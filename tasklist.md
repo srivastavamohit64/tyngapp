@@ -1284,3 +1284,8 @@
 - Admin public profile preview uses the same cover/default; "missing" list includes the cover photo.
 - **Verified:** live migration ran; `npx tsc --noEmit -p tsconfig.app.json` passes. On live as coach 17: upload, profile payload and delete (file removed) via the controller. Browser as a player: default cover, then an uploaded cover set temporarily in the database. Admin preview rendered with and without a cover. Coach 17 reset to no cover.
 - **Follow-up:** Edit Profile cover section not opened in the browser as a coach.
+
+# Completed: Discover Players card fits above the tab bar - 2 October 2026
+
+- `pages/discover`: the card had a fixed 350px `.dp-photo`, so the actions sat under the floating tab bar on most phones. `fitCard()` measures the deck top (plus the `ion-content` scroll offset), the visible `.tab-bar-pill` top (fallback `innerHeight - 112`) and the space under the card (stack padding and swipe note), then sets `cardHeight`; `.dp-card.is-fitted` is a flex column with the photo as `flex: 1 1 0`. Clamped to body + 130px (min) and body + 460px (max). Re-runs on `ionViewDidEnter`, window resize and a `ResizeObserver` on the page (search open/close, errors, loading); the update runs inside `NgZone`. The loading skeleton uses the same height.
+- **Verified:** `npx tsc --noEmit -p tsconfig.app.json` passes. Browser as a player at 393x760 (actions bottom 605 vs tab bar 668), 360x640 (523 vs 548, swipe note scrolls) and 430x932 (777 vs 840); search open shrinks 481 to 417 and closing restores it.

@@ -189,6 +189,7 @@ PLAYER
 - When you review a coach, you can also rate their coaching quality, communication, punctuality, professionalism and value. Each coach's profile shows the average for each one.
 - See a coach's exact free start times, such as 5 PM or 6 PM, instead of just "evening". Tap a time to book it straight away.
 - Choose from the session packages a coach offers, with their length and price, when you book.
+- On Discover Players, the player card now fits your screen, so the Skip, View Profile and Connect buttons always sit above the bottom menu instead of being hidden behind it.
 
 COACH
 

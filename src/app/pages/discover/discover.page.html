@@ -57,9 +57,9 @@
 
       <p *ngIf="errorMessage" class="dp-error">{{ errorMessage }}</p>
 
-      <section class="dp-deck-wrap">
+      <section #deckWrap class="dp-deck-wrap">
         <!-- Loading -->
-        <div *ngIf="loading" class="dp-skeleton"></div>
+        <div *ngIf="loading" class="dp-skeleton" [style.height.px]="cardHeight"></div>
 
         <!-- Card stack -->
         <div *ngIf="!loading && current as card" class="dp-deck">
@@ -71,6 +71,8 @@
 
           <article
             class="dp-card"
+            [class.is-fitted]="cardHeight !== null"
+            [style.height.px]="cardHeight"
             [class.is-dragging]="dragging"
             [style.transform]="cardTransform"
             (pointerdown)="onPointerDown($event)"

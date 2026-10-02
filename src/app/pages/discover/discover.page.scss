@@ -300,6 +300,21 @@ $page: #fafbfc;
   &.is-dragging {
     transition: none;
   }
+
+  &.is-fitted {
+    display: flex;
+    flex-direction: column;
+
+    .dp-photo {
+      flex: 1 1 0;
+      height: auto;
+      min-height: 0;
+    }
+
+    .dp-body {
+      flex-shrink: 0;
+    }
+  }
 }
 
 .dp-photo {
