@@ -154,7 +154,7 @@ PLAYER
 - Filter coaches by sport, session type, experience, price, availability, rating, language and verified coaches, and sort by recommended, top rated, available soonest, price or experience.
 - Tap Book on a coach to open their booking form straight away.
 
-NEW WORK COMPLETED ON 2 OCTOBER 2026
+NEW WORK COMPLETED ON 2 OCTOBER 2026 (UP TO 5:30 PM)
 
 PLAYER
 
@@ -180,30 +180,12 @@ PLAYER
 - See just your area under your name on the Home page, for example "Preeti Nagar" instead of "Preeti Nagar > Lucknow". If your area is not known, your city is shown.
 - See grey placeholder shapes while Home, the leaderboard, coach profiles, chats, bookings and other screens load, instead of sample text or a "nothing found" message that then changes. A coach profile now shows the real number of reviews.
 - Earn badges automatically as you play. Each badge shows how close you are, for example 1 of 50, and you get a notification the moment you unlock one. Open the new Badges page from Home or your notification. The Good Sport and Fan Favourite badges, earned through good ratings from other players, are now switched on.
-- Open any coach from Coaches to see a full profile page: a cover photo, verified badge, rating, years of experience, sessions and students, when they are next free and their lowest price. Four sections show what they teach and where (Overview), their prices and free times this week (Sessions), their certificates, achievements and past coaching jobs (Experience), and what other players say (Reviews).
-- Book a coach from their profile in a few steps: pick a session type, tap one of their free times or choose your own, check the details and send. A chat with the coach opens so you can agree the place and time.
-- Rate and review a coach after you have finished a session with them. Your star rating counts towards the coach's overall rating, and you can change your review later.
-- Share a coach's profile with friends, or block a coach from the more button at the top of their profile.
-- Save a coach with the bookmark button on their profile, then see only your saved coaches by turning on "Saved only" in the Coaches filters.
-- Report a coach, or tell TYNG about a safety concern, from the more button on their profile. Pick what happened and add details. The coach does not see who sent it, and safety concerns are looked at first.
-- When you review a coach, you can also rate their coaching quality, communication, punctuality, professionalism and value. Each coach's profile shows the average for each one.
-- See a coach's exact free start times, such as 5 PM or 6 PM, instead of just "evening". Tap a time to book it straight away.
-- Choose from the session packages a coach offers, with their length and price, when you book.
-- On Discover Players, the player card now fits your screen, so the Skip, View Profile and Connect buttons always sit above the bottom menu instead of being hidden behind it.
-- Swipe the sports in "Explore by sport" on Home left or right as far as you like. They go round in an endless loop and only move when you swipe them. Exactly six whole sports show at a time on any phone, with no half-cut icons at the edges.
-- The big promotion card on Home now looks exactly like the design on every phone: the same size, a dark background with faint pitch lines, a small lime label, a bold headline, a short description and a lime button. The description no longer disappears on smaller phones.
-- In "Recently unlocked" on Home, each badge's short description now fits on one line. Tap a badge to see its full details in a small window: what it is for, how close you are (for example 0 of 25), or the date you unlocked it. From there you can open all your badges.
 
 COACH
 
 - Use a back button on inner pages. The bottom menu now only appears on your main screens.
 - See grey placeholder shapes on your dashboard, students, schedule, insights, earnings and student pages while they load, instead of sample sessions and requests. Today's completion on your schedule is now worked out from your real sessions.
 - Earn coaching badges for completed sessions, growing your student list, writing player evaluations, great reviews and coaching every week. See your progress on the new Badges page from the side menu or the Milestone card on your dashboard.
-- Fill in three new parts of your profile in Edit Profile so players learn more about you: your specialities (pick from the list or type your own), who you coach (children, adults, beginners and so on), and your coaching history (where you coached, your role and when). They appear on the profile players see.
-- Players now see your training photos as your profile cover, your certificates, partner venues, free times and a reliability score worked out from how often you finish sessions, reply to requests and how well students turn up.
-- Add your own session packages in Edit Profile, such as a 60-minute one-to-one or a monthly plan, with a price, length and short description. Players pick one when they book, and your lowest price is shown on your profile.
-- Add your exact years of coaching, a short summary of your experience, and how many years you have coached each sport.
-- Choose your own cover photo for the top of your profile in Edit Profile, change it any time, or go back to the default. Until you add one, players see a dark background with football pitch lines. You can also tap the camera button on your own profile to change it.
 
 VENUE STAFF
 
@@ -216,6 +198,41 @@ ADMIN
 - Edit the Privacy Policy and Terms & Conditions from the CMS Pages item in the admin menu. Changes appear in the app straight away.
 - See grey placeholder shapes on the dashboard numbers and activity list while they load, instead of zeros.
 - See every player and coach badge, how each one is earned and who has earned it. Change a badge's name, description or goal, hide or switch it off, and re-check everyone at once. Each player's and coach's page now shows their badges and progress.
+
+ALL APP USERS
+
+- Headings above cards and lists now look the same on every screen: the same size, bold capital letters and colour, so pages are easier to scan.
+- The bottom menu now hides while you are typing, so the keyboard has more room and does not cover buttons. It comes back as soon as the keyboard closes.
+- Loading placeholders are now easy to see on every screen, so it is clear when information is still on its way.
+
+NEW WORK COMPLETED ON 2 OCTOBER 2026 (AFTER 5:30 PM)
+
+PLAYER
+
+- Open any coach from Coaches to see a full profile page: a cover photo, verified badge, rating, years of experience, sessions and students, when they are next free and their lowest price. Four sections show what they teach and where (Overview), their prices and free times this week (Sessions), their certificates, achievements and past coaching jobs (Experience), and what other players say (Reviews).
+- Book a coach from their profile in a few steps: pick a session type, tap one of their free times or choose your own, check the details and send. A chat with the coach opens so you can agree the place and time.
+- Rate and review a coach after you have finished a session with them. Your star rating counts towards the coach's overall rating, and you can change your review later.
+- Share a coach's profile with friends, or block a coach from the more button at the top of their profile.
+- Save a coach with the bookmark button on their profile, then see only your saved coaches by turning on "Saved only" in the Coaches filters.
+- Report a coach, or tell TYNG about a safety concern, from the more button on their profile. Pick what happened and add details. The coach does not see who sent it, and safety concerns are looked at first.
+- When you review a coach, you can also rate their coaching quality, communication, punctuality, professionalism and value. Each coach's profile shows the average for each one.
+- See a coach's exact free start times, such as 5 PM or 6 PM, instead of just "evening". Tap a time to book it straight away.
+- Choose from the session packages a coach offers, with their length and price, when you book.
+- On Discover Players, the player card now fits your screen, so the Skip, View Profile and Connect buttons always sit above the bottom menu instead of being hidden behind it.
+- In "Recently unlocked" on Home, each badge's short description now fits on one line. Tap a badge to see its full details in a small window: what it is for, how close you are (for example 0 of 25), or the date you unlocked it. From there you can open all your badges.
+- Swipe the sports in "Explore by sport" on Home left or right as far as you like. They go round in an endless loop and only move when you swipe them. Exactly six whole sports show at a time on any phone, with no half-cut icons at the edges.
+- The big promotion card on Home now looks exactly like the design on every phone: the same size, a dark background with faint pitch lines, a small lime label, a bold headline, a short description and a lime button. The description no longer disappears on smaller phones.
+
+COACH
+
+- Fill in three new parts of your profile in Edit Profile so players learn more about you: your specialities (pick from the list or type your own), who you coach (children, adults, beginners and so on), and your coaching history (where you coached, your role and when). They appear on the profile players see.
+- Players now see your training photos as your profile cover, your certificates, partner venues, free times and a reliability score worked out from how often you finish sessions, reply to requests and how well students turn up.
+- Add your own session packages in Edit Profile, such as a 60-minute one-to-one or a monthly plan, with a price, length and short description. Players pick one when they book, and your lowest price is shown on your profile.
+- Add your exact years of coaching, a short summary of your experience, and how many years you have coached each sport.
+- Choose your own cover photo for the top of your profile in Edit Profile, change it any time, or go back to the default. Until you add one, players see a dark background with football pitch lines. You can also tap the camera button on your own profile to change it.
+
+ADMIN
+
 - Open any coach's public profile, exactly as players see it, with the new "View public profile" button on the coach list or the coach's page. It also shows how many players saved the coach, any open reports, and what the coach still needs to fill in.
 - Handle reports and safety concerns about coaches on the new Coach Reports page in the side menu. A number shows how many are waiting, and safety concerns appear first. Mark each one as being looked at, sorted or dismissed, and add a note.
 - See each coach's ratings for coaching quality, communication, punctuality, professionalism and value, plus their years of experience and session packages, on the coach's page.
@@ -223,9 +240,6 @@ ADMIN
 
 ALL APP USERS
 
-- Headings above cards and lists now look the same on every screen: the same size, bold capital letters and colour, so pages are easier to scan.
-- The bottom menu now hides while you are typing, so the keyboard has more room and does not cover buttons. It comes back as soon as the keyboard closes.
-- Loading placeholders are now easy to see on every screen, so it is clear when information is still on its way.
 - Every screen now has the same top bar with the tyng name, the bell and a menu or back arrow, so moving around the app feels the same everywhere. There is now only one back arrow per screen, always in the top left corner.
 - On screens with a back arrow, the top bar now shows the name of the screen in the middle instead of the tyng name, and the bell is hidden, so you always know where you are. The main screens from the bottom menu still show the tyng name and the bell.
 - Moving between screens is now quicker and smoother. Screens no longer fade over each other, and when you go back you return to the same spot you left instead of the top of the page.
