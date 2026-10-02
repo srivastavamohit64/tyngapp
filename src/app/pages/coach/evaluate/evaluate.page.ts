@@ -26,10 +26,9 @@ interface CategoryItem {
   imports: [CommonModule, IonicModule, FormsModule, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true" class="evaluation-shell">
-      <app-brand-header-shell>
+      <app-brand-header-shell title="Player Evaluation">
       <main class="evaluation-page">
         <header class="page-header">
-          <h1>Player Evaluation</h1>
           <button type="button" class="history-button" aria-label="View past evaluations" title="Past evaluations" (click)="openEvaluationHistory()">
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M9 5.5H6.8A1.8 1.8 0 0 0 5 7.3v12A1.8 1.8 0 0 0 6.8 21h10.4a1.8 1.8 0 0 0 1.8-1.8v-12a1.8 1.8 0 0 0-1.8-1.8H15" />

@@ -85,13 +85,12 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
   imports: [CommonModule, IonicModule, PageSkeletonComponent, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true">
-      <app-brand-header-shell>
+      <app-brand-header-shell title="Ongoing Games">
       <div class="ongoing-page">
 
         <!-- Header -->
         <div class="og-header">
           <div class="og-header-text">
-            <h1 class="og-title">Ongoing Games</h1>
             <p class="og-location" *ngIf="locationLabel">Near {{ locationLabel }}</p>
           </div>
           <button class="og-filter-btn">
@@ -284,16 +283,8 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
       padding: 0 8px 0 0;
     }
 
-    .og-title {
-      font-size: var(--app-header-title-size);
-      font-weight: var(--app-header-title-weight);
-      line-height: var(--app-header-title-line-height);
-      color: #111827;
-      margin: 0;
-    }
-
     .og-location {
-      margin: 2px 0 0;
+      margin: 0;
       font-size: 11px;
       font-weight: 600;
       color: #6b7280;

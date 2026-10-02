@@ -29,10 +29,9 @@ const FILTERS: { id: FilterId; label: string; emoji: string }[] = [
   imports: [CommonModule, IonicModule, SkeletonListComponent, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true">
-      <app-brand-header-shell>
+      <app-brand-header-shell title="Notifications">
       <main class="notifications-page">
         <div class="notif-header">
-          <h1 class="notif-title">Notifications</h1>
           <button class="mark-read-btn" (click)="markAllRead()" [disabled]="unreadCount() === 0">
             <ion-icon name="checkmark-done-outline"></ion-icon>
           </button>
@@ -214,7 +213,7 @@ const FILTERS: { id: FilterId; label: string; emoji: string }[] = [
       .notif-header {
         display: flex;
         align-items: center;
-        justify-content: space-between;
+        justify-content: flex-end;
         padding: 14px 20px 6px;
         box-sizing: border-box;
         background: #ffffff;
@@ -234,13 +233,6 @@ const FILTERS: { id: FilterId; label: string; emoji: string }[] = [
       }
       .mark-read-btn:disabled {
         opacity: 0.45;
-      }
-      .notif-title {
-        font-size: var(--app-header-title-size);
-        font-weight: var(--app-header-title-weight);
-        line-height: var(--app-header-title-line-height);
-        color: #111827;
-        margin: 0;
       }
       .filter-scroll {
         overflow-x: auto;

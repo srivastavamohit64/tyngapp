@@ -13,11 +13,8 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
   imports: [CommonModule, IonicModule, PageSkeletonComponent, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true">
-      <app-brand-header-shell>
+      <app-brand-header-shell title="Coaching Invitation">
       <main class="invite-page">
-        <header>
-          <h1>Coaching Invitation</h1>
-        </header>
 
         <app-page-skeleton *ngIf="loading()" variant="profile" label="Loading invitation"></app-page-skeleton>
         <div *ngIf="error()" class="state error">
@@ -69,10 +66,8 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
   styles: [`
     :host{display:block;--lime:var(--app-primary,#7cf000);--ink:#101828;--muted:#667085;--line:#e5e9ee}
     ion-content{--background:#f8fafb}.invite-page{min-height:100%;padding-bottom:calc(28px + env(safe-area-inset-bottom));color:var(--ink)}
-    header{box-sizing:border-box;padding:14px 16px 6px}
-    header h1{margin:0;color:#111827;font-size:20px;font-weight:800;line-height:var(--app-header-title-line-height)}
     .state{min-height:420px;padding:30px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;color:var(--muted);text-align:center}.state ion-spinner{color:var(--lime)}.state>ion-icon{color:#f04438;font-size:36px}.state h2,.state p{margin:0}.state h2{color:var(--ink);font-size:18px}.state p{font-size:12px;line-height:1.5}.state button{margin-top:8px;padding:11px 17px;border:0;border-radius:13px;background:var(--lime);font-weight:800}
-    .invite-card{width:min(calc(100% - 32px),420px);margin:35px auto 0;padding:26px 19px;box-sizing:border-box;border:1px solid var(--line);border-radius:24px;background:#fff;text-align:center;box-shadow:0 8px 26px rgba(16,24,40,.05)}
+    .invite-card{width:min(calc(100% - 32px),420px);margin:16px auto 0;padding:26px 19px;box-sizing:border-box;border:1px solid var(--line);border-radius:24px;background:#fff;text-align:center;box-shadow:0 8px 26px rgba(16,24,40,.05)}
     .coach-avatar{width:76px;height:76px;margin:0 auto 16px;border:3px solid var(--lime);border-radius:50%;overflow:hidden;display:grid;place-items:center;background:#f2f4f7;font-size:30px}.coach-avatar img{width:100%;height:100%;object-fit:cover}
     .eyebrow{margin:0 0 5px;color:#68cd04;font-size:10px;font-weight:900;letter-spacing:.11em}.invite-card h2{margin:0;font-size:22px}.copy{margin:9px auto 20px;max-width:330px;color:var(--muted);font-size:12px;line-height:1.5}
     .details{margin-bottom:17px;overflow:hidden;border:1px solid var(--line);border-radius:15px;text-align:left}.details div{min-height:43px;padding:0 12px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid #f2f4f7}.details div:last-child{border:0}.details span{color:#98a2b3;font-size:10px}.details strong{font-size:11px;text-align:right}.status{color:#65c900}

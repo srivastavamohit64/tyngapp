@@ -31,7 +31,7 @@ import { SkeletonListComponent } from '../../shared/components/skeleton';
         <ion-refresher-content></ion-refresher-content>
       </ion-refresher>
 
-      <app-brand-header-shell>
+      <app-brand-header-shell title="My Bookings">
         <main class="page-with-tab-bar min-h-full bg-[#FAFBFC] text-[#111827] pb-[calc(112px+var(--safe-area-bottom))]">
           <app-page-header title="My Bookings" [hasSubContent]="true">
             <app-segment-control

@@ -47,11 +47,10 @@ interface DateOption {
   imports: [CommonModule, FormsModule, IonicModule, BrandHeaderShellComponent, PrimaryButtonComponent, SkeletonListComponent],
   template: `
     <ion-content fullscreen>
-      <app-brand-header-shell (back)="back()">
+      <app-brand-header-shell title="Create Game" (back)="back()">
       <div class="create-page page-safe-bottom">
         <div class="cg-title-row">
           <div>
-            <h1 class="cg-title">Create Game</h1>
             <p class="cg-subtitle">Step {{ currentStep }} of {{ steps.length }}</p>
           </div>
           <button type="button" class="icon-btn" (click)="next()" [disabled]="!canProceed()">
@@ -233,15 +232,8 @@ interface DateOption {
         padding: 14px 24px 0;
       }
 
-      .cg-title {
-        margin: 0;
-        font-size: 20px;
-        font-weight: 800;
-        color: #111827;
-      }
-
       .cg-subtitle {
-        margin: 2px 0 0;
+        margin: 0;
         font-size: 12px;
         font-weight: 500;
         color: #6b7280;

@@ -29,13 +29,8 @@ interface PeakHour {
   imports: [CommonModule, IonicModule, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true" class="has-tabs">
-      <app-brand-header-shell>
+      <app-brand-header-shell title="Revenue Analytics">
       <div class="analytics-page pb-32 text-left">
-        
-        <!-- Header -->
-        <div class="sticky-header flex items-center px-5 bg-white border-b border-[#F3F4F6]">
-          <p class="app-header-title text-[#111827] m-0">Revenue Analytics</p>
-        </div>
 
         <div class="px-5 pt-4 space-y-6">
           
@@ -109,16 +104,6 @@ interface PeakHour {
       background: #FAFBFC;
       min-height: 100%;
       padding-bottom: calc(112px + var(--safe-area-bottom));
-    }
-
-    .sticky-header {
-      position: sticky;
-      top: 0;
-      z-index: 30;
-      padding-top: 14px;
-      padding-bottom: 10px;
-      box-sizing: border-box;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
     }
   `]
 })

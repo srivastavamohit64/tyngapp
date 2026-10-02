@@ -31,18 +31,13 @@ const FILTERS = [
   imports: [CommonModule, IonicModule, FormsModule, SkeletonListComponent, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true">
-      <app-brand-header-shell>
+      <app-brand-header-shell title="Notifications">
       <div class="notifications-page pb-28">
         <!-- Sticky Header -->
         <div class="sticky-header bg-white border-b border-[#F3F4F6]">
-          <div class="notif-header app-header-bar flex items-center justify-between px-5">
-            <div class="flex items-center gap-3">
-              <div class="flex items-center gap-2">
-                <h1 class="app-header-title text-[#111827] m-0">Notifications</h1>
-                <div *ngIf="totalUnread() > 0" class="min-w-[22px] h-[22px] rounded-full bg-[#FF7A00] flex items-center justify-center px-1.5">
-                  <span class="text-[11px] font-black text-white">{{ totalUnread() }}</span>
-                </div>
-              </div>
+          <div class="notif-header app-header-bar flex items-center justify-end px-5">
+            <div *ngIf="totalUnread() > 0" class="mr-auto min-w-[22px] h-[22px] rounded-full bg-[#FF7A00] flex items-center justify-center px-2">
+              <span class="text-[11px] font-black text-white">{{ totalUnread() }} unread</span>
             </div>
 
             <div class="flex items-center gap-1.5">

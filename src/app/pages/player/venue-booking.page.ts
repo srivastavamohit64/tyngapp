@@ -29,15 +29,8 @@ interface DateItem {
   imports: [CommonModule, IonicModule, BrandHeaderShellComponent],
   template: `
     <ion-content fullscreen class="book-content">
-      <app-brand-header-shell (back)="back()">
+      <app-brand-header-shell title="Select Date & Time" (back)="back()">
       <div class="book-page" *ngIf="venue">
-        <header class="book-header">
-          <div class="book-header-copy">
-            <h1>Select Date & Time</h1>
-            <p>{{ venue.venueName }}</p>
-          </div>
-        </header>
-
         <div class="book-body">
           <section class="venue-card">
             <div class="venue-thumb">
@@ -223,43 +216,6 @@ interface DateItem {
         background: #f4f6f8;
         color: #111827;
         text-align: left;
-      }
-
-      .book-header {
-        position: sticky;
-        top: 0;
-        z-index: 20;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 14px 16px 10px;
-        box-sizing: border-box;
-        background: rgba(255, 255, 255, 0.96);
-        border-bottom: 1px solid #eef0f3;
-        backdrop-filter: blur(8px);
-      }
-
-      .book-header-copy {
-        min-width: 0;
-      }
-
-      .book-header-copy h1 {
-        margin: 0;
-        font-size: var(--app-header-title-size);
-        font-weight: var(--app-header-title-weight);
-        line-height: var(--app-header-title-line-height);
-        letter-spacing: -0.02em;
-      }
-
-      .book-header-copy p {
-        margin: 2px 0 0;
-        font-size: 11px;
-        font-weight: 700;
-        color: #9ca3af;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
       }
 
       .book-body {

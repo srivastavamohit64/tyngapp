@@ -18,12 +18,11 @@ type PeriodKey = 'today' | 'week' | 'month' | 'year';
   imports: [CommonModule, IonicModule, FormsModule, PageSkeletonComponent, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true" class="has-tabs">
-      <app-brand-header-shell>
+      <app-brand-header-shell title="Earnings & Payouts">
       <div class="earnings-page text-left">
         <div class="sticky-header">
           <div class="header-row">
             <div class="header-title">
-              <h1>Earnings & Payouts</h1>
               <span class="live-badge" *ngIf="liveConnected()">
                 <span class="live-dot"></span>
                 Live
@@ -370,7 +369,6 @@ type PeriodKey = 'today' | 'week' | 'month' | 'year';
         grid-template-columns: 1fr var(--app-header-btn-size);
         align-items: center;
         gap: 10px;
-        height: var(--app-header-height);
       }
 
       .icon-btn {
@@ -397,15 +395,6 @@ type PeriodKey = 'today' | 'week' | 'month' | 'year';
         justify-content: center;
         gap: 2px;
         min-width: 0;
-      }
-
-      .header-title h1 {
-        margin: 0;
-        font-size: var(--app-header-title-size);
-        font-weight: var(--app-header-title-weight);
-        color: #111827;
-        line-height: var(--app-header-title-line-height);
-        letter-spacing: -0.01em;
       }
 
       .live-badge {

@@ -9,7 +9,7 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
   imports: [CommonModule, IonicModule, BrandHeaderShellComponent],
   template: `
     <ion-content fullscreen>
-      <app-brand-header-shell>
+      <app-brand-header-shell title="Venue Management">
       <main class="page">
         <header class="header">
           <h1>Venue Management</h1>

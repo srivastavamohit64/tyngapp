@@ -19,12 +19,9 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
         <ion-refresher-content></ion-refresher-content>
       </ion-refresher>
 
-      <app-brand-header-shell>
+      <app-brand-header-shell title="My Friends">
       <main class="page-with-tab-bar friends-page">
         <header class="friends-header">
-          <div class="header-titles">
-            <h1>My Friends</h1>
-          </div>
           <button type="button" class="icon-btn" (click)="loadFriends()" aria-label="Refresh">
             <ion-icon name="refresh-outline"></ion-icon>
           </button>
@@ -93,6 +90,7 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
 
       .friends-header {
         display: flex;
+        justify-content: flex-end;
         align-items: center;
         gap: 12px;
         padding: 14px 16px 10px;
@@ -102,26 +100,6 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
         position: sticky;
         top: 0;
         z-index: 10;
-      }
-
-      .header-titles {
-        flex: 1;
-        min-width: 0;
-      }
-
-      .header-titles h1 {
-        margin: 0;
-        font-size: var(--app-header-title-size);
-        font-weight: var(--app-header-title-weight);
-        line-height: var(--app-header-title-line-height);
-        letter-spacing: -0.02em;
-      }
-
-      .header-titles p {
-        margin: 2px 0 0;
-        font-size: 11px;
-        font-weight: 600;
-        color: #94a3b8;
       }
 
       .icon-btn {

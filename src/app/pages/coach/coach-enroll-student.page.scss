@@ -12,8 +12,7 @@
 .page-header { position: sticky; top: 0; z-index: 20; height: var(--app-header-height); padding: 0 16px; box-sizing: border-box; display: grid; grid-template-columns: minmax(0, 1fr) var(--app-header-btn-size); align-items: center; background: rgba(255,255,255,.96); border-bottom: 1px solid var(--line); backdrop-filter: blur(12px); }
 .page-header > button { width: var(--app-header-btn-size); height: var(--app-header-btn-size); padding: 0; border: 0; border-radius: 13px; display: grid; place-items: center; color: var(--ink); background: #f2f4f7; font-size: 20px; }
 .page-header > div { min-width: 0; text-align: left; }
-.page-header h1 { margin: 0; font-size: var(--app-header-title-size); line-height: var(--app-header-title-line-height); font-weight: var(--app-header-title-weight); }
-.page-header p { margin: 2px 0 0; color: #98a2b3; font-size: 10px; font-weight: 700; }
+.page-header p { margin: 0; color: #98a2b3; font-size: 12px; font-weight: 700; }
 .progress-track { position: sticky; top: var(--app-header-height); z-index: 19; padding: 10px 16px; display: flex; justify-content: center; gap: 6px; background: rgba(255,255,255,.96); border-bottom: 1px solid #f1f2f4; }
 .progress-track span { width: 8px; height: 6px; border-radius: 20px; background: #e4e7ec; transition: width .18s ease, background .18s ease; }
 .progress-track span.current { width: 25px; background: var(--lime); }

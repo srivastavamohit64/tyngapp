@@ -65,12 +65,8 @@ const FALLBACK_TITLES: Record<string, string> = {
   `],
   template: `
     <ion-content fullscreen>
-      <app-brand-header-shell>
+      <app-brand-header-shell [title]="page()?.title || fallbackTitle()">
       <main class="settings-page">
-        <header class="settings-header">
-          <h1 class="settings-title">{{ page()?.title || fallbackTitle() }}</h1>
-        </header>
-
         <article class="legal-card" *ngIf="loading()">
           <div class="legal-skel" aria-busy="true">
             <span class="legal-skel-head sub-shimmer"></span>

@@ -32,7 +32,7 @@ const TYPES = [
   imports: [CommonModule, IonicModule, FormsModule, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true" class="ce-content">
-      <app-brand-header-shell (back)="back()">
+      <app-brand-header-shell title="Create Event" (back)="back()">
       <div class="ce-page">
         <div class="stepper">
           <i *ngFor="let s of steps; let i = index" [class.on]="i <= step()"></i>

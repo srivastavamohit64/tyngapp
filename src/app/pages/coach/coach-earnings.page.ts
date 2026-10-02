@@ -32,10 +32,9 @@ interface CoachEarningsData {
   imports: [CommonModule, IonicModule, SkeletonListComponent, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true" class="has-tabs">
-      <app-brand-header-shell>
+      <app-brand-header-shell title="Earnings">
       <div class="earnings-page">
         <header class="sticky-header">
-          <h1>Earnings</h1>
           <button type="button" class="header-button" aria-label="Open your schedule" (click)="go('/app/coach/schedule')">
             <ion-icon name="calendar-outline"></ion-icon>
           </button>
@@ -151,8 +150,7 @@ interface CoachEarningsData {
   styles: [`
     :host { display:block; }
     .earnings-page { min-height:100%; padding-bottom:calc(120px + var(--safe-area-bottom, 0px)); background:#F7F9FC; color:#172033; }
-    .sticky-header { position:sticky; top:0; z-index:20; display:grid; grid-template-columns:1fr var(--app-header-btn-size); align-items:center; min-height:var(--app-header-height); padding:0 16px; border-bottom:1px solid #EEF1F5; background:#fff; }
-    .sticky-header h1 { margin:0; text-align:left; font-size:var(--app-header-title-size); font-weight:var(--app-header-title-weight); line-height:var(--app-header-title-line-height); }
+    .sticky-header { position:sticky; top:0; z-index:20; display:flex; justify-content:flex-end; align-items:center; min-height:var(--app-header-height); padding:0 16px; border-bottom:1px solid #EEF1F5; background:#fff; }
     .header-button { display:grid; place-items:center; width:var(--app-header-btn-size); height:var(--app-header-btn-size); border:0; border-radius:15px; background:#F3F5F8; color:#172033; font-size:20px; }
     .period-grid { position:sticky; top:var(--app-header-height); z-index:19; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; padding:10px 14px; border-bottom:1px solid #EEF1F5; background:#fff; }
     .period-grid button { min-width:0; min-height:36px; padding:5px 3px; border:0; border-radius:12px; background:#F3F5F8; color:#687386; font-size:11px; font-weight:700; white-space:nowrap; }

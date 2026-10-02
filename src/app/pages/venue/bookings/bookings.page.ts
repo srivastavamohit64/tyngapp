@@ -42,7 +42,7 @@ interface BookingItem {
   imports: [CommonModule, IonicModule, FormsModule, BrandHeaderShellComponent, SkeletonListComponent],
   template: `
     <ion-content [fullscreen]="true" class="has-tabs">
-      <app-brand-header-shell>
+      <app-brand-header-shell title="Bookings">
       <div class="bookings-page">
         <header class="page-header">
           <div class="page-header__row">

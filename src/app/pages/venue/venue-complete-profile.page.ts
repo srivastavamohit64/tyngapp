@@ -78,7 +78,7 @@ const STEP_TITLES = [
   imports: [CommonModule, IonicModule, FormsModule, LocationFieldComponent, SkeletonListComponent, PageSkeletonComponent, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true">
-      <app-brand-header-shell (back)="handleBack()">
+      <app-brand-header-shell [title]="isEditingReadyProfile() ? 'Edit Venue Profile' : 'Complete Venue Profile'" (back)="handleBack()">
       <!-- SUCCESS SCREEN -->
       <div *ngIf="isSuccess()" class="success-screen flex flex-col items-center justify-center px-6 text-center pb-12">
         <div class="w-28 h-28 rounded-full bg-[var(--app-primary)] flex items-center justify-center mx-auto mb-5 shadow-lg"
@@ -119,10 +119,7 @@ const STEP_TITLES = [
         <div class="sticky-header bg-white border-b border-[#F3F4F6]">
           <div class="flex items-center justify-center px-5 pt-3.5">
             <div class="text-center">
-              <p class="app-header-title text-[#111827] m-0">
-                {{ isEditingReadyProfile() ? 'Edit Venue Profile' : 'Complete Venue Profile' }}
-              </p>
-              <p class="text-[11px] text-[#9CA3AF] m-0 font-bold mt-1">
+              <p class="text-[11px] text-[#9CA3AF] m-0 font-bold">
                 Step {{ step() }} of {{ totalSteps }} · {{ stepTitle() }}
               </p>
             </div>

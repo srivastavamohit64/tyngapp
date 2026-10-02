@@ -12,10 +12,9 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
   imports: [CommonModule, IonicModule, SkeletonListComponent, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true">
-      <app-brand-header-shell>
+      <app-brand-header-shell title="Notifications">
       <div class="venue-notifications">
         <header class="venue-notifications-header">
-          <h1>Notifications</h1>
           <button
             type="button"
             class="mark-btn"
@@ -66,8 +65,9 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
       .venue-notifications-header {
         display: flex;
         align-items: center;
+        justify-content: flex-end;
         gap: 12px;
-        padding: 14px 20px 6px;
+        padding: 12px 20px 6px;
         box-sizing: border-box;
         background: #fff;
         border-bottom: 1px solid #f3f4f6;
@@ -86,15 +86,6 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
       }
       .mark-btn:disabled {
         opacity: 0.4;
-      }
-      h1 {
-        flex: 1;
-        text-align: left;
-        margin: 0;
-        font-size: var(--app-header-title-size);
-        font-weight: var(--app-header-title-weight);
-        line-height: var(--app-header-title-line-height);
-        color: #111827;
       }
       .loading,
       .error {

@@ -15,14 +15,10 @@ type RequestFilter = 'pending' | 'all';
   imports: [CommonModule, IonicModule, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true" class="has-tabs">
-      <app-brand-header-shell (back)="back()">
+      <app-brand-header-shell title="Session Requests" (back)="back()">
         <main class="booking-requests-page">
           <header class="page-heading">
-            <div>
-              <p class="eyebrow">COACH WORKSPACE</p>
-              <h1>Session requests</h1>
-              <p class="subtitle">See who would like to book a session with you.</p>
-            </div>
+            <p class="subtitle">See who would like to book a session with you.</p>
           </header>
 
           <div class="filter-row" role="tablist" aria-label="Booking request filter">
@@ -89,12 +85,9 @@ type RequestFilter = 'pending' | 'all';
     </ion-content>
   `,
   styles: [`
-    .booking-requests-page { min-height:100%; background:#f7f9fc; padding:18px 18px 112px; color:#172033; }
-    .page-heading { display:flex; align-items:center; gap:13px; max-width:720px; min-height:var(--app-header-height); box-sizing:border-box; margin:0 auto 22px; }
-    .page-heading > div { flex:1; min-width:0; }
-    .eyebrow { margin:0 0 4px; color:#16a34a; font-size:10px; font-weight:800; letter-spacing:.12em; }
-    h1 { margin:0; font-size:var(--app-header-title-size); line-height:var(--app-header-title-line-height); font-weight:var(--app-header-title-weight); }
-    .subtitle { margin:2px 0 0; overflow:hidden; color:#788398; font-size:11px; line-height:1.3; text-overflow:ellipsis; white-space:nowrap; }
+    .booking-requests-page { min-height:100%; background:#f7f9fc; padding:14px 18px 112px; color:#172033; }
+    .page-heading { max-width:720px; margin:0 auto 14px; }
+    .subtitle { margin:0; overflow:hidden; color:#788398; font-size:12px; line-height:1.3; text-overflow:ellipsis; white-space:nowrap; }
     .filter-row { display:flex; gap:8px; max-width:720px; margin:0 auto 16px; }
     .filter-row button { min-height:38px; padding:0 14px; border:1px solid #e3e8ef; border-radius:20px; background:#fff; color:#657086; font-size:12px; font-weight:700; }
     .filter-row button.active { border-color:#a3e635; background:#f0fbdc; color:#267b22; }

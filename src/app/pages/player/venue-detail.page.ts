@@ -162,7 +162,7 @@ export const VENUE_DATA: VenueDetail[] = [
   imports: [CommonModule, IonicModule, PageSkeletonComponent, BrandHeaderShellComponent],
   template: `
     <ion-content fullscreen>
-      <app-brand-header-shell (back)="back()">
+      <app-brand-header-shell title="Venue Details" (back)="back()">
       <div class="min-h-screen bg-[#FAFBFC] venue-detail-page" *ngIf="loading">
         <app-page-skeleton variant="detail" label="Loading venue"></app-page-skeleton>
       </div>

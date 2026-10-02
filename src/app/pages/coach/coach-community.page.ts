@@ -11,7 +11,7 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
   imports: [CommonModule, IonicModule, BrandHeaderShellComponent],
   template: `
     <ion-content fullscreen class="has-tabs">
-      <app-brand-header-shell>
+      <app-brand-header-shell title="Coach Community">
       <main class="min-h-full grid place-items-center bg-[#FAFBFC] px-6 text-center">
         <div *ngIf="loading" class="space-y-3">
           <ion-spinner name="crescent" color="success"></ion-spinner>

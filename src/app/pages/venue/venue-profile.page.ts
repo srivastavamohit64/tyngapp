@@ -58,11 +58,10 @@ const DOC_LABELS: Record<string, string> = {
   imports: [CommonModule, IonicModule, FormsModule, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true" class="has-tabs">
-      <app-brand-header-shell>
+      <app-brand-header-shell title="Venue Profile">
       <div class="venue-profile-page pb-32 text-left">
 
-        <div class="sticky-header flex items-center justify-between px-5 bg-white border-b border-[#F3F4F6]">
-          <p class="app-header-title text-[#111827] m-0">Venue Profile</p>
+        <div class="sticky-header flex items-center justify-end px-5 bg-white border-b border-[#F3F4F6]">
           <button type="button" (click)="editProfile()" class="edit-icon-btn app-header-btn" aria-label="Edit profile">
             <ion-icon name="create-outline"></ion-icon>
           </button>
@@ -284,7 +283,7 @@ const DOC_LABELS: Record<string, string> = {
       position: sticky;
       top: 0;
       z-index: 30;
-      padding-top: 14px;
+      padding-top: 12px;
       padding-bottom: 6px;
       box-sizing: border-box;
       box-shadow: 0 2px 10px rgba(0,0,0,0.02);

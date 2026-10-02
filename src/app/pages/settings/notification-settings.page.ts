@@ -23,12 +23,8 @@ const CATEGORY_ICONS: Record<string, string> = {
   styleUrls: ['./settings.page.scss', './settings-subpage.scss'],
   template: `
     <ion-content fullscreen>
-      <app-brand-header-shell>
+      <app-brand-header-shell title="Notifications">
       <main class="settings-page">
-        <header class="settings-header">
-          <h1 class="settings-title">Notifications</h1>
-        </header>
-
         <section class="settings-list" *ngIf="loading()">
           <div class="sub-skel-row" *ngFor="let i of [1, 2, 3, 4, 5, 6]">
             <span class="sub-skel-icon sub-shimmer"></span>

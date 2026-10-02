@@ -49,12 +49,8 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
   `],
   template: `
     <ion-content fullscreen>
-      <app-brand-header-shell>
+      <app-brand-header-shell title="Blocked Users">
       <main class="settings-page">
-        <header class="settings-header">
-          <h1 class="settings-title">Blocked Users</h1>
-        </header>
-
         <section class="settings-list" *ngIf="loading()">
           <div class="sub-skel-row" *ngFor="let i of [1, 2, 3, 4]">
             <span class="sub-skel-avatar sub-shimmer"></span>

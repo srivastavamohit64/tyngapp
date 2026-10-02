@@ -29,7 +29,7 @@ interface SearchRow {
   imports: [CommonModule, FormsModule, IonicModule, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true" class="has-tabs">
-      <app-brand-header-shell>
+      <app-brand-header-shell title="Search">
       <div class="search-page">
         <header class="sp-header">
           <div class="sp-input-wrap">

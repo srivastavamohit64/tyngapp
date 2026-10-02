@@ -19,12 +19,8 @@ type BarcodeDetectorLike = {
   imports: [CommonModule, IonicModule, FormsModule, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true">
-      <app-brand-header-shell (back)="goBack()">
+      <app-brand-header-shell title="Check In" (back)="goBack()">
       <div class="ci-page">
-        <header>
-          <h1>Scan to Check In</h1>
-        </header>
-
         <p class="lead">Point your camera at the <strong>venue QR</strong> displayed at the court. This marks you present for this booking.</p>
 
         <div class="preview-wrap">
@@ -49,9 +45,7 @@ type BarcodeDetectorLike = {
   `,
   styles: [`
     .ci-page { padding: 14px 18px calc(24px + var(--safe-area-bottom)); }
-    header { display: flex; align-items: center; gap: 8px; box-sizing: border-box; }
-    h1 { margin: 0; font-size: var(--app-header-title-size); font-weight: var(--app-header-title-weight); line-height: var(--app-header-title-line-height); }
-    .lead { color: #6B7280; font-weight: 600; }
+    .lead { margin-top: 0; color: #6B7280; font-weight: 600; }
     .preview-wrap { position: relative; }
     .preview { width: 100%; height: 280px; background: #111827; border-radius: 18px; object-fit: cover; }
     .flip {

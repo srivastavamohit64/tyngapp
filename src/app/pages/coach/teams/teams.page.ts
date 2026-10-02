@@ -10,13 +10,10 @@ import { BrandHeaderShellComponent } from '../../../shared/components/brand-head
   imports: [CommonModule, IonicModule, BrandHeaderShellComponent],
   template: `
     <ion-content fullscreen>
-      <app-brand-header-shell>
+      <app-brand-header-shell title="My Teams">
       <main class="page-with-tab-bar min-h-full bg-background text-white">
         <header class="app-header-bar bg-card border-b border-white/10 px-6 flex items-center sticky top-0 z-10">
-          <div class="flex w-full items-center justify-between">
-            <div class="flex items-center gap-3">
-              <h2 class="app-header-title m-0">My Teams</h2>
-            </div>
+          <div class="flex w-full items-center justify-end">
             <button class="app-header-btn rounded-full bg-primary/20 flex items-center justify-center">
               <ion-icon name="add-outline" class="text-xl text-primary"></ion-icon>
             </button>

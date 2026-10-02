@@ -35,7 +35,7 @@ const ALL_SECTIONS = [
   imports: [CommonModule, IonicModule, FormsModule, SkeletonListComponent, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true">
-      <app-brand-header-shell>
+      <app-brand-header-shell title="Complete Profile">
       <!-- SUCCESS SCREEN -->
       <div *ngIf="showDone()" class="done-shell px-6">
         <div class="mb-6 flex flex-col items-center">
@@ -75,16 +75,12 @@ const ALL_SECTIONS = [
 
         <!-- Header -->
         <div class="sticky-header">
-          <div class="app-header-bar flex items-center justify-between px-5 bg-white border-b border-[#F3F4F6]">
-            <div>
-              <p class="app-header-title text-[#111827]">Complete Your Profile</p>
-            </div>
-            <button *ngIf="!detailsLoading && getProgress() < 100" (click)="back()" class="text-[13px] font-semibold text-[#9CA3AF] bg-transparent border-none">Skip</button>
-            <div *ngIf="detailsLoading || getProgress() >= 100" class="app-header-btn"></div>
+          <div *ngIf="!detailsLoading && getProgress() < 100" class="flex items-center justify-end px-5 pt-3 bg-white">
+            <button (click)="back()" class="text-[13px] font-semibold text-[#9CA3AF] bg-transparent border-none">Skip</button>
           </div>
 
           <!-- Progress bar info -->
-          <div class="px-5 pb-4 pt-2 bg-white">
+          <div class="px-5 pb-4 pt-3 bg-white">
             <div class="flex items-center justify-between mb-2">
               <span *ngIf="!detailsLoading; else progressSkel" class="text-[13px] font-black text-[#111827]">{{ getProgress() }}% Complete</span>
               <span *ngIf="!detailsLoading" class="text-[11px] text-[#9CA3AF] font-bold">{{ getCompletedCount() }}/{{ allSections.length }} sections</span>

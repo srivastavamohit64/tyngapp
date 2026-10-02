@@ -61,11 +61,10 @@ const STATUS_OPTIONS: StatusOption[] = [
   imports: [CommonModule, IonicModule, FormsModule, PageSkeletonComponent, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true" class="has-tabs">
-      <app-brand-header-shell>
+      <app-brand-header-shell title="Facilities & Amenities">
       <div class="fac-page" [class.has-save]="hasChanges() || saved()">
         <header class="sticky-header fac-header">
           <div class="fac-header-copy">
-            <h1>Facilities & Amenities</h1>
             <p *ngIf="!loading() || facilityList().length; else courtCountSkel">{{ facilityList().length }} court{{ facilityList().length === 1 ? '' : 's' }}</p>
             <ng-template #courtCountSkel><ion-skeleton-text animated style="display:block;width:64px;height:12px;margin:4px 0 0;border-radius:999px"></ion-skeleton-text></ng-template>
           </div>
@@ -358,16 +357,8 @@ const STATUS_OPTIONS: StatusOption[] = [
       text-align: left;
     }
 
-    .fac-header-copy h1 {
-      margin: 0;
-      font-size: var(--app-header-title-size);
-      font-weight: var(--app-header-title-weight);
-      color: #111827;
-      line-height: var(--app-header-title-line-height);
-    }
-
     .fac-header-copy p {
-      margin: 2px 0 0;
+      margin: 0;
       font-size: 11px;
       font-weight: 700;
       color: #9CA3AF;

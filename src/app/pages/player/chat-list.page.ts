@@ -21,7 +21,7 @@ import { SkeletonListComponent } from '../../shared/components/skeleton';
         <ion-refresher-content></ion-refresher-content>
       </ion-refresher>
 
-      <app-brand-header-shell>
+      <app-brand-header-shell [title]="isCoach() ? 'Chat' : 'Chats'">
       <main class="page-with-tab-bar min-h-full bg-[#FAFBFC] text-[#111827] flex flex-col">
         <app-page-header
           [title]="isCoach() ? 'Chat' : 'Chats'"

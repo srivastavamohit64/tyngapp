@@ -1,10 +1,6 @@
 <ion-content fullscreen>
-  <app-brand-header-shell>
+  <app-brand-header-shell title="Settings">
   <main class="settings-page">
-    <header class="settings-header">
-      <h1 class="settings-title">Settings</h1>
-    </header>
-
     <section class="settings-list">
       <button *ngFor="let option of options" type="button" class="settings-row" (click)="openOption(option.path)">
         <div class="row-icon" [class.row-icon--disabled]="!option.path">

@@ -26,12 +26,11 @@ type DetailTab = 'overview' | 'players' | 'amenities' | 'live';
   imports: [CommonModule, IonicModule, PageSkeletonComponent, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true" class="bd-content">
-      <app-brand-header-shell>
+      <app-brand-header-shell title="Booking Details">
       <div class="bd-page">
         <div class="bd-sticky">
         <header class="bd-header">
           <div class="bd-header-title">
-            <h1>Booking Details</h1>
             <p *ngIf="booking()">#{{ booking()!.id }}</p>
           </div>
           <button type="button" class="bd-icon-btn" (click)="openMenu()" aria-label="More">
@@ -437,8 +436,7 @@ type DetailTab = 'overview' | 'players' | 'amenities' | 'live';
       background: #fff;
     }
     .bd-header-title { text-align: left; min-width: 0; }
-    .bd-header-title h1 { margin: 0; font-size: var(--app-header-title-size); font-weight: var(--app-header-title-weight); color: #111827; line-height: var(--app-header-title-line-height); }
-    .bd-header-title p { margin: 2px 0 0; font-size: 11px; font-weight: 700; color: #9CA3AF; }
+    .bd-header-title p { margin: 0; font-size: 11px; font-weight: 700; color: #9CA3AF; }
     .bd-icon-btn {
       width: var(--app-header-btn-size); height: var(--app-header-btn-size); border: none; border-radius: 999px;
       background: #F3F4F6; color: #111827; display: grid; place-items: center; font-size: 18px;

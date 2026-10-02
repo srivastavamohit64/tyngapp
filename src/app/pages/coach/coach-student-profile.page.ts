@@ -173,7 +173,7 @@ const ACHIEVEMENT_COLORS: Record<string, { bg: string; color: string }> = {
   imports: [CommonModule, IonicModule, FormsModule, PageSkeletonComponent, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true">
-      <app-brand-header-shell (back)="back()">
+      <app-brand-header-shell title="Student Profile" (back)="back()">
       <div *ngIf="!student" class="student-profile-loading">
         <app-page-skeleton *ngIf="loading" variant="detail" label="Loading student profile"></app-page-skeleton>
         <div *ngIf="!loading && loadError" class="sp-error" role="alert">

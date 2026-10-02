@@ -40,10 +40,9 @@ interface CalendarBookingItem {
   imports: [CommonModule, IonicModule, BrandHeaderShellComponent, PageSkeletonComponent, SkeletonListComponent],
   template: `
     <ion-content [fullscreen]="true" class="has-tabs">
-      <app-brand-header-shell>
+      <app-brand-header-shell title="Calendar">
       <div class="cal-page">
         <header class="cal-header">
-          <h1>Calendar</h1>
           <button type="button" class="icon-btn" (click)="loadMonth()" aria-label="Refresh">
             <ion-icon name="refresh-outline"></ion-icon>
           </button>
@@ -167,19 +166,10 @@ interface CalendarBookingItem {
     .cal-header {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      padding: 0 16px;
-      min-height: var(--app-header-height);
+      justify-content: flex-end;
+      padding: 12px 16px 0;
       box-sizing: border-box;
       background: #fff;
-    }
-
-    .cal-header h1 {
-      margin: 0;
-      font-size: var(--app-header-title-size);
-      font-weight: var(--app-header-title-weight);
-      line-height: var(--app-header-title-line-height);
-      color: #111827;
     }
 
     .icon-btn {

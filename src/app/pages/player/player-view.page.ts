@@ -15,11 +15,8 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
   imports: [CommonModule, IonicModule, PageSkeletonComponent, BrandHeaderShellComponent],
   template: `
     <ion-content fullscreen>
-      <app-brand-header-shell>
+      <app-brand-header-shell title="Player Profile">
       <div class="page" *ngIf="loading">
-        <header class="hdr">
-          <h1>Player</h1>
-        </header>
         <div class="px-4">
           <app-page-skeleton variant="profile" label="Loading player"></app-page-skeleton>
         </div>
@@ -31,7 +28,6 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
 
       <div class="page" *ngIf="!loading && player">
         <header class="hdr">
-          <h1>Player</h1>
           <button type="button" class="icon-btn" (click)="openActions()" [disabled]="blockBusy" aria-label="More options">
             <ion-icon name="ellipsis-horizontal"></ion-icon>
           </button>
@@ -95,18 +91,10 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
       .hdr {
         display: flex;
         align-items: center;
+        justify-content: flex-end;
         gap: 12px;
-        min-height: var(--app-header-height);
         box-sizing: border-box;
-        margin-bottom: 20px;
-      }
-      .hdr h1 {
-        flex: 1;
-        margin: 0;
-        font-size: var(--app-header-title-size);
-        font-weight: var(--app-header-title-weight);
-        line-height: var(--app-header-title-line-height);
-        color: #111827;
+        margin-bottom: 12px;
       }
       .icon-btn {
         width: var(--app-header-btn-size);

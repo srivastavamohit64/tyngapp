@@ -13,7 +13,7 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
   imports: [CommonModule, IonicModule, PageSkeletonComponent, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true">
-      <app-brand-header-shell>
+      <app-brand-header-shell title="Event Details">
       <main class="event-page">
 
         <app-page-skeleton *ngIf="loading" variant="detail" label="Loading event"></app-page-skeleton>

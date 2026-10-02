@@ -9,11 +9,8 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
   imports: [CommonModule, IonicModule, BrandHeaderShellComponent],
   template: `
     <ion-content fullscreen>
-      <app-brand-header-shell>
+      <app-brand-header-shell title="Revenue">
       <main class="page">
-        <header class="header">
-          <h1>Revenue</h1>
-        </header>
         <div class="hero-card">
           <p>Monthly Revenue</p>
           <h2>₹24,50,000</h2>
@@ -33,8 +30,6 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
   styles: [
     `
       .page { min-height: 100%; background: #fafbfc; padding: 14px 20px calc(112px + var(--safe-area-bottom)); }
-      .header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
-      h1 { margin: 0; font-size: var(--app-header-title-size); font-weight: var(--app-header-title-weight); line-height: var(--app-header-title-line-height); color: #111827; }
       .hero-card { background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to)); border-radius: 24px; padding: 24px; margin-bottom: 20px; color: #111827; }
       .hero-card p { margin: 0; font-size: 14px; opacity: 0.8; }
       .hero-card h2 { margin: 8px 0; font-size: 32px; font-weight: 900; }

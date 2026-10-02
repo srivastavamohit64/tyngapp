@@ -140,7 +140,7 @@ function buildWeek() {
   imports: [CommonModule, IonicModule, BrandHeaderShellComponent, SegmentControlComponent, SkeletonListComponent],
   template: `
     <ion-content [fullscreen]="true" class="has-tabs">
-      <app-brand-header-shell>
+      <app-brand-header-shell title="Schedule">
       <div class="schedule-page">
         <!-- Sticky Header -->
         <div class="sticky-header">

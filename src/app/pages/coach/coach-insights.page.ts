@@ -19,11 +19,10 @@ type ColouredMetric = CoachInsightMetric & { color: string };
   imports: [CommonModule, IonicModule, PageSkeletonComponent, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true" class="insights-content-shell">
-      <app-brand-header-shell>
+      <app-brand-header-shell title="Coach Insights">
       <main class="insights-page">
         <header class="insights-header">
           <div class="header-copy">
-            <h1>Coach Insights</h1>
             <p>{{ rangeLabel() }}</p>
           </div>
           <button type="button" class="icon-button" (click)="openCalendar()" aria-label="Choose insights date">
@@ -217,8 +216,7 @@ type ColouredMetric = CoachInsightMetric & { color: string };
     .insights-header { position:sticky; top:0; z-index:30; height:var(--app-header-height); padding:0 16px; display:grid; grid-template-columns:minmax(0,1fr) var(--app-header-btn-size); align-items:center; background:rgba(255,255,255,.96); border-bottom:1px solid var(--line); backdrop-filter:blur(14px); }
     .icon-button { width:var(--app-header-btn-size); height:var(--app-header-btn-size); border:0; border-radius:14px; display:grid; place-items:center; color:var(--ink); background:#f2f4f7; font-size:21px; }
     .header-copy { min-width:0; text-align:left; padding:0 8px 0 0; }
-    .header-copy h1 { margin:0; font-size:var(--app-header-title-size); line-height:var(--app-header-title-line-height); font-weight:var(--app-header-title-weight); }
-    .header-copy p { margin:3px 0 0; color:var(--muted); font-size:10px; line-height:1.2; font-weight:650; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .header-copy p { margin:0; color:var(--muted); font-size:12px; line-height:1.2; font-weight:650; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .period-tabs { position:sticky; top:var(--app-header-height); z-index:25; display:flex; gap:8px; padding:10px 16px 12px; overflow-x:auto; background:#fff; border-bottom:1px solid var(--line); scrollbar-width:none; }
     .period-tabs::-webkit-scrollbar { display:none; }
     .period-chip { flex:0 0 auto; min-height:36px; padding:0 14px; border:1px solid transparent; border-radius:999px; background:#f1f3f6; color:#667085; font-size:12px; line-height:1; font-weight:800; white-space:nowrap; }

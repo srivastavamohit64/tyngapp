@@ -940,3 +940,8 @@ TYNG — TODAY'S WORK SUMMARY
    - The chat room now keeps the top bar and the message box on screen while only the messages scroll.
    - Type check passes and the app compiles. Search, Settings, Live Map, Chats, a chat room, Badges and Book a Court were checked in the browser as a player. Coach, venue and admin screens were not opened in the browser.
    - Not changed: sign-in, password reset and first-time setup screens keep their own layout. A few old unused screen files still contain back arrows but are never shown.
+155. PAGE NAME IN THE TOP BAR ON INNER SCREENS - 2 October 2026
+   - On every screen that has a back arrow, the top bar now shows the screen name in the middle (for example Settings, Notifications, Booking Details, Find Coaches) instead of the tyng name, and the bell is gone. The main bottom-menu screens (Home, Players, My Bookings, Chat and the coach, venue and admin main screens) still show the menu button, tyng name and bell.
+   - The big title that used to repeat the same name at the top of each of those screens was removed. Buttons that sat next to it (Mark all read, Add, Edit, Refresh, filters) and useful small lines (step numbers, counts, location) were kept.
+   - Type check passes and the app compiles. The browser session got logged out during this round, so these screens were not looked at in the browser.
+   - Small leftover: the coach Schedule screen still shows its own title when opened from the /app/schedule link (not from the bottom menu), so the name appears twice there.

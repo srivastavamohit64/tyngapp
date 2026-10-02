@@ -5,7 +5,6 @@ import { IonicModule, RefresherCustomEvent } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 import { XpLine, XpService, XpSummary } from '../../core/services/xp.service';
 import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
-import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { PageSkeletonComponent } from '../../shared/components/skeleton';
 
 interface XpHistoryGroup {
@@ -17,17 +16,15 @@ interface XpHistoryGroup {
 @Component({
   selector: 'app-xp-history-page',
   standalone: true,
-  imports: [CommonModule, IonicModule, BrandHeaderShellComponent, PageHeaderComponent, PageSkeletonComponent],
+  imports: [CommonModule, IonicModule, BrandHeaderShellComponent, PageSkeletonComponent],
   template: `
     <ion-content fullscreen>
       <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
         <ion-refresher-content pullingText="Pull to refresh"></ion-refresher-content>
       </ion-refresher>
 
-      <app-brand-header-shell (back)="goBack()">
+      <app-brand-header-shell title="XP History" (back)="goBack()">
         <main class="tp-history-page page-with-tab-bar">
-          <app-page-header title="XP History"></app-page-header>
-
           <div class="tp-content">
             <section class="tp-hero" *ngIf="summary() as total; else heroSkeleton">
               <span class="hero-orb hero-orb-one"></span>

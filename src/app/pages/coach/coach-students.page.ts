@@ -15,7 +15,7 @@ import { SkeletonListComponent } from '../../shared/components/skeleton';
   imports: [CommonModule, FormsModule, IonicModule, BrandHeaderShellComponent, SkeletonListComponent],
   template: `
     <ion-content [fullscreen]="true" class="has-tabs">
-      <app-brand-header-shell>
+      <app-brand-header-shell title="Students">
         <main class="page">
           <header>
             <h1>My Students</h1>

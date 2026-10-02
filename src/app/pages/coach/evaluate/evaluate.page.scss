@@ -1,11 +1,10 @@
 :host { display:block; --lime:var(--app-primary,#7cf000); --ink:#0f1728; --muted:#74819a; --line:#e1e6ec; }
 .evaluation-shell { --background:#fff; }
 .evaluation-page { min-height:100%; color:var(--ink); background:#fff; padding-bottom:calc(32px + var(--app-tab-bar-height,72px) + env(safe-area-inset-bottom)); }
-.page-header { position:sticky; top:0; z-index:20; padding:14px 16px 6px; display:grid; grid-template-columns:minmax(0,1fr) var(--app-header-btn-size); align-items:center; background:rgba(255,255,255,.97); border-bottom:1px solid var(--line); backdrop-filter:blur(12px); }
+.page-header { position:sticky; top:0; z-index:20; padding:14px 16px 6px; display:flex; justify-content:flex-end; align-items:center; background:rgba(255,255,255,.97); border-bottom:1px solid var(--line); backdrop-filter:blur(12px); }
 .history-button { position:relative; z-index:2; justify-self:end; width:var(--app-header-btn-size); height:var(--app-header-btn-size); padding:0; border:1px solid #c9f5aa; border-radius:13px; display:grid; place-items:center; color:#319500; background:#edffdf; box-shadow:0 3px 10px rgba(77,174,0,.12); opacity:1; visibility:visible; }
 .history-button svg { width:23px; height:23px; display:block; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
 .history-button:active { transform:scale(.95); }
-.page-header h1 { min-width:0; margin:0; font-size:var(--app-header-title-size); line-height:var(--app-header-title-line-height); font-weight:var(--app-header-title-weight); text-align:left; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .page-body { width:min(100%,430px); margin:0 auto; padding:22px 16px 28px; }
 .field-title { margin:0 0 10px; color:#5f6c82; font-size:12px; line-height:1.3; font-weight:650; }
 .player-list { display:grid; gap:8px; }
@@ -81,4 +80,4 @@
 .history-inline-error,.history-end { margin:3px 0; text-align:center; font-size:10px; }
 .history-end { color:#98a2b3; }
 @media (max-width:350px) { .page-body{padding-right:12px;padding-left:12px}.rating-card{padding:12px}.rating-options{gap:5px}.rating-options button{height:43px;border-radius:14px} }
-@media (min-width:700px) { .page-header{grid-template-columns:minmax(0,350px) var(--app-header-btn-size);justify-content:center}.page-body{padding-top:28px} }
+@media (min-width:700px) { .page-body{padding-top:28px} }

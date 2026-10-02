@@ -12,11 +12,10 @@ import { SportsBadgeComponent } from '../../shared/components/sports-badge/sport
   imports: [CommonModule, IonicModule, BrandHeaderShellComponent, SportsBadgeComponent],
   template: `
     <ion-content fullscreen>
-      <app-brand-header-shell>
+      <app-brand-header-shell [title]="title">
       <main class="page-with-tab-bar min-h-full bg-background text-white">
-        <header class="ev-intro">
-          <h1 class="ev-title">{{ title }}</h1>
-          <p *ngIf="subtitle" class="ev-subtitle">{{ subtitle }}</p>
+        <header *ngIf="subtitle" class="ev-intro">
+          <p class="ev-subtitle">{{ subtitle }}</p>
         </header>
         <section class="space-y-4 px-6 py-5 pb-8" [ngSwitch]="mode">
           <ng-container *ngSwitchCase="'venues'">
@@ -83,8 +82,7 @@ import { SportsBadgeComponent } from '../../shared/components/sports-badge/sport
   `,
   styles: [`
     .ev-intro { margin: 14px 16px 4px; }
-    .ev-title { margin: 0; font-size: 20px; font-weight: 800; color: #111827; }
-    .ev-subtitle { margin: 2px 0 0; font-size: 12px; font-weight: 500; color: #6b7280; }
+    .ev-subtitle { margin: 0; font-size: 12px; font-weight: 500; color: #6b7280; }
   `],
 })
 export class EventsPage {

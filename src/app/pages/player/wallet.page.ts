@@ -14,7 +14,6 @@ import {
   WalletTransaction,
 } from '../../core/services/wallet.service';
 import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
-import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { PageSkeletonComponent, SkeletonListComponent } from '../../shared/components/skeleton';
 
 type WalletSection = 'wallet' | 'points' | 'gifts';
@@ -22,21 +21,17 @@ type WalletSection = 'wallet' | 'points' | 'gifts';
 @Component({
   selector: 'app-wallet-page',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule, BrandHeaderShellComponent, PageHeaderComponent, PageSkeletonComponent, SkeletonListComponent],
+  imports: [CommonModule, IonicModule, FormsModule, BrandHeaderShellComponent, PageSkeletonComponent, SkeletonListComponent],
   template: `
     <ion-content fullscreen>
       <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
         <ion-refresher-content></ion-refresher-content>
       </ion-refresher>
 
-      <app-brand-header-shell>
+      <app-brand-header-shell [title]="pageTitle()">
         <main class="wallet-page">
-          <app-page-header
-            [title]="pageTitle()"
-            [showActions]="true"
-          >
+          <div class="wallet-actions">
             <button
-              actions
               type="button"
               class="header-passbook-btn"
               aria-label="Passbook"
@@ -44,7 +39,7 @@ type WalletSection = 'wallet' | 'points' | 'gifts';
             >
               <ion-icon name="book-outline"></ion-icon>
             </button>
-          </app-page-header>
+          </div>
 
           <div class="wallet-body">
             <app-page-skeleton *ngIf="loading() && !wallet()" variant="wallet" label="Loading wallet"></app-page-skeleton>
@@ -440,6 +435,11 @@ type WalletSection = 'wallet' | 'points' | 'gifts';
         background: #FAFBFC;
         color: #111827;
         padding-bottom: calc(28px + var(--safe-area-bottom));
+      }
+      .wallet-actions {
+        display: flex;
+        justify-content: flex-end;
+        padding: 12px 16px 0;
       }
       .wallet-body {
         display: flex;

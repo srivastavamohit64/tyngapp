@@ -32,15 +32,8 @@ interface AppliedCoupon {
   imports: [CommonModule, IonicModule, FormsModule, BrandHeaderShellComponent],
   template: `
     <ion-content fullscreen class="summary-content">
-      <app-brand-header-shell (back)="back()">
+      <app-brand-header-shell title="Booking Summary" (back)="back()">
       <div class="summary-page" *ngIf="venue">
-        <header class="summary-header">
-          <div class="summary-header-copy">
-            <h1>Booking Summary</h1>
-            <p>Review before confirming</p>
-          </div>
-        </header>
-
         <div class="summary-body">
           <section class="card venue-card">
             <div class="venue-row">
@@ -314,16 +307,6 @@ interface AppliedCoupon {
       :host { display: flex; flex-direction: column; height: 100%; }
       .summary-content { --background: #f4f6f8; }
       .summary-page { min-height: 100%; background: #f4f6f8; color: #111827; text-align: left; }
-      .summary-header {
-        position: sticky; top: 0; z-index: 20;
-        display: flex; align-items: center; justify-content: space-between; gap: 12px;
-        padding: 14px 16px 10px;
-        box-sizing: border-box;
-        background: rgba(255,255,255,.96); border-bottom: 1px solid #eef0f3;
-      }
-      .summary-header-copy { min-width: 0; }
-      .summary-header-copy h1 { margin: 0; font-size: var(--app-header-title-size); font-weight: var(--app-header-title-weight); line-height: var(--app-header-title-line-height); }
-      .summary-header-copy p { margin: 2px 0 0; font-size: 11px; font-weight: 700; color: #9ca3af; }
       .summary-body { padding: 16px 16px 28px; display: flex; flex-direction: column; gap: 14px; }
       .card {
         background: #fff; border: 1px solid #eef0f3; border-radius: 22px;

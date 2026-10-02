@@ -19,24 +19,21 @@ import {
   sportEmoji,
 } from '../../core/utils/booking.utils';
 import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
-import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { PlayerBookingCardComponent } from '../../shared/components/player-booking-card/player-booking-card.component';
 import { PageSkeletonComponent } from '../../shared/components/skeleton';
 
 @Component({
   selector: 'app-booking-detail',
   standalone: true,
-  imports: [CommonModule, IonicModule, BrandHeaderShellComponent, PageHeaderComponent, TitleCasePipe, PlayerBookingCardComponent, PageSkeletonComponent],
+  imports: [CommonModule, IonicModule, BrandHeaderShellComponent, TitleCasePipe, PlayerBookingCardComponent, PageSkeletonComponent],
   template: `
     <ion-content fullscreen>
       <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
         <ion-refresher-content></ion-refresher-content>
       </ion-refresher>
 
-      <app-brand-header-shell (back)="goBack()">
+      <app-brand-header-shell title="Booking Details" (back)="goBack()">
         <main class="min-h-full bg-[#FAFBFC] text-[#111827] pb-[calc(96px+var(--safe-area-bottom))]">
-          <app-page-header title="My Bookings"></app-page-header>
-
           <div class="px-4 py-2" *ngIf="loading && !booking">
             <app-page-skeleton variant="detail" label="Loading booking"></app-page-skeleton>
           </div>

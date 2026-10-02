@@ -34,7 +34,7 @@ interface GameChatDetails {
   imports: [CommonModule, FormsModule, IonicModule, PageSkeletonComponent, BrandHeaderShellComponent],
   template: `
     <ion-content fullscreen>
-      <app-brand-header-shell class="chat-shell">
+      <app-brand-header-shell title="Chat" class="chat-shell">
       <main class="chat-main flex flex-col bg-white text-slate-800 select-none">
         <header class="chat-room-header app-header-bar flex items-center justify-between px-4 border-b border-slate-100 bg-white">
           <div class="flex items-center gap-2 min-w-0">

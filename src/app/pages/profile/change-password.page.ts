@@ -14,12 +14,8 @@ import { TextInputComponent } from '../../shared/components/text-input/text-inpu
   imports: [CommonModule, FormsModule, IonicModule, TextInputComponent, PrimaryButtonComponent, BrandHeaderShellComponent],
   template: `
     <ion-content fullscreen>
-      <app-brand-header-shell>
+      <app-brand-header-shell title="Change Password">
       <main class="edit-profile">
-        <header class="hdr">
-          <h1>Change Password</h1>
-        </header>
-
         <div class="fields">
           <app-text-input label="Current Password" type="password" icon="lock-closed-outline" [(ngModel)]="currentPassword"></app-text-input>
           <app-text-input label="New Password" type="password" icon="lock-closed-outline" [(ngModel)]="password"></app-text-input>
@@ -37,9 +33,7 @@ import { TextInputComponent } from '../../shared/components/text-input/text-inpu
     </ion-content>
   `,
   styles: [`
-    .edit-profile { padding: 14px 20px 32px; min-height: 100%; background: #fafbfc; }
-    .hdr { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
-    .hdr h1 { flex: 1; font-size: var(--app-header-title-size); font-weight: var(--app-header-title-weight); line-height: var(--app-header-title-line-height); margin: 0; color: #111827; }
+    .edit-profile { padding: 16px 20px 32px; min-height: 100%; background: #fafbfc; }
     .fields { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
     .error { color: #dc2626; font-size: 13px; margin: 0 0 12px; }
     .success { color: #16a34a; font-size: 13px; margin: 0 0 12px; }

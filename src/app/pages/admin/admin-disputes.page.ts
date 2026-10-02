@@ -9,11 +9,8 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
   imports: [CommonModule, IonicModule, BrandHeaderShellComponent],
   template: `
     <ion-content fullscreen>
-      <app-brand-header-shell>
+      <app-brand-header-shell title="Disputes">
       <main class="page">
-        <header class="header">
-          <h1>Disputes</h1>
-        </header>
         <div class="card" *ngFor="let d of disputes">
           <div class="top">
             <strong>{{ d.id }}</strong>
@@ -32,8 +29,6 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
   styles: [
     `
       .page { min-height: 100%; background: #fafbfc; padding: 14px 20px calc(112px + var(--safe-area-bottom)); }
-      .header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
-      h1 { margin: 0; font-size: var(--app-header-title-size); font-weight: var(--app-header-title-weight); line-height: var(--app-header-title-line-height); color: #111827; }
       .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 20px; padding: 16px; margin-bottom: 12px; }
       .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
       .top strong { color: #111827; }

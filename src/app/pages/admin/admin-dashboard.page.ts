@@ -12,7 +12,7 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
   imports: [CommonModule, IonicModule, SkeletonListComponent, BrandHeaderShellComponent],
   template: `
     <ion-content fullscreen>
-      <app-brand-header-shell>
+      <app-brand-header-shell title="Dashboard">
       <main class="page">
         <header class="hero">
           <div class="hero-top">

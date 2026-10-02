@@ -1,16 +1,10 @@
 <ion-content fullscreen class="has-tabs lb-content" [scrollEvents]="true" (ionScroll)="onContentScroll()">
-  <app-brand-header-shell>
+  <app-brand-header-shell title="Leaderboard">
     <main class="lb-page page-with-tab-bar">
       <!-- Intro -->
       <header class="lb-intro">
         <div class="lb-intro-row">
-          <div>
-            <div class="lb-title-row">
-              <ion-icon name="trophy-outline" class="lb-title-icon"></ion-icon>
-              <h1 class="lb-title">Leaderboard</h1>
-            </div>
-            <p class="lb-subtitle">See who's making moves on TYNG.</p>
-          </div>
+          <p class="lb-subtitle">See who's making moves on TYNG.</p>
           <div class="lb-intro-actions">
             <button type="button" class="lb-icon-btn" aria-label="Search players" (click)="openSheet('search')">
               <ion-icon name="search-outline"></ion-icon>

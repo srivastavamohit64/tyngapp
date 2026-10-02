@@ -94,7 +94,7 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
   imports: [CommonModule, IonicModule, PageSkeletonComponent, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true">
-      <app-brand-header-shell>
+      <app-brand-header-shell title="Game Details">
       <div class="gd-page" *ngIf="loading">
         <app-page-skeleton variant="detail" label="Loading game"></app-page-skeleton>
       </div>

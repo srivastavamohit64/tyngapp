@@ -7,24 +7,20 @@ import { AuthService } from '../../core/services/auth.service';
 import { XpService } from '../../core/services/xp.service';
 import { BadgeCatalog, BadgeItem, badgeVisual } from '../../shared/badge-visuals';
 import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
-import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
-
 type BadgeFilter = 'all' | 'earned' | 'locked';
 
 @Component({
   selector: 'app-badges-page',
   standalone: true,
-  imports: [CommonModule, IonicModule, BrandHeaderShellComponent, PageHeaderComponent],
+  imports: [CommonModule, IonicModule, BrandHeaderShellComponent],
   template: `
     <ion-content fullscreen>
       <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
         <ion-refresher-content pullingText="Pull to refresh"></ion-refresher-content>
       </ion-refresher>
 
-      <app-brand-header-shell (back)="goBack()">
+      <app-brand-header-shell title="Badges" (back)="goBack()">
         <main class="badges-page">
-          <app-page-header title="Badges"></app-page-header>
-
           <div class="badges-content">
             <section class="badges-hero" *ngIf="catalog() as c; else heroSkel">
               <div class="hero-top">
@@ -111,7 +107,7 @@ type BadgeFilter = 'all' | 'earned' | 'locked';
   `,
   styles: [`
     .badges-page { min-height: 100%; background: #f8fafc; padding-bottom: 32px; }
-    .badges-content { padding: 4px 18px 24px; display: flex; flex-direction: column; gap: 14px; }
+    .badges-content { padding: 14px 18px 24px; display: flex; flex-direction: column; gap: 14px; }
 
     .badges-hero {
       position: relative; overflow: hidden; padding: 20px; border-radius: 26px;

@@ -9,8 +9,8 @@ import { AuthService } from '../../../core/services/auth.service';
 import { HeaderComponent } from '../header/header.component';
 
 /**
- * Wraps page content with the Figma top bar. Main tab routes get the menu button;
- * every other page gets a back button instead.
+ * Wraps page content with the Figma top bar. Main tab routes get the menu button,
+ * wordmark and bell; every other page gets a back button with the page title centred.
  */
 @Component({
   selector: 'app-brand-header-shell',
@@ -30,7 +30,8 @@ import { HeaderComponent } from '../header/header.component';
   template: `
     <app-header
       *ngIf="showBrand"
-      [variant]="headerVariant"
+      [variant]="isMainTab() ? headerVariant : 'page'"
+      [title]="title"
       [showBack]="!isMainTab()"
       [notificationRoute]="resolvedNotificationRoute"
       [homeRoute]="resolvedHomeRoute"
@@ -47,6 +48,8 @@ export class BrandHeaderShellComponent {
   private readonly location = inject(Location);
 
   @Input() showBrand = true;
+  /** Centred in the top bar on pages that show the back button. */
+  @Input() title = '';
   @Input() notificationRoute?: string;
   /** When bound, the header back button emits here instead of navigating back. */
   @Output() back = new EventEmitter<void>();

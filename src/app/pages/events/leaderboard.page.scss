@@ -70,38 +70,18 @@ $page: #fafbfc;
 
 /* Intro */
 .lb-intro {
-  padding: 20px 16px;
+  padding: 14px 16px 20px;
 }
 
 .lb-intro-row {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-}
-
-.lb-title-row {
-  display: flex;
   align-items: center;
-  gap: 8px;
-}
-
-.lb-title-icon {
-  font-size: 20px;
-  color: $orange;
-}
-
-.lb-title {
-  margin: 0;
-  font-size: 24px;
-  font-weight: 900;
-  line-height: 1.1;
-  text-transform: uppercase;
-  letter-spacing: -0.04em;
-  color: $dark;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .lb-subtitle {
-  margin-top: 4px !important;
+  margin: 0 !important;
   font-size: 11px;
   font-weight: 500;
   color: $muted;

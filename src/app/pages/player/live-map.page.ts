@@ -60,11 +60,10 @@ const SPORT_COLORS: Record<string, string> = {
   imports: [CommonModule, IonicModule, BrandHeaderShellComponent, FilterChipsComponent, PrimaryButtonComponent],
   template: `
     <ion-content fullscreen>
-      <app-brand-header-shell>
+      <app-brand-header-shell title="Live Sports Map">
       <div class="map-page page-safe-bottom">
         <div class="lm-title-row">
           <div>
-            <h1 class="lm-title">Live Sports Map</h1>
             <p class="lm-subtitle">{{ mapSubtitle }}</p>
           </div>
           <button type="button" class="layers-btn" (click)="toggleMapType()" aria-label="Change map type">
@@ -139,15 +138,8 @@ const SPORT_COLORS: Record<string, string> = {
         padding: 14px 20px 0;
       }
 
-      .lm-title {
-        margin: 0;
-        font-size: 20px;
-        font-weight: 800;
-        color: #111827;
-      }
-
       .lm-subtitle {
-        margin: 2px 0 0;
+        margin: 0;
         font-size: 12px;
         font-weight: 500;
         color: #6b7280;

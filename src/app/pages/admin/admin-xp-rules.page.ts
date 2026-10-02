@@ -11,10 +11,10 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
   imports: [CommonModule, FormsModule, IonicModule, BrandHeaderShellComponent],
   template: `
     <ion-content fullscreen>
-      <app-brand-header-shell>
+      <app-brand-header-shell title="XP Rules">
       <main class="page">
         <header class="header">
-          <div><h1>XP Rules</h1><p>Control rewards, penalties and earning limits.</p></div>
+          <p>Control rewards, penalties and earning limits.</p>
         </header>
 
         <div class="state" *ngIf="loading">Loading rules…</div>
@@ -43,8 +43,8 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
   `,
   styles: [`
     .page { min-height: 100%; background: #fafbfc; padding: 14px 20px calc(112px + var(--safe-area-bottom)); }
-    .header { display:flex; align-items:center; gap:12px; margin-bottom:18px; }
-    h1 { margin:0; font-size:var(--app-header-title-size); font-weight:var(--app-header-title-weight); line-height:var(--app-header-title-line-height); color:#111827; } .header p { margin:2px 0 0; color:#6b7280; font-size:11px; }
+    .header { margin-bottom:14px; }
+    .header p { margin:0; color:#6b7280; font-size:11px; }
     .rule-card { background:#fff; border:1px solid #e5e7eb; border-radius:18px; padding:16px; margin-bottom:12px; } .rule-head { display:flex; justify-content:space-between; gap:12px; }
     .rule-head strong { display:block; color:#111827; font-size:15px; } .rule-head span { color:#6b7280; font-size:11px; } .fields { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:16px 0 12px; }
     label { display:block; color:#6b7280; font-size:11px; font-weight:700; } input, select { display:block; box-sizing:border-box; width:100%; margin-top:5px; padding:10px; border:1px solid #d1d5db; border-radius:10px; background:#fff; color:#111827; font:inherit; font-size:14px; } .fields label:last-child { grid-column:1/-1; }

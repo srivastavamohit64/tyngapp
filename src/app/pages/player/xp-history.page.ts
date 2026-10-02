@@ -4,17 +4,14 @@ import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { XpLine, XpService } from '../../core/services/xp.service';
 import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
-import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
-
 @Component({
   selector: 'app-xp-history-page',
   standalone: true,
-  imports: [CommonModule, IonicModule, BrandHeaderShellComponent, PageHeaderComponent],
+  imports: [CommonModule, IonicModule, BrandHeaderShellComponent],
   template: `
     <ion-content fullscreen>
-      <app-brand-header-shell (back)="router.navigateByUrl('/app/profile')">
+      <app-brand-header-shell title="XP History" (back)="router.navigateByUrl('/app/profile')">
         <main class="page-with-tab-bar min-h-full bg-[#FAFBFC] px-5 pb-8">
-          <app-page-header title="XP History"></app-page-header>
           <p class="hint">XP has no cash or TP value. This is your progression ledger.</p>
           <div class="row" *ngFor="let row of items()">
             <div>

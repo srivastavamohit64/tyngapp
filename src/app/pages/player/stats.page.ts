@@ -10,12 +10,11 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
   imports: [CommonModule, IonicModule, FormsModule, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true">
-      <app-brand-header-shell>
+      <app-brand-header-shell title="Personal Stats">
       <div class="stats-page">
 
         <!-- Header -->
         <div class="stats-header">
-          <h1 class="stats-title">Personal Stats</h1>
           <button class="edit-btn" (click)="editing = !editing" [style.background]="editing ? 'var(--app-primary)' : '#F3F4F6'">
             <ion-icon [name]="editing ? 'checkmark-outline' : 'pencil-outline'"></ion-icon>
           </button>
@@ -255,7 +254,7 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
     .stats-header {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-end;
       padding: 14px 20px 6px;
       box-sizing: border-box;
       background: #FFFFFF;
@@ -269,14 +268,6 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
       display: flex; align-items: center; justify-content: center;
       font-size: 18px; cursor: pointer;
       transition: background 0.2s;
-    }
-
-    .stats-title {
-      font-size: var(--app-header-title-size);
-      font-weight: var(--app-header-title-weight);
-      line-height: var(--app-header-title-line-height);
-      color: #111827;
-      margin: 0;
     }
 
     /* Profile Hero */

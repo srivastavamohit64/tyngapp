@@ -105,7 +105,7 @@ const SESSIONS: any[] = [
   imports: [CommonModule, IonicModule, FormsModule, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true">
-      <app-brand-header-shell (back)="back()">
+      <app-brand-header-shell title="Session Details" (back)="back()">
       <div *ngIf="loading" class="p-8 text-center text-slate-500">Loading session details…</div>
       <div *ngIf="errorMessage && !loading" class="p-8 text-center">
         <p class="text-slate-700">{{ errorMessage }}</p>

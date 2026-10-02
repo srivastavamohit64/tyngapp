@@ -16,7 +16,7 @@ type EventsTab = 'home' | 'leagues' | 'rankings' | 'analytics';
   imports: [CommonModule, IonicModule, PageSkeletonComponent, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true" class="ev-content">
-      <app-brand-header-shell>
+      <app-brand-header-shell title="Events">
       <div class="ev-page">
         <div class="ev-tabs">
           <button type="button" *ngFor="let t of tabs" class="ev-tab" [class.on]="tab() === t.id" (click)="tab.set(t.id)">{{ t.label }}</button>

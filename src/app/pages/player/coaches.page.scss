@@ -51,21 +51,11 @@ $page: #fafbfc;
 
 /* Intro */
 .cp-intro {
-  padding: 20px 16px 16px;
-}
-
-.cp-title {
-  margin: 0;
-  font-size: 23px;
-  font-weight: 900;
-  line-height: 1.1;
-  text-transform: uppercase;
-  letter-spacing: -0.04em;
-  color: $dark;
+  padding: 14px 16px 12px;
 }
 
 .cp-subtitle {
-  margin-top: 4px !important;
+  margin: 0 !important;
   font-size: 10px;
   color: $muted;
 }

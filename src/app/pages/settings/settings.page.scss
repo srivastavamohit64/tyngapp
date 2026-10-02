@@ -5,28 +5,6 @@
   padding-bottom: calc(24px + var(--safe-area-bottom));
 }
 
-.settings-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 20px 10px;
-  box-sizing: border-box;
-  background: #fff;
-  border-bottom: 1px solid #f3f4f6;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-.settings-title {
-  flex: 1;
-  margin: 0;
-  font-size: var(--app-header-title-size);
-  font-weight: var(--app-header-title-weight);
-  line-height: var(--app-header-title-line-height);
-  color: #111827;
-}
-
 .settings-list {
   padding: 16px 20px;
   display: flex;

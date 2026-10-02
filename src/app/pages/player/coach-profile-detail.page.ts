@@ -16,11 +16,8 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
   imports: [CommonModule, FormsModule, IonicModule, PageSkeletonComponent, BrandHeaderShellComponent],
   template: `
     <ion-content fullscreen>
-      <app-brand-header-shell (back)="back()">
+      <app-brand-header-shell title="Coach Profile" (back)="back()">
       <main class="page-with-tab-bar px-6 py-4 bg-background text-foreground" *ngIf="!coach">
-        <header class="flex items-center mb-6">
-          <h1 class="app-header-title flex-1">Coach Profile</h1>
-        </header>
         <app-page-skeleton *ngIf="loading" variant="profile" label="Loading coach profile"></app-page-skeleton>
         <div *ngIf="!loading" class="py-16 text-center text-sm text-slate-500" role="alert">
           <p class="mb-4">{{ loadError || 'This coach profile is not available.' }}</p>
@@ -28,11 +25,6 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
         </div>
       </main>
       <main class="page-with-tab-bar px-6 py-4 bg-background text-foreground" *ngIf="coach">
-        
-        <!-- Header -->
-        <header class="flex items-center mb-6">
-          <h1 class="app-header-title flex-1">Coach Profile</h1>
-        </header>
 
         <!-- Profile Detail Card -->
         <div class="bg-card border border-border rounded-2xl p-6 mb-6 flex flex-col items-center text-center">
