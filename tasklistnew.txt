@@ -170,6 +170,11 @@ PLAYER
 - Block a player from the button at the top of their profile. Blocked players cannot message you, invite you to games, add you as a friend or find you in search, and you will not see them either.
 - See everyone you have blocked, and unblock them, from Blocked Users in Settings.
 - Turn notifications on or off, either all at once or by type: bookings, chat, friends, wallet, XP, coaching and announcements. Every notification is on until you choose to turn it off.
+- See a new Profile page with five sections: Overview, Personal Info, Stats, Medical & Fitness and Documents.
+- Edit your personal details, sports, positions and playing preferences, and choose what other players can see. Preview your profile the way others see it.
+- Add optional health and fitness details, an emergency contact and your doctor, and choose who may see them.
+- Keep private documents such as medical or fitness certificates and insurance cards in your profile, and view, download, replace or delete them.
+- See your level, XP, reliability, rankings, badges and recent games in one place, and mark a recent game as won, lost or draw.
 
 COACH
 

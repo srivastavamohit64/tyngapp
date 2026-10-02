@@ -1122,3 +1122,18 @@
 # Completed: Blocked Users removed from the side menu - 2 October 2026
 
 - Removed the Blocked Users item from the player side menu in `src/app/app.component.html`, as requested, because it is already in Settings. The side menu is back to the five Figma items: Wallet, Leaderboards, Coaches, Settings and Support. `/app/blocked-users` is still opened from Settings.
+
+# Completed: Player profile screen matching Figma (five tabs) - 2 October 2026
+
+- `/app/profile` for players is now the Figma profile, built as `src/app/pages/profile/player-profile/` (`PlayerProfileComponent` plus shared `pp-chips`, `pp-field` and `pp-toggle` controls) and wired to the live endpoints through the new `PlayerProfileService`. The coach and venue branches of `profile.page` are unchanged; unused player XP code was removed from `profile.page.ts`.
+- **Identity card:** photo with camera button (opens Edit Profile), name, verified tick, username, TYNG ID, city, member since, sport tags and EDIT PROFILE.
+- **Tabs** (sticky, kept in the `?tab=` link, the selected tab scrolls into view):
+  - **Overview:** TYNG Pulse (level, lifetime XP, progress, reliability, rating, city, streak, XP this month), At a glance, badges row, recent games and reputation.
+  - **Personal Info:** basic info, masked account info, sports profile with positions, dominant side, playing preferences and about, privacy toggles that save instantly, a public profile preview that respects them, and profile completion.
+  - **Stats:** compact pulse, city/sport/friends ranks, 12 activity stats, reliability meters, reputation, recent XP and the full badge collection with progress.
+  - **Medical & Fitness:** body, fitness, medical, injury, allergy, emergency contact and doctor cards, access toggles that save instantly, and a collapsible wellness section with a hydration reminder.
+  - **Documents:** upload (PDF or image, up to 20 MB), view, download, replace, delete with confirmation, visibility per document, document types and privacy options.
+- **Editing:** Personal Info and Medical have edit mode with a Cancel / Save bar and a "Profile updated" pill. Tapping a recent game lets the player open it or mark it won, lost or draw.
+- **Verified:** type check passes and the dev server compiles. Checked logged in at phone size against live data: all five tabs render with no console errors, edit mode and the save bar work, the Documents empty state shows, and opening with `?tab=documents` selects that tab.
+- **Figma items with no backend data:** rank movement ("↑ 3 positions"), phone verification status, and a "verified" tick on documents. The hydration reminder is stored but no reminder is sent. The medical access and document visibility choices are stored but not yet enforced for coaches or venues.
+- **Follow-up:** a screen to rate other players after a game; enforce medical/document access and the "allow messages" toggle; the app top bar scrolls away on every page (its sticky style has no effect), so the profile tabs pin to the top of the screen.

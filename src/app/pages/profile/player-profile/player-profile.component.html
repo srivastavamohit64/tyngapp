@@ -1,0 +1,736 @@
+<div class="pp-page" [class.pp-editing]="editing()">
+  <input #docInput type="file" accept="application/pdf,image/*" hidden (change)="onFileChosen($event)" />
+
+  <!-- Loading -->
+  <section class="pp-pad" *ngIf="loading()">
+    <div class="pp-card pp-identity">
+      <span class="pp-skel pp-skel-avatar"></span>
+      <span class="pp-skel pp-skel-line w60"></span>
+      <span class="pp-skel pp-skel-line w40"></span>
+      <span class="pp-skel pp-skel-line w50"></span>
+      <span class="pp-skel pp-skel-btn"></span>
+    </div>
+    <div class="pp-skel pp-skel-pulse"></div>
+    <div class="pp-grid-2">
+      <span class="pp-skel pp-skel-tile" *ngFor="let i of [1, 2, 3, 4]"></span>
+    </div>
+  </section>
+
+  <!-- Error -->
+  <section class="pp-pad" *ngIf="!loading() && error()">
+    <div class="pp-card pp-empty">
+      <div class="pp-empty-icon"><ion-icon name="cloud-offline-outline"></ion-icon></div>
+      <p class="pp-empty-title">COULDN'T LOAD YOUR PROFILE</p>
+      <p class="pp-empty-copy">{{ error() }}</p>
+      <button type="button" class="pp-lime-btn" (click)="load()">TRY AGAIN</button>
+    </div>
+  </section>
+
+  <ng-container *ngIf="!loading() && profile() as p">
+    <!-- Identity -->
+    <section class="pp-pad pp-identity-wrap">
+      <div class="pp-card pp-identity">
+        <span class="pp-identity-glow"></span>
+        <button type="button" class="pp-avatar-btn" (click)="editPhoto()" aria-label="Change profile photo">
+          <img *ngIf="p.identity.profileImage; else avatarInitial" class="pp-avatar" [src]="p.identity.profileImage" [alt]="p.identity.name" />
+          <ng-template #avatarInitial><span class="pp-avatar pp-avatar--initial">{{ (p.identity.name || 'P').charAt(0).toUpperCase() }}</span></ng-template>
+          <span class="pp-camera"><ion-icon name="camera-outline"></ion-icon></span>
+        </button>
+        <div class="pp-name-row">
+          <h2 class="pp-name">{{ p.identity.name }}</h2>
+          <ion-icon *ngIf="p.identity.verified" name="checkmark-circle" class="pp-verified" aria-label="Verified"></ion-icon>
+        </div>
+        <p class="pp-handle">{{ p.identity.username }} • {{ p.identity.tyId }}</p>
+        <div class="pp-meta">
+          <span *ngIf="p.identity.city"><ion-icon name="location-outline"></ion-icon> {{ p.identity.city }}</span>
+          <span class="pp-dot" *ngIf="p.identity.city && p.identity.memberSince">•</span>
+          <span *ngIf="p.identity.memberSince">Member since {{ memberSince(p.identity.memberSince) }}</span>
+        </div>
+        <div class="pp-sport-tags" *ngIf="p.identity.primarySport || p.identity.otherSports.length">
+          <span class="pp-sport-tag pp-sport-tag--primary" *ngIf="p.identity.primarySport">{{ sportLabel(p.identity.primarySport) | uppercase }} • PRIMARY</span>
+          <span class="pp-sport-tag" *ngFor="let sport of p.identity.otherSports.slice(0, 3)">{{ sportLabel(sport) | uppercase }}</span>
+        </div>
+        <button type="button" class="pp-edit-profile" (click)="startEdit('personal')">
+          <ion-icon name="create-outline"></ion-icon> EDIT PROFILE
+        </button>
+      </div>
+    </section>
+
+    <!-- Tabs -->
+    <nav class="pp-tabs" aria-label="Profile sections">
+      <div class="pp-tabs-row">
+        <button
+          *ngFor="let tab of tabs"
+          type="button"
+          class="pp-tab"
+          [class.active]="activeTab() === tab.id"
+          [attr.aria-current]="activeTab() === tab.id ? 'page' : null"
+          [attr.data-tab]="tab.id"
+          (click)="changeTab(tab.id)"
+        >{{ tab.label }}</button>
+      </div>
+    </nav>
+
+    <!-- ================= OVERVIEW ================= -->
+    <div class="pp-pad pp-stack" *ngIf="activeTab() === 'overview'">
+      <ng-container *ngTemplateOutlet="pulse; context: { compact: false }"></ng-container>
+
+      <section>
+        <div class="pp-section-title"><p>At a glance</p></div>
+        <div class="pp-grid-2">
+          <div class="pp-card pp-glance">
+            <span class="pp-glance-icon" style="--c: #16A34A"><ion-icon name="trophy-outline"></ion-icon></span>
+            <div><p class="pp-glance-value">{{ p.stats.played }}</p><p class="pp-glance-label">GAMES PLAYED</p></div>
+          </div>
+          <div class="pp-card pp-glance">
+            <span class="pp-glance-icon" style="--c: #FF7A00"><ion-icon name="ribbon-outline"></ion-icon></span>
+            <div><p class="pp-glance-value">{{ p.stats.winRate != null ? p.stats.winRate + '%' : '—' }}</p><p class="pp-glance-label">WIN RATE</p></div>
+          </div>
+          <div class="pp-card pp-glance">
+            <span class="pp-glance-icon" style="--c: #2563EB"><ion-icon name="calendar-outline"></ion-icon></span>
+            <div><p class="pp-glance-value">{{ p.stats.thisMonth }}</p><p class="pp-glance-label">THIS MONTH</p></div>
+          </div>
+          <div class="pp-card pp-glance">
+            <span class="pp-glance-icon" style="--c: #7C3AED"><ion-icon name="people-outline"></ion-icon></span>
+            <div><p class="pp-glance-value">{{ p.stats.hosted }}</p><p class="pp-glance-label">GAMES HOSTED</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section *ngIf="orderedBadges().length">
+        <div class="pp-section-title">
+          <p>Badges</p>
+          <button type="button" class="pp-link" (click)="badgeSheet.set(true)">View all <ion-icon name="chevron-forward"></ion-icon></button>
+        </div>
+        <div class="pp-badge-rail">
+          <button type="button" class="pp-badge-card" *ngFor="let badge of orderedBadges()" [class.locked]="!badge.earned" (click)="badgeSheet.set(true)">
+            <span class="pp-badge-medal" [style.background]="badgeVisual(badge).bg" [style.color]="badgeVisual(badge).color">
+              <span class="pp-badge-ring"></span>
+              <ion-icon [name]="badgeVisual(badge).icon"></ion-icon>
+              <span class="pp-badge-lock" *ngIf="!badge.earned"><ion-icon name="lock-closed"></ion-icon></span>
+            </span>
+            <p class="pp-badge-title">{{ badge.name | uppercase }}</p>
+            <p class="pp-badge-sub">{{ badge.description || (badge.earned ? 'Unlocked' : 'Not unlocked yet') }}</p>
+          </button>
+        </div>
+      </section>
+
+      <section>
+        <div class="pp-section-title">
+          <p>Games played</p>
+          <button type="button" class="pp-link" (click)="go('/app/my-bookings')">View all <ion-icon name="chevron-forward"></ion-icon></button>
+        </div>
+        <div class="pp-list" *ngIf="p.games.length; else noGames">
+          <button type="button" class="pp-game" *ngFor="let game of p.games" (click)="openGame(game)">
+            <span class="pp-game-icon" [style.--c]="resultColor(game)"><ion-icon name="trophy-outline"></ion-icon></span>
+            <div class="pp-game-copy">
+              <p class="pp-game-sport" [style.color]="resultColor(game)">{{ sportLabel(game.sport) | uppercase }}<span *ngIf="game.hosted"> • HOSTED</span></p>
+              <p class="pp-game-venue">{{ game.venue || 'TYNG game' }}</p>
+              <p class="pp-game-date">{{ game.date | date: 'd MMM yyyy' }}</p>
+            </div>
+            <div class="pp-game-side">
+              <span class="pp-result" [style.--c]="resultColor(game)">{{ resultLabel(game) }}</span>
+              <p class="pp-game-xp" *ngIf="game.xp">{{ game.xp > 0 ? '+' : '' }}{{ game.xp }} XP</p>
+              <p class="pp-game-add" *ngIf="!game.result && !game.noShow">Add result</p>
+            </div>
+          </button>
+        </div>
+        <ng-template #noGames>
+          <div class="pp-card pp-empty pp-empty--compact">
+            <p class="pp-empty-title">NO COMPLETED GAMES YET</p>
+            <p class="pp-empty-copy">Games you finish on TYNG will show here.</p>
+            <button type="button" class="pp-lime-btn" (click)="go('/app/ongoing')">FIND A GAME</button>
+          </div>
+        </ng-template>
+      </section>
+
+      <ng-container *ngTemplateOutlet="reputation; context: { onStats: true }"></ng-container>
+    </div>
+
+    <!-- ================= PERSONAL INFO ================= -->
+    <div class="pp-pad pp-stack-tight" *ngIf="activeTab() === 'personal'">
+      <div class="pp-tab-head">
+        <div>
+          <p class="pp-tab-title">Personal information</p>
+          <p class="pp-tab-sub">Your identity and playing preferences.</p>
+        </div>
+        <button type="button" class="pp-edit-chip" [class.on]="editing()" (click)="!editing() && startEdit('personal')">
+          <ion-icon [name]="editing() ? 'checkmark' : 'create-outline'"></ion-icon>{{ editing() ? 'EDITING' : 'EDIT' }}
+        </button>
+      </div>
+
+      <div class="pp-card">
+        <div class="pp-card-head"><span class="pp-card-icon"><ion-icon name="person-outline"></ion-icon></span><p>BASIC INFORMATION</p></div>
+        <div class="pp-card-body">
+          <pp-field label="Full name" [display]="p.personal.name" [editing]="editing()" [model]="personalDraft?.name" (modelChange)="personalDraft!.name = $event" [maxlength]="255"></pp-field>
+          <pp-field label="Display name / username" [display]="'@' + p.personal.username" [editing]="editing()" [model]="personalDraft?.username" (modelChange)="personalDraft!.username = $event" [maxlength]="50"></pp-field>
+          <div class="pp-grid-2 pp-grid-fields">
+            <pp-field label="Date of birth" type="date" [max]="todayIso()" min="1900-01-02" [display]="dobLabel(p.personal.dob)" [editing]="editing()" [model]="personalDraft?.dob" (modelChange)="personalDraft!.dob = $event"></pp-field>
+            <pp-field label="Age" [display]="p.personal.age != null ? p.personal.age + ' years' : ''" [editable]="false" [editing]="editing()"></pp-field>
+          </div>
+          <div class="pp-chip-field">
+            <p class="pp-chip-label">GENDER</p>
+            <pp-chips *ngIf="editing() && personalDraft; else genderView" [options]="genderOptions" [selected]="personalDraft.gender" [editing]="true" (selectedChange)="personalDraft.gender = asOne($event)"></pp-chips>
+            <ng-template #genderView><p class="pp-plain" [class.empty]="!p.personal.gender">{{ p.personal.gender || 'Not added' }}</p></ng-template>
+          </div>
+          <pp-field label="City" [display]="p.personal.city" [editing]="editing()" [model]="personalDraft?.city" (modelChange)="personalDraft!.city = $event" [maxlength]="120"></pp-field>
+          <pp-field label="Area / locality" [display]="p.personal.area" [editing]="editing()" [model]="personalDraft?.area" (modelChange)="personalDraft!.area = $event" [maxlength]="120"></pp-field>
+          <pp-field label="Languages" placeholder="e.g. Hindi, English" [display]="p.personal.languages.join(', ')" [editing]="editing()" [model]="personalDraft?.languagesText" (modelChange)="personalDraft!.languagesText = $event"></pp-field>
+          <pp-field label="Short bio" [multiline]="true" placeholder="Tell other players how you like to play" [display]="p.personal.bio" [editing]="editing()" [model]="personalDraft?.bio" (modelChange)="personalDraft!.bio = $event"></pp-field>
+        </div>
+      </div>
+
+      <div class="pp-card">
+        <div class="pp-card-head"><span class="pp-card-icon"><ion-icon name="lock-closed-outline"></ion-icon></span><p>ACCOUNT INFORMATION</p></div>
+        <div class="pp-card-body pp-card-body--pad">
+          <p class="pp-note">Verified account details cannot be edited here. Manage changes from <button type="button" class="pp-inline-link" (click)="openSettings()">Account Settings</button>.</p>
+          <div class="pp-verified-row">
+            <span class="pp-verified-icon"><ion-icon name="call-outline"></ion-icon></span>
+            <div class="pp-verified-copy"><p>PHONE</p><strong>{{ p.identity.phoneMasked || 'Not added' }}</strong></div>
+            <span class="pp-verified-tag" *ngIf="p.identity.phoneVerified"><ion-icon name="checkmark-circle"></ion-icon> VERIFIED</span>
+          </div>
+          <div class="pp-verified-row">
+            <span class="pp-verified-icon"><ion-icon name="mail-outline"></ion-icon></span>
+            <div class="pp-verified-copy"><p>EMAIL</p><strong>{{ p.identity.emailMasked || 'Not added' }}</strong></div>
+            <span class="pp-verified-tag" *ngIf="p.identity.emailVerified"><ion-icon name="checkmark-circle"></ion-icon> VERIFIED</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="pp-card">
+        <div class="pp-card-head"><span class="pp-card-icon"><ion-icon name="trophy-outline"></ion-icon></span><p>SPORTS PROFILE</p></div>
+        <div class="pp-card-body pp-card-body--chips">
+          <div>
+            <p class="pp-chip-label">PRIMARY SPORT</p>
+            <pp-chips [options]="sportOptions()" [selected]="editing() && personalDraft ? personalDraft.primarySport : p.personal.primarySport" [editing]="editing()" (selectedChange)="setPrimarySport($event)"></pp-chips>
+          </div>
+          <div>
+            <p class="pp-chip-label">OTHER SPORTS</p>
+            <pp-chips [options]="otherSportOptions()" [multiple]="true" [selected]="editing() && personalDraft ? personalDraft.otherSports : p.personal.otherSports" [editing]="editing()" (selectedChange)="personalDraft!.otherSports = asList($event)"></pp-chips>
+          </div>
+          <div>
+            <p class="pp-chip-label">FITNESS / PLAYING LEVEL</p>
+            <pp-chips [options]="levelOptions" [selected]="editing() && personalDraft ? personalDraft.playingLevel : p.personal.playingLevel" [editing]="editing()" (selectedChange)="personalDraft!.playingLevel = asOne($event)"></pp-chips>
+          </div>
+          <div>
+            <p class="pp-chip-label">PREFERRED {{ sportLabel(editing() && personalDraft ? personalDraft.primarySport : p.personal.primarySport) | uppercase }} POSITION</p>
+            <pp-chips [options]="positionOptions()" [selected]="editing() && personalDraft ? personalDraft.preferredPosition : p.personal.preferredPosition" [editing]="editing()" (selectedChange)="personalDraft!.preferredPosition = asOne($event)"></pp-chips>
+          </div>
+        </div>
+      </div>
+
+      <div class="pp-card">
+        <div class="pp-card-head"><span class="pp-card-icon"><ion-icon name="locate-outline"></ion-icon></span><p>DOMINANT SIDE</p><span class="pp-tag">OPTIONAL</span></div>
+        <div class="pp-card-body pp-card-body--chips pp-grid-2">
+          <div>
+            <p class="pp-chip-label">DOMINANT HAND</p>
+            <pp-chips [options]="handOptions" [selected]="editing() && personalDraft ? personalDraft.dominantHand : p.personal.dominantHand" [editing]="editing()" (selectedChange)="personalDraft!.dominantHand = asOne($event)"></pp-chips>
+          </div>
+          <div>
+            <p class="pp-chip-label">DOMINANT FOOT</p>
+            <pp-chips [options]="footOptions" [selected]="editing() && personalDraft ? personalDraft.dominantFoot : p.personal.dominantFoot" [editing]="editing()" (selectedChange)="personalDraft!.dominantFoot = asOne($event)"></pp-chips>
+          </div>
+        </div>
+      </div>
+
+      <div class="pp-card">
+        <div class="pp-card-head"><span class="pp-card-icon"><ion-icon name="sparkles-outline"></ion-icon></span><p>PLAYING PREFERENCES</p></div>
+        <div class="pp-card-body pp-card-body--chips">
+          <div>
+            <p class="pp-chip-label">PLAY STYLE</p>
+            <pp-chips [options]="playStyleOptions" [selected]="editing() && personalDraft ? personalDraft.playStyle : p.personal.playStyle" [editing]="editing()" (selectedChange)="personalDraft!.playStyle = asOne($event)"></pp-chips>
+          </div>
+          <div>
+            <p class="pp-chip-label">PREFERRED TIME</p>
+            <pp-chips [options]="timeOptions" [multiple]="true" [selected]="editing() && personalDraft ? personalDraft.preferredTimes : p.personal.preferredTimes" [editing]="editing()" (selectedChange)="personalDraft!.preferredTimes = asList($event)"></pp-chips>
+          </div>
+          <div>
+            <p class="pp-chip-label">PREFERRED DAYS</p>
+            <pp-chips [options]="dayOptions" [selected]="editing() && personalDraft ? personalDraft.preferredDays : p.personal.preferredDays" [editing]="editing()" (selectedChange)="personalDraft!.preferredDays = asOne($event)"></pp-chips>
+          </div>
+          <div>
+            <p class="pp-chip-label">ENVIRONMENT</p>
+            <pp-chips [options]="environmentOptions" [selected]="editing() && personalDraft ? personalDraft.environment : p.personal.environment" [editing]="editing()" (selectedChange)="personalDraft!.environment = asOne($event)"></pp-chips>
+          </div>
+          <div class="pp-fields-flat">
+            <pp-field label="Preferred search radius (km)" type="number" placeholder="e.g. 8" [min]="1" [max]="100" [display]="p.personal.searchRadiusKm ? 'Within ' + p.personal.searchRadiusKm + ' km' : ''" [editing]="editing()" [model]="personalDraft?.searchRadiusKm" (modelChange)="personalDraft!.searchRadiusKm = $event"></pp-field>
+            <pp-field label="Coach interest" placeholder="e.g. Performance & fitness" [maxlength]="150" [display]="p.personal.coachInterest" [editing]="editing()" [model]="personalDraft?.coachInterest" (modelChange)="personalDraft!.coachInterest = $event"></pp-field>
+            <pp-field label="Venue preference" placeholder="e.g. Turf and community grounds" [maxlength]="150" [display]="p.personal.venuePreference" [editing]="editing()" [model]="personalDraft?.venuePreference" (modelChange)="personalDraft!.venuePreference = $event"></pp-field>
+          </div>
+        </div>
+      </div>
+
+      <div class="pp-card">
+        <div class="pp-card-head"><span class="pp-card-icon"><ion-icon name="eye-outline"></ion-icon></span><p>PROFILE VISIBILITY</p></div>
+        <div class="pp-toggle-list">
+          <div class="pp-toggle-row" *ngFor="let row of visibilityRows">
+            <p>{{ row.label }}</p>
+            <pp-toggle [checked]="p.personal.visibility[row.key]" [label]="row.label" [disabled]="toggleBusy() === row.key" (checkedChange)="setVisibility(row.key, $event)"></pp-toggle>
+          </div>
+        </div>
+      </div>
+
+      <button type="button" class="pp-outline-btn" (click)="publicPreview.set(true)">
+        <ion-icon name="eye-outline"></ion-icon> VIEW PUBLIC PROFILE
+      </button>
+
+      <div class="pp-card pp-completion">
+        <div class="pp-completion-head">
+          <div><p class="pp-completion-title">PROFILE COMPLETION</p><p class="pp-completion-sub">Medical information is never required.</p></div>
+          <p class="pp-completion-pct">{{ p.completion.pct }}%</p>
+        </div>
+        <div class="pp-bar pp-bar--dark"><span [style.width.%]="p.completion.pct"></span></div>
+        <div class="pp-completion-tags" *ngIf="p.completion.missing.length">
+          <button type="button" *ngFor="let item of p.completion.missing.slice(0, 4)" (click)="startEdit('personal')">{{ item }}</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= STATS ================= -->
+    <div class="pp-pad pp-stack" *ngIf="activeTab() === 'stats'">
+      <ng-container *ngTemplateOutlet="pulse; context: { compact: true }"></ng-container>
+
+      <section>
+        <div class="pp-section-title"><p>Leaderboard</p></div>
+        <div class="pp-card pp-ranks">
+          <div class="pp-ranks-row">
+            <div>
+              <p class="pp-rank">{{ rankText(p.ranks.city.rank) }}</p><p class="pp-rank-label">CITY RANK</p>
+              <p class="pp-rank-sub">{{ p.ranks.city.label || 'Set your city' }}</p>
+            </div>
+            <div>
+              <p class="pp-rank">{{ rankText(p.ranks.sport.rank) }}</p><p class="pp-rank-label">SPORT RANK</p>
+              <p class="pp-rank-sub">{{ sportLabel(p.ranks.sport.label) || 'Add a sport' }}</p>
+            </div>
+            <div>
+              <p class="pp-rank">{{ rankText(p.ranks.friends.rank) }}</p><p class="pp-rank-label">FRIENDS RANK</p>
+              <p class="pp-rank-sub">{{ p.ranks.friends.label }}</p>
+            </div>
+          </div>
+          <div class="pp-ranks-foot">
+            <p>+{{ p.pulse.xpThisMonth | number }} XP THIS MONTH</p>
+            <button type="button" (click)="go('/app/leaderboard')">VIEW FULL LEADERBOARD →</button>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="pp-section-title"><p>Activity stats</p></div>
+        <div class="pp-grid-3">
+          <div class="pp-card pp-activity" *ngFor="let stat of activityStats()">
+            <p class="pp-activity-value">{{ stat[0] }}</p>
+            <p class="pp-activity-label">{{ stat[1] }}</p>
+          </div>
+        </div>
+        <p class="pp-hint" *ngIf="p.stats.completed > p.stats.resultsRecorded">Won, lost and draw counts come from results you add to your games. Tap a game in Overview to add its result.</p>
+      </section>
+
+      <section>
+        <div class="pp-section-title"><p>Reliability</p></div>
+        <div class="pp-card pp-reliability">
+          <div class="pp-reliability-head">
+            <div>
+              <p class="pp-reliability-score">{{ p.reliability.score }}<span> / 100</span></p>
+              <p class="pp-reliability-copy">Reflects how consistently you show up and honour bookings.</p>
+            </div>
+            <ion-icon name="shield-checkmark-outline"></ion-icon>
+          </div>
+          <div class="pp-meter-list">
+            <div class="pp-meter" *ngFor="let row of reliabilityRows()">
+              <p>{{ row[0] }}</p>
+              <div class="pp-bar"><span [style.width.%]="row[1] ?? 0"></span></div>
+              <strong>{{ row[1] ?? '—' }}</strong>
+            </div>
+          </div>
+          <p class="pp-hint" *ngIf="!p.reliability.hasData">Breakdown fills in after your first checked-in games.</p>
+        </div>
+      </section>
+
+      <ng-container *ngTemplateOutlet="reputation; context: { onStats: false }"></ng-container>
+
+      <section>
+        <div class="pp-section-title">
+          <p>Recent XP</p>
+          <button type="button" class="pp-link" (click)="go('/app/xp/history')">View full XP history <ion-icon name="chevron-forward"></ion-icon></button>
+        </div>
+        <div class="pp-card pp-xp-list" *ngIf="p.recentXp.length; else noXp">
+          <div class="pp-xp-row" *ngFor="let item of p.recentXp">
+            <span class="pp-card-icon"><ion-icon [name]="xpIcon(item.category)"></ion-icon></span>
+            <div><p class="pp-xp-label">{{ item.label }}</p><p class="pp-xp-meta">{{ xpMeta(item) }}</p></div>
+            <p class="pp-xp-amount" [class.neg]="item.amount < 0">{{ item.amount > 0 ? '+' : '' }}{{ item.amount }} XP</p>
+          </div>
+        </div>
+        <ng-template #noXp>
+          <div class="pp-card pp-empty pp-empty--compact"><p class="pp-empty-copy">No XP yet. Play, host and show up on time to earn XP.</p></div>
+        </ng-template>
+      </section>
+
+      <div class="pp-card pp-badge-summary">
+        <div class="pp-badge-summary-head">
+          <div><p class="pp-badge-summary-title">BADGE COLLECTION</p><p class="pp-badge-summary-sub">{{ p.badges.earned }} / {{ p.badges.total }} badges unlocked</p></div>
+          <ion-icon name="medal-outline"></ion-icon>
+        </div>
+        <div class="pp-bar"><span [style.width.%]="badgePct()"></span></div>
+        <div class="pp-grid-3 pp-badge-counts">
+          <div><p>{{ p.badges.earned }}</p><span>EARNED</span></div>
+          <div><p>{{ p.badges.locked }}</p><span>LOCKED</span></div>
+          <div><p>{{ p.badges.secret }}</p><span>SECRET</span></div>
+        </div>
+        <button type="button" class="pp-dark-btn" (click)="badgeSheet.set(true)">VIEW ALL BADGES</button>
+      </div>
+    </div>
+
+    <!-- ================= MEDICAL & FITNESS ================= -->
+    <div class="pp-pad pp-stack-tight" *ngIf="activeTab() === 'medical'">
+      <div class="pp-card pp-private">
+        <span class="pp-private-icon"><ion-icon name="lock-closed-outline"></ion-icon></span>
+        <div class="pp-private-copy">
+          <div class="pp-private-title"><p>PRIVATE INFORMATION</p><span class="pp-tag pp-tag--green">OPTIONAL</span></div>
+          <p>Your medical and fitness information is optional and controlled by you.</p>
+        </div>
+        <button type="button" class="pp-edit-chip" [class.on]="editing()" (click)="!editing() && startEdit('medical')">{{ editing() ? 'EDITING' : 'EDIT' }}</button>
+      </div>
+
+      <ng-container *ngIf="p.medical as m">
+        <div class="pp-card">
+          <div class="pp-card-head"><span class="pp-card-icon"><ion-icon name="body-outline"></ion-icon></span><p>BODY INFORMATION</p><span class="pp-tag">OPTIONAL</span></div>
+          <div class="pp-card-body">
+            <div class="pp-grid-2 pp-grid-fields">
+              <pp-field label="Height (cm)" type="number" placeholder="e.g. 178" [display]="m.medical.heightCm ? m.medical.heightCm + ' cm' : ''" [editing]="editing()" [model]="medicalDraft?.medical?.heightCm" (modelChange)="medicalDraft!.medical.heightCm = $event"></pp-field>
+              <pp-field label="Weight (kg)" type="number" placeholder="e.g. 75" [display]="m.medical.weightKg ? m.medical.weightKg + ' kg' : ''" [editing]="editing()" [model]="medicalDraft?.medical?.weightKg" (modelChange)="medicalDraft!.medical.weightKg = $event"></pp-field>
+            </div>
+            <div class="pp-chip-field">
+              <p class="pp-chip-label">BLOOD GROUP</p>
+              <pp-chips [options]="bloodGroupOptions" [selected]="editing() && medicalDraft ? medicalDraft.medical.bloodGroup : m.medical.bloodGroup" [editing]="editing()" (selectedChange)="medicalDraft!.medical.bloodGroup = asOne($event)"></pp-chips>
+            </div>
+            <div class="pp-info-box">
+              <p class="pp-info-title"><ion-icon name="information-circle-outline"></ion-icon> INFORMATIONAL ONLY</p>
+              <p>Body measurements are optional and are not used to label health status.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="pp-card">
+          <div class="pp-card-head"><span class="pp-card-icon"><ion-icon name="pulse-outline"></ion-icon></span><p>FITNESS INFORMATION</p><span class="pp-tag">OPTIONAL</span></div>
+          <div class="pp-card-body pp-card-body--chips">
+            <div>
+              <p class="pp-chip-label">FITNESS LEVEL</p>
+              <pp-chips [options]="levelOptions" [selected]="editing() && medicalDraft ? medicalDraft.medical.fitnessLevel : m.medical.fitnessLevel" [editing]="editing()" (selectedChange)="medicalDraft!.medical.fitnessLevel = $any(asOne($event))"></pp-chips>
+            </div>
+            <div class="pp-fields-flat">
+              <pp-field label="Resting heart rate (bpm)" type="number" placeholder="e.g. 62" [display]="m.medical.restingHeartRate ? m.medical.restingHeartRate + ' bpm' : ''" [editing]="editing()" [model]="medicalDraft?.medical?.restingHeartRate" (modelChange)="medicalDraft!.medical.restingHeartRate = $event"></pp-field>
+              <pp-field label="Preferred playing position" [maxlength]="80" [display]="m.medical.fitnessPosition" [editing]="editing()" [model]="medicalDraft?.medical?.fitnessPosition" (modelChange)="medicalDraft!.medical.fitnessPosition = $event"></pp-field>
+            </div>
+            <div>
+              <p class="pp-chip-label">SPORTS INTERESTED IN</p>
+              <pp-chips [options]="sportOptions()" [multiple]="true" [selected]="editing() && medicalDraft ? medicalDraft.medical.sportsInterested : m.medical.sportsInterested" [editing]="editing()" (selectedChange)="medicalDraft!.medical.sportsInterested = asList($event)"></pp-chips>
+            </div>
+            <div class="pp-soft-row">
+              <div><p class="pp-soft-title">Hydration Reminder</p><p class="pp-soft-sub">Remind me during active sessions</p></div>
+              <pp-toggle [checked]="m.medical.hydrationReminder" label="Hydration reminder" [disabled]="toggleBusy() === 'hydration'" (checkedChange)="setHydration($event)"></pp-toggle>
+            </div>
+          </div>
+        </div>
+
+        <div class="pp-card">
+          <div class="pp-card-head"><span class="pp-card-icon"><ion-icon name="heart-outline"></ion-icon></span><p>HEALTH INFORMATION</p><span class="pp-tag">OPTIONAL</span></div>
+          <div class="pp-card-body pp-card-body--chips">
+            <div>
+              <p class="pp-chip-label">ALLERGIES</p>
+              <pp-chips [options]="allergyOptions()" [multiple]="true" [selected]="editing() && medicalDraft ? medicalDraft.medical.allergies : m.medical.allergies" [editing]="editing()" (selectedChange)="medicalDraft!.medical.allergies = asList($event)"></pp-chips>
+              <div class="pp-add-row" *ngIf="editing() && medicalDraft">
+                <input class="pp-input" placeholder="Add custom allergy" maxlength="40" [(ngModel)]="medicalDraft.customAllergy" (keyup.enter)="addCustomAllergy()" />
+                <button type="button" class="pp-add-btn" (click)="addCustomAllergy()" aria-label="Add allergy"><ion-icon name="add"></ion-icon></button>
+              </div>
+            </div>
+            <div class="pp-fields-flat">
+              <pp-field label="Medical conditions" [multiline]="true" [maxlength]="1000" [display]="m.medical.medicalConditions" [editing]="editing()" [model]="medicalDraft?.medical?.medicalConditions" (modelChange)="medicalDraft!.medical.medicalConditions = $event"></pp-field>
+              <pp-field label="Past injuries" [multiline]="true" [maxlength]="1000" [display]="m.medical.pastInjuries" [editing]="editing()" [model]="medicalDraft?.medical?.pastInjuries" (modelChange)="medicalDraft!.medical.pastInjuries = $event"></pp-field>
+              <pp-field label="Current injuries" [multiline]="true" [maxlength]="1000" [display]="m.medical.currentInjuries" [editing]="editing()" [model]="medicalDraft?.medical?.currentInjuries" (modelChange)="medicalDraft!.medical.currentInjuries = $event"></pp-field>
+              <pp-field label="Surgeries / procedures" [multiline]="true" [maxlength]="1000" [display]="m.medical.surgeries" [editing]="editing()" [model]="medicalDraft?.medical?.surgeries" (modelChange)="medicalDraft!.medical.surgeries = $event"></pp-field>
+              <pp-field label="Current medications" [multiline]="true" [maxlength]="1000" [display]="m.medical.medications" [editing]="editing()" [model]="medicalDraft?.medical?.medications" (modelChange)="medicalDraft!.medical.medications = $event"></pp-field>
+            </div>
+          </div>
+        </div>
+
+        <div class="pp-card">
+          <div class="pp-card-head"><span class="pp-card-icon"><ion-icon name="call-outline"></ion-icon></span><p>EMERGENCY CONTACT</p><span class="pp-tag">OPTIONAL</span></div>
+          <div class="pp-card-body">
+            <p class="pp-contact-label pp-contact-label--primary">PRIMARY CONTACT</p>
+            <pp-field label="Full name" [maxlength]="80" [display]="m.emergencyContacts.primary.name" [editing]="editing()" [model]="medicalDraft?.emergencyContacts?.primary?.name" (modelChange)="medicalDraft!.emergencyContacts.primary.name = $event"></pp-field>
+            <pp-field label="Relationship" [maxlength]="80" [display]="m.emergencyContacts.primary.relationship" [editing]="editing()" [model]="medicalDraft?.emergencyContacts?.primary?.relationship" (modelChange)="medicalDraft!.emergencyContacts.primary.relationship = $event"></pp-field>
+            <pp-field label="Phone number" type="tel" [maxlength]="20" [display]="m.emergencyContacts.primary.phone" [editing]="editing()" [model]="medicalDraft?.emergencyContacts?.primary?.phone" (modelChange)="medicalDraft!.emergencyContacts.primary.phone = $event"></pp-field>
+            <p class="pp-contact-label">SECONDARY CONTACT • OPTIONAL</p>
+            <pp-field label="Full name" [maxlength]="80" [display]="m.emergencyContacts.secondary.name" [editing]="editing()" [model]="medicalDraft?.emergencyContacts?.secondary?.name" (modelChange)="medicalDraft!.emergencyContacts.secondary.name = $event"></pp-field>
+            <pp-field label="Relationship" [maxlength]="80" [display]="m.emergencyContacts.secondary.relationship" [editing]="editing()" [model]="medicalDraft?.emergencyContacts?.secondary?.relationship" (modelChange)="medicalDraft!.emergencyContacts.secondary.relationship = $event"></pp-field>
+            <pp-field label="Phone number" type="tel" [maxlength]="20" [display]="m.emergencyContacts.secondary.phone" [editing]="editing()" [model]="medicalDraft?.emergencyContacts?.secondary?.phone" (modelChange)="medicalDraft!.emergencyContacts.secondary.phone = $event"></pp-field>
+          </div>
+        </div>
+
+        <div class="pp-card">
+          <div class="pp-card-head"><span class="pp-card-icon"><ion-icon name="document-text-outline"></ion-icon></span><p>EMERGENCY MEDICAL NOTES</p><span class="pp-tag">OPTIONAL</span></div>
+          <div class="pp-card-body pp-card-body--pad">
+            <p class="pp-note">Add important medical information that could help during an emergency.</p>
+            <textarea *ngIf="editing() && medicalDraft; else notesView" class="pp-input pp-textarea" maxlength="1000" placeholder="e.g. Severe peanut allergy. Carries inhaler." [(ngModel)]="medicalDraft.medical.emergencyNotes"></textarea>
+            <ng-template #notesView>
+              <div class="pp-notes" [class.empty]="!m.medical.emergencyNotes">{{ m.medical.emergencyNotes || 'No emergency medical notes added.' }}</div>
+            </ng-template>
+          </div>
+        </div>
+
+        <div class="pp-card">
+          <div class="pp-card-head"><span class="pp-card-icon"><ion-icon name="lock-closed-outline"></ion-icon></span><p>WHO CAN ACCESS THIS INFORMATION?</p></div>
+          <div class="pp-card-body pp-card-body--pad">
+            <div class="pp-only-me">
+              <p><span class="pp-only-me-check"><ion-icon name="checkmark"></ion-icon></span> ONLY ME • DEFAULT</p>
+              <p class="pp-only-me-copy">Nothing is shared unless you explicitly enable access below.</p>
+            </div>
+            <div class="pp-toggle-list pp-toggle-list--flush">
+              <div class="pp-toggle-row" *ngFor="let row of accessRows">
+                <div><p>{{ row.label }}</p><p class="pp-toggle-sub" *ngIf="row.sub">{{ row.sub }}</p></div>
+                <pp-toggle [checked]="m.medicalAccess[row.key]" [label]="row.label" [disabled]="toggleBusy() === row.key" (checkedChange)="setMedicalAccess(row.key, $event)"></pp-toggle>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pp-card">
+          <button type="button" class="pp-collapse" (click)="wellnessOpen.set(!wellnessOpen())" [attr.aria-expanded]="wellnessOpen() || editing()">
+            <span class="pp-card-icon pp-card-icon--grey"><ion-icon name="sparkles-outline"></ion-icon></span>
+            <div><p class="pp-collapse-title">OPTIONAL WELLNESS INFORMATION</p><p class="pp-collapse-sub">Lifestyle details are optional and collapsed by default.</p></div>
+            <ion-icon name="chevron-down" class="pp-collapse-chevron" [class.open]="wellnessOpen() || editing()"></ion-icon>
+          </button>
+          <div class="pp-card-body pp-collapse-body" *ngIf="wellnessOpen() || editing()">
+            <div class="pp-chip-field">
+              <p class="pp-chip-label">SMOKING</p>
+              <pp-chips [options]="yesNoOptions" [selected]="editing() && medicalDraft ? medicalDraft.wellness.smoking : m.wellness.smoking" [editing]="editing()" (selectedChange)="medicalDraft!.wellness.smoking = asOne($event)"></pp-chips>
+            </div>
+            <div class="pp-chip-field">
+              <p class="pp-chip-label">ALCOHOL</p>
+              <pp-chips [options]="yesNoOptions" [selected]="editing() && medicalDraft ? medicalDraft.wellness.alcohol : m.wellness.alcohol" [editing]="editing()" (selectedChange)="medicalDraft!.wellness.alcohol = asOne($event)"></pp-chips>
+            </div>
+            <div class="pp-chip-field">
+              <p class="pp-chip-label">DIET PREFERENCE</p>
+              <pp-chips [options]="dietOptions" [selected]="editing() && medicalDraft ? medicalDraft.wellness.diet : m.wellness.diet" [editing]="editing()" (selectedChange)="medicalDraft!.wellness.diet = asOne($event)"></pp-chips>
+            </div>
+            <pp-field label="Average sleep duration (hours)" type="number" placeholder="e.g. 7" [display]="m.wellness.sleepHours ? m.wellness.sleepHours + ' hours' : ''" [editing]="editing()" [model]="medicalDraft?.wellness?.sleepHours" (modelChange)="medicalDraft!.wellness.sleepHours = $event"></pp-field>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+
+    <!-- ================= DOCUMENTS ================= -->
+    <div class="pp-pad pp-stack-tight" *ngIf="activeTab() === 'documents'">
+      <div class="pp-tab-head">
+        <div>
+          <p class="pp-tab-title">Documents</p>
+          <p class="pp-tab-sub">Optional documents for sports, coaching or emergencies. Never public.</p>
+        </div>
+        <button type="button" class="pp-upload-btn" [disabled]="documentBusy() === 'upload'" (click)="chooseUploadType()">
+          <ion-spinner *ngIf="documentBusy() === 'upload'; else uploadIcon" name="crescent"></ion-spinner>
+          <ng-template #uploadIcon><ion-icon name="cloud-upload-outline"></ion-icon></ng-template>
+          UPLOAD
+        </button>
+      </div>
+
+      <div class="pp-card pp-private-note">
+        <ion-icon name="lock-closed-outline"></ion-icon>
+        <div><p class="pp-private-note-title">PRIVATE BY DEFAULT</p><p>Health documents cannot be made publicly visible. You control limited, purpose-specific access.</p></div>
+      </div>
+
+      <section *ngIf="documentsLoading() && !documentsLoaded()">
+        <div class="pp-skel pp-skel-doc" *ngFor="let i of [1, 2]"></div>
+      </section>
+
+      <ng-container *ngIf="documentsLoaded()">
+        <section *ngIf="documents().length; else noDocuments">
+          <div class="pp-section-title"><p>Uploaded documents</p></div>
+          <div class="pp-stack-docs">
+            <div class="pp-card pp-doc" *ngFor="let doc of documents()" [class.busy]="documentBusy() === doc.id">
+              <div class="pp-doc-main">
+                <span class="pp-doc-icon" [style.--c]="documentVisual(doc).color"><ion-icon [name]="documentVisual(doc).icon"></ion-icon></span>
+                <div class="pp-doc-copy">
+                  <p class="pp-doc-title">{{ documentTitle(doc) }}</p>
+                  <p class="pp-doc-meta">{{ documentMeta(doc) }}</p>
+                  <span class="pp-doc-vis"><ion-icon name="lock-closed"></ion-icon> {{ documentVisibilityLabel(doc.visibility) | uppercase }}</span>
+                </div>
+                <ion-spinner *ngIf="documentBusy() === doc.id" name="crescent"></ion-spinner>
+              </div>
+              <div class="pp-doc-actions">
+                <button type="button" (click)="viewDocument(doc)"><ion-icon name="eye-outline"></ion-icon>VIEW</button>
+                <button type="button" (click)="pickFile(doc.documentType, doc.id)"><ion-icon name="swap-horizontal-outline"></ion-icon>REPLACE</button>
+                <button type="button" (click)="viewDocument(doc, true)"><ion-icon name="download-outline"></ion-icon>DOWNLOAD</button>
+                <button type="button" class="danger" (click)="deleteDocument(doc)"><ion-icon name="trash-outline"></ion-icon>DELETE</button>
+              </div>
+              <div class="pp-doc-visibility">
+                <p class="pp-chip-label">VISIBILITY</p>
+                <label class="pp-select">
+                  <select [ngModel]="doc.visibility" (ngModelChange)="setDocumentVisibility(doc, $event)" aria-label="Who can see this document">
+                    <option *ngFor="let v of documentVisibilities" [ngValue]="v.value">{{ v.label }}</option>
+                  </select>
+                  <ion-icon name="chevron-down"></ion-icon>
+                </label>
+              </div>
+            </div>
+          </div>
+        </section>
+        <ng-template #noDocuments>
+          <div class="pp-card pp-empty">
+            <div class="pp-empty-icon"><ion-icon name="document-text-outline"></ion-icon></div>
+            <p class="pp-empty-title">NO DOCUMENTS UPLOADED</p>
+            <p class="pp-empty-copy">Upload certificates or insurance information if needed.</p>
+            <button type="button" class="pp-lime-btn" (click)="chooseUploadType()">UPLOAD DOCUMENT</button>
+          </div>
+        </ng-template>
+      </ng-container>
+
+      <section>
+        <div class="pp-section-title"><p>Document types</p></div>
+        <div class="pp-stack-docs">
+          <button type="button" class="pp-doc-type" *ngFor="let type of documentTypes" (click)="pickFile(type.type)">
+            <span class="pp-doc-icon" [style.--c]="type.color"><ion-icon [name]="type.icon"></ion-icon></span>
+            <div><p class="pp-doc-type-title">{{ type.title }}</p><p class="pp-doc-type-copy">{{ type.copy }}</p></div>
+            <ion-icon name="add" class="pp-doc-type-plus"></ion-icon>
+          </button>
+        </div>
+      </section>
+
+      <div class="pp-card pp-privacy-options">
+        <p class="pp-privacy-options-title">DOCUMENT PRIVACY OPTIONS</p>
+        <div class="pp-privacy-chips"><span *ngFor="let v of documentVisibilities">{{ v.label }}</span></div>
+        <p class="pp-hint">Choose one per document under Visibility. Documents are never shown on your public profile.</p>
+      </div>
+    </div>
+
+    <!-- ===== shared blocks ===== -->
+    <ng-template #pulse let-compact="compact">
+      <div class="pp-pulse" [class.compact]="compact">
+        <span class="pp-pulse-bubble"></span>
+        <div class="pp-pulse-body">
+          <div class="pp-pulse-top">
+            <div>
+              <p class="pp-pulse-kicker"><ion-icon name="flash"></ion-icon> YOUR TYNG PULSE</p>
+              <p class="pp-pulse-level">LEVEL {{ p.pulse.level }}</p>
+              <p class="pp-pulse-title">{{ p.pulse.levelTitle | uppercase }}</p>
+            </div>
+            <div class="pp-pulse-xp">
+              <p>{{ p.pulse.lifetimeXp | number }}</p>
+              <span>LIFETIME XP</span>
+            </div>
+          </div>
+          <div class="pp-grid-2 pp-pulse-mini" *ngIf="compact">
+            <div><p>{{ p.pulse.seasonXp | number }}</p><span>SEASON XP</span></div>
+            <div><p>{{ p.pulse.xpToNextLevel != null ? (p.pulse.xpToNextLevel | number) + ' XP' : 'MAX' }}</p><span>{{ p.pulse.nextLevel ? 'TO LEVEL ' + p.pulse.nextLevel.level : 'TOP LEVEL' }}</span></div>
+          </div>
+          <div class="pp-pulse-progress">
+            <div class="pp-pulse-progress-head">
+              <span>{{ p.pulse.progressPct }}% COMPLETE</span>
+              <strong *ngIf="p.pulse.nextLevel">{{ p.pulse.xpToNextLevel | number }} XP TO LEVEL {{ p.pulse.nextLevel.level }}</strong>
+            </div>
+            <div class="pp-pulse-bar"><span [style.width.%]="p.pulse.progressPct"></span></div>
+          </div>
+          <div class="pp-grid-3 pp-pulse-tiles" *ngIf="!compact">
+            <div><p>{{ p.pulse.reliability }}</p><span>RELIABILITY</span></div>
+            <div><p>{{ ratingText(p.pulse.rating) }}<ng-container *ngIf="p.pulse.rating != null"> ★</ng-container></p><span>RATING</span></div>
+            <div><p>{{ rankText(p.ranks.city.rank) }}</p><span>{{ (p.ranks.city.label || 'City') | uppercase }}</span></div>
+          </div>
+        </div>
+        <button type="button" class="pp-pulse-foot" (click)="compact ? go('/app/xp/history') : changeTab('stats')">
+          <span class="pp-pulse-foot-left">
+            <strong><ion-icon name="flame"></ion-icon> {{ p.pulse.streak }}-GAME STREAK</strong>
+            <span>+{{ p.pulse.xpThisMonth | number }} XP THIS MONTH</span>
+          </span>
+          <span class="pp-pulse-foot-link">VIEW XP DETAILS →</span>
+        </button>
+      </div>
+    </ng-template>
+
+    <ng-template #reputation let-onStats="onStats">
+      <section>
+        <div class="pp-section-title"><p>Player reputation</p></div>
+        <div class="pp-reputation">
+          <div class="pp-reputation-top">
+            <div><p class="pp-reputation-value">{{ ratingText(p.reputation.overall) }} <span *ngIf="p.reputation.overall != null">★</span></p><p class="pp-reputation-label">OVERALL RATING</p></div>
+            <div><p class="pp-reputation-value">{{ p.reputation.reliability }}</p><p class="pp-reputation-label">RELIABILITY</p></div>
+          </div>
+          <div class="pp-reputation-bars">
+            <div class="pp-reputation-row" *ngFor="let row of reputationRows()">
+              <p>{{ row[0] }}</p>
+              <div class="pp-bar pp-bar--dark"><span [style.width.%]="row[1] != null ? (row[1] / 5) * 100 : 0"></span></div>
+              <strong>{{ row[1] != null ? row[1] : '—' }}</strong>
+            </div>
+          </div>
+          <p class="pp-reputation-note">{{ p.reputation.count ? 'Based on ' + p.reputation.count + ' player rating' + (p.reputation.count === 1 ? '' : 's') + '.' : 'No player ratings yet. Teammates can rate you after completed games.' }}</p>
+          <button type="button" class="pp-reputation-btn" *ngIf="onStats" (click)="changeTab('stats')">VIEW RATING DETAILS →</button>
+        </div>
+      </section>
+    </ng-template>
+
+    <!-- Public preview sheet -->
+    <div class="pp-sheet-backdrop" *ngIf="publicPreview()" (click)="publicPreview.set(false)"></div>
+    <div class="pp-sheet" *ngIf="publicPreview()" role="dialog" aria-label="Public profile preview">
+      <span class="pp-sheet-grip"></span>
+      <div class="pp-sheet-head">
+        <div><p class="pp-sheet-title">PUBLIC PROFILE PREVIEW</p><p class="pp-sheet-sub">Exactly what another TYNG player can see.</p></div>
+        <button type="button" class="pp-sheet-close" (click)="publicPreview.set(false)" aria-label="Close"><ion-icon name="close"></ion-icon></button>
+      </div>
+      <div class="pp-preview">
+        <img *ngIf="p.identity.profileImage; else previewInitial" [src]="p.identity.profileImage" alt="" />
+        <ng-template #previewInitial><span class="pp-preview-initial">{{ (p.identity.name || 'P').charAt(0).toUpperCase() }}</span></ng-template>
+        <p class="pp-preview-name">{{ p.identity.name | uppercase }}</p>
+        <p class="pp-preview-meta">
+          <ng-container *ngIf="p.personal.visibility.showCity && p.identity.city">{{ p.identity.city }}</ng-container>
+          <ng-container *ngIf="p.personal.visibility.showSports && p.personal.primarySport"><span *ngIf="p.personal.visibility.showCity && p.identity.city"> • </span>{{ sportLabel(p.personal.primarySport) }}</ng-container>
+          <ng-container *ngIf="levelLabel(p.personal.playingLevel)"> • {{ levelLabel(p.personal.playingLevel) }}</ng-container>
+        </p>
+        <div class="pp-grid-3 pp-preview-tiles">
+          <div><p>{{ p.pulse.level }}</p><span>LEVEL</span></div>
+          <div *ngIf="p.personal.visibility.showReliability"><p>{{ p.pulse.reliability }}</p><span>RELIABILITY</span></div>
+          <div *ngIf="p.personal.visibility.showRating"><p>{{ ratingText(p.pulse.rating) }}</p><span>RATING</span></div>
+          <div *ngIf="p.personal.visibility.showGamesPlayed"><p>{{ p.stats.played }}</p><span>GAMES</span></div>
+        </div>
+        <p class="pp-preview-bio" *ngIf="p.personal.bio">{{ p.personal.bio }}</p>
+      </div>
+      <div class="pp-preview-note">
+        <ion-icon name="shield-checkmark-outline"></ion-icon>
+        <p>Phone, email, date of birth, exact address, medical information, emergency contacts and documents are hidden.<ng-container *ngIf="!p.personal.visibility.allowMessages"> Other players can't message you.</ng-container></p>
+      </div>
+    </div>
+
+    <!-- Badges sheet -->
+    <div class="pp-sheet-backdrop" *ngIf="badgeSheet()" (click)="badgeSheet.set(false)"></div>
+    <div class="pp-sheet pp-sheet--tall" *ngIf="badgeSheet()" role="dialog" aria-label="All badges">
+      <span class="pp-sheet-grip"></span>
+      <div class="pp-sheet-head">
+        <div><p class="pp-sheet-title">ALL BADGES</p><p class="pp-sheet-sub">{{ p.badges.earned }} of {{ p.badges.total }} unlocked<ng-container *ngIf="p.badges.secret"> • {{ p.badges.secret }} secret still hidden</ng-container></p></div>
+        <button type="button" class="pp-sheet-close" (click)="badgeSheet.set(false)" aria-label="Close"><ion-icon name="close"></ion-icon></button>
+      </div>
+      <div class="pp-badge-grid">
+        <div class="pp-badge-card pp-badge-card--grid" *ngFor="let badge of orderedBadges()" [class.locked]="!badge.earned">
+          <span class="pp-badge-medal" [style.background]="badgeVisual(badge).bg" [style.color]="badgeVisual(badge).color">
+            <span class="pp-badge-ring"></span>
+            <ion-icon [name]="badgeVisual(badge).icon"></ion-icon>
+            <span class="pp-badge-lock" *ngIf="!badge.earned"><ion-icon name="lock-closed"></ion-icon></span>
+          </span>
+          <p class="pp-badge-title">{{ badge.name | uppercase }}</p>
+          <p class="pp-badge-sub">{{ badge.description }}</p>
+          <p class="pp-badge-when" *ngIf="badge.earnedAt">Earned {{ badge.earnedAt | date: 'd MMM yyyy' }}</p>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- Edit bar -->
+  <div class="pp-edit-bar" *ngIf="editing()">
+    <button type="button" class="pp-cancel" [disabled]="saving()" (click)="cancelEdit()">CANCEL</button>
+    <button type="button" class="pp-save" [disabled]="saving()" (click)="save()">
+      <ion-spinner *ngIf="saving(); else saveIcon" name="crescent"></ion-spinner>
+      <ng-template #saveIcon><ion-icon name="checkmark"></ion-icon></ng-template>
+      SAVE CHANGES
+    </button>
+  </div>
+
+  <div class="pp-saved" *ngIf="savedPill()">
+    <span><ion-icon name="checkmark"></ion-icon></span> PROFILE UPDATED
+  </div>
+</div>

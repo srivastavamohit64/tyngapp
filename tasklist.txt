@@ -889,3 +889,8 @@ TYNG — TODAY'S WORK SUMMARY
    - The back buttons on Notification settings and Blocked Users work the same way, and open a sensible page if there is nothing to go back to.
 145. BLOCKED USERS REMOVED FROM THE SIDE MENU - 2 October 2026
    - Blocked Users is no longer in the side menu, because it is already in Settings. The side menu again shows Wallet, Leaderboards, Coaches, Settings and Support.
+146. NEW PLAYER PROFILE SCREEN MATCHING FIGMA - 2 October 2026
+   - The player Profile page has been rebuilt to match Figma, with five tabs: Overview, Personal Info, Stats, Medical & Fitness and Documents. Everything shown comes from the player's real account.
+   - Players can edit their personal and medical details on the page, turn privacy options on or off, preview how others see their profile, mark recent games as won, lost or draw, and upload, view, download, replace or delete private documents.
+   - Checked in the test browser while logged in: all tabs work and editing works. The app compiles.
+   - Not available yet (no data behind it): rank movement such as "up 3 positions", phone verified status and a verified tick on documents. The hydration reminder is saved but no reminder is sent, and medical and document access choices are saved but not yet applied for coaches and venues.
