@@ -963,3 +963,7 @@ TYNG — TODAY'S WORK SUMMARY
    - If a screen was opened straight from a link or after a refresh, so there is no earlier screen in the app, the back arrow goes to the screen it used to go to, instead of leaving the app. Forgot Password and Reset Password back buttons work the same way.
    - The coach Profile screen still goes to the coach home when it is opened right after finishing Complete Profile.
    - Type check passes and the app compiles. Checked in the browser as a player: Home > Venue Details > Select Date & Time > back > back returns to Home; Home > Notifications > back and Home > Create Game > back return to Home; Venue Details opened directly goes back to the Venues list. Coach and venue screens were not opened in the browser.
+160. ANDROID BUILD FIXED (STYLE SIZE LIMIT) - 2 October 2026
+   - The production build stopped with an error because the player Profile screen's styles (27.84 kB after the Badges work) were over the 24 kB per-screen limit. The limit was raised to 40 kB in angular.json. The 8 kB warning level is unchanged, so large screens still show warnings but no longer block the build.
+   - Production build finishes and the new build was copied into the Android project (cap sync android). Pushed as 24a31f8.
+   - Follow-up option: trim unused styles on the biggest screens (Profile 27.8 kB, Home 22.5 kB, Leaderboard 20.8 kB) to cut the warnings.
