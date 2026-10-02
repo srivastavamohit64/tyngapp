@@ -647,7 +647,7 @@
                   (click)="activateHomeSport(item.sport)"><ng-container *ngIf="item.sport as sport"><span class="sport-rail-icon"><ion-icon *ngIf="sport.id === 'home-more'; else sportIcon" name="grid-outline"></ion-icon><ng-template #sportIcon><img [src]="sport.icon" alt="" /></ng-template></span><span>{{ sport.name }}</span></ng-container></button>
         </nav>
 
-        <section #promoWrap class="promotion-wrap" *ngIf="promotionsLoading || homePromotions.length" aria-label="Highlights" aria-live="polite">
+        <section class="promotion-wrap" *ngIf="promotionsLoading || homePromotions.length" aria-label="Highlights" aria-live="polite">
           <article *ngIf="promotionsLoading" class="promo-card promo-card-loading" aria-label="Loading promotions">
             <span class="promo-loading-line promo-loading-badge"></span>
             <span class="promo-loading-line promo-loading-title"></span>
@@ -656,10 +656,10 @@
           </article>
           <ng-container *ngIf="!promotionsLoading">
             <ng-container *ngFor="let promo of homePromotions; let i = index">
-              <article *ngIf="i === promoSlideIndex" class="promo-card" [class]="'promo-card promo-' + promo.theme"
+              <article #promoCard *ngIf="i === promoSlideIndex" class="promo-card" [class]="'promo-card promo-' + promo.theme"
                        (pointerdown)="onPromotionPointerDown($event)" (pointerup)="onPromotionPointerUp($event)"
                        (pointercancel)="onPromotionPointerCancel()">
-                <div class="promo-field" aria-hidden="true"><span></span><span></span></div>
+                <svg class="promo-field" aria-hidden="true" viewBox="0 0 320 180" fill="none" stroke="currentColor" stroke-width="2"><rect x="18" y="18" width="284" height="144" rx="5" /><path d="M160 18v144M18 90h38m246 0h-38" /><circle cx="160" cy="90" r="30" /><rect x="18" y="53" width="48" height="74" /><rect x="254" y="53" width="48" height="74" /></svg>
                 <div class="promo-copy"><span class="promo-new">{{ promo.kicker }}</span><h2>{{ promo.title }}</h2><p>{{ promo.subtitle }}</p><button type="button" (click)="openHomePromotion(promo)">{{ promo.buttonText }}</button></div>
               </article>
             </ng-container>
