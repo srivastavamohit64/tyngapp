@@ -35,7 +35,7 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
       background: #fff;
       color: #111827;
       font-size: 12px;
-      font-weight: 800;
+      font-weight: 900;
     }
 
     .bu-unblock:disabled { opacity: 0.5; }

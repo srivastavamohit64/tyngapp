@@ -286,7 +286,7 @@ const FILTERS: { id: FilterId; label: string; emoji: string }[] = [
         background: transparent;
         color: #ff7a00;
         font-size: 12px;
-        font-weight: 800;
+        font-weight: 900;
         cursor: pointer;
       }
       .loading-bar,
@@ -307,7 +307,7 @@ const FILTERS: { id: FilterId; label: string; emoji: string }[] = [
       }
       .group-label {
         font-size: 11px;
-        font-weight: 800;
+        font-weight: 900;
         letter-spacing: 0.08em;
         text-transform: uppercase;
         color: #9ca3af;
@@ -329,7 +329,7 @@ const FILTERS: { id: FilterId; label: string; emoji: string }[] = [
       }
       .ai-card {
         background: linear-gradient(135deg, #fff7ed, #ffedd5);
-        border: 1.5px solid #fdba74;
+        border: 1.5px solid #ff9a40;
         padding: 16px;
       }
       .ai-orb {
@@ -361,7 +361,7 @@ const FILTERS: { id: FilterId; label: string; emoji: string }[] = [
       }
       .ai-title {
         font-size: 14px;
-        font-weight: 800;
+        font-weight: 900;
         color: #111827;
       }
       .ai-desc {
@@ -400,7 +400,7 @@ const FILTERS: { id: FilterId; label: string; emoji: string }[] = [
       }
       .reward-title {
         font-size: 14px;
-        font-weight: 800;
+        font-weight: 900;
       }
       .reward-desc {
         font-size: 12px;
@@ -416,7 +416,7 @@ const FILTERS: { id: FilterId; label: string; emoji: string }[] = [
         background: rgba(140, 240, 0, 0.2);
         color: #8cf000;
         font-size: 11px;
-        font-weight: 800;
+        font-weight: 900;
       }
       .std-card {
         display: flex;
@@ -428,7 +428,7 @@ const FILTERS: { id: FilterId; label: string; emoji: string }[] = [
       }
       .std-card-unread {
         border-color: rgba(255, 122, 0, 0.25);
-        background: #fffcf8;
+        background: #fafbfc;
       }
       .std-unread-bar {
         position: absolute;
@@ -468,7 +468,7 @@ const FILTERS: { id: FilterId; label: string; emoji: string }[] = [
         background: #111827;
         color: #fff;
         font-size: 9px;
-        font-weight: 800;
+        font-weight: 900;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -490,7 +490,7 @@ const FILTERS: { id: FilterId; label: string; emoji: string }[] = [
       }
       .std-title {
         font-size: 13px;
-        font-weight: 800;
+        font-weight: 900;
         color: #111827;
       }
       .std-time {
@@ -513,7 +513,7 @@ const FILTERS: { id: FilterId; label: string; emoji: string }[] = [
         background: #f3f4f6;
         font-size: 10px;
         font-weight: 700;
-        color: #4b5563;
+        color: #6b7280;
       }
       .wide-card {
         background: #fff;
@@ -560,7 +560,7 @@ const FILTERS: { id: FilterId; label: string; emoji: string }[] = [
         border-radius: 12px;
         padding: 10px 14px;
         font-size: 12px;
-        font-weight: 800;
+        font-weight: 900;
         cursor: pointer;
       }
       .action-btn-green {
@@ -590,7 +590,7 @@ const FILTERS: { id: FilterId; label: string; emoji: string }[] = [
       }
       .empty-title {
         font-size: 18px;
-        font-weight: 800;
+        font-weight: 900;
         color: #111827;
         margin-bottom: 6px;
       }

@@ -114,7 +114,7 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
         padding: 12px 14px;
         border-radius: 14px;
         background: #fef2f2;
-        color: #b91c1c;
+        color: #dc2626;
         font-size: 12px;
         font-weight: 700;
         line-height: 1.4;
@@ -172,7 +172,7 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
       .card h3 {
         margin: 0 0 10px;
         font-size: 12px;
-        font-weight: 800;
+        font-weight: 900;
         letter-spacing: 0.06em;
         text-transform: uppercase;
         color: #9ca3af;
@@ -212,7 +212,7 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
         border-radius: 999px;
         background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to));
         color: #111827;
-        font-weight: 800;
+        font-weight: 900;
       }
     `,
   ],

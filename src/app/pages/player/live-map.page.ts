@@ -49,8 +49,8 @@ const SPORT_COLORS: Record<string, string> = {
   football: '#2563EB',
   cricket: '#22C55E',
   basketball: '#F97316',
-  tennis: '#EAB308',
-  badminton: '#8B5CF6',
+  tennis: '#F59E0B',
+  badminton: '#7C3AED',
   volleyball: '#0EA5E9',
 };
 

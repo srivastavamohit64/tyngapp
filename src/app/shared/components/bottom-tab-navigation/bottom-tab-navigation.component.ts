@@ -114,7 +114,7 @@ import { TabItem } from '../../models/app.models';
         background: #ef4444;
         color: var(--app-surface);
         font-size: 9px;
-        font-weight: 800;
+        font-weight: 900;
         line-height: 16px;
         text-align: center;
         box-shadow: 0 0 0 2px var(--app-surface);

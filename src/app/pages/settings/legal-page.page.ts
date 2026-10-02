@@ -35,7 +35,7 @@ const FALLBACK_TITLES: Record<string, string> = {
     }
 
     .legal-content {
-      color: #374151;
+      color: #1f2937;
       font-size: 14px;
       line-height: 1.65;
       overflow-wrap: anywhere;

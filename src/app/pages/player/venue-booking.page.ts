@@ -202,7 +202,7 @@ interface DateItem {
       }
 
       .book-content {
-        --background: #f4f6f8;
+        --background: #f5f6f7;
       }
 
       .no-scrollbar {
@@ -214,7 +214,7 @@ interface DateItem {
 
       .book-page {
         min-height: 100%;
-        background: #f4f6f8;
+        background: #f5f6f7;
         color: #111827;
         text-align: left;
       }
@@ -345,7 +345,7 @@ interface DateItem {
         min-width: 64px;
         padding: 12px 10px;
         border-radius: 18px;
-        border: 1.5px solid #e8eaee;
+        border: 1.5px solid #e8ebef;
         background: #fff;
         display: flex;
         flex-direction: column;
@@ -363,14 +363,14 @@ interface DateItem {
 
       .date-day {
         font-size: 10px;
-        font-weight: 800;
+        font-weight: 900;
         text-transform: uppercase;
         letter-spacing: 0.04em;
         color: #9ca3af;
       }
 
       .date-chip.is-active .date-day {
-        color: #65a30d;
+        color: #477315;
       }
 
       .date-num {
@@ -405,7 +405,7 @@ interface DateItem {
         min-height: 58px;
         padding: 12px 8px;
         border-radius: 16px;
-        border: 1.5px solid #e8eaee;
+        border: 1.5px solid #e8ebef;
         background: #fff;
         display: flex;
         flex-direction: column;
@@ -422,15 +422,15 @@ interface DateItem {
 
       .slot-time {
         font-size: 11px;
-        font-weight: 800;
+        font-weight: 900;
         line-height: 1.25;
         text-align: center;
-        color: #374151;
+        color: #1f2937;
       }
 
       .slot-status {
         font-size: 9px;
-        font-weight: 800;
+        font-weight: 900;
         letter-spacing: 0.04em;
         text-transform: uppercase;
         color: #9ca3af;
@@ -467,13 +467,13 @@ interface DateItem {
 
       .slot-chip.is-booked {
         background: #f3f4f6;
-        border-color: #eceff3;
+        border-color: #edeff2;
         box-shadow: none;
         opacity: 1;
       }
 
       .slot-chip.is-booked .slot-time {
-        color: #b0b6c0;
+        color: #9ca3af;
         text-decoration: line-through;
         text-decoration-thickness: 1px;
       }
@@ -594,7 +594,7 @@ interface DateItem {
 
       .cost-row strong {
         color: #fff;
-        font-weight: 800;
+        font-weight: 900;
       }
 
       .cost-row--total {
@@ -619,19 +619,19 @@ interface DateItem {
         background: rgba(var(--app-primary-rgb), 0.1);
         border: 1px solid rgba(var(--app-primary-rgb), 0.28);
         font-size: 13px;
-        font-weight: 800;
+        font-weight: 900;
         color: #111827;
       }
 
       .duration-pill ion-icon {
-        color: #65a30d;
+        color: #477315;
         font-size: 16px;
       }
 
       .duration-pill strong {
         margin-left: auto;
         font-size: 12px;
-        font-weight: 800;
+        font-weight: 900;
         color: #6b7280;
       }
 
@@ -658,7 +658,7 @@ interface DateItem {
         font-size: 15px;
         font-weight: 900;
         background: #eef0f3;
-        color: #b0b6c0;
+        color: #9ca3af;
         transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
       }
 

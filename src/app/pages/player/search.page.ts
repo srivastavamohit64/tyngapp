@@ -115,7 +115,7 @@ interface SearchRow {
   styles: [`
     .search-page {
       min-height: 100%;
-      background: linear-gradient(180deg, #ffffff 0%, #f7f8fa 140px, #fafbfc 100%);
+      background: linear-gradient(180deg, #ffffff 0%, #f9fafb 140px, #fafbfc 100%);
       padding-bottom: 120px;
     }
 
@@ -193,7 +193,7 @@ interface SearchRow {
       border-radius: 999px;
       padding: 9px 14px;
       font-size: 13px;
-      font-weight: 800;
+      font-weight: 900;
       color: #6b7280;
       background: #ffffff;
       box-shadow: 0 1px 2px rgba(17, 24, 39, 0.04), inset 0 0 0 1px #eef0f3;
@@ -276,7 +276,7 @@ interface SearchRow {
     }
 
     .sp-shimmer {
-      background: linear-gradient(90deg, #f1f3f5 0%, #f1f3f5 30%, #e4e7eb 50%, #f1f3f5 70%, #f1f3f5 100%);
+      background: linear-gradient(90deg, #f3f4f6 0%, #f3f4f6 30%, #e5e7eb 50%, #f3f4f6 70%, #f3f4f6 100%);
       background-size: 220% 100%;
       animation: sp-shimmer 1.2s ease-in-out infinite;
     }
@@ -370,7 +370,7 @@ interface SearchRow {
       background: #f3f4f6;
     }
 
-    .sp-avatar[data-kind='venue'] { background: #ecfdf5; }
+    .sp-avatar[data-kind='venue'] { background: #f0fdf4; }
     .sp-avatar[data-kind='player'] { background: #eff6ff; }
     .sp-avatar[data-kind='coach'] { background: #fff7ed; }
 
@@ -386,7 +386,7 @@ interface SearchRow {
     .sp-copy strong {
       display: block;
       font-size: 14px;
-      font-weight: 800;
+      font-weight: 900;
       color: #111827;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -397,7 +397,7 @@ interface SearchRow {
     .sp-kind {
       flex-shrink: 0;
       font-size: 10px;
-      font-weight: 800;
+      font-weight: 900;
       letter-spacing: 0.02em;
       text-transform: uppercase;
       padding: 3px 7px;

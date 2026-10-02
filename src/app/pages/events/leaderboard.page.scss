@@ -655,7 +655,7 @@ $page: #fafbfc;
 /* Loading / empty */
 .lb-skeleton {
   border-radius: 22px;
-  background: linear-gradient(90deg, #eef0f3 25%, #f6f7f9 50%, #eef0f3 75%);
+  background: linear-gradient(90deg, #eef0f3 25%, #f5f6f7 50%, #eef0f3 75%);
   background-size: 200% 100%;
   animation: lb-shimmer 1.2s infinite linear;
 }
@@ -793,7 +793,7 @@ $page: #fafbfc;
   overflow: hidden;
   border: 3px solid var(--accent);
   border-radius: 50%;
-  background: #2a3342;
+  background: #1f2937;
   font-size: 18px;
   font-weight: 900;
   color: #fff;

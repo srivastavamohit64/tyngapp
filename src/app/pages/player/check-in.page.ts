@@ -52,7 +52,7 @@ type BarcodeDetectorLike = {
     .flip {
       position: absolute; right: 12px; bottom: 12px; height: 40px; padding: 0 12px;
       border: 0; border-radius: 999px; background: rgba(17, 24, 39, 0.82); color: #fff;
-      font-weight: 800; font-size: 12px; display: inline-flex; align-items: center; gap: 6px;
+      font-weight: 900; font-size: 12px; display: inline-flex; align-items: center; gap: 6px;
     }
     .flip ion-icon { font-size: 18px; }
     .cam-label { margin: 8px 0 0; font-size: 12px; font-weight: 700; color: #6B7280; }

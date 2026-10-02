@@ -547,14 +547,14 @@ const WEEK_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     :host, .cp-sheet { --cp-green:#8CF000; --cp-green-dark:#16A34A; --cp-dark:#111827; --cp-muted:#6B7280; --cp-faint:#9CA3AF; }
     .cp-content { --background:#FAFBFC; }
     .cp-empty { padding:16px 24px; }
-    .cp-error { padding:64px 0; text-align:center; color:#64748b; font-size:14px; }
+    .cp-error { padding:64px 0; text-align:center; color:#6b7280; font-size:14px; }
     .cp-error button { margin-top:16px; height:40px; padding:0 20px; border:0; border-radius:12px; background:var(--app-primary); color:var(--cp-dark); font-weight:700; }
     .cp-page { min-height:100%; background:#FAFBFC; padding-bottom:calc(96px + var(--safe-area-bottom)); color:var(--cp-dark); }
     .cp-card { border:1px solid #F0F1F3; border-radius:26px; background:#fff; box-shadow:0 5px 20px rgba(17,24,39,.065); }
     .cp-pad { padding:20px; }
     .cp-pad-sm { padding:16px; }
 
-    .cp-cover { position:relative; height:205px; overflow:hidden; background:linear-gradient(135deg,#111827,#1F2937 55%,#2c3a14); }
+    .cp-cover { position:relative; height:205px; overflow:hidden; background:linear-gradient(135deg,#111827,#1F2937 55%,#111827); }
     .cp-cover img { width:100%; height:100%; object-fit:cover; display:block; }
     .cp-cover-default { background:linear-gradient(135deg,#111827,#1F2937); }
     .cp-cover-pitch { position:absolute; top:0; right:0; width:72%; height:100%; color:#fff; opacity:.09; }
@@ -702,7 +702,7 @@ const WEEK_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     .cp-review-stars { margin-top:4px; display:flex; gap:2px; color:#FF7A00; font-size:9px; }
     .cp-review-text { margin:12px 0 0; color:var(--cp-muted); font-size:9px; line-height:1.6; }
     .cp-review-verified { margin-top:12px; display:flex; align-items:center; gap:4px; color:var(--cp-green-dark); font-size:7px; font-weight:900; }
-    .cp-form-error { margin:0; padding:10px 12px; border-radius:12px; background:#FEF2F2; color:#B91C1C; font-size:11px; font-weight:600; }
+    .cp-form-error { margin:0; padding:10px 12px; border-radius:12px; background:#FEF2F2; color:#DC2626; font-size:11px; font-weight:600; }
 
     .cp-action { left:0; right:0; bottom:var(--app-bottom-chrome-offset, 0px); padding:0 16px calc(12px + var(--app-bottom-chrome-pad, var(--safe-area-bottom))); }
     .cp-action-inner { display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:8px; border:1px solid #EEF0F3; border-radius:24px; background:rgba(255,255,255,.95); box-shadow:0 8px 30px rgba(17,24,39,.14); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); }
@@ -735,12 +735,12 @@ const WEEK_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     .cp-slot-chips button { padding:10px 14px; border:1px solid #E5E7EB; border-radius:999px; background:#fff; color:var(--cp-muted); font-size:8px; font-weight:900; }
     .cp-slot-chips button.active { border-color:var(--cp-green); background:var(--cp-green); color:var(--cp-dark); }
     .cp-field { display:flex; flex-direction:column; gap:6px; }
-    .cp-field > span { color:#374151; font-size:12px; font-weight:700; }
+    .cp-field > span { color:#1f2937; font-size:12px; font-weight:700; }
     .cp-field b { color:#EF4444; }
     .cp-field input { width:100%; height:46px; box-sizing:border-box; padding:0 14px; border:1px solid #E5E7EB; border-radius:14px; background:#F9FAFB; color:var(--cp-dark); font:inherit; font-size:14px; }
     .cp-field input:focus { outline:0; border-color:var(--cp-green); background:#fff; }
     .cp-choice { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-    .cp-choice button { height:42px; border:1px solid #E5E7EB; border-radius:14px; background:#fff; color:#4B5563; font-size:12px; font-weight:700; }
+    .cp-choice button { height:42px; border:1px solid #E5E7EB; border-radius:14px; background:#fff; color:#6B7280; font-size:12px; font-weight:700; }
     .cp-choice button.active { border-color:var(--cp-green); background:#F5FFE8; color:var(--cp-dark); }
     .cp-review-coach { display:flex; align-items:center; gap:12px; padding:12px; border-radius:16px; background:#FAFBFC; }
     .cp-review-coach img { width:48px; height:48px; border-radius:16px; object-fit:cover; object-position:top; }

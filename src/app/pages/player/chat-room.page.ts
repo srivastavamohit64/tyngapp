@@ -295,7 +295,7 @@ interface GameChatDetails {
         text-align: left;
         border: none;
         border-radius: 16px;
-        background: #f4f6f8;
+        background: #f5f6f7;
         padding: 12px 14px;
       }
       .game-card-head {
@@ -318,7 +318,7 @@ interface GameChatDetails {
         flex: 1;
         min-width: 0;
         font-size: 13px;
-        font-weight: 800;
+        font-weight: 900;
         color: #111827;
       }
       .game-chevron {
@@ -334,7 +334,7 @@ interface GameChatDetails {
       .game-label {
         display: block;
         font-size: 9px;
-        font-weight: 800;
+        font-weight: 900;
         letter-spacing: 0.08em;
         color: #9ca3af;
         margin-bottom: 3px;
@@ -373,34 +373,34 @@ interface GameChatDetails {
       }
       .req-card { margin-top: 10px; padding: 10px; border-radius: 14px; background: rgba(255, 255, 255, 0.78); color: #111827; }
       .req-head { display: flex; align-items: center; gap: 6px; font-size: 12px; }
-      .req-head ion-icon { font-size: 15px; color: #4d7c0f; }
+      .req-head ion-icon { font-size: 15px; color: #477315; }
       .req-head b { flex: 1; }
-      .req-status { padding: 3px 8px; border-radius: 999px; background: #fffaeb; color: #b54708; font-size: 10px; font-weight: 800; white-space: nowrap; }
-      .req-status[data-status='accepted'] { background: #ecfdf3; color: #067647; }
-      .req-status[data-status='declined'] { background: #fef3f2; color: #b42318; }
-      .req-lines { display: grid; gap: 2px; margin-top: 6px; font-size: 12px; font-weight: 600; color: #344054; }
+      .req-status { padding: 3px 8px; border-radius: 999px; background: #fffbeb; color: #c2410c; font-size: 10px; font-weight: 900; white-space: nowrap; }
+      .req-status[data-status='accepted'] { background: #f0fdf4; color: #15803d; }
+      .req-status[data-status='declined'] { background: #fef2f2; color: #dc2626; }
+      .req-lines { display: grid; gap: 2px; margin-top: 6px; font-size: 12px; font-weight: 600; color: #1f2937; }
       .req-actions { display: flex; gap: 6px; margin-top: 10px; }
-      .req-actions button, .req-sheet-actions button { flex: 1; height: 34px; border-radius: 10px; font-size: 12px; font-weight: 800; }
+      .req-actions button, .req-sheet-actions button { flex: 1; height: 34px; border-radius: 10px; font-size: 12px; font-weight: 900; }
       .req-actions button:disabled, .req-sheet-actions button:disabled { opacity: 0.6; }
-      .req-view { border: 1px solid #d0d5dd; background: #fff; color: #111827; }
-      .req-decline { border: 1px solid #fecaca; background: #fff; color: #dc2626; }
+      .req-view { border: 1px solid #d1d5db; background: #fff; color: #111827; }
+      .req-decline { border: 1px solid #fee2e2; background: #fff; color: #dc2626; }
       .req-accept { border: 0; background: #111827; color: #fff; }
       .req-sheet-modal { --height: auto; --border-radius: 24px 24px 0 0; }
       .req-sheet { padding: 20px 20px calc(20px + var(--safe-area-bottom)); background: #fff; color: #111827; }
       .req-sheet-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-      .req-sheet-head p { margin: 0; font-size: 10px; font-weight: 800; letter-spacing: 0.08em; color: #98a2b3; }
-      .req-sheet-head h2 { margin: 3px 0 0; font-size: 18px; font-weight: 800; }
-      .req-details { margin: 16px 0 0; border: 1px solid #eaecf0; border-radius: 14px; overflow: hidden; }
-      .req-details div { display: flex; justify-content: space-between; gap: 12px; padding: 11px 12px; border-bottom: 1px solid #f2f4f7; }
+      .req-sheet-head p { margin: 0; font-size: 10px; font-weight: 900; letter-spacing: 0.08em; color: #9ca3af; }
+      .req-sheet-head h2 { margin: 3px 0 0; font-size: 18px; font-weight: 900; }
+      .req-details { margin: 16px 0 0; border: 1px solid #e8ebef; border-radius: 14px; overflow: hidden; }
+      .req-details div { display: flex; justify-content: space-between; gap: 12px; padding: 11px 12px; border-bottom: 1px solid #f3f4f6; }
       .req-details div:last-child { border-bottom: 0; }
-      .req-details dt { font-size: 12px; color: #667085; }
+      .req-details dt { font-size: 12px; color: #6b7280; }
       .req-details dd { margin: 0; font-size: 13px; font-weight: 700; text-align: right; }
-      .req-message { margin: 12px 0 0; padding: 10px 12px; border-radius: 12px; background: #f9fafb; color: #475467; font-size: 12px; line-height: 1.5; }
+      .req-message { margin: 12px 0 0; padding: 10px 12px; border-radius: 12px; background: #f9fafb; color: #6b7280; font-size: 12px; line-height: 1.5; }
       .req-sheet-actions { display: flex; gap: 8px; margin-top: 16px; }
       .req-sheet-actions button { height: 46px; font-size: 14px; }
-      .req-hint { margin: 14px 0 0; font-size: 12px; color: #667085; text-align: center; }
-      .req-all { width: 100%; height: 42px; margin-top: 10px; border: 0; border-radius: 12px; background: #f2f4f7; color: #111827; font-size: 13px; font-weight: 700; }
-      .typing-status { color: #65a30d; }
+      .req-hint { margin: 14px 0 0; font-size: 12px; color: #6b7280; text-align: center; }
+      .req-all { width: 100%; height: 42px; margin-top: 10px; border: 0; border-radius: 12px; background: #f3f4f6; color: #111827; font-size: 13px; font-weight: 700; }
+      .typing-status { color: #477315; }
       .typing-bubble {
         display: flex;
         flex-direction: column;

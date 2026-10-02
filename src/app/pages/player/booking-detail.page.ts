@@ -144,7 +144,7 @@ import { PageSkeletonComponent } from '../../shared/components/skeleton';
         padding: 6px 10px;
         border-radius: 999px;
         font-size: 10px;
-        font-weight: 800;
+        font-weight: 900;
         line-height: 1;
       }
 
@@ -168,7 +168,7 @@ import { PageSkeletonComponent } from '../../shared/components/skeleton';
       .detail-row strong {
         color: #111827;
         font-size: 14px;
-        font-weight: 800;
+        font-weight: 900;
       }
 
       .detail-card h3 {
@@ -214,7 +214,7 @@ import { PageSkeletonComponent } from '../../shared/components/skeleton';
       .invited-label {
         margin: 0 0 8px;
         font-size: 11px;
-        font-weight: 800;
+        font-weight: 900;
         letter-spacing: 0.06em;
         text-transform: uppercase;
         color: #9ca3af;
@@ -248,7 +248,7 @@ import { PageSkeletonComponent } from '../../shared/components/skeleton';
 
       .rule-item {
         padding: 10px 0;
-        color: #374151;
+        color: #1f2937;
         font-size: 13px;
         border-bottom: 1px solid #f3f4f6;
       }
@@ -269,7 +269,7 @@ import { PageSkeletonComponent } from '../../shared/components/skeleton';
         border-radius: 16px;
         padding: 12px 16px;
         font-size: 12px;
-        font-weight: 800;
+        font-weight: 900;
       }
 
       .btn-primary {
@@ -296,7 +296,7 @@ import { PageSkeletonComponent } from '../../shared/components/skeleton';
       .btn-secondary {
         background: #f9fafb;
         border: 1px solid #e5e7eb;
-        color: #374151;
+        color: #1f2937;
       }
 
       .btn-danger {

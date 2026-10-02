@@ -306,8 +306,8 @@ interface AppliedCoupon {
   styles: [
     `
       :host { display: flex; flex-direction: column; height: 100%; }
-      .summary-content { --background: #f4f6f8; }
-      .summary-page { min-height: 100%; background: #f4f6f8; color: #111827; text-align: left; }
+      .summary-content { --background: #f5f6f7; }
+      .summary-page { min-height: 100%; background: #f5f6f7; color: #111827; text-align: left; }
       .summary-body { padding: 16px 16px 28px; display: flex; flex-direction: column; gap: 14px; }
       .card {
         background: #fff; border: 1px solid #eef0f3; border-radius: 22px;
@@ -341,7 +341,7 @@ interface AppliedCoupon {
         margin: 0; font-size: 12px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase;
       }
       .badge {
-        font-size: 11px; font-weight: 900; color: #65a30d; background: rgba(var(--app-primary-rgb),.14);
+        font-size: 11px; font-weight: 900; color: #477315; background: rgba(var(--app-primary-rgb),.14);
         border-radius: 999px; padding: 2px 8px;
       }
       .rental-list { margin-top: 12px; display: flex; flex-direction: column; gap: 10px; }
@@ -375,7 +375,7 @@ interface AppliedCoupon {
       .coupon-input ion-icon { color: #9ca3af; font-size: 16px; }
       .coupon-input input {
         flex: 1; border: none; outline: none; background: transparent; height: 100%;
-        font-size: 14px; font-weight: 800; text-transform: uppercase; color: #111827;
+        font-size: 14px; font-weight: 900; text-transform: uppercase; color: #111827;
       }
       .apply-btn {
         height: 48px; padding: 0 18px; border: none; border-radius: 16px;
@@ -393,13 +393,13 @@ interface AppliedCoupon {
       }
       .coupon-applied strong { display: block; font-size: 13px; font-weight: 900; }
       .coupon-applied p { margin: 2px 0 0; font-size: 11px; font-weight: 700; color: #16a34a; }
-      .link-btn { border: none; background: transparent; color: #9ca3af; font-size: 12px; font-weight: 800; }
+      .link-btn { border: none; background: transparent; color: #9ca3af; font-size: 12px; font-weight: 900; }
       .error { margin: 8px 0 0; font-size: 11px; font-weight: 700; color: #ef4444; }
       .hint { margin: 8px 0 0; font-size: 11px; font-weight: 700; color: #9ca3af; }
       .pay-options { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
       .pay-option {
         width: 100%; display: flex; align-items: center; gap: 12px; text-align: left;
-        border: 1.5px solid #e8eaee; background: #fff; border-radius: 18px; padding: 12px;
+        border: 1.5px solid #e8ebef; background: #fff; border-radius: 18px; padding: 12px;
       }
       .pay-option.is-active {
         border-color: var(--app-primary); background: rgba(var(--app-primary-rgb),.08);
@@ -410,36 +410,36 @@ interface AppliedCoupon {
         align-items: center; justify-content: center; flex-shrink: 0;
       }
       .pay-icon.online { background: #eff6ff; color: #2563eb; }
-      .pay-icon.wallet { background: #ecfdf5; color: #059669; }
-      .pay-icon.venue { background: #fff7ed; color: #ea580c; }
+      .pay-icon.wallet { background: #f0fdf4; color: #16a34a; }
+      .pay-icon.venue { background: #fff7ed; color: #f25a00; }
       .wallet-topup-link {
         margin-top: 10px; width: 100%; height: 40px; border: none; border-radius: 12px;
-        background: #111827; color: #fff; font-size: 12px; font-weight: 800;
+        background: #111827; color: #fff; font-size: 12px; font-weight: 900;
       }
       .pay-icon ion-icon { font-size: 18px; }
       .pay-option strong { display: block; font-size: 14px; font-weight: 900; }
       .pay-option p { margin: 2px 0 0; font-size: 11px; font-weight: 700; color: #9ca3af; }
       .pay-option .radio { margin-left: auto; font-size: 20px; color: #9ca3af; }
-      .pay-option.is-active .radio { color: #65a30d; }
+      .pay-option.is-active .radio { color: #477315; }
       .price-row {
         display: flex; justify-content: space-between; gap: 12px;
         padding: 12px 0; border-bottom: 1px solid #f9fafb;
       }
-      .price-row strong { display: block; font-size: 14px; font-weight: 800; }
+      .price-row strong { display: block; font-size: 14px; font-weight: 900; }
       .price-row span { display: block; margin-top: 2px; font-size: 11px; font-weight: 700; color: #9ca3af; }
-      .price-row em { font-style: normal; font-size: 14px; font-weight: 800; color: #6b7280; }
+      .price-row em { font-style: normal; font-size: 14px; font-weight: 900; color: #6b7280; }
       .price-row.save em { color: #16a34a; }
       .grand {
         margin-top: 12px; border-radius: 18px; padding: 14px 16px;
         background: linear-gradient(145deg,#111827,#1f2937); color: #fff;
         display: flex; align-items: center; justify-content: space-between;
       }
-      .grand span { font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: rgba(255,255,255,.5); }
+      .grand span { font-size: 11px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; color: rgba(255,255,255,.5); }
       .grand p { margin: 4px 0 0; font-size: 11px; font-weight: 700; color: rgba(255,255,255,.4); }
       .grand > strong { font-size: 24px; font-weight: 900; color: var(--app-primary); }
       .save-error {
         margin: 0; padding: 12px 14px; border-radius: 14px; background: #fef2f2;
-        border: 1px solid #fecaca; color: #dc2626; font-size: 13px; font-weight: 700;
+        border: 1px solid #fee2e2; color: #dc2626; font-size: 13px; font-weight: 700;
       }
       .summary-footer { background: #fff; box-shadow: 0 -8px 28px rgba(17,24,39,.08); }
       .summary-cta {
@@ -486,10 +486,10 @@ interface AppliedCoupon {
       }
       .quick-amounts button {
         height: 40px; border-radius: 12px; border: 1.5px solid #e5e7eb;
-        background: #f9fafb; font-size: 13px; font-weight: 800; color: #111827;
+        background: #f9fafb; font-size: 13px; font-weight: 900; color: #111827;
       }
       .quick-amounts button.active {
-        border-color: var(--app-primary); background: rgba(var(--app-primary-rgb), 0.12); color: #3f6212;
+        border-color: var(--app-primary); background: rgba(var(--app-primary-rgb), 0.12); color: #477315;
       }
       .topup-row { display: flex; gap: 8px; }
       .topup-row input {
@@ -499,7 +499,7 @@ interface AppliedCoupon {
       }
       .topup-confirm {
         flex-shrink: 0; height: 48px; padding: 0 16px; border: none; border-radius: 14px;
-        background: #111827; color: #fff; font-size: 13px; font-weight: 800;
+        background: #111827; color: #fff; font-size: 13px; font-weight: 900;
       }
       .topup-confirm:disabled { opacity: .55; }
       .topup-error {
@@ -510,7 +510,7 @@ interface AppliedCoupon {
       }
       .topup-cancel {
         margin-top: 12px; width: 100%; height: 44px; border: none; border-radius: 14px;
-        background: #f3f4f6; color: #4b5563; font-size: 13px; font-weight: 800;
+        background: #f3f4f6; color: #6b7280; font-size: 13px; font-weight: 900;
       }
     `,
   ],

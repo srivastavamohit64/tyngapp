@@ -311,7 +311,7 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
         margin: 0;
         color: #111827;
         font-size: 18px;
-        font-weight: 800;
+        font-weight: 900;
       }
 
       .retry-btn,
@@ -419,7 +419,7 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
 
       .section-title {
         font-size: 13px;
-        font-weight: 800;
+        font-weight: 900;
         color: #111827;
         text-transform: uppercase;
         letter-spacing: 0.1em;
@@ -490,13 +490,13 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
 
       .host-name {
         font-size: 16px;
-        font-weight: 800;
+        font-weight: 900;
         color: #111827;
       }
 
       .captain-pill {
         font-size: 9px;
-        font-weight: 800;
+        font-weight: 900;
         color: #ff7a00;
         background: #fff7ed;
         padding: 2px 8px;
@@ -570,7 +570,7 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
 
       .progress-count {
         font-size: 18px;
-        font-weight: 800;
+        font-weight: 900;
         color: #111827;
       }
 
@@ -657,7 +657,7 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
 
       .budget-total span:first-child {
         font-size: 15px;
-        font-weight: 800;
+        font-weight: 900;
         color: #111827;
       }
 
@@ -695,7 +695,7 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
         flex: 0 0 auto;
         z-index: 50;
         background: #ffffff;
-        border-top: 1px solid #eef0f2;
+        border-top: 1px solid #eef0f3;
         box-shadow: 0 -8px 24px rgba(17, 24, 39, 0.09);
       }
 
@@ -742,7 +742,7 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
         background: #111827;
         color: #fff;
         font-size: 14px;
-        font-weight: 800;
+        font-weight: 900;
         border: none;
         cursor: pointer;
         flex-shrink: 0;
@@ -755,7 +755,7 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
         background: linear-gradient(90deg, var(--app-primary), var(--app-primary-to));
         color: #111827;
         font-size: 16px;
-        font-weight: 800;
+        font-weight: 900;
         border: none;
         cursor: pointer;
         box-shadow: 0 4px 16px rgba(var(--app-primary-rgb), 0.35);
