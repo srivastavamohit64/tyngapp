@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, ViewChild, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { IonPopover, IonicModule, MenuController, Platform, ViewWillEnter, ViewWillLeave } from '@ionic/angular';
+import { IonPopover, IonicModule, MenuController, Platform, ToastController, ViewWillEnter, ViewWillLeave } from '@ionic/angular';
 import { PluginListenerHandle } from '@capacitor/core';
 import { App } from '@capacitor/app';
 import { Subscription, firstValueFrom } from 'rxjs';
@@ -27,6 +27,7 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
 import { EventGame } from '../../shared/models/app.models';
 import { VenueEventRecord, VenueEventService } from '../../core/services/venue-event.service';
 import { VenueListItem, VenueService } from '../../core/services/venue.service';
+import { PlayerProfileService } from '../../core/services/player-profile.service';
 import { XpService, XpSummary } from '../../core/services/xp.service';
 
 interface HomeRaceRow {
@@ -46,6 +47,9 @@ interface HomeBadgeCard {
   tint: string;
   earned: boolean;
 }
+
+const HOME_SPORTS_COUNT = 5;
+const HOME_SPORTS_STORAGE_PREFIX = 'tyng_home_sports_';
 
 const HOME_BADGE_PALETTES = [
   { color: '#D97706', tint: '#FFFBEB' },
@@ -118,6 +122,8 @@ interface HomeTournamentCard {
 export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
   readonly auth = inject(AuthService);
   private readonly venueService = inject(VenueService);
+  private readonly playerProfileService = inject(PlayerProfileService);
+  private readonly toasts = inject(ToastController);
   private readonly bookingService = inject(BookingService);
   private readonly coachService = inject(CoachService);
   private readonly venueEventService = inject(VenueEventService);
@@ -172,8 +178,11 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
   ];
 
   get homeSports(): HomeSport[] {
-    const catalog = this.allSportGroups.reduce((sports, group) => sports.concat(group.sports), [] as HomeSport[]);
-    const uniqueCatalog = catalog.filter((sport, index) => catalog.findIndex((item) => item.id === sport.id) === index);
+    const uniqueCatalog = this.sportCatalog;
+    const custom = (this.customHomeSportIds || [])
+      .map((id) => uniqueCatalog.find((sport) => sport.id === id))
+      .filter((sport): sport is HomeSport => !!sport);
+    if (custom.length === HOME_SPORTS_COUNT) return custom;
     const preferred = (this.auth.user()?.sports || [])
       .map((value) => this.normalizeSportPreference(value))
       .filter(Boolean);
@@ -198,7 +207,12 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
         }
       }
       return a.name.localeCompare(b.name);
-    }).slice(0, 5);
+    }).slice(0, HOME_SPORTS_COUNT);
+  }
+
+  private get sportCatalog(): HomeSport[] {
+    const catalog = this.allSportGroups.reduce((sports, group) => sports.concat(group.sports), [] as HomeSport[]);
+    return catalog.filter((sport, index) => sport.id !== 'suggest' && catalog.findIndex((item) => item.id === sport.id) === index);
   }
 
   get sportRailItems(): HomeSport[] {
@@ -273,6 +287,11 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
   promoSlideIndex = 0;
   sportGamesOpen = false;
   sportsPickerOpen = false;
+  readonly homeSportsCount = HOME_SPORTS_COUNT;
+  customHomeSportIds: string[] | null = this.readCachedHomeSports();
+  homeSportsEditing = false;
+  homeSportsDraft: string[] = [];
+  homeSportsSaving = false;
   searchFilterOpen = false;
   searchFilterEvent?: Event;
   @ViewChild('searchFilterPopover') private searchFilterPopover?: IonPopover;
@@ -482,6 +501,7 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
       void this.loadHomeAds();
       void this.loadHomePromotions();
       void this.loadPlayerCoaches();
+      void this.loadHomeSports();
       void this.loadPlayerTournament();
       void this.loadPlayerProgress();
       void this.resetToGpsOnOpen();
@@ -1311,22 +1331,131 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
   openSportsPicker(): void {
     this.pendingDrawerSport = null;
     this.sportSearch = '';
+    this.homeSportsEditing = false;
     this.sportsPickerOpen = true;
   }
 
   closeSportsPicker(): void {
+    if (this.homeSportsEditing) {
+      this.homeSportsEditing = false;
+      return;
+    }
     this.pendingDrawerSport = null;
     this.sportsPickerOpen = false;
   }
 
   onSportsPickerDidDismiss(): void {
     this.sportsPickerOpen = false;
+    this.homeSportsEditing = false;
     const sport = this.pendingDrawerSport;
     this.pendingDrawerSport = null;
     if (sport) this.openSportGames(sport);
   }
 
+  get homeSportsRemaining(): number {
+    return HOME_SPORTS_COUNT - this.homeSportsDraft.length;
+  }
+
+  startHomeSportsEdit(): void {
+    this.homeSportsDraft = this.homeSports.map((sport) => sport.id);
+    this.sportSearch = '';
+    this.homeSportsEditing = true;
+  }
+
+  homeSportDraftPosition(sport: HomeSport): number {
+    return this.homeSportsDraft.indexOf(sport.id) + 1;
+  }
+
+  isHomeSportDisabled(sport: HomeSport): boolean {
+    return sport.id === 'suggest'
+      || (!this.homeSportsDraft.includes(sport.id) && this.homeSportsDraft.length >= HOME_SPORTS_COUNT);
+  }
+
+  toggleHomeSportDraft(sport: HomeSport): void {
+    if (sport.id === 'suggest') return;
+    if (this.homeSportsDraft.includes(sport.id)) {
+      this.homeSportsDraft = this.homeSportsDraft.filter((id) => id !== sport.id);
+    } else if (this.homeSportsDraft.length < HOME_SPORTS_COUNT) {
+      this.homeSportsDraft = [...this.homeSportsDraft, sport.id];
+    }
+  }
+
+  async saveHomeSports(): Promise<void> {
+    if (this.homeSportsDraft.length !== HOME_SPORTS_COUNT || this.homeSportsSaving) return;
+    await this.persistHomeSports([...this.homeSportsDraft], 'Your Home sports are updated.');
+  }
+
+  async resetHomeSports(): Promise<void> {
+    if (this.homeSportsSaving) return;
+    await this.persistHomeSports(null, 'Home sports are back to the default.');
+  }
+
+  private async persistHomeSports(sports: string[] | null, successMessage: string): Promise<void> {
+    this.homeSportsSaving = true;
+    try {
+      const response = await firstValueFrom(this.playerProfileService.saveHomeSports(sports));
+      this.applyHomeSports(response.data?.sports ?? null);
+      this.homeSportsEditing = false;
+      void this.showToast(successMessage);
+    } catch (error: any) {
+      const errors = error?.error?.errors;
+      const firstValue = errors && typeof errors === 'object' ? Object.values(errors)[0] : null;
+      const first = Array.isArray(firstValue) ? firstValue[0] : firstValue;
+      void this.showToast(String(first || error?.error?.message || 'Could not save your Home sports. Try again.'), 'danger');
+    } finally {
+      this.homeSportsSaving = false;
+    }
+  }
+
+  private async loadHomeSports(): Promise<void> {
+    if (!this.auth.getToken()) return;
+    try {
+      const response = await firstValueFrom(this.playerProfileService.getHomeSports());
+      this.applyHomeSports(response.data?.sports ?? null);
+    } catch {
+      // Keep the cached choice when offline.
+    }
+  }
+
+  private applyHomeSports(sports: string[] | null): void {
+    const valid = Array.isArray(sports) && sports.length === HOME_SPORTS_COUNT ? sports : null;
+    this.customHomeSportIds = valid;
+    const key = this.homeSportsStorageKey();
+    if (!key) return;
+    try {
+      if (valid) localStorage.setItem(key, JSON.stringify(valid));
+      else localStorage.removeItem(key);
+    } catch {
+      // Storage can be unavailable in private mode.
+    }
+  }
+
+  private readCachedHomeSports(): string[] | null {
+    const key = this.homeSportsStorageKey();
+    if (!key) return null;
+    try {
+      const parsed = JSON.parse(localStorage.getItem(key) || 'null');
+      return Array.isArray(parsed) && parsed.length === HOME_SPORTS_COUNT ? parsed.map(String) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private homeSportsStorageKey(): string | null {
+    const id = this.auth.user()?.id;
+    return id ? `${HOME_SPORTS_STORAGE_PREFIX}${id}` : null;
+  }
+
+  private async showToast(message: string, color: 'success' | 'danger' = 'success'): Promise<void> {
+    const toast = await this.toasts.create({ message, color, duration: 2200, position: 'bottom' });
+    await toast.present();
+  }
+
   chooseSportFromPicker(sport: HomeSport): void {
+    if (this.homeSportsEditing) {
+      this.toggleHomeSportDraft(sport);
+      return;
+    }
     if (sport.id === 'suggest') {
       this.sportsPickerOpen = false;
       void this.router.navigateByUrl('/app/profile/edit');

@@ -809,7 +809,39 @@
         </ion-modal>
 
         <ion-modal class="sports-picker-modal" [isOpen]="sportsPickerOpen" (didDismiss)="onSportsPickerDidDismiss()">
-          <ng-template><ion-content><div class="sports-picker-page"><div class="sports-picker-top"><button type="button" aria-label="Close sports" (click)="closeSportsPicker()"><ion-icon name="chevron-back-outline"></ion-icon></button><h2>Choose a sport</h2></div><label class="sports-search"><ion-icon name="search-outline"></ion-icon><input type="search" aria-label="Search sports" placeholder="Search a sport" autocomplete="off" autocapitalize="off" spellcheck="false" [value]="sportSearch" (input)="updateSportSearch($event)" /></label><section class="sport-category" *ngFor="let group of filteredSportGroups"><h3>{{ group.name }}</h3><div class="sports-catalog-grid"><button type="button" *ngFor="let sport of group.sports" [class.selected]="selectedSport?.id === sport.id" (click)="chooseSportFromPicker(sport)"><span class="catalog-icon"><img [src]="sport.icon" alt="" /><b *ngIf="sport.box">BOX</b></span><strong>{{ sport.name }}</strong></button></div></section><div *ngIf="!filteredSportGroups.length" class="sports-no-results">No sport matches “{{ sportSearch }}”.</div></div></ion-content></ng-template>
+          <ng-template><ion-content><div class="sports-picker-page" [class.is-editing]="homeSportsEditing">
+            <div class="sports-picker-top">
+              <button type="button" [attr.aria-label]="homeSportsEditing ? 'Stop editing Home sports' : 'Close sports'" (click)="closeSportsPicker()"><ion-icon name="chevron-back-outline"></ion-icon></button>
+              <h2>{{ homeSportsEditing ? 'Your Home sports' : 'Choose a sport' }}</h2>
+              <button *ngIf="!homeSportsEditing" type="button" class="sports-edit-home" (click)="startHomeSportsEdit()"><ion-icon name="create-outline"></ion-icon><span>Edit Home</span></button>
+            </div>
+            <div class="home-sports-edit-note" *ngIf="homeSportsEditing">
+              <p><strong>Pick {{ homeSportsCount }} sports</strong> for the Explore by sport row on Home. "More" always stays as the 6th tile.</p>
+              <span class="home-sports-counter" [class.is-complete]="homeSportsRemaining === 0">{{ homeSportsDraft.length }}/{{ homeSportsCount }}</span>
+            </div>
+            <label class="sports-search"><ion-icon name="search-outline"></ion-icon><input type="search" aria-label="Search sports" placeholder="Search a sport" autocomplete="off" autocapitalize="off" spellcheck="false" [value]="sportSearch" (input)="updateSportSearch($event)" /></label>
+            <section class="sport-category" *ngFor="let group of filteredSportGroups"><h3>{{ group.name }}</h3><div class="sports-catalog-grid">
+              <ng-container *ngFor="let sport of group.sports">
+                <button type="button" *ngIf="!homeSportsEditing || sport.id !== 'suggest'"
+                        [class.selected]="homeSportsEditing ? homeSportDraftPosition(sport) > 0 : selectedSport?.id === sport.id"
+                        [class.is-disabled]="homeSportsEditing && isHomeSportDisabled(sport)"
+                        [attr.aria-pressed]="homeSportsEditing ? homeSportDraftPosition(sport) > 0 : null"
+                        (click)="chooseSportFromPicker(sport)">
+                  <span class="catalog-icon"><img [src]="sport.icon" alt="" /><b *ngIf="sport.box">BOX</b><i *ngIf="homeSportsEditing && homeSportDraftPosition(sport) > 0" class="home-sport-order">{{ homeSportDraftPosition(sport) }}</i></span>
+                  <strong>{{ sport.name }}</strong>
+                </button>
+              </ng-container>
+            </div></section>
+            <div *ngIf="!filteredSportGroups.length" class="sports-no-results">No sport matches “{{ sportSearch }}”.</div>
+          </div></ion-content>
+          <ion-footer *ngIf="homeSportsEditing" class="home-sports-footer">
+            <p *ngIf="homeSportsRemaining > 0">Choose {{ homeSportsRemaining }} more sport{{ homeSportsRemaining === 1 ? '' : 's' }} to save.</p>
+            <p *ngIf="homeSportsRemaining === 0">Tap a selected sport to swap it for another.</p>
+            <div class="home-sports-actions">
+              <button type="button" class="home-sports-reset" [disabled]="homeSportsSaving" (click)="resetHomeSports()">Reset to default</button>
+              <button type="button" class="home-sports-save" [disabled]="homeSportsRemaining !== 0 || homeSportsSaving" (click)="saveHomeSports()">{{ homeSportsSaving ? 'Saving…' : 'Save' }}</button>
+            </div>
+          </ion-footer></ng-template>
         </ion-modal>
       </section>
     </ng-container>

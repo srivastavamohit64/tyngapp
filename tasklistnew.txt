@@ -176,6 +176,7 @@ PLAYER
 - Keep private documents such as medical or fitness certificates and insurance cards in your profile, and view, download, replace or delete them.
 - See your level, XP, reliability, rankings, badges and recent games in one place, and mark a recent game as won, lost or draw.
 - See real venues near you on the Home page, nearest first, with their photo, area, distance, sports and starting price. Tap a venue to open it and book.
+- Choose which 5 sports appear in the sports row on your Home page: tap More, then Edit Home, pick your 5 favourites and save. Your choice stays on every phone you sign in on.
 
 COACH
 

@@ -824,6 +824,24 @@ ion-modal.sports-picker-modal::part(content) { border-radius: 0; }
 .sports-catalog-grid > button.selected .catalog-icon { border-color: var(--home-green); background: var(--home-green-soft); }
 .sports-catalog-grid > button.selected strong { color: var(--home-green-strong); }
 .sports-no-results { padding: 50px 12px; color: #707c75; font-size: 14px; text-align: center; }
+.sports-picker-top h2 { flex: 1; min-width: 0; }
+.sports-picker-top .sports-edit-home { display: inline-flex; width: auto; height: 38px; padding: 0 14px; align-items: center; gap: 6px; border-radius: 999px; background: #111827; color: #8cf000; font-size: 12px; font-weight: 900; letter-spacing: .04em; text-transform: uppercase; }
+.sports-picker-top .sports-edit-home ion-icon { font-size: 16px; }
+.sports-picker-page.is-editing { padding-bottom: calc(140px + var(--safe-area-bottom)); }
+.home-sports-edit-note { display: flex; margin: 12px 0 0; padding: 14px 16px; align-items: center; gap: 12px; border: 1px solid rgba(140,240,0,.45); border-radius: 18px; background: #f5ffe8; }
+.home-sports-edit-note p { flex: 1; margin: 0; color: #374151; font-size: 13px; line-height: 1.4; }
+.home-sports-edit-note strong { color: #111827; }
+.home-sports-counter { flex: 0 0 auto; padding: 6px 11px; border-radius: 999px; background: #111827; color: #fff; font-size: 13px; font-weight: 900; }
+.home-sports-counter.is-complete { background: #8cf000; color: #111827; }
+.home-sport-order { position: absolute; top: -8px; left: -7px; display: grid; width: 22px; height: 22px; place-items: center; border-radius: 50%; background: #111827; color: #8cf000; font-size: 11px; font-style: normal; font-weight: 900; }
+.sports-catalog-grid > button.is-disabled { opacity: .38; }
+.home-sports-footer { padding: 12px 18px calc(14px + var(--safe-area-bottom)); border-top: 1px solid #e5e7eb; background: #fff; box-shadow: 0 -8px 24px rgba(17,24,39,.08); }
+.home-sports-footer p { margin: 0 0 10px; color: #6b7280; font-size: 12.5px; text-align: center; }
+.home-sports-actions { display: flex; gap: 10px; }
+.home-sports-actions button { height: 48px; min-height: unset; border: 0; border-radius: 16px; font-size: 14px; font-weight: 900; }
+.home-sports-reset { flex: 0 0 auto; padding: 0 16px; background: #f3f4f6; color: #374151; }
+.home-sports-save { flex: 1; background: #8cf000; color: #111827; }
+.home-sports-actions button:disabled { opacity: .45; }
 
 @media (max-width: 370px) {
   .player-home-header { gap: 10px; padding: 18px 16px 8px; }

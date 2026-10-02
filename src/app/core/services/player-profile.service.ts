@@ -4,6 +4,11 @@ import { Observable } from 'rxjs';
 import { ApiResponse } from '../models/api.model';
 import { ApiService } from './api.service';
 
+export interface HomeSportsSetting {
+  sports: string[] | null;
+  count: number;
+}
+
 export type PlayingLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert';
 export type TimeSlot = 'morning' | 'afternoon' | 'evening' | 'night';
 export type DocumentType = 'medical_certificate' | 'fitness_certificate' | 'insurance_card' | 'identity' | 'other';
@@ -216,6 +221,15 @@ export class PlayerProfileService {
 
   updateMedical(changes: MedicalUpdate): Observable<ApiResponse<PlayerProfile>> {
     return this.api.put<PlayerProfile>('/player/profile/medical', changes);
+  }
+
+  getHomeSports(): Observable<ApiResponse<HomeSportsSetting>> {
+    return this.api.get<HomeSportsSetting>('/player/home-sports');
+  }
+
+  /** Pass exactly `count` sport ids, or null to go back to the default order. */
+  saveHomeSports(sports: string[] | null): Observable<ApiResponse<HomeSportsSetting>> {
+    return this.api.put<HomeSportsSetting>('/player/home-sports', { sports });
   }
 
   setGameResult(bookingId: string, result: 'win' | 'loss' | 'draw' | null): Observable<ApiResponse<{ bookingId: string; result: string | null }>> {
