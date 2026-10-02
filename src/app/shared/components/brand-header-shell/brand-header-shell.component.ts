@@ -11,6 +11,7 @@ import { HeaderComponent } from '../header/header.component';
 /**
  * Wraps page content with the Figma top bar. Main tab routes get the menu button,
  * wordmark and bell; every other page gets a back button with the page title centred.
+ * Elements marked `headerEnd` are shown on the right of that inner-page bar.
  */
 @Component({
   selector: 'app-brand-header-shell',
@@ -35,9 +36,12 @@ import { HeaderComponent } from '../header/header.component';
       [showBack]="!isMainTab()"
       [notificationRoute]="resolvedNotificationRoute"
       [homeRoute]="resolvedHomeRoute"
+      [hasProjectedEnd]="true"
       (menuClick)="openMenu()"
       (back)="goBack()"
-    ></app-header>
+    >
+      <ng-content select="[headerEnd]"></ng-content>
+    </app-header>
     <ng-content></ng-content>
   `,
 })

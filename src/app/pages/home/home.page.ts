@@ -149,6 +149,8 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
   private resumeSub?: Subscription;
   private appStateHandle?: PluginListenerHandle;
   private homeVisible = false;
+  private homeEnteredBefore = false;
+  private homeRefreshOnDidEnter = false;
   private gpsBootstrapInFlight?: Promise<void>;
   private lastGpsBootstrapAt = 0;
 
@@ -487,10 +489,26 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
   ionViewWillEnter() {
     this.refreshGreeting();
     const role = this.auth.user()?.role;
+    this.homeVisible = role === 'player' || !role;
+    if (!this.homeEnteredBefore) {
+      this.homeEnteredBefore = true;
+      this.refreshHomeData();
+    }
+  }
+
+  /** Returning to Home: refresh after the page transition so it isn't interrupted. */
+  ionViewDidEnter() {
+    if (this.homeRefreshOnDidEnter) {
+      this.refreshHomeData();
+    }
+    this.homeRefreshOnDidEnter = true;
+  }
+
+  private refreshHomeData(): void {
+    const role = this.auth.user()?.role;
     if (role === 'coach') {
       void this.loadCoachDashboard();
     }
-    this.homeVisible = role === 'player' || !role;
     if (this.homeVisible) {
       void this.loadHomeAds();
       void this.loadHomePromotions();

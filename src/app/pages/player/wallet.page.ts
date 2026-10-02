@@ -29,17 +29,16 @@ type WalletSection = 'wallet' | 'points' | 'gifts';
       </ion-refresher>
 
       <app-brand-header-shell [title]="pageTitle()">
+        <button
+          headerEnd
+          type="button"
+          class="header-passbook-btn"
+          aria-label="Passbook"
+          (click)="openPassbookModal()"
+        >
+          <ion-icon name="book-outline"></ion-icon>
+        </button>
         <main class="wallet-page">
-          <div class="wallet-actions">
-            <button
-              type="button"
-              class="header-passbook-btn"
-              aria-label="Passbook"
-              (click)="openPassbookModal()"
-            >
-              <ion-icon name="book-outline"></ion-icon>
-            </button>
-          </div>
 
           <div class="wallet-body">
             <app-page-skeleton *ngIf="loading() && !wallet()" variant="wallet" label="Loading wallet"></app-page-skeleton>
@@ -436,16 +435,11 @@ type WalletSection = 'wallet' | 'points' | 'gifts';
         color: #111827;
         padding-bottom: calc(28px + var(--safe-area-bottom));
       }
-      .wallet-actions {
-        display: flex;
-        justify-content: flex-end;
-        padding: 12px 16px 0;
-      }
       .wallet-body {
         display: flex;
         flex-direction: column;
         gap: 14px;
-        padding: 8px 16px 0;
+        padding: 14px 16px 0;
         min-width: 0;
         box-sizing: border-box;
       }

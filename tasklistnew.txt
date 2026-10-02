@@ -206,6 +206,8 @@ ALL APP USERS
 - Loading placeholders are now easy to see on every screen, so it is clear when information is still on its way.
 - Every screen now has the same top bar with the tyng name, the bell and a menu or back arrow, so moving around the app feels the same everywhere. There is now only one back arrow per screen, always in the top left corner.
 - On screens with a back arrow, the top bar now shows the name of the screen in the middle instead of the tyng name, and the bell is hidden, so you always know where you are. The main screens from the bottom menu still show the tyng name and the bell.
+- Moving between screens is now quicker and smoother. Screens no longer fade over each other, and when you go back you return to the same spot you left instead of the top of the page.
+- On the Wallet screen, the passbook button is back in the top right corner.
 
 Writing rule: Whenever work is finished, add a short note here explaining in everyday words what changed and how it helps players, coaches, or administrators. Write for someone who does not work in software. Avoid programming terms, internal names, and tool names. Describe what the person can now do.
 

@@ -1212,3 +1212,18 @@
 - **Pages:** every `<app-brand-header-shell>` in `src/app/pages` now passes `title` or `[title]`. Dynamic titles: wallet (`pageTitle()`), events (`title`), legal page (CMS title), chat list (Chat/Chats), venue complete profile (Edit/Complete Venue Profile). On non-main-tab pages the duplicate in-page heading or `<app-page-header>` title bar was removed, keeping row actions (right-aligned), step counters, counts and location lines. `PageHeaderComponent` imports were dropped where unused. Main tab pages (home, discover, chat list, my bookings, coach students and schedule, venue dashboard, bookings and events hub, admin dashboard, users, venues and settings) keep their in-page headings.
 - **Verified:** `npx tsc --noEmit -p tsconfig.app.json` passes, `ionic serve` compiles and every shell tag has a title. The browser session was logged out during this round, so pages were not re-checked visually.
 - **Follow-up:** `/app/schedule`, the non-main-tab route to the coach schedule, shows both the header title and the in-page "Schedule" heading.
+
+# Completed: Faster page transitions without overlapping pages - 2 October 2026
+
+- **Cause of the overlap:** `core/utils/page-transition.ts` faded the entering page from 0.4 while fading the leaving page to 0.55, so both pages were semi-transparent at the same time. It also ignored direction.
+- **New transition:** 160 ms with `cubic-bezier(0.2, 0, 0, 1)`. Only the top page animates. Forward: the entering page fades and slides 18px in over a still, opaque leaving page. Back: the leaving page fades and slides out over the entering page, which Ionic stacks underneath. `onFinish` keeps the popped page at opacity 0 until Ionic removes it, which stops a one-frame flash. The entering page clears inline opacity first.
+- **Cause of the slowness:** `AppComponent.resetPageScroll` ran on every `NavigationEnd` and set `scrollTop`/`scrollToTop` on every `ion-content` in the app, including cached stack pages, three times (sync, rAF, 50 ms). That forced layout during the transition (about 96 ms of forced layout in a profile) and reset the scroll of pages you go back to. It now only resets `window` in a single rAF when `window.scrollY` isn't 0.
+- **Home:** the first `ionViewWillEnter` loads data as before. Returning to Home refreshes in `ionViewDidEnter`, so the seven API loads and the GPS refresh no longer compete with the back animation.
+- **Verified:** type check passes and the dev server compiles. In the browser (dev build) Home to Notifications: the entering page appears in about 140-190 ms (was about 306 ms) with no freeze. Back: the animation starts at about 100 ms (was about 400 ms), with a smooth fade and no end flash. Production builds are faster than `ionic serve`.
+
+# Completed: Wallet passbook button back in the top bar - 2 October 2026
+
+- `BrandHeaderShellComponent` re-projects elements marked `headerEnd` into the `app-header` end slot (it always passes `hasProjectedEnd`, and the end slot keeps the button-width minimum, so the title stays centred). This only applies on inner pages; main tabs use the brand bar.
+- Wallet moved its passbook button from the content row into the header with `headerEnd`, and the extra row was removed.
+- **Follow-up option:** other pages that moved header actions into content rows (Mark all read, Add facility, Edit, Refresh, filters) can use `headerEnd` the same way.
+- **Verified:** type check passes, the dev server compiles, and in the browser the passbook button sits in the Wallet top bar.

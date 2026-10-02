@@ -945,3 +945,11 @@ TYNG — TODAY'S WORK SUMMARY
    - The big title that used to repeat the same name at the top of each of those screens was removed. Buttons that sat next to it (Mark all read, Add, Edit, Refresh, filters) and useful small lines (step numbers, counts, location) were kept.
    - Type check passes and the app compiles. The browser session got logged out during this round, so these screens were not looked at in the browser.
    - Small leftover: the coach Schedule screen still shows its own title when opened from the /app/schedule link (not from the bottom menu), so the name appears twice there.
+156. FASTER, CLEANER PAGE CHANGES - 2 October 2026
+   - Moving between screens no longer shows two half-faded screens on top of each other. Going forward, the new screen slides in quickly over the old one. Going back, the current screen slides away and the previous one is already there underneath, with no flash at the end.
+   - Every screen change used to scroll every open screen back to the top three times, which made the change slow and lost your place. Now only the window is reset, so screens open faster and keep their scroll position when you come back.
+   - Coming back to Home now refreshes its information after the slide finishes instead of during it, so going back is smooth. The first visit to Home still loads straight away.
+   - Checked in the browser as a player: going back now starts in about 0.1 s (it was about 0.4 s) and runs smoothly. The test server is slower than the real app.
+157. PASSBOOK BUTTON BACK IN THE WALLET TOP BAR - 2 October 2026
+   - The book (passbook) button on the Wallet screen is back in the top bar on the right, as before, instead of sitting in a row under it. Other screens can now place their own buttons in the same spot.
+   - Checked in the browser as a player.

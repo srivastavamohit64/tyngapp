@@ -309,25 +309,13 @@ export class AppComponent implements OnInit {
     }
     this.lastScrollPath = path;
 
-    const run = () => {
-      window.scrollTo(0, 0);
-      document.documentElement.scrollTop = 0;
-      document.body.scrollTop = 0;
-      document.querySelectorAll('ion-app ion-content').forEach((node) => {
-        const content = node as HTMLElement & { scrollToTop?: (duration?: number) => Promise<void> };
-        if (typeof content.scrollToTop === 'function') {
-          void content.scrollToTop(0);
-        }
-        const inner = content.shadowRoot?.querySelector('.inner-scroll') as HTMLElement | null;
-        if (inner) {
-          inner.scrollTop = 0;
-        }
-      });
-    };
-
-    run();
-    requestAnimationFrame(run);
-    setTimeout(run, 50);
+    // New Ionic pages already open at the top, and pages kept in the stack must keep
+    // their scroll when you come back, so only the window itself is reset here.
+    requestAnimationFrame(() => {
+      if (window.scrollY !== 0) {
+        window.scrollTo(0, 0);
+      }
+    });
   }
 
   refreshProfile() {
