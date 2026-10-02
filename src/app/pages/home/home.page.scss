@@ -107,11 +107,12 @@
 .coach-goal-track { height:7px; overflow:hidden; border-radius:99px; background:#EEF1F5; }
 
 .section-title {
-  font-size: 13px;
-  font-weight: 800;
-  color: #111827;
+  font-size: var(--app-section-title-size);
+  font-weight: var(--app-section-title-weight);
+  line-height: var(--app-section-title-line-height);
+  color: var(--app-section-title-color);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--app-section-title-tracking);
   margin-bottom: 14px;
 }
 

@@ -310,11 +310,12 @@ const DOC_LABELS: Record<string, string> = {
 
     .section-title {
       margin: 0 0 10px;
-      font-size: 12px;
-      font-weight: 900;
-      letter-spacing: 0.08em;
+      color: var(--app-section-title-color);
+      font-size: var(--app-section-title-size);
+      font-weight: var(--app-section-title-weight);
+      line-height: var(--app-section-title-line-height);
+      letter-spacing: var(--app-section-title-tracking);
       text-transform: uppercase;
-      color: #111827;
     }
 
     .detail-card {

@@ -72,10 +72,11 @@ button {
   margin-bottom: 14px;
 
   > p {
-    color: $dark;
-    font-size: 15px;
-    font-weight: 900;
-    letter-spacing: -0.02em;
+    color: var(--app-section-title-color);
+    font-size: var(--app-section-title-size);
+    font-weight: var(--app-section-title-weight);
+    line-height: var(--app-section-title-line-height);
+    letter-spacing: var(--app-section-title-tracking);
     text-transform: uppercase;
   }
 }

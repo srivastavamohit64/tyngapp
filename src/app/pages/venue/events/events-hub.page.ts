@@ -146,7 +146,8 @@ type EventsTab = 'home' | 'leagues' | 'rankings' | 'analytics';
     .hero-grid p { margin: 0; font-size: 11px; color: #9CA3AF; }
     .hero-grid strong { font-size: 16px; }
     .sec-head { display: flex; justify-content: space-between; align-items: center; margin: 18px 0 10px; }
-    .sec-head h2, .page-h { margin: 8px 0 12px; font-size: 20px; font-weight: 900; color: #111827; }
+    .page-h { margin: 8px 0 12px; font-size: 20px; font-weight: 900; color: #111827; }
+    .sec-head h2 { margin: 8px 0 12px; color: var(--app-section-title-color); font-size: var(--app-section-title-size); font-weight: var(--app-section-title-weight); line-height: var(--app-section-title-line-height); letter-spacing: var(--app-section-title-tracking); text-transform: uppercase; }
     .link { border: none; background: none; color: #65a30d; font-weight: 800; }
     .type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .type-card { text-align: left; border: none; background: #fff; border-radius: 18px; padding: 14px; box-shadow: 0 2px 12px rgba(17,24,39,.05); }

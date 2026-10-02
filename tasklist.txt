@@ -904,3 +904,8 @@ TYNG — TODAY'S WORK SUMMARY
    - On Home, the "Explore by sport" row shows 5 sports and a "More" button. Players can now open More, tap "Edit Home" and pick exactly the 5 sports they want in that row. Save only works when 5 are picked, so the row is always full. "Reset to default" puts back the automatic choice.
    - The choice is saved to the player's account, so it stays the same on any phone they sign in on. (Live server updated and pushed.)
    - The app compiles and the server part was tested on the live server. The screens were not clicked through in the test browser because it was signed out.
+149. SAME HEADING SIZE ABOVE CARDS ACROSS THE APP - 2 October 2026
+   - Every heading that sits above a card or list now looks the same as the Home headings: 16px, extra bold, capital letters, dark grey. Before, they ranged from 8px to 20px with different weights and colours.
+   - Changed for players (Home, Profile, Coaches, Coach profile, Venue page, Venue booking, Chat, Leaderboard, Settings, Edit Profile), coaches (dashboard, Profile, Students, Book venue, Insights, Chat), venue staff (Dashboard Quick Actions, Venue profile, Calendar, Analytics, Events) and admin (Dashboard).
+   - The size is set in one place (theme/variables.scss), so it can be changed for the whole app at once. Titles inside cards, page titles and pop-up titles were left alone.
+   - Type check passes, the app compiles, and Home, Profile, Coaches, Chat and Settings were checked in the browser as a player. Coach, venue and admin screens were not opened in the browser.

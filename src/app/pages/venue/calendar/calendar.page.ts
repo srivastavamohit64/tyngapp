@@ -399,11 +399,12 @@ interface CalendarBookingItem {
 
     .events-head p {
       margin: 0;
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 0.08em;
+      color: var(--app-section-title-color);
+      font-size: var(--app-section-title-size);
+      font-weight: var(--app-section-title-weight);
+      line-height: var(--app-section-title-line-height);
+      letter-spacing: var(--app-section-title-tracking);
       text-transform: uppercase;
-      color: #9CA3AF;
       white-space: nowrap;
     }
 

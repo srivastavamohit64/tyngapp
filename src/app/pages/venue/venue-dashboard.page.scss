@@ -300,3 +300,12 @@
   0%, 100% { opacity: 1; }
   50% { opacity: 0.55; }
 }
+
+.venue-section-title--outside {
+  color: var(--app-section-title-color);
+  font-size: var(--app-section-title-size);
+  font-weight: var(--app-section-title-weight);
+  line-height: var(--app-section-title-line-height);
+  letter-spacing: var(--app-section-title-tracking);
+  text-transform: uppercase;
+}

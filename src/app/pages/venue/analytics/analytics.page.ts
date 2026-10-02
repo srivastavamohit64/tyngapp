@@ -44,7 +44,7 @@ interface PeakHour {
           
           <!-- Revenue stats list -->
           <div>
-            <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-3 m-0">Revenue Overview</p>
+            <p class="app-section-title mb-3">Revenue Overview</p>
             <div class="space-y-3">
               <div *ngFor="let stat of stats" class="bg-white p-4 rounded-2xl border border-slate-50 flex items-center justify-between shadow-sm">
                 <div class="flex items-center gap-4">
@@ -66,7 +66,7 @@ interface PeakHour {
 
           <!-- Top Customers list -->
           <div>
-            <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-3 m-0">Top Customers</p>
+            <p class="app-section-title mb-3">Top Customers</p>
             <div class="bg-white rounded-2xl border border-[#F3F4F6] overflow-hidden shadow-sm">
               <div *ngFor="let customer of topCustomers; let idx = index" class="p-4 flex items-center justify-between border-b border-[#F9FAFB] last:border-none">
                 <div class="flex items-center gap-3">
@@ -85,7 +85,7 @@ interface PeakHour {
 
           <!-- Peak Hours load bars -->
           <div>
-            <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-3 m-0">Peak Hours</p>
+            <p class="app-section-title mb-3">Peak Hours</p>
             <div class="space-y-3">
               <div *ngFor="let hour of peakHours" class="bg-white p-4 rounded-2xl border border-[#F3F4F6] shadow-sm text-left">
                 <div class="flex items-center justify-between mb-2">

@@ -184,10 +184,12 @@ $page: #fafbfc;
   margin-bottom: 8px;
 
   p {
-    font-size: 8px;
-    font-weight: 900;
-    letter-spacing: 0.05em;
-    color: $soft;
+    font-size: var(--app-section-title-size);
+    font-weight: var(--app-section-title-weight);
+    line-height: var(--app-section-title-line-height);
+    letter-spacing: var(--app-section-title-tracking);
+    text-transform: uppercase;
+    color: var(--app-section-title-color);
   }
 
   span {
@@ -441,9 +443,12 @@ $page: #fafbfc;
 }
 
 .cp-list-title {
-  font-size: 15px;
-  font-weight: 900;
-  color: $dark;
+  font-size: var(--app-section-title-size);
+  font-weight: var(--app-section-title-weight);
+  line-height: var(--app-section-title-line-height);
+  letter-spacing: var(--app-section-title-tracking);
+  text-transform: uppercase;
+  color: var(--app-section-title-color);
 }
 
 .cp-list-sub {

@@ -396,7 +396,7 @@
 .promo-dots button.is-active { width: 22px; background: var(--home-green); }
 
 .home-quick-actions { padding: 0 16px 28px; }
-.player-home-v2 .home-quick-title { margin: 0 0 14px; color: #111827; font-size: 16px; font-weight: 900; letter-spacing: -.02em; line-height: 1.2; text-transform: uppercase; }
+.player-home-v2 .home-quick-title { margin: 0 0 14px; color: var(--app-section-title-color); font-size: var(--app-section-title-size); font-weight: var(--app-section-title-weight); letter-spacing: var(--app-section-title-tracking); line-height: var(--app-section-title-line-height); text-transform: uppercase; }
 .home-action-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
 .home-action-card { --action-accent: #8cf000; --action-tint: #f4fee7; --action-edge: rgba(140,240,0,.18); position: relative; display: flex; min-width: 0; min-height: 106px; padding: 14px 14px 13px; flex-direction: column; align-items: flex-start; justify-content: flex-end; border: 1px solid var(--action-edge); border-radius: 18px; background: #fff; color: #0b0f0d; text-align: left; box-shadow: 0 6px 18px var(--action-edge); transition: transform .18s ease, box-shadow .18s ease; }
 .action-create { --action-accent: #f97316; --action-tint: #fff2e7; --action-edge: rgba(249,115,22,.12); }
@@ -410,7 +410,7 @@
 
 .home-feed-section { margin-bottom: 28px; }
 .feed-section-heading { display: flex; padding: 0 16px 14px; align-items: center; justify-content: space-between; gap: 12px; }
-.feed-section-heading h2 { min-width: 0; margin: 0; overflow-wrap: anywhere; color: #111827; font-size: 16px; font-weight: 900; letter-spacing: -.02em; line-height: 1.2; text-transform: uppercase; }
+.feed-section-heading h2 { min-width: 0; margin: 0; overflow-wrap: anywhere; color: var(--app-section-title-color); font-size: var(--app-section-title-size); font-weight: var(--app-section-title-weight); letter-spacing: var(--app-section-title-tracking); line-height: var(--app-section-title-line-height); text-transform: uppercase; }
 .feed-section-heading button { display: inline-flex; flex-shrink: 0; align-items: center; gap: 2px; min-height: unset; padding: 4px 0; border: 0; background: transparent; color: #6b7280; font-size: 11px; font-weight: 900; text-transform: uppercase; }
 .feed-section-heading button ion-icon { font-size: 13px; }
 .sport-rail-heading { padding-top: 20px; padding-bottom: 0; }

@@ -246,9 +246,9 @@ const COACH_CHATS: CoachChatItem[] = [
     .filter-count { min-width: 18px; height: 18px; border-radius: 999px; background: #111827; color: #fff; font-size: 9px; font-weight: 900; display: inline-flex; align-items: center; justify-content: center; padding: 0 4px; }
     .filter-chip--active .filter-count { background: #111827; color: #fff; }
     .pinned-block { padding-top: 8px; }
-    .section-label { margin: 0; padding: 12px 16px 8px; font-size: 10px; font-weight: 900; color: #9CA3AF; letter-spacing: 0.12em; }
+    .section-label { margin: 0; padding: 12px 16px 8px; color:var(--app-section-title-color); font-size:var(--app-section-title-size); font-weight:var(--app-section-title-weight); line-height:var(--app-section-title-line-height); letter-spacing:var(--app-section-title-tracking); text-transform:uppercase; }
     .section-header { display: flex; align-items: center; gap: 12px; padding: 20px 16px 8px; }
-    .section-header span:first-child { font-size: 11px; font-weight: 900; color: #9CA3AF; letter-spacing: 0.1em; }
+    .section-header span:first-child { color:var(--app-section-title-color); font-size:var(--app-section-title-size); font-weight:var(--app-section-title-weight); line-height:var(--app-section-title-line-height); letter-spacing:var(--app-section-title-tracking); text-transform:uppercase; }
     .section-count { font-size: 10px; font-weight: 700; color: #C4C9D4; }
     .section-line { flex: 1; height: 1px; background: #F3F4F6; }
     .chat-row { width: 100%; border: none; background: transparent; display: flex; align-items: center; gap: 14px; padding: 14px 16px; text-align: left; }

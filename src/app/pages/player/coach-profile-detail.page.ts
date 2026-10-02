@@ -52,12 +52,12 @@ import { resolveMediaUrl } from '../../core/utils/media-url.util';
 
         <!-- About section -->
         <div class="mb-6">
-          <h3 class="text-base font-bold text-slate-900 mb-2">About Coach</h3>
+          <h3 class="app-section-title mb-2">About Coach</h3>
           <p class="text-sm text-slate-600 leading-relaxed">{{ coach.bio }}</p>
         </div>
 
         <section class="mb-6" *ngIf="coach.gallery?.length">
-          <h3 class="text-base font-bold text-slate-900 mb-3">Coaching gallery</h3>
+          <h3 class="app-section-title mb-3">Coaching gallery</h3>
           <div class="coach-gallery-grid">
             <a *ngFor="let item of coach.gallery" [href]="item.url" target="_blank" rel="noopener" class="coach-gallery-item">
               <img *ngIf="item.mimeType?.startsWith('image/')" [src]="item.url" [alt]="item.name || 'Coach gallery photo'" />
@@ -69,7 +69,7 @@ import { resolveMediaUrl } from '../../core/utils/media-url.util';
 
         <!-- Specialties section -->
         <div class="mb-6">
-          <h3 class="text-base font-bold text-slate-900 mb-3">Specialties</h3>
+          <h3 class="app-section-title mb-3">Specialties</h3>
           <div class="flex flex-wrap gap-2">
             <span *ngFor="let spec of coach.specialties" class="px-3.5 py-1.5 bg-card border border-border rounded-lg text-xs font-semibold text-slate-800">
               {{ spec }}

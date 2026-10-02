@@ -569,3 +569,13 @@ ion-skeleton-text {
     transition-duration: 1ms !important;
   }
 }
+
+/* Shared section heading above a card or list. Values live in theme/variables.scss. */
+.app-section-title {
+  color: var(--app-section-title-color);
+  font-size: var(--app-section-title-size);
+  font-weight: var(--app-section-title-weight);
+  line-height: var(--app-section-title-line-height);
+  letter-spacing: var(--app-section-title-tracking);
+  text-transform: uppercase;
+}

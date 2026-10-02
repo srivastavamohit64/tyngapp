@@ -162,6 +162,16 @@
   --app-header-btn-size: 40px;
 
   /*
+   * Section headings that sit above a card or list ("TOP VENUES NEAR YOU", "AT A GLANCE").
+   * Use the .app-section-title class, or these variables in page styles, so every screen matches.
+   */
+  --app-section-title-size: 16px;
+  --app-section-title-weight: 900;
+  --app-section-title-line-height: 1.2;
+  --app-section-title-tracking: -0.02em;
+  --app-section-title-color: #111827;
+
+  /*
    * Floating tab chrome offset (set by .tabs-shell when tab bar is mounted).
    * Includes system bottom inset so fixed CTAs sit above the pill + gesture area.
    */

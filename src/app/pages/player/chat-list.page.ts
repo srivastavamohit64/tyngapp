@@ -251,11 +251,12 @@ import { SkeletonListComponent } from '../../shared/components/skeleton';
         padding: 16px 16px 8px;
       }
       .section-label {
-        font-size: 11px;
-        font-weight: 800;
-        letter-spacing: 0.08em;
+        font-size: var(--app-section-title-size);
+        font-weight: var(--app-section-title-weight);
+        line-height: var(--app-section-title-line-height);
+        letter-spacing: var(--app-section-title-tracking);
         text-transform: uppercase;
-        color: #9ca3af;
+        color: var(--app-section-title-color);
       }
       .section-count {
         font-size: 11px;
@@ -272,11 +273,12 @@ import { SkeletonListComponent } from '../../shared/components/skeleton';
       }
       .pinned-label {
         padding: 8px 4px 10px;
-        font-size: 11px;
-        font-weight: 800;
-        letter-spacing: 0.08em;
+        font-size: var(--app-section-title-size);
+        font-weight: var(--app-section-title-weight);
+        line-height: var(--app-section-title-line-height);
+        letter-spacing: var(--app-section-title-tracking);
         text-transform: uppercase;
-        color: #9ca3af;
+        color: var(--app-section-title-color);
       }
       .pinned-card {
         background: #f8fafc;

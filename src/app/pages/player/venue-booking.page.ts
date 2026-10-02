@@ -386,11 +386,12 @@ interface DateItem {
 
       .section-head h3 {
         margin: 0;
-        font-size: 12px;
-        font-weight: 900;
-        letter-spacing: 0.08em;
+        font-size: var(--app-section-title-size);
+        font-weight: var(--app-section-title-weight);
+        line-height: var(--app-section-title-line-height);
+        letter-spacing: var(--app-section-title-tracking);
         text-transform: uppercase;
-        color: #111827;
+        color: var(--app-section-title-color);
       }
 
       .section-head p {

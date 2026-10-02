@@ -252,6 +252,7 @@ type ColouredMetric = CoachInsightMetric & { color: string };
     .section-block { min-width:0; }
     .section-title { min-width:0; display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:16px; }
     .section-title.outside { margin:1px 2px 12px; }
+    .section-title.outside h2 { color:var(--app-section-title-color); font-size:var(--app-section-title-size); font-weight:var(--app-section-title-weight); line-height:var(--app-section-title-line-height); letter-spacing:var(--app-section-title-tracking); text-transform:uppercase; }
     .section-title h2 { margin:0; color:var(--ink); font-size:14px; line-height:1.2; font-weight:900; letter-spacing:.055em; text-transform:uppercase; }
     .section-title p { margin:4px 0 0; color:#8b98b2; font-size:10px; line-height:1.35; font-weight:600; }
     .section-title > span { flex:0 0 auto; max-width:46%; padding:6px 9px; border-radius:999px; color:#4e6500; background:#effbdc; font-size:9px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }

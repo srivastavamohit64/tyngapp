@@ -395,7 +395,7 @@ const COACH_ACHIEVEMENTS = ['District Level','State Level','National Level','Int
       gap: 12px;
       margin-bottom: 12px;
     }
-    .saved-head h2 { margin: 0; font-size: 15px; font-weight: 900; color: #111827; }
+    .saved-head h2 { margin: 0; color: var(--app-section-title-color); font-size: var(--app-section-title-size); font-weight: var(--app-section-title-weight); line-height: var(--app-section-title-line-height); letter-spacing: var(--app-section-title-tracking); text-transform: uppercase; }
     .saved-head p { margin: 4px 0 0; font-size: 12px; font-weight: 600; color: #9ca3af; }
     .saved-add {
       width: 36px;

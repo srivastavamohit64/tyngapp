@@ -386,7 +386,7 @@ export const VENUE_DATA: VenueDetail[] = [
 
           <!-- Special Offers -->
           <div>
-            <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-3 px-1 m-0">Special Offers</p>
+            <p class="app-section-title mb-3 px-1">Special Offers</p>
             <div class="space-y-3">
               <div
                 *ngFor="let offer of venue.offers"

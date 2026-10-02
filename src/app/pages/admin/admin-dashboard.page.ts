@@ -196,9 +196,12 @@ import { ApiService } from '../../core/services/api.service';
 
       h3 {
         margin: 0 0 12px;
-        font-size: 18px;
-        font-weight: 600;
-        color: #111827;
+        color: var(--app-section-title-color);
+        font-size: var(--app-section-title-size);
+        font-weight: var(--app-section-title-weight);
+        line-height: var(--app-section-title-line-height);
+        letter-spacing: var(--app-section-title-tracking);
+        text-transform: uppercase;
       }
 
       .actions {
