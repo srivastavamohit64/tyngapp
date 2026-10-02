@@ -338,9 +338,9 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
   searchFilterOpen = false;
   searchFilterEvent?: Event;
   @ViewChild('searchFilterPopover') private searchFilterPopover?: IonPopover;
-  @ViewChild('promoWrap') private set promoWrapRef(ref: ElementRef<HTMLElement> | undefined) {
-    this.promoWrapEl = ref?.nativeElement;
-    this.observePromoSpace();
+  @ViewChild('promoCard') private set promoCardRef(ref: ElementRef<HTMLElement> | undefined) {
+    this.promoCardEl = ref?.nativeElement;
+    this.schedulePromoTitleFit();
   }
   @ViewChild('sportRail') private set sportRailRef(ref: ElementRef<HTMLElement> | undefined) {
     const element = ref?.nativeElement;
@@ -359,11 +359,8 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
   private sportRailLoopKey = '';
   private sportRailLoopItems: SportRailLoopItem[] = [];
   private sportRailSettleTimer?: ReturnType<typeof setTimeout>;
-  private promoWrapEl?: HTMLElement;
-  private promoResizeObserver?: ResizeObserver;
-  private promoFitFrame = 0;
-  private promoFitRetries = 0;
-  private promoFitRetryTimer?: ReturnType<typeof setTimeout>;
+  private promoCardEl?: HTMLElement;
+  private promoTitleFrame = 0;
   selectedSport: HomeSport | null = null;
   sportSearch = '';
   private pendingDrawerSport: HomeSport | null = null;
@@ -563,7 +560,6 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
       this.refreshHomeData();
     }
     this.homeRefreshOnDidEnter = true;
-    this.schedulePromoFit();
   }
 
   private scheduleSportRailReset(): void {
@@ -612,54 +608,20 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
 
   @HostListener('window:resize')
   onWindowResize(): void {
-    this.schedulePromoFit();
     this.scheduleSportRailReset();
+    this.schedulePromoTitleFit();
   }
 
-  private observePromoSpace(): void {
-    this.promoResizeObserver?.disconnect();
-    this.promoResizeObserver = undefined;
-    const wrap = this.promoWrapEl;
-    if (!wrap) return;
-    if (typeof ResizeObserver !== 'undefined') {
-      const home = wrap.closest('.player-home');
-      this.promoResizeObserver = new ResizeObserver(() => this.schedulePromoFit());
-      if (home) this.promoResizeObserver.observe(home);
-    }
-    this.schedulePromoFit();
-  }
-
-  private schedulePromoFit(): void {
-    cancelAnimationFrame(this.promoFitFrame);
-    this.promoFitFrame = requestAnimationFrame(() => void this.fitPromoCard());
-  }
-
-  /** Sizes the promo card so it (and its dots) ends just above the floating tab bar when Home is scrolled to the top. */
-  private async fitPromoCard(): Promise<void> {
-    const wrap = this.promoWrapEl;
-    if (!wrap) return;
-    const tabBar = document.querySelector<HTMLElement>('nav.tab-bar-outer');
-    if (!this.homeVisible || !tabBar || !tabBar.offsetHeight) {
-      if (this.promoFitRetries++ < 20) {
-        clearTimeout(this.promoFitRetryTimer);
-        this.promoFitRetryTimer = setTimeout(() => this.schedulePromoFit(), 250);
-      }
-      return;
-    }
-    this.promoFitRetries = 0;
-    const content = wrap.closest('ion-content') as HTMLIonContentElement | null;
-    let scrollTop = 0;
-    try {
-      if (content) scrollTop = (await content.getScrollElement()).scrollTop;
-    } catch {
-      scrollTop = 0;
-    }
-    const cardTop = wrap.getBoundingClientRect().top + scrollTop;
-    const tabBarTop = window.innerHeight - tabBar.offsetHeight;
-    const dots = this.homePromotions.length > 1 ? 22 : 0;
-    const height = Math.round(Math.min(420, Math.max(136, tabBarTop - cardTop - dots - 12)));
-    wrap.style.setProperty('--promo-card-height', `${height}px`);
-    wrap.classList.toggle('promo-compact', height < 186);
+  /** The promo card has a fixed height, so a title that wraps past two lines leaves room for one line of subtitle. */
+  private schedulePromoTitleFit(): void {
+    cancelAnimationFrame(this.promoTitleFrame);
+    this.promoTitleFrame = this.zone.runOutsideAngular(() => requestAnimationFrame(() => {
+      const card = this.promoCardEl;
+      const title = card?.querySelector('h2');
+      if (!card || !title) return;
+      const lineHeight = parseFloat(getComputedStyle(title).lineHeight) || 1;
+      card.classList.toggle('promo-long-title', title.getBoundingClientRect().height / lineHeight > 2.5);
+    }));
   }
 
   private refreshHomeData(): void {
@@ -946,9 +908,7 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
     void this.appStateHandle?.remove();
     this.stopAdSlider();
     this.stopPromotionSlider();
-    this.promoResizeObserver?.disconnect();
-    cancelAnimationFrame(this.promoFitFrame);
-    clearTimeout(this.promoFitRetryTimer);
+    cancelAnimationFrame(this.promoTitleFrame);
     this.detachSportRail();
   }
 
@@ -1413,7 +1373,6 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
       this.stopPromotionSlider();
     } finally {
       this.promotionsLoading = false;
-      this.schedulePromoFit();
     }
   }
 
