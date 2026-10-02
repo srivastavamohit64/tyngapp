@@ -4,18 +4,17 @@ import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { AppNotification, NotificationFeedService } from '../../core/services/notification-feed.service';
 import { SkeletonListComponent } from '../../shared/components/skeleton';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 
 @Component({
   selector: 'app-venue-notifications',
   standalone: true,
-  imports: [CommonModule, IonicModule, SkeletonListComponent],
+  imports: [CommonModule, IonicModule, SkeletonListComponent, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true">
+      <app-brand-header-shell>
       <div class="venue-notifications">
         <header class="venue-notifications-header">
-          <button type="button" class="back-btn" (click)="back()">
-            <ion-icon name="chevron-back-outline"></ion-icon>
-          </button>
           <h1>Notifications</h1>
           <button
             type="button"
@@ -54,6 +53,7 @@ import { SkeletonListComponent } from '../../shared/components/skeleton';
           </div>
         </div>
       </div>
+      </app-brand-header-shell>
     </ion-content>
   `,
   styles: [
@@ -67,9 +67,7 @@ import { SkeletonListComponent } from '../../shared/components/skeleton';
         display: flex;
         align-items: center;
         gap: 12px;
-        padding: 0 20px;
-        padding-top: var(--app-chrome-top-inset, var(--safe-area-top));
-        min-height: calc(var(--app-header-height) + var(--app-chrome-top-inset, var(--safe-area-top)));
+        padding: 14px 20px 6px;
         box-sizing: border-box;
         background: #fff;
         border-bottom: 1px solid #f3f4f6;
@@ -77,7 +75,6 @@ import { SkeletonListComponent } from '../../shared/components/skeleton';
         top: 0;
         z-index: 10;
       }
-      .back-btn,
       .mark-btn {
         width: var(--app-header-btn-size);
         height: var(--app-header-btn-size);
@@ -92,7 +89,7 @@ import { SkeletonListComponent } from '../../shared/components/skeleton';
       }
       h1 {
         flex: 1;
-        text-align: center;
+        text-align: left;
         margin: 0;
         font-size: var(--app-header-title-size);
         font-weight: var(--app-header-title-weight);
@@ -188,9 +185,5 @@ export class VenueNotificationsPage implements OnInit {
       await this.feed.markRead(n.id);
     }
     void this.router.navigateByUrl(n.route || '/app/venue/bookings');
-  }
-
-  back() {
-    void this.router.navigateByUrl('/app/venue/dashboard');
   }
 }

@@ -1,18 +1,18 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 
 @Component({
   selector: 'app-admin-users',
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule],
+  imports: [CommonModule, FormsModule, IonicModule, BrandHeaderShellComponent],
   template: `
     <ion-content fullscreen>
+      <app-brand-header-shell>
       <main class="page">
         <header class="header">
-          <button type="button" class="back" (click)="back()"><ion-icon name="chevron-back"></ion-icon></button>
           <h1>User Management</h1>
         </header>
         <div class="search">
@@ -28,13 +28,13 @@ import { IonicModule } from '@ionic/angular';
           <span class="badge" [class.banned]="u.status === 'banned'">{{ u.status }}</span>
         </div>
       </main>
+      </app-brand-header-shell>
     </ion-content>
   `,
   styles: [
     `
-      .page { min-height: 100%; background: #fafbfc; padding: var(--safe-area-top) 20px calc(112px + var(--safe-area-bottom)); }
-      .header { display: flex; align-items: center; gap: 12px; height: var(--app-header-height); margin-bottom: 16px; }
-      .back { width: var(--app-header-btn-size); height: var(--app-header-btn-size); min-height: unset; border-radius: 12px; background: #f3f4f6; display: grid; place-items: center; font-size: 20px; color: #111827; }
+      .page { min-height: 100%; background: #fafbfc; padding: 14px 20px calc(112px + var(--safe-area-bottom)); }
+      .header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
       h1 { margin: 0; font-size: var(--app-header-title-size); font-weight: var(--app-header-title-weight); line-height: var(--app-header-title-line-height); color: #111827; }
       .search { display: flex; align-items: center; gap: 10px; background: #f3f4f6; border-radius: 16px; padding: 12px 16px; margin-bottom: 16px; color: #9ca3af; }
       .search input { flex: 1; border: none !important; background: transparent !important; box-shadow: none !important; outline: none; color: #111827; font-size: 14px; }
@@ -47,7 +47,6 @@ import { IonicModule } from '@ionic/angular';
   ],
 })
 export class AdminUsersPage {
-  private readonly router = inject(Router);
   query = '';
   readonly users = [
     { name: 'Rahul Sharma', avatar: '🏏', role: 'Player', city: 'Lucknow', status: 'active' },
@@ -59,5 +58,4 @@ export class AdminUsersPage {
     const q = this.query.toLowerCase();
     return this.users.filter((u) => !q || u.name.toLowerCase().includes(q) || u.role.toLowerCase().includes(q));
   }
-  back() { void this.router.navigateByUrl('/app/admin/dashboard'); }
 }

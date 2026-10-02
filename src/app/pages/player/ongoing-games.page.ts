@@ -26,6 +26,7 @@ import {
   sportEmoji,
 } from '../../core/utils/booking.utils';
 import { PageSkeletonComponent } from '../../shared/components/skeleton';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 
 
 interface Game {
@@ -81,16 +82,14 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
 @Component({
   selector: 'app-ongoing-games',
   standalone: true,
-  imports: [CommonModule, IonicModule, PageSkeletonComponent],
+  imports: [CommonModule, IonicModule, PageSkeletonComponent, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true">
+      <app-brand-header-shell>
       <div class="ongoing-page">
 
         <!-- Header -->
         <div class="og-header">
-          <button class="og-back" (click)="back()">
-            <ion-icon name="chevron-back-outline"></ion-icon>
-          </button>
           <div class="og-header-text">
             <h1 class="og-title">Ongoing Games</h1>
             <p class="og-location" *ngIf="locationLabel">Near {{ locationLabel }}</p>
@@ -252,6 +251,7 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
 
         <div style="height: 120px;"></div>
       </div>
+      </app-brand-header-shell>
     </ion-content>
   `,
   styles: [`
@@ -264,13 +264,12 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: var(--app-chrome-top-inset, var(--safe-area-top)) 20px 0;
-      min-height: calc(var(--app-header-height) + var(--app-chrome-top-inset, var(--safe-area-top)));
+      padding: 14px 20px 6px;
       box-sizing: border-box;
       background: #FFFFFF;
     }
 
-    .og-back, .og-filter-btn {
+    .og-filter-btn {
       width: var(--app-header-btn-size); height: var(--app-header-btn-size);
       border-radius: 50%;
       background: #F3F4F6;
@@ -281,9 +280,8 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
 
     .og-header-text {
       flex: 1;
-      text-align: center;
       min-width: 0;
-      padding: 0 8px;
+      padding: 0 8px 0 0;
     }
 
     .og-title {
@@ -856,10 +854,6 @@ export class OngoingGamesPage implements OnInit, AfterViewInit, OnDestroy, ViewW
     if (pct >= 90) return '#EF4444';
     if (pct >= 70) return '#F59E0B';
     return 'var(--app-primary)';
-  }
-
-  back() {
-    void this.router.navigateByUrl('/app/home');
   }
 
   openFullMap() {

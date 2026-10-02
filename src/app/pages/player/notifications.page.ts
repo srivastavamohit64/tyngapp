@@ -8,6 +8,7 @@ import {
   NotificationCategory,
 } from '../../core/services/notification-feed.service';
 import { SkeletonListComponent } from '../../shared/components/skeleton';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 
 type FilterId = 'all' | 'games' | 'friends' | 'messages' | 'venues' | 'events' | 'rewards';
 type Notif = AppNotification;
@@ -25,14 +26,12 @@ const FILTERS: { id: FilterId; label: string; emoji: string }[] = [
 @Component({
   selector: 'app-notifications',
   standalone: true,
-  imports: [CommonModule, IonicModule, SkeletonListComponent],
+  imports: [CommonModule, IonicModule, SkeletonListComponent, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true">
+      <app-brand-header-shell>
       <main class="notifications-page">
         <div class="notif-header">
-          <button class="back-btn" (click)="back()">
-            <ion-icon name="chevron-back-outline"></ion-icon>
-          </button>
           <h1 class="notif-title">Notifications</h1>
           <button class="mark-read-btn" (click)="markAllRead()" [disabled]="unreadCount() === 0">
             <ion-icon name="checkmark-done-outline"></ion-icon>
@@ -101,6 +100,7 @@ const FILTERS: { id: FilterId; label: string; emoji: string }[] = [
           <div style="height: 120px;"></div>
         </div>
       </main>
+      </app-brand-header-shell>
 
       <ng-template #cardTpl let-n>
         <div *ngIf="n.isAI" class="ai-card" (click)="openNotif(n)">
@@ -215,13 +215,11 @@ const FILTERS: { id: FilterId; label: string; emoji: string }[] = [
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: var(--app-chrome-top-inset, var(--safe-area-top)) 20px 0;
-        min-height: calc(var(--app-header-height) + var(--app-chrome-top-inset, var(--safe-area-top)));
+        padding: 14px 20px 6px;
         box-sizing: border-box;
         background: #ffffff;
         border-bottom: 1px solid #f3f4f6;
       }
-      .back-btn,
       .mark-read-btn {
         width: var(--app-header-btn-size);
         height: var(--app-header-btn-size);
@@ -649,10 +647,6 @@ export class NotificationsPage implements OnInit {
 
   async markAllRead() {
     await this.feed.markAllRead();
-  }
-
-  back() {
-    void this.router.navigateByUrl('/app/home');
   }
 
   async openNotif(n: Notif) {

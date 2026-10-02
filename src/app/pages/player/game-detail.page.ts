@@ -1,4 +1,4 @@
-import { CommonModule, Location } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IonicModule, ToastController } from '@ionic/angular';
@@ -14,6 +14,7 @@ import {
   sportEmoji,
 } from '../../core/utils/booking.utils';
 import { PageSkeletonComponent } from '../../shared/components/skeleton';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 
 interface GameData {
   id: string;
@@ -90,9 +91,10 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
 @Component({
   selector: 'app-game-detail',
   standalone: true,
-  imports: [CommonModule, IonicModule, PageSkeletonComponent],
+  imports: [CommonModule, IonicModule, PageSkeletonComponent, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true">
+      <app-brand-header-shell>
       <div class="gd-page" *ngIf="loading">
         <app-page-skeleton variant="detail" label="Loading game"></app-page-skeleton>
       </div>
@@ -111,9 +113,6 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
           <div class="hero-overlay"></div>
 
           <div class="hero-nav">
-            <button class="hero-btn" (click)="back()">
-              <ion-icon name="chevron-back-outline"></ion-icon>
-            </button>
             <div style="display:flex;gap:8px;">
               <button class="hero-btn">
                 <ion-icon name="share-social-outline"></ion-icon>
@@ -249,6 +248,7 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
         </div>
 
       </div>
+      </app-brand-header-shell>
     </ion-content>
 
     <ion-footer *ngIf="!loading && game" class="game-action-footer ion-no-border">
@@ -356,8 +356,8 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
         right: 0;
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        padding: calc(16px + var(--app-chrome-top-inset, var(--safe-area-top))) 20px 0;
+        justify-content: flex-end;
+        padding: 16px 20px 0;
       }
 
       .hero-btn {
@@ -766,7 +766,6 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
 export class GameDetailPage implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
-  private readonly location = inject(Location);
   private readonly bookingService = inject(BookingService);
   private readonly chat = inject(ChatService);
   private readonly toastCtrl = inject(ToastController);
@@ -798,14 +797,6 @@ export class GameDetailPage implements OnInit {
   getPercent() {
     if (!this.game || !this.game.maxPlayers) return 0;
     return Math.round((this.game.playersJoined / this.game.maxPlayers) * 100);
-  }
-
-  back() {
-    if (typeof window !== 'undefined' && window.history.length > 1) {
-      this.location.back();
-      return;
-    }
-    void this.router.navigateByUrl('/app/home');
   }
 
   async openGameChat(): Promise<void> {

@@ -2,20 +2,19 @@ import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
+import { BrandHeaderShellComponent } from '../../../shared/components/brand-header-shell/brand-header-shell.component';
 
 @Component({
   selector: 'app-coach-teams-page',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, BrandHeaderShellComponent],
   template: `
     <ion-content fullscreen>
-      <main class="safe-area-top page-with-tab-bar min-h-full bg-background text-white">
+      <app-brand-header-shell>
+      <main class="page-with-tab-bar min-h-full bg-background text-white">
         <header class="app-header-bar bg-card border-b border-white/10 px-6 flex items-center sticky top-0 z-10">
           <div class="flex w-full items-center justify-between">
             <div class="flex items-center gap-3">
-              <button (click)="goHome()" class="app-header-btn text-slate-400 flex items-center justify-center bg-transparent">
-                <ion-icon name="chevron-back-outline" class="text-2xl"></ion-icon>
-              </button>
               <h2 class="app-header-title m-0">My Teams</h2>
             </div>
             <button class="app-header-btn rounded-full bg-primary/20 flex items-center justify-center">
@@ -69,6 +68,7 @@ import { IonicModule } from '@ionic/angular';
           </div>
         </section>
       </main>
+      </app-brand-header-shell>
     </ion-content>
   `
 })
@@ -104,10 +104,6 @@ export class CoachTeamsPage {
       upcomingSession: 'Tomorrow, 5:00 PM',
     },
   ];
-
-  goHome() {
-    this.router.navigateByUrl('/app/coach/dashboard');
-  }
 
   goSchedule() {
     this.router.navigateByUrl('/app/coach/schedule');

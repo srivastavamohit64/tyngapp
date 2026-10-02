@@ -7,6 +7,7 @@ import { ActionSheetController, IonicModule } from '@ionic/angular';
 import { CoachService } from '../../core/services/coach.service';
 import { NativeMediaPickerService } from '../../core/services/native-media-picker.service';
 import { resolveMediaUrl } from '../../core/utils/media-url.util';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 
 type EnrollmentType = 'existing' | 'invite' | 'managed';
 
@@ -41,9 +42,10 @@ const MEMBERSHIPS = ['Trial Student', 'Regular Student', 'Academy Student', 'Pri
 @Component({
   selector: 'app-coach-enroll-student',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule],
+  imports: [CommonModule, IonicModule, FormsModule, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true" class="enrollment-content">
+      <app-brand-header-shell (back)="isSuccess() ? go('/app/coach/dashboard') : handleBack()">
       <main *ngIf="isSuccess(); else enrollmentWizard" class="success-page">
         <div class="success-mark"><ion-icon [name]="enrollType === 'invite' || invitationSent() ? 'paper-plane-outline' : 'checkmark-outline'"></ion-icon></div>
         <p class="eyebrow">{{ invitationSent() ? 'WAITING FOR PLAYER' : enrollType === 'invite' ? 'INVITATION READY' : 'ENROLMENT COMPLETE' }}</p>
@@ -98,9 +100,6 @@ const MEMBERSHIPS = ['Trial Student', 'Regular Student', 'Academy Student', 'Pri
       <ng-template #enrollmentWizard>
         <main class="enroll-page">
           <header class="page-header">
-            <button type="button" (click)="handleBack()" aria-label="Go back">
-              <ion-icon name="chevron-back-outline"></ion-icon>
-            </button>
             <div>
               <h1>Enroll Student</h1>
               <p *ngIf="enrollType === 'managed'">Step {{ managedStep }} of 6</p>
@@ -320,6 +319,7 @@ const MEMBERSHIPS = ['Trial Student', 'Regular Student', 'Academy Student', 'Pri
           </footer>
         </main>
       </ng-template>
+      </app-brand-header-shell>
     </ion-content>
   `,
   styleUrls: ['./coach-enroll-student.page.scss'],

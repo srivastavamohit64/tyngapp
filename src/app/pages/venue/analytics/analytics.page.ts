@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
+import { BrandHeaderShellComponent } from '../../../shared/components/brand-header-shell/brand-header-shell.component';
 
 interface RevenueStat {
   label: string;
@@ -26,18 +26,15 @@ interface PeakHour {
 @Component({
   selector: 'app-venue-analytics-page',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true" class="has-tabs">
+      <app-brand-header-shell>
       <div class="analytics-page pb-32 text-left">
         
         <!-- Header -->
-        <div class="sticky-header app-header-bar flex items-center justify-between px-5 bg-white border-b border-[#F3F4F6]">
-          <button (click)="goHome()" class="app-header-btn flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
-            <ion-icon name="chevron-back-outline" class="text-xl text-[#111827]"></ion-icon>
-          </button>
+        <div class="sticky-header flex items-center px-5 bg-white border-b border-[#F3F4F6]">
           <p class="app-header-title text-[#111827] m-0">Revenue Analytics</p>
-          <div class="app-header-btn"></div>
         </div>
 
         <div class="px-5 pt-4 space-y-6">
@@ -104,6 +101,7 @@ interface PeakHour {
         </div>
 
       </div>
+      </app-brand-header-shell>
     </ion-content>
   `,
   styles: [`
@@ -117,16 +115,14 @@ interface PeakHour {
       position: sticky;
       top: 0;
       z-index: 30;
-      padding-top: var(--app-chrome-top-inset, var(--safe-area-top));
-      min-height: calc(var(--app-header-height) + var(--app-chrome-top-inset, var(--safe-area-top)));
+      padding-top: 14px;
+      padding-bottom: 10px;
       box-sizing: border-box;
       box-shadow: 0 2px 10px rgba(0,0,0,0.02);
     }
   `]
 })
 export class VenueAnalyticsPage {
-  private readonly router = inject(Router);
-
   readonly stats: RevenueStat[] = [
     { label: 'Today', value: '₹12,500', change: '+12%', icon: 'cash-outline', accent: 'var(--app-primary)' },
     { label: 'This Week', value: '₹68,000', change: '+8%', icon: 'calendar-outline', accent: '#FF7A00' },
@@ -144,8 +140,4 @@ export class VenueAnalyticsPage {
     { time: '4:00 PM - 6:00 PM', bookings: 38, percentage: 70 },
     { time: '6:00 AM - 8:00 AM', bookings: 32, percentage: 60 },
   ];
-
-  goHome() {
-    this.router.navigateByUrl('/app/venue/dashboard');
-  }
 }

@@ -1,17 +1,17 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 
 @Component({
   selector: 'app-admin-revenue',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, BrandHeaderShellComponent],
   template: `
     <ion-content fullscreen>
+      <app-brand-header-shell>
       <main class="page">
         <header class="header">
-          <button type="button" class="back" (click)="back()"><ion-icon name="chevron-back"></ion-icon></button>
           <h1>Revenue</h1>
         </header>
         <div class="hero-card">
@@ -27,13 +27,13 @@ import { IonicModule } from '@ionic/angular';
           <strong class="amt">{{ r.amount }}</strong>
         </div>
       </main>
+      </app-brand-header-shell>
     </ion-content>
   `,
   styles: [
     `
-      .page { min-height: 100%; background: #fafbfc; padding: var(--safe-area-top) 20px calc(112px + var(--safe-area-bottom)); }
-      .header { display: flex; align-items: center; gap: 12px; height: var(--app-header-height); margin-bottom: 16px; }
-      .back { width: var(--app-header-btn-size); height: var(--app-header-btn-size); min-height: unset; border-radius: 12px; background: #f3f4f6; display: grid; place-items: center; font-size: 20px; color: #111827; }
+      .page { min-height: 100%; background: #fafbfc; padding: 14px 20px calc(112px + var(--safe-area-bottom)); }
+      .header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
       h1 { margin: 0; font-size: var(--app-header-title-size); font-weight: var(--app-header-title-weight); line-height: var(--app-header-title-line-height); color: #111827; }
       .hero-card { background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to)); border-radius: 24px; padding: 24px; margin-bottom: 20px; color: #111827; }
       .hero-card p { margin: 0; font-size: 14px; opacity: 0.8; }
@@ -47,11 +47,9 @@ import { IonicModule } from '@ionic/angular';
   ],
 })
 export class AdminRevenuePage {
-  private readonly router = inject(Router);
   readonly rows = [
     { label: 'Venue Bookings', sub: 'Platform fee', amount: '₹12.4L' },
     { label: 'Coach Sessions', sub: 'Commission', amount: '₹8.1L' },
     { label: 'Premium Plans', sub: 'Subscriptions', amount: '₹4.0L' },
   ];
-  back() { void this.router.navigateByUrl('/app/admin/dashboard'); }
 }

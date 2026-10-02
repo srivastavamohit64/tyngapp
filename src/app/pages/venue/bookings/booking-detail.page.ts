@@ -1,4 +1,4 @@
-import { CommonModule, Location } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ActionSheetController, AlertController, IonicModule, ToastController } from '@ionic/angular';
@@ -16,21 +16,20 @@ import {
   sportEmoji,
 } from '../../../core/utils/booking.utils';
 import { PageSkeletonComponent } from '../../../shared/components/skeleton';
+import { BrandHeaderShellComponent } from '../../../shared/components/brand-header-shell/brand-header-shell.component';
 
 type DetailTab = 'overview' | 'players' | 'amenities' | 'live';
 
 @Component({
   selector: 'app-venue-booking-detail',
   standalone: true,
-  imports: [CommonModule, IonicModule, PageSkeletonComponent],
+  imports: [CommonModule, IonicModule, PageSkeletonComponent, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true" class="bd-content">
+      <app-brand-header-shell>
       <div class="bd-page">
         <div class="bd-sticky">
         <header class="bd-header">
-          <button type="button" class="bd-icon-btn" (click)="goBack()" aria-label="Back">
-            <ion-icon name="chevron-back-outline"></ion-icon>
-          </button>
           <div class="bd-header-title">
             <h1>Booking Details</h1>
             <p *ngIf="booking()">#{{ booking()!.id }}</p>
@@ -300,6 +299,7 @@ type DetailTab = 'overview' | 'players' | 'amenities' | 'live';
           </div>
         </ng-container>
       </div>
+      </app-brand-header-shell>
     </ion-content>
 
     <ng-container *ngIf="booking() as b">
@@ -429,16 +429,14 @@ type DetailTab = 'overview' | 'players' | 'amenities' | 'live';
     }
     .bd-header {
       display: grid;
-      grid-template-columns: var(--app-header-btn-size) 1fr var(--app-header-btn-size);
+      grid-template-columns: 1fr var(--app-header-btn-size);
       align-items: center;
       gap: 10px;
-      padding: 0 16px;
-      padding-top: var(--app-chrome-top-inset, var(--safe-area-top));
-      min-height: calc(var(--app-header-height) + var(--app-chrome-top-inset, var(--safe-area-top)));
+      padding: 14px 16px 6px;
       box-sizing: border-box;
       background: #fff;
     }
-    .bd-header-title { text-align: center; min-width: 0; }
+    .bd-header-title { text-align: left; min-width: 0; }
     .bd-header-title h1 { margin: 0; font-size: var(--app-header-title-size); font-weight: var(--app-header-title-weight); color: #111827; line-height: var(--app-header-title-line-height); }
     .bd-header-title p { margin: 2px 0 0; font-size: 11px; font-weight: 700; color: #9CA3AF; }
     .bd-icon-btn {
@@ -771,7 +769,6 @@ type DetailTab = 'overview' | 'players' | 'amenities' | 'live';
 export class VenueBookingDetailPage implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  private readonly location = inject(Location);
   private readonly bookings = inject(BookingService);
   private readonly venueService = inject(VenueService);
   private readonly chat = inject(ChatService);
@@ -1618,14 +1615,6 @@ export class VenueBookingDetailPage implements OnInit, OnDestroy {
     } finally {
       this.acting.set(false);
     }
-  }
-
-  goBack(): void {
-    if (typeof window !== 'undefined' && window.history.length > 1) {
-      this.location.back();
-      return;
-    }
-    void this.router.navigateByUrl('/app/venue/bookings');
   }
 
   private async loadPlayers(bookingId: string): Promise<void> {

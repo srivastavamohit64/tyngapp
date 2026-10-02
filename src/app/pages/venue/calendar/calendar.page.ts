@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, signal, inject } from '@angular/core';
-import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 import { BookingCalendarEvent } from '../../../core/models/api.model';
@@ -44,9 +43,6 @@ interface CalendarBookingItem {
       <app-brand-header-shell>
       <div class="cal-page">
         <header class="cal-header">
-          <button type="button" class="icon-btn" (click)="goHome()" aria-label="Back">
-            <ion-icon name="chevron-back-outline"></ion-icon>
-          </button>
           <h1>Calendar</h1>
           <button type="button" class="icon-btn" (click)="loadMonth()" aria-label="Refresh">
             <ion-icon name="refresh-outline"></ion-icon>
@@ -172,8 +168,8 @@ interface CalendarBookingItem {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: var(--app-chrome-top-inset, var(--safe-area-top)) 16px 0;
-      min-height: calc(var(--app-header-height) + var(--app-chrome-top-inset, var(--safe-area-top)));
+      padding: 0 16px;
+      min-height: var(--app-header-height);
       box-sizing: border-box;
       background: #fff;
     }
@@ -503,7 +499,6 @@ interface CalendarBookingItem {
   `],
 })
 export class VenueCalendarPage implements OnInit {
-  private readonly router = inject(Router);
   private readonly bookingService = inject(BookingService);
   private readonly venueService = inject(VenueService);
 
@@ -572,10 +567,6 @@ export class VenueCalendarPage implements OnInit {
   selectDay(cell: DayCell) {
     if (!cell.iso || !cell.inMonth) return;
     this.selectedDate.set(cell.iso);
-  }
-
-  goHome() {
-    void this.router.navigateByUrl('/app/venue/dashboard');
   }
 
   async loadMonth() {

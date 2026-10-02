@@ -31,24 +31,6 @@
   min-width: 0;
 }
 
-.venues-back-btn {
-  width: var(--app-header-btn-size);
-  height: var(--app-header-btn-size);
-  flex-shrink: 0;
-  border: none;
-  border-radius: 14px;
-  background: #ffffff;
-  box-shadow: 0 4px 14px rgba(17, 24, 39, 0.08);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: #111827;
-}
-
-.venues-back-btn ion-icon {
-  font-size: 20px;
-}
-
 .venues-kicker {
   margin: 0 0 2px;
   font-size: 11px;

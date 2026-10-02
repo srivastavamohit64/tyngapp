@@ -9,8 +9,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: var(--safe-area-top) 20px 0;
-  min-height: calc(var(--app-header-height) + var(--safe-area-top));
+  padding: 14px 20px 10px;
   box-sizing: border-box;
   background: #fff;
   border-bottom: 1px solid #f3f4f6;
@@ -19,25 +18,8 @@
   z-index: 10;
 }
 
-.back-btn {
-  width: var(--app-header-btn-size);
-  height: var(--app-header-btn-size);
-  border: none;
-  border-radius: 12px;
-  background: #f3f4f6;
-  display: grid;
-  place-items: center;
-  color: #111827;
-  font-size: 20px;
-}
-
-.header-spacer {
-  width: var(--app-header-btn-size);
-}
-
 .settings-title {
   flex: 1;
-  text-align: center;
   margin: 0;
   font-size: var(--app-header-title-size);
   font-weight: var(--app-header-title-weight);

@@ -1,5 +1,5 @@
 import { CommonModule, Location } from '@angular/common';
-import { Component, computed, inject, Input } from '@angular/core';
+import { Component, computed, EventEmitter, inject, Input, Output } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router } from '@angular/router';
 import { IonicModule, MenuController } from '@ionic/angular';
@@ -48,6 +48,8 @@ export class BrandHeaderShellComponent {
 
   @Input() showBrand = true;
   @Input() notificationRoute?: string;
+  /** When bound, the header back button emits here instead of navigating back. */
+  @Output() back = new EventEmitter<void>();
 
   private readonly url = toSignal(
     this.router.events.pipe(
@@ -84,6 +86,10 @@ export class BrandHeaderShellComponent {
   }
 
   goBack(): void {
+    if (this.back.observed) {
+      this.back.emit();
+      return;
+    }
     if (typeof window !== 'undefined' && window.history.length > 1) {
       this.location.back();
       return;

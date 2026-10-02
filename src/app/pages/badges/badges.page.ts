@@ -21,9 +21,9 @@ type BadgeFilter = 'all' | 'earned' | 'locked';
         <ion-refresher-content pullingText="Pull to refresh"></ion-refresher-content>
       </ion-refresher>
 
-      <app-brand-header-shell [showBrand]="false">
+      <app-brand-header-shell (back)="goBack()">
         <main class="badges-page">
-          <app-page-header title="Badges" [showBack]="true" (back)="goBack()"></app-page-header>
+          <app-page-header title="Badges"></app-page-header>
 
           <div class="badges-content">
             <section class="badges-hero" *ngIf="catalog() as c; else heroSkel">

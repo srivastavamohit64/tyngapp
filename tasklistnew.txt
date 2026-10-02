@@ -204,6 +204,7 @@ ALL APP USERS
 - Headings above cards and lists now look the same on every screen: the same size, bold capital letters and colour, so pages are easier to scan.
 - The bottom menu now hides while you are typing, so the keyboard has more room and does not cover buttons. It comes back as soon as the keyboard closes.
 - Loading placeholders are now easy to see on every screen, so it is clear when information is still on its way.
+- Every screen now has the same top bar with the tyng name, the bell and a menu or back arrow, so moving around the app feels the same everywhere. There is now only one back arrow per screen, always in the top left corner.
 
 Writing rule: Whenever work is finished, add a short note here explaining in everyday words what changed and how it helps players, coaches, or administrators. Write for someone who does not work in software. Avoid programming terms, internal names, and tool names. Describe what the person can now do.
 

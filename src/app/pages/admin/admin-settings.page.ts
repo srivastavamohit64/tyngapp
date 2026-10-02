@@ -4,16 +4,17 @@ import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { ThemeService } from '../../core/services/theme.service';
 import { AuthService } from '../../core/services/auth.service';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 
 @Component({
   selector: 'app-admin-settings',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, BrandHeaderShellComponent],
   template: `
     <ion-content fullscreen>
+      <app-brand-header-shell>
       <main class="page">
         <header class="header">
-          <button type="button" class="back" (click)="back()"><ion-icon name="chevron-back"></ion-icon></button>
           <h1>System Settings</h1>
         </header>
         <button type="button" class="row" *ngFor="let item of items" (click)="item.action()">
@@ -25,13 +26,13 @@ import { AuthService } from '../../core/services/auth.service';
           <ion-icon name="chevron-forward" class="chevron"></ion-icon>
         </button>
       </main>
+      </app-brand-header-shell>
     </ion-content>
   `,
   styles: [
     `
-      .page { min-height: 100%; background: #fafbfc; padding: var(--safe-area-top) 20px calc(112px + var(--safe-area-bottom)); }
-      .header { display: flex; align-items: center; gap: 12px; height: var(--app-header-height); margin-bottom: 16px; }
-      .back { width: var(--app-header-btn-size); height: var(--app-header-btn-size); min-height: unset; border-radius: 12px; background: #f3f4f6; display: grid; place-items: center; font-size: 20px; color: #111827; }
+      .page { min-height: 100%; background: #fafbfc; padding: 14px 20px calc(112px + var(--safe-area-bottom)); }
+      .header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
       h1 { margin: 0; font-size: var(--app-header-title-size); font-weight: var(--app-header-title-weight); line-height: var(--app-header-title-line-height); color: #111827; }
       .row { display: flex; align-items: center; gap: 12px; width: 100%; background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 14px; margin-bottom: 10px; text-align: left; min-height: unset; }
       .icon { width: 40px; height: 40px; border-radius: 12px; background: rgba(var(--app-primary-rgb),0.2); color: var(--app-primary); display: grid; place-items: center; font-size: 20px; }
@@ -52,6 +53,4 @@ export class AdminSettingsPage {
     { label: 'Notifications', desc: 'System alerts & emails', icon: 'notifications-outline', action: () => undefined },
     { label: 'Log Out', desc: 'Sign out of admin panel', icon: 'log-out-outline', action: () => { this.auth.logout(); void this.router.navigateByUrl('/welcome'); } },
   ];
-
-  back() { void this.router.navigateByUrl('/app/admin/dashboard'); }
 }

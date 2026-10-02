@@ -15,12 +15,9 @@ type RequestFilter = 'pending' | 'all';
   imports: [CommonModule, IonicModule, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true" class="has-tabs">
-      <app-brand-header-shell>
+      <app-brand-header-shell (back)="back()">
         <main class="booking-requests-page">
           <header class="page-heading">
-            <button type="button" class="back-button" aria-label="Back to dashboard" (click)="back()">
-              <ion-icon name="chevron-back-outline"></ion-icon>
-            </button>
             <div>
               <p class="eyebrow">COACH WORKSPACE</p>
               <h1>Session requests</h1>
@@ -95,7 +92,6 @@ type RequestFilter = 'pending' | 'all';
     .booking-requests-page { min-height:100%; background:#f7f9fc; padding:18px 18px 112px; color:#172033; }
     .page-heading { display:flex; align-items:center; gap:13px; max-width:720px; min-height:var(--app-header-height); box-sizing:border-box; margin:0 auto 22px; }
     .page-heading > div { flex:1; min-width:0; }
-    .back-button { width:var(--app-header-btn-size); height:var(--app-header-btn-size); flex:0 0 var(--app-header-btn-size); display:grid; place-items:center; border:0; border-radius:15px; background:#fff; color:#172033; font-size:21px; box-shadow:0 2px 10px #1526420d; }
     .eyebrow { margin:0 0 4px; color:#16a34a; font-size:10px; font-weight:800; letter-spacing:.12em; }
     h1 { margin:0; font-size:var(--app-header-title-size); line-height:var(--app-header-title-line-height); font-weight:var(--app-header-title-weight); }
     .subtitle { margin:2px 0 0; overflow:hidden; color:#788398; font-size:11px; line-height:1.3; text-overflow:ellipsis; white-space:nowrap; }

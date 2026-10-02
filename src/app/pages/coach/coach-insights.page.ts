@@ -9,20 +9,19 @@ import {
 } from '../../core/models/api.model';
 import { CoachService } from '../../core/services/coach.service';
 import { PageSkeletonComponent } from '../../shared/components/skeleton';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 
 type ColouredMetric = CoachInsightMetric & { color: string };
 
 @Component({
   selector: 'app-coach-insights',
   standalone: true,
-  imports: [CommonModule, IonicModule, PageSkeletonComponent],
+  imports: [CommonModule, IonicModule, PageSkeletonComponent, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true" class="insights-content-shell">
+      <app-brand-header-shell>
       <main class="insights-page">
         <header class="insights-header">
-          <button type="button" class="icon-button" (click)="back()" aria-label="Back to coach dashboard">
-            <ion-icon name="chevron-back-outline"></ion-icon>
-          </button>
           <div class="header-copy">
             <h1>Coach Insights</h1>
             <p>{{ rangeLabel() }}</p>
@@ -195,6 +194,7 @@ type ColouredMetric = CoachInsightMetric & { color: string };
           </button>
         </section>
       </main>
+      </app-brand-header-shell>
 
       <ion-modal class="calendar-modal" [isOpen]="calendarOpen()" [initialBreakpoint]="0.72" [breakpoints]="[0, 0.72, 1]" (didDismiss)="closeCalendar()">
         <ng-template>
@@ -214,9 +214,9 @@ type ColouredMetric = CoachInsightMetric & { color: string };
     :host { --ink:#101828; --muted:#7d8aa5; --line:#e9edf2; --surface:#fff; --lime:var(--app-primary,#7cf000); display:block; }
     .insights-content-shell { --background:#f6f8fa; }
     .insights-page { min-height:100%; background:#f6f8fa; color:var(--ink); padding-bottom:calc(96px + env(safe-area-inset-bottom)); }
-    .insights-header { position:sticky; top:0; z-index:30; height:var(--app-header-height); padding:0 16px; display:grid; grid-template-columns:var(--app-header-btn-size) minmax(0,1fr) var(--app-header-btn-size); align-items:center; background:rgba(255,255,255,.96); border-bottom:1px solid var(--line); backdrop-filter:blur(14px); }
+    .insights-header { position:sticky; top:0; z-index:30; height:var(--app-header-height); padding:0 16px; display:grid; grid-template-columns:minmax(0,1fr) var(--app-header-btn-size); align-items:center; background:rgba(255,255,255,.96); border-bottom:1px solid var(--line); backdrop-filter:blur(14px); }
     .icon-button { width:var(--app-header-btn-size); height:var(--app-header-btn-size); border:0; border-radius:14px; display:grid; place-items:center; color:var(--ink); background:#f2f4f7; font-size:21px; }
-    .header-copy { min-width:0; text-align:center; padding:0 8px; }
+    .header-copy { min-width:0; text-align:left; padding:0 8px 0 0; }
     .header-copy h1 { margin:0; font-size:var(--app-header-title-size); line-height:var(--app-header-title-line-height); font-weight:var(--app-header-title-weight); }
     .header-copy p { margin:3px 0 0; color:var(--muted); font-size:10px; line-height:1.2; font-weight:650; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .period-tabs { position:sticky; top:var(--app-header-height); z-index:25; display:flex; gap:8px; padding:10px 16px 12px; overflow-x:auto; background:#fff; border-bottom:1px solid var(--line); scrollbar-width:none; }
@@ -454,7 +454,6 @@ export class CoachInsightsPage {
     });
   }
 
-  back(): void { this.router.navigateByUrl('/app/coach/dashboard'); }
   go(path: string): void { this.router.navigateByUrl(path); }
 
   quickIcon(icon: string): string {

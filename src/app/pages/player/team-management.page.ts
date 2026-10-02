@@ -7,22 +7,21 @@ import { FriendItem } from '../../core/models/api.model';
 import { ChatService } from '../../core/services/chat.service';
 import { SocialService } from '../../core/services/social.service';
 import { SkeletonListComponent } from '../../shared/components/skeleton';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 
 @Component({
   selector: 'app-team-management',
   standalone: true,
-  imports: [CommonModule, IonicModule, SkeletonListComponent],
+  imports: [CommonModule, IonicModule, SkeletonListComponent, BrandHeaderShellComponent],
   template: `
     <ion-content fullscreen class="has-tabs">
       <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
         <ion-refresher-content></ion-refresher-content>
       </ion-refresher>
 
+      <app-brand-header-shell>
       <main class="page-with-tab-bar friends-page">
         <header class="friends-header">
-          <button type="button" class="icon-btn" (click)="back()" aria-label="Back">
-            <ion-icon name="chevron-back-outline"></ion-icon>
-          </button>
           <div class="header-titles">
             <h1>My Friends</h1>
           </div>
@@ -81,6 +80,7 @@ import { SkeletonListComponent } from '../../shared/components/skeleton';
           <button type="button" class="btn-primary" (click)="goDiscover()">Go to Discover</button>
         </div>
       </main>
+      </app-brand-header-shell>
     </ion-content>
   `,
   styles: [
@@ -95,8 +95,7 @@ import { SkeletonListComponent } from '../../shared/components/skeleton';
         display: flex;
         align-items: center;
         gap: 12px;
-        padding: var(--app-chrome-top-inset, var(--safe-area-top)) 16px 0;
-        min-height: calc(var(--app-header-height) + var(--app-chrome-top-inset, var(--safe-area-top)));
+        padding: 14px 16px 10px;
         box-sizing: border-box;
         background: #fff;
         border-bottom: 1px solid #f1f5f9;
@@ -108,7 +107,6 @@ import { SkeletonListComponent } from '../../shared/components/skeleton';
       .header-titles {
         flex: 1;
         min-width: 0;
-        text-align: center;
       }
 
       .header-titles h1 {
@@ -381,10 +379,6 @@ export class TeamManagementPage implements OnInit {
     if (!parts.length) return '?';
     if (parts.length === 1) return parts[0].slice(0, 2);
     return `${parts[0][0] || ''}${parts[1][0] || ''}`.toUpperCase();
-  }
-
-  back() {
-    void this.router.navigateByUrl('/app/home');
   }
 
   goDiscover() {

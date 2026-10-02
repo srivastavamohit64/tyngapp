@@ -18,7 +18,6 @@ import { SkeletonListComponent } from '../../shared/components/skeleton';
       <app-brand-header-shell>
         <main class="page">
           <header>
-            <button type="button" (click)="back()" aria-label="Back"><ion-icon name="chevron-back-outline"></ion-icon></button>
             <h1>My Students</h1>
             <button type="button" (click)="openEnrollment()" aria-label="Enroll a student"><ion-icon name="person-add-outline"></ion-icon></button>
           </header>
@@ -285,5 +284,4 @@ export class CoachStudentsPage implements ViewWillEnter {
   open(id: unknown) { if (id) void this.router.navigateByUrl('/app/coach/student/' + id); }
   viewFullProfile(id: unknown) { this.closeStudentPreview(); this.open(id); }
   openEnrollment() { void this.router.navigateByUrl('/app/coach/enroll-student'); }
-  back() { void this.router.navigateByUrl('/app/coach/dashboard'); }
 }

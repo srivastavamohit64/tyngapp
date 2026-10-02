@@ -6,15 +6,17 @@ import { firstValueFrom } from 'rxjs';
 import { VenueEventRecord, VenueEventService, VenueEventsDashboard } from '../../../core/services/venue-event.service';
 import { sportEmoji } from '../../../core/utils/booking.utils';
 import { PageSkeletonComponent } from '../../../shared/components/skeleton';
+import { BrandHeaderShellComponent } from '../../../shared/components/brand-header-shell/brand-header-shell.component';
 
 type EventsTab = 'home' | 'leagues' | 'rankings' | 'analytics';
 
 @Component({
   selector: 'app-venue-events-hub',
   standalone: true,
-  imports: [CommonModule, IonicModule, PageSkeletonComponent],
+  imports: [CommonModule, IonicModule, PageSkeletonComponent, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true" class="ev-content">
+      <app-brand-header-shell>
       <div class="ev-page">
         <div class="ev-tabs">
           <button type="button" *ngFor="let t of tabs" class="ev-tab" [class.on]="tab() === t.id" (click)="tab.set(t.id)">{{ t.label }}</button>
@@ -121,6 +123,7 @@ type EventsTab = 'home' | 'leagues' | 'rankings' | 'analytics';
           </section>
         </ng-container>
       </div>
+      </app-brand-header-shell>
     </ion-content>
 
     <div class="ev-foot">
@@ -132,7 +135,7 @@ type EventsTab = 'home' | 'leagues' | 'rankings' | 'analytics';
   styles: [`
     :host { display: block; height: 100%; }
     .ev-content { --background: #F4F6F8; --padding-bottom: 0; }
-    .ev-page { padding: 12px 16px calc(190px + var(--safe-area-bottom)); padding-top: calc(12px + var(--safe-area-top)); }
+    .ev-page { padding: 12px 16px calc(190px + var(--safe-area-bottom)); }
     .ev-tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; scrollbar-width: none; }
     .ev-tab { flex: 0 0 auto; border: none; border-radius: 999px; padding: 8px 14px; background: #F3F4F6; font-weight: 800; font-size: 13px; color: #111827; }
     .ev-tab.on { background: #111827; color: #8cf000; box-shadow: inset 0 -2px 0 #8cf000; }

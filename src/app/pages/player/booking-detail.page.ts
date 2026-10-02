@@ -33,9 +33,9 @@ import { PageSkeletonComponent } from '../../shared/components/skeleton';
         <ion-refresher-content></ion-refresher-content>
       </ion-refresher>
 
-      <app-brand-header-shell [showBrand]="false">
+      <app-brand-header-shell (back)="goBack()">
         <main class="min-h-full bg-[#FAFBFC] text-[#111827] pb-[calc(96px+var(--safe-area-bottom))]">
-          <app-page-header title="My Bookings" [showBack]="true" (back)="goBack()"></app-page-header>
+          <app-page-header title="My Bookings"></app-page-header>
 
           <div class="px-4 py-2" *ngIf="loading && !booking">
             <app-page-skeleton variant="detail" label="Loading booking"></app-page-skeleton>

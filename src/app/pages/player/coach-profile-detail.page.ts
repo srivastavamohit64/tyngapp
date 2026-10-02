@@ -8,20 +8,18 @@ import { CoachService } from '../../core/services/coach.service';
 import { ChatService } from '../../core/services/chat.service';
 import { resolveMediaUrl } from '../../core/utils/media-url.util';
 import { PageSkeletonComponent } from '../../shared/components/skeleton';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 
 @Component({
   selector: 'app-coach-profile-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule, PageSkeletonComponent],
+  imports: [CommonModule, FormsModule, IonicModule, PageSkeletonComponent, BrandHeaderShellComponent],
   template: `
     <ion-content fullscreen>
-      <main class="safe-area-top page-with-tab-bar px-6 py-4 bg-background text-foreground" *ngIf="!coach">
-        <header class="app-header-bar flex items-center justify-between mb-6">
-          <button (click)="back()" class="app-header-btn grid place-items-center rounded-full bg-card border border-border" aria-label="Back">
-            <ion-icon name="chevron-back-outline" class="text-xl"></ion-icon>
-          </button>
-          <h1 class="app-header-title text-center flex-1">Coach Profile</h1>
-          <div class="app-header-btn"></div>
+      <app-brand-header-shell (back)="back()">
+      <main class="page-with-tab-bar px-6 py-4 bg-background text-foreground" *ngIf="!coach">
+        <header class="flex items-center mb-6">
+          <h1 class="app-header-title flex-1">Coach Profile</h1>
         </header>
         <app-page-skeleton *ngIf="loading" variant="profile" label="Loading coach profile"></app-page-skeleton>
         <div *ngIf="!loading" class="py-16 text-center text-sm text-slate-500" role="alert">
@@ -29,15 +27,11 @@ import { PageSkeletonComponent } from '../../shared/components/skeleton';
           <button type="button" class="h-10 px-5 rounded-xl bg-primary font-bold text-slate-900" (click)="loadCoach()">Try again</button>
         </div>
       </main>
-      <main class="safe-area-top page-with-tab-bar px-6 py-4 bg-background text-foreground" *ngIf="coach">
+      <main class="page-with-tab-bar px-6 py-4 bg-background text-foreground" *ngIf="coach">
         
         <!-- Header -->
-        <header class="app-header-bar flex items-center justify-between mb-6">
-          <button (click)="back()" class="app-header-btn grid place-items-center rounded-full bg-card border border-border">
-            <ion-icon name="chevron-back-outline" class="text-xl"></ion-icon>
-          </button>
-          <h1 class="app-header-title text-center flex-1">Coach Profile</h1>
-          <div class="app-header-btn"></div>
+        <header class="flex items-center mb-6">
+          <h1 class="app-header-title flex-1">Coach Profile</h1>
         </header>
 
         <!-- Profile Detail Card -->
@@ -104,6 +98,7 @@ import { PageSkeletonComponent } from '../../shared/components/skeleton';
         </div>
 
       </main>
+      </app-brand-header-shell>
 
       <ion-modal
         [isOpen]="bookingSheetOpen"

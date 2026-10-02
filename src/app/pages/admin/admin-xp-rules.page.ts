@@ -1,19 +1,19 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { AdminXpRule, XpService } from '../../core/services/xp.service';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 
 @Component({
   selector: 'app-admin-xp-rules',
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule],
+  imports: [CommonModule, FormsModule, IonicModule, BrandHeaderShellComponent],
   template: `
     <ion-content fullscreen>
+      <app-brand-header-shell>
       <main class="page">
         <header class="header">
-          <button type="button" class="back" (click)="back()"><ion-icon name="chevron-back"></ion-icon></button>
           <div><h1>XP Rules</h1><p>Control rewards, penalties and earning limits.</p></div>
         </header>
 
@@ -38,11 +38,12 @@ import { AdminXpRule, XpService } from '../../core/services/xp.service';
           </button>
         </section>
       </main>
+      </app-brand-header-shell>
     </ion-content>
   `,
   styles: [`
-    .page { min-height: 100%; background: #fafbfc; padding: var(--safe-area-top) 20px calc(112px + var(--safe-area-bottom)); }
-    .header { display:flex; align-items:center; gap:12px; height:var(--app-header-height); margin-bottom:18px; } .back { width:var(--app-header-btn-size); height:var(--app-header-btn-size); flex-shrink:0; min-height:unset; border:0; border-radius:12px; background:#f3f4f6; font-size:20px; color:#111827; }
+    .page { min-height: 100%; background: #fafbfc; padding: 14px 20px calc(112px + var(--safe-area-bottom)); }
+    .header { display:flex; align-items:center; gap:12px; margin-bottom:18px; }
     h1 { margin:0; font-size:var(--app-header-title-size); font-weight:var(--app-header-title-weight); line-height:var(--app-header-title-line-height); color:#111827; } .header p { margin:2px 0 0; color:#6b7280; font-size:11px; }
     .rule-card { background:#fff; border:1px solid #e5e7eb; border-radius:18px; padding:16px; margin-bottom:12px; } .rule-head { display:flex; justify-content:space-between; gap:12px; }
     .rule-head strong { display:block; color:#111827; font-size:15px; } .rule-head span { color:#6b7280; font-size:11px; } .fields { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:16px 0 12px; }
@@ -53,7 +54,6 @@ import { AdminXpRule, XpService } from '../../core/services/xp.service';
   `],
 })
 export class AdminXpRulesPage {
-  private readonly router = inject(Router);
   private readonly xp = inject(XpService);
   private readonly toast = inject(ToastController);
   rules: AdminXpRule[] = [];
@@ -72,8 +72,6 @@ export class AdminXpRulesPage {
       error: (err) => { this.savingId = null; void this.showToast(err?.error?.message || 'Unable to update XP rule.', true); },
     });
   }
-
-  back(): void { void this.router.navigateByUrl('/app/admin/dashboard'); }
 
   private async showToast(message: string, isError = false): Promise<void> {
     const toast = await this.toast.create({ message, duration: 1800, color: isError ? 'danger' : 'success', position: 'top' });

@@ -1,12 +1,10 @@
 <ion-content fullscreen [class.has-tabs]="auth.user()?.role !== 'coach'">
   <!-- COACH PROFILE -->
-  <main *ngIf="auth.user()?.role === 'coach'" class="safe-area-top min-h-full bg-[#FAFBFC] text-slate-800 select-none">
+  <app-brand-header-shell *ngIf="auth.user()?.role === 'coach'" (back)="goBack()">
+  <main class="min-h-full bg-[#FAFBFC] text-slate-800 select-none">
     <section class="coach-profile-hero px-6 pt-0 pb-8 bg-gradient-to-b from-[var(--app-primary)]/20 to-transparent">
       <div class="app-header-bar flex items-center justify-between mb-6">
         <div class="flex items-center gap-3">
-          <button type="button" class="app-header-btn grid place-items-center rounded-full bg-white shadow-sm text-slate-800 border-none" aria-label="Back" (click)="goBack()">
-            <ion-icon name="chevron-back-outline" class="text-xl"></ion-icon>
-          </button>
           <h2 class="app-header-title text-[#111827] m-0">Profile</h2>
         </div>
         <button type="button" class="app-header-btn grid place-items-center rounded-full bg-white shadow-sm text-slate-800 border-none" (click)="router.navigateByUrl('/app/coach/settings')">
@@ -95,6 +93,7 @@
       </div>
     </section>
   </main>
+  </app-brand-header-shell>
 
   <!-- PLAYER PROFILE -->
   <app-brand-header-shell *ngIf="auth.user()?.role !== 'coach'">

@@ -16,7 +16,7 @@ import {
   sportEmoji,
 } from '../../core/utils/booking.utils';
 import { FilterChip, FilterChipsComponent } from '../../shared/components/filter-chips/filter-chips.component';
-import { HeaderComponent } from '../../shared/components/header/header.component';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 import { PrimaryButtonComponent } from '../../shared/components/primary-button/primary-button.component';
 
 type FilterType = 'all' | 'games' | 'players' | 'venues';
@@ -57,22 +57,20 @@ const SPORT_COLORS: Record<string, string> = {
 @Component({
   selector: 'app-live-map',
   standalone: true,
-  imports: [CommonModule, IonicModule, HeaderComponent, FilterChipsComponent, PrimaryButtonComponent],
+  imports: [CommonModule, IonicModule, BrandHeaderShellComponent, FilterChipsComponent, PrimaryButtonComponent],
   template: `
     <ion-content fullscreen>
+      <app-brand-header-shell>
       <div class="map-page page-safe-bottom">
-        <app-header
-          variant="page"
-          title="Live Sports Map"
-          [subtitle]="mapSubtitle"
-          [showBack]="true"
-          [hasProjectedEnd]="true"
-          (back)="back()"
-        >
+        <div class="lm-title-row">
+          <div>
+            <h1 class="lm-title">Live Sports Map</h1>
+            <p class="lm-subtitle">{{ mapSubtitle }}</p>
+          </div>
           <button type="button" class="layers-btn" (click)="toggleMapType()" aria-label="Change map type">
             <ion-icon name="layers-outline"></ion-icon>
           </button>
-        </app-header>
+        </div>
 
         <app-filter-chips
           class="filters"
@@ -123,6 +121,7 @@ const SPORT_COLORS: Record<string, string> = {
           </app-primary-button>
         </div>
       </div>
+      </app-brand-header-shell>
     </ion-content>
   `,
   styles: [
@@ -130,6 +129,28 @@ const SPORT_COLORS: Record<string, string> = {
       .map-page {
         min-height: 100%;
         background: #fafbfc;
+      }
+
+      .lm-title-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 14px 20px 0;
+      }
+
+      .lm-title {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 800;
+        color: #111827;
+      }
+
+      .lm-subtitle {
+        margin: 2px 0 0;
+        font-size: 12px;
+        font-weight: 500;
+        color: #6b7280;
       }
 
       .layers-btn,
@@ -167,7 +188,7 @@ const SPORT_COLORS: Record<string, string> = {
       .map-surface {
         position: relative;
         width: 100%;
-        height: calc(100vh - 280px);
+        height: calc(100vh - 334px - var(--safe-area-top));
         min-height: 360px;
         border-radius: 16px;
         border: 1px solid #e5e7eb;
@@ -454,10 +475,6 @@ export class LiveMapPage implements AfterViewInit, OnDestroy {
     if (!this.map) return;
     this.mapType = this.mapType === 'roadmap' ? 'satellite' : 'roadmap';
     this.map.setMapTypeId(this.mapType);
-  }
-
-  back() {
-    void this.router.navigateByUrl('/app/home');
   }
 
   viewDetails() {

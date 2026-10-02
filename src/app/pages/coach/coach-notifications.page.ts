@@ -9,6 +9,7 @@ import {
   NotificationCategory,
 } from '../../core/services/notification-feed.service';
 import { SkeletonListComponent } from '../../shared/components/skeleton';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 
 type CoachNotif = AppNotification & {
   secondaryAction?: { label: string; style: 'red' };
@@ -27,17 +28,15 @@ const FILTERS = [
 @Component({
   selector: 'app-coach-notifications',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule, SkeletonListComponent],
+  imports: [CommonModule, IonicModule, FormsModule, SkeletonListComponent, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true">
+      <app-brand-header-shell>
       <div class="notifications-page pb-28">
         <!-- Sticky Header -->
         <div class="sticky-header bg-white border-b border-[#F3F4F6]">
           <div class="notif-header app-header-bar flex items-center justify-between px-5">
             <div class="flex items-center gap-3">
-              <button (click)="back()" class="app-header-btn flex items-center justify-center rounded-full bg-[#F3F4F6] border-none">
-                <ion-icon name="chevron-back-outline" class="text-[#111827] text-xl"></ion-icon>
-              </button>
               <div class="flex items-center gap-2">
                 <h1 class="app-header-title text-[#111827] m-0">Notifications</h1>
                 <div *ngIf="totalUnread() > 0" class="min-w-[22px] h-[22px] rounded-full bg-[#FF7A00] flex items-center justify-center px-1.5">
@@ -192,6 +191,7 @@ const FILTERS = [
           </p>
         </div>
       </div>
+      </app-brand-header-shell>
     </ion-content>
   `,
   styles: [`
@@ -206,8 +206,8 @@ const FILTERS = [
     }
 
     .notif-header {
-      min-height: calc(var(--app-header-height) + var(--app-chrome-top-inset, var(--safe-area-top)));
-      padding-top: var(--app-chrome-top-inset, var(--safe-area-top));
+      min-height: var(--app-header-height);
+      padding-top: 0;
       padding-bottom: 0;
       padding-left: max(16px, var(--safe-area-left, 0px));
       padding-right: max(16px, var(--safe-area-right, 0px));
@@ -447,10 +447,6 @@ export class CoachNotificationsPage implements OnInit {
     } else if (n.category === 'payments') {
       this.go('/app/wallet');
     }
-  }
-
-  back() {
-    void this.router.navigateByUrl('/app/coach/dashboard');
   }
 
   go(path: string) {

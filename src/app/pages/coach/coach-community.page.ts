@@ -3,13 +3,15 @@ import { Component, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { ChatService } from '../../core/services/chat.service';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 
 @Component({
   selector: 'app-coach-community-page',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, BrandHeaderShellComponent],
   template: `
     <ion-content fullscreen class="has-tabs">
+      <app-brand-header-shell>
       <main class="min-h-full grid place-items-center bg-[#FAFBFC] px-6 text-center">
         <div *ngIf="loading" class="space-y-3">
           <ion-spinner name="crescent" color="success"></ion-spinner>
@@ -22,6 +24,7 @@ import { ChatService } from '../../core/services/chat.service';
           <button class="rounded-xl bg-[#111827] px-5 py-3 text-sm font-bold text-white" (click)="open()">Retry</button>
         </div>
       </main>
+      </app-brand-header-shell>
     </ion-content>
   `,
 })

@@ -3,17 +3,21 @@ import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { DesignDataService } from '../../core/services/design-data.service';
-import { HeaderComponent } from '../../shared/components/header/header.component';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 import { SportsBadgeComponent } from '../../shared/components/sports-badge/sports-badge.component';
 
 @Component({
   selector: 'app-events-page',
   standalone: true,
-  imports: [CommonModule, IonicModule, HeaderComponent, SportsBadgeComponent],
+  imports: [CommonModule, IonicModule, BrandHeaderShellComponent, SportsBadgeComponent],
   template: `
     <ion-content fullscreen>
+      <app-brand-header-shell>
       <main class="page-with-tab-bar min-h-full bg-background text-white">
-        <app-header [title]="title" [subtitle]="subtitle" [showBack]="true" (back)="back()"></app-header>
+        <header class="ev-intro">
+          <h1 class="ev-title">{{ title }}</h1>
+          <p *ngIf="subtitle" class="ev-subtitle">{{ subtitle }}</p>
+        </header>
         <section class="space-y-4 px-6 py-5 pb-8" [ngSwitch]="mode">
           <ng-container *ngSwitchCase="'venues'">
             <article class="rounded-[20px] border border-white/10 bg-card p-4" *ngFor="let venue of data.venues">
@@ -74,8 +78,14 @@ import { SportsBadgeComponent } from '../../shared/components/sports-badge/sport
           </ng-container>
         </section>
       </main>
+      </app-brand-header-shell>
     </ion-content>
   `,
+  styles: [`
+    .ev-intro { margin: 14px 16px 4px; }
+    .ev-title { margin: 0; font-size: 20px; font-weight: 800; color: #111827; }
+    .ev-subtitle { margin: 2px 0 0; font-size: 12px; font-weight: 500; color: #6b7280; }
+  `],
 })
 export class EventsPage {
   readonly data = inject(DesignDataService);
@@ -102,9 +112,5 @@ export class EventsPage {
 
   get subtitle() {
     return this.mode === 'map' ? 'Lucknow' : '';
-  }
-
-  back() {
-    this.router.navigateByUrl('/app/home');
   }
 }

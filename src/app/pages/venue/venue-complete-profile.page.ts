@@ -15,6 +15,7 @@ import { LocationFieldComponent } from '../../shared/components/location-field/l
 import { ReverseGeocodeDetails } from '../../core/services/location.service';
 import { PageSkeletonComponent, SkeletonListComponent } from '../../shared/components/skeleton';
 import { sportEmoji } from '../../core/utils/booking.utils';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 
 interface MaintFacility {
   id: string;
@@ -74,9 +75,10 @@ const STEP_TITLES = [
 @Component({
   selector: 'app-venue-complete-profile',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule, LocationFieldComponent, SkeletonListComponent, PageSkeletonComponent],
+  imports: [CommonModule, IonicModule, FormsModule, LocationFieldComponent, SkeletonListComponent, PageSkeletonComponent, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true">
+      <app-brand-header-shell (back)="handleBack()">
       <!-- SUCCESS SCREEN -->
       <div *ngIf="isSuccess()" class="success-screen flex flex-col items-center justify-center px-6 text-center pb-12">
         <div class="w-28 h-28 rounded-full bg-[var(--app-primary)] flex items-center justify-center mx-auto mb-5 shadow-lg"
@@ -115,10 +117,7 @@ const STEP_TITLES = [
       <div *ngIf="!isSuccess()" class="complete-profile-page pb-32 text-left">
         <!-- Sticky Header -->
         <div class="sticky-header bg-white border-b border-[#F3F4F6]">
-          <div class="app-header-bar flex items-center justify-between px-5">
-            <button (click)="handleBack()" class="app-header-btn flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
-              <ion-icon name="chevron-back-outline" class="text-xl text-[#111827]"></ion-icon>
-            </button>
+          <div class="flex items-center justify-center px-5 pt-3.5">
             <div class="text-center">
               <p class="app-header-title text-[#111827] m-0">
                 {{ isEditingReadyProfile() ? 'Edit Venue Profile' : 'Complete Venue Profile' }}
@@ -127,7 +126,6 @@ const STEP_TITLES = [
                 Step {{ step() }} of {{ totalSteps }} · {{ stepTitle() }}
               </p>
             </div>
-            <div class="app-header-btn" aria-hidden="true"></div>
           </div>
 
           <!-- Progress dots indicator (tap to jump) -->
@@ -716,6 +714,7 @@ const STEP_TITLES = [
           </div>
         </div>
       </div>
+      </app-brand-header-shell>
     </ion-content>
   `,
   styles: [`
@@ -729,7 +728,6 @@ const STEP_TITLES = [
     }
 
     .success-screen {
-      padding-top: var(--safe-area-top);
       padding-bottom: calc(48px + var(--safe-area-bottom));
     }
 
@@ -737,7 +735,6 @@ const STEP_TITLES = [
       position: sticky;
       top: 0;
       z-index: 30;
-      padding-top: var(--app-chrome-top-inset, var(--safe-area-top));
       box-shadow: 0 2px 10px rgba(0,0,0,0.02);
     }
 

@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, OnInit, ViewChild, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Capacitor } from '@capacitor/core';
 import { ActionSheetController, IonicModule } from '@ionic/angular';
@@ -10,6 +9,7 @@ import { NativeMediaPickerService } from '../../../core/services/native-media-pi
 import { VenueService } from '../../../core/services/venue.service';
 import { normalizeImageFile } from '../../../core/utils/image-file.util';
 import { PageSkeletonComponent } from '../../../shared/components/skeleton';
+import { BrandHeaderShellComponent } from '../../../shared/components/brand-header-shell/brand-header-shell.component';
 
 interface MaintFacility {
   id: string;
@@ -58,14 +58,12 @@ const STATUS_OPTIONS: StatusOption[] = [
 @Component({
   selector: 'app-venue-facilities-page',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule, PageSkeletonComponent],
+  imports: [CommonModule, IonicModule, FormsModule, PageSkeletonComponent, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true" class="has-tabs">
+      <app-brand-header-shell>
       <div class="fac-page" [class.has-save]="hasChanges() || saved()">
         <header class="sticky-header fac-header">
-          <button type="button" class="fac-icon-btn" (click)="goBack()" aria-label="Back">
-            <ion-icon name="chevron-back-outline"></ion-icon>
-          </button>
           <div class="fac-header-copy">
             <h1>Facilities & Amenities</h1>
             <p *ngIf="!loading() || facilityList().length; else courtCountSkel">{{ facilityList().length }} court{{ facilityList().length === 1 ? '' : 's' }}</p>
@@ -329,6 +327,7 @@ const STATUS_OPTIONS: StatusOption[] = [
           </button>
         </div>
       </div>
+      </app-brand-header-shell>
       <input #photoInput type="file" accept="image/*" hidden (change)="onPhotoFile($event)" />
     </ion-content>
   `,
@@ -347,8 +346,7 @@ const STATUS_OPTIONS: StatusOption[] = [
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: var(--app-chrome-top-inset, var(--safe-area-top)) 16px 0;
-      min-height: calc(var(--app-header-height) + var(--app-chrome-top-inset, var(--safe-area-top)));
+      padding: 14px 16px 6px;
       box-sizing: border-box;
       background: #fff;
       border-bottom: 1px solid #F3F4F6;
@@ -357,7 +355,7 @@ const STATUS_OPTIONS: StatusOption[] = [
     .fac-header-copy {
       flex: 1;
       min-width: 0;
-      text-align: center;
+      text-align: left;
     }
 
     .fac-header-copy h1 {
@@ -999,7 +997,6 @@ const STATUS_OPTIONS: StatusOption[] = [
 export class VenueFacilitiesPage implements OnInit {
   @ViewChild('photoInput') photoInput?: ElementRef<HTMLInputElement>;
 
-  private readonly router = inject(Router);
   private readonly venueService = inject(VenueService);
   private readonly auth = inject(AuthService);
   private readonly mediaPicker = inject(NativeMediaPickerService);
@@ -1345,10 +1342,6 @@ export class VenueFacilitiesPage implements OnInit {
     this.courtsRaw = [...this.courtsRaw, { id: nextId, meta: {} }];
     this.selectFacility(nextId);
     this.onChange();
-  }
-
-  goBack() {
-    void this.router.navigateByUrl('/app/venue/dashboard');
   }
 
   gallerySlots(): number[] {

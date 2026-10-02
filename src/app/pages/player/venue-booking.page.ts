@@ -3,6 +3,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { VENUE_DATA, type VenueDetail } from './venue-detail.page';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 import {
   buildBookingSlots,
   courtCostFromMinutes,
@@ -25,19 +26,16 @@ interface DateItem {
 @Component({
   selector: 'app-venue-booking',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, BrandHeaderShellComponent],
   template: `
     <ion-content fullscreen class="book-content">
+      <app-brand-header-shell (back)="back()">
       <div class="book-page" *ngIf="venue">
         <header class="book-header">
-          <button type="button" class="icon-btn" (click)="back()" aria-label="Back">
-            <ion-icon name="chevron-back"></ion-icon>
-          </button>
           <div class="book-header-copy">
             <h1>Select Date & Time</h1>
             <p>{{ venue.venueName }}</p>
           </div>
-          <div class="icon-btn icon-btn--ghost"></div>
         </header>
 
         <div class="book-body">
@@ -177,6 +175,7 @@ interface DateItem {
           </div>
         </div>
       </div>
+      </app-brand-header-shell>
     </ion-content>
 
     <ion-footer *ngIf="venue" class="book-footer ion-no-border">
@@ -234,8 +233,7 @@ interface DateItem {
         align-items: center;
         justify-content: space-between;
         gap: 12px;
-        padding: var(--app-chrome-top-inset, var(--safe-area-top)) 16px 0;
-        min-height: calc(var(--app-header-height) + var(--app-chrome-top-inset, var(--safe-area-top)));
+        padding: 14px 16px 10px;
         box-sizing: border-box;
         background: rgba(255, 255, 255, 0.96);
         border-bottom: 1px solid #eef0f3;
@@ -243,7 +241,6 @@ interface DateItem {
       }
 
       .book-header-copy {
-        text-align: center;
         min-width: 0;
       }
 
@@ -263,28 +260,6 @@ interface DateItem {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-      }
-
-      .icon-btn {
-        width: var(--app-header-btn-size);
-        height: var(--app-header-btn-size);
-        border: none;
-        border-radius: 14px;
-        background: #f3f4f6;
-        color: #111827;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-      }
-
-      .icon-btn ion-icon {
-        font-size: 20px;
-      }
-
-      .icon-btn--ghost {
-        background: transparent;
-        pointer-events: none;
       }
 
       .book-body {

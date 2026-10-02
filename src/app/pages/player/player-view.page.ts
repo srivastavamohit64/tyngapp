@@ -7,18 +7,18 @@ import { DiscoverPlayer } from '../../core/models/api.model';
 import { SocialService } from '../../core/services/social.service';
 import { sportEmoji } from '../../core/utils/booking.utils';
 import { PageSkeletonComponent } from '../../shared/components/skeleton';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 
 @Component({
   selector: 'app-player-view',
   standalone: true,
-  imports: [CommonModule, IonicModule, PageSkeletonComponent],
+  imports: [CommonModule, IonicModule, PageSkeletonComponent, BrandHeaderShellComponent],
   template: `
     <ion-content fullscreen>
+      <app-brand-header-shell>
       <div class="page" *ngIf="loading">
         <header class="hdr">
-          <button type="button" class="back" (click)="back()"><ion-icon name="chevron-back"></ion-icon></button>
           <h1>Player</h1>
-          <span class="spacer"></span>
         </header>
         <div class="px-4">
           <app-page-skeleton variant="profile" label="Loading player"></app-page-skeleton>
@@ -26,15 +26,13 @@ import { PageSkeletonComponent } from '../../shared/components/skeleton';
       </div>
 
       <div class="page" *ngIf="!loading && error">
-        <button type="button" class="back" (click)="back()"><ion-icon name="chevron-back"></ion-icon></button>
         <div class="state">{{ error }}</div>
       </div>
 
       <div class="page" *ngIf="!loading && player">
         <header class="hdr">
-          <button type="button" class="back" (click)="back()"><ion-icon name="chevron-back"></ion-icon></button>
           <h1>Player</h1>
-          <button type="button" class="back" (click)="openActions()" [disabled]="blockBusy" aria-label="More options">
+          <button type="button" class="icon-btn" (click)="openActions()" [disabled]="blockBusy" aria-label="More options">
             <ion-icon name="ellipsis-horizontal"></ion-icon>
           </button>
         </header>
@@ -84,6 +82,7 @@ import { PageSkeletonComponent } from '../../shared/components/skeleton';
 
         <button type="button" class="cta" (click)="goDiscover()">Find more players</button>
       </div>
+      </app-brand-header-shell>
     </ion-content>
   `,
   styles: [
@@ -91,10 +90,7 @@ import { PageSkeletonComponent } from '../../shared/components/skeleton';
       .page {
         min-height: 100%;
         background: #fafbfc;
-        padding: var(--safe-area-top) 20px 32px;
-      }
-      .page > .back {
-        margin-top: 10px;
+        padding: 14px 20px 32px;
       }
       .hdr {
         display: flex;
@@ -107,16 +103,12 @@ import { PageSkeletonComponent } from '../../shared/components/skeleton';
       .hdr h1 {
         flex: 1;
         margin: 0;
-        text-align: center;
         font-size: var(--app-header-title-size);
         font-weight: var(--app-header-title-weight);
         line-height: var(--app-header-title-line-height);
         color: #111827;
       }
-      .spacer {
-        width: var(--app-header-btn-size);
-      }
-      .back {
+      .icon-btn {
         width: var(--app-header-btn-size);
         height: var(--app-header-btn-size);
         border-radius: 12px;
@@ -126,7 +118,7 @@ import { PageSkeletonComponent } from '../../shared/components/skeleton';
         color: #111827;
         font-size: 20px;
       }
-      .back:disabled {
+      .icon-btn:disabled {
         opacity: 0.5;
       }
       .blocked-banner {
@@ -332,10 +324,6 @@ export class PlayerViewPage implements OnInit {
 
   formatSport(sport: string) {
     return sport.replace(/\b\w/g, (c) => c.toUpperCase());
-  }
-
-  back() {
-    void this.router.navigateByUrl('/app/home');
   }
 
   goDiscover() {

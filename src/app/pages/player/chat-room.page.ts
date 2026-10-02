@@ -2,8 +2,9 @@ import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AlertController, IonicModule, NavController, ToastController, ViewWillEnter, ViewWillLeave } from '@ionic/angular';
+import { AlertController, IonicModule, ToastController, ViewWillEnter, ViewWillLeave } from '@ionic/angular';
 import { PageSkeletonComponent } from '../../shared/components/skeleton';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 import { Subscription, firstValueFrom } from 'rxjs';
 import { BookingRecord } from '../../core/models/api.model';
 import { AuthService } from '../../core/services/auth.service';
@@ -30,15 +31,13 @@ interface GameChatDetails {
 @Component({
   selector: 'app-chat-room',
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule, PageSkeletonComponent],
+  imports: [CommonModule, FormsModule, IonicModule, PageSkeletonComponent, BrandHeaderShellComponent],
   template: `
     <ion-content fullscreen>
-      <main class="safe-area-top flex flex-col min-h-full bg-white text-slate-800 select-none">
-        <header class="app-header-bar flex items-center justify-between px-4 border-b border-slate-100 bg-white sticky top-0 z-20">
+      <app-brand-header-shell class="chat-shell">
+      <main class="chat-main flex flex-col bg-white text-slate-800 select-none">
+        <header class="chat-room-header app-header-bar flex items-center justify-between px-4 border-b border-slate-100 bg-white">
           <div class="flex items-center gap-2 min-w-0">
-            <button (click)="back()" class="app-header-btn grid place-items-center rounded-full bg-transparent text-slate-800">
-              <ion-icon name="chevron-back-outline" class="text-2xl"></ion-icon>
-            </button>
             <div class="h-10 w-10 rounded-full overflow-hidden bg-slate-100 flex items-center justify-center border border-slate-100 text-xl flex-shrink-0">
               <img *ngIf="thread?.avatar" [src]="thread?.avatar" class="w-full h-full object-cover" alt="" (error)="onAvatarError()" />
               <span *ngIf="!thread?.avatar">{{ isGameChat ? '⚽' : isCommunityChat ? '🤝' : '💬' }}</span>
@@ -118,7 +117,7 @@ interface GameChatDetails {
           </button>
         </div>
 
-        <div *ngIf="!loading && !errorMessage" class="flex-1 overflow-y-auto px-4 py-4 space-y-3" #scrollArea>
+        <div *ngIf="!loading && !errorMessage" class="chat-scroll flex-1 overflow-y-auto px-4 py-4 space-y-3" #scrollArea>
           <div *ngIf="messages.length === 0" class="text-center text-xs text-slate-400 py-10 font-semibold">
             No messages yet. Say hello!
           </div>
@@ -189,7 +188,7 @@ interface GameChatDetails {
           </button>
         </div>
 
-        <div class="border-t border-slate-100 px-3 py-2 pb-[calc(12px+var(--safe-area-bottom))] bg-white flex items-end gap-2">
+        <div class="chat-composer border-t border-slate-100 px-3 py-2 pb-[calc(12px+var(--safe-area-bottom))] bg-white flex items-end gap-2">
           <textarea
             [(ngModel)]="newMessageText"
             rows="1"
@@ -208,6 +207,7 @@ interface GameChatDetails {
           </button>
         </div>
       </main>
+      </app-brand-header-shell>
 
       <ion-modal [isOpen]="!!viewedRequest" [initialBreakpoint]="1" [breakpoints]="[0, 1]" class="req-sheet-modal" (didDismiss)="viewedRequest = null">
         <ng-template>
@@ -242,6 +242,24 @@ interface GameChatDetails {
   `,
   styles: [
     `
+      .chat-shell {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+      .chat-main {
+        flex: 1;
+        min-height: 0;
+      }
+      .chat-room-header,
+      .game-card-wrap,
+      .quick-actions,
+      .chat-composer {
+        flex-shrink: 0;
+      }
+      .chat-scroll {
+        min-height: 0;
+      }
       .self-bubble {
         background: var(--app-primary, #a3e635);
         color: #111827;
@@ -271,9 +289,6 @@ interface GameChatDetails {
       .game-card-wrap {
         padding: 10px 12px 0;
         background: #fff;
-        position: sticky;
-        top: var(--app-header-height);
-        z-index: 15;
       }
       .game-card {
         width: 100%;
@@ -416,7 +431,6 @@ interface GameChatDetails {
 })
 export class ChatRoomPage implements OnInit, OnDestroy, ViewWillEnter, ViewWillLeave {
   private readonly router = inject(Router);
-  private readonly navCtrl = inject(NavController);
   private readonly route = inject(ActivatedRoute);
   private readonly chat = inject(ChatService);
   private readonly auth = inject(AuthService);
@@ -636,10 +650,6 @@ export class ChatRoomPage implements OnInit, OnDestroy, ViewWillEnter, ViewWillL
     } finally {
       this.sending = false;
     }
-  }
-
-  back(): void {
-    this.navCtrl.back();
   }
 
   onAvatarError(): void {

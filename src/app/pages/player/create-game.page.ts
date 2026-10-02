@@ -7,7 +7,7 @@ import { firstValueFrom } from 'rxjs';
 import { ApiService } from '../../core/services/api.service';
 import { BookingService } from '../../core/services/booking.service';
 import { DesignDataService } from '../../core/services/design-data.service';
-import { HeaderComponent } from '../../shared/components/header/header.component';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 import { PrimaryButtonComponent } from '../../shared/components/primary-button/primary-button.component';
 import { SkeletonListComponent } from '../../shared/components/skeleton';
 import { Venue } from '../../shared/models/app.models';
@@ -44,22 +44,20 @@ interface DateOption {
 @Component({
   selector: 'app-create-game',
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule, HeaderComponent, PrimaryButtonComponent, SkeletonListComponent],
+  imports: [CommonModule, FormsModule, IonicModule, BrandHeaderShellComponent, PrimaryButtonComponent, SkeletonListComponent],
   template: `
     <ion-content fullscreen>
+      <app-brand-header-shell (back)="back()">
       <div class="create-page page-safe-bottom">
-        <app-header
-          variant="page"
-          title="Create Game"
-          [subtitle]="'Step ' + currentStep + ' of ' + steps.length"
-          [showBack]="true"
-          [hasProjectedEnd]="true"
-          (back)="back()"
-        >
+        <div class="cg-title-row">
+          <div>
+            <h1 class="cg-title">Create Game</h1>
+            <p class="cg-subtitle">Step {{ currentStep }} of {{ steps.length }}</p>
+          </div>
           <button type="button" class="icon-btn" (click)="next()" [disabled]="!canProceed()">
             <ion-icon name="chevron-forward"></ion-icon>
           </button>
-        </app-header>
+        </div>
 
         <div class="stepper">
           <div class="step-row">
@@ -217,6 +215,7 @@ interface DateOption {
           </app-primary-button>
         </div>
       </div>
+      </app-brand-header-shell>
     </ion-content>
   `,
   styles: [
@@ -224,6 +223,28 @@ interface DateOption {
       .create-page {
         min-height: 100%;
         background: #fafbfc;
+      }
+
+      .cg-title-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 14px 24px 0;
+      }
+
+      .cg-title {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 800;
+        color: #111827;
+      }
+
+      .cg-subtitle {
+        margin: 2px 0 0;
+        font-size: 12px;
+        font-weight: 500;
+        color: #6b7280;
       }
 
       .icon-btn {

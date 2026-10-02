@@ -3,6 +3,7 @@ import { Component, signal, computed, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 
 interface CollabContract {
   start: string;
@@ -164,17 +165,15 @@ const DOCS = [
 @Component({
   selector: 'app-venue-collab-detail',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule],
+  imports: [CommonModule, IonicModule, FormsModule, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true">
+      <app-brand-header-shell (back)="back()">
       <div class="collab-detail-page pb-36 text-left">
         <!-- Sticky Header -->
         <div class="sticky-header bg-white border-b border-[#F3F4F6]">
           <div class="app-header-bar flex items-center justify-between px-5">
-            <button (click)="back()" class="app-header-btn flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
-              <ion-icon name="chevron-back-outline" class="text-xl text-[#111827]"></ion-icon>
-            </button>
-            <div class="text-center">
+            <div class="min-w-0">
               <p class="app-header-title text-[#111827] m-0">Venue Collaboration</p>
               <p class="text-[11px] text-[#9CA3AF] m-0 font-bold">{{ data().venueName }}</p>
             </div>
@@ -471,6 +470,7 @@ const DOCS = [
           </div>
         </div>
       </div>
+      </app-brand-header-shell>
     </ion-content>
   `,
   styles: [`

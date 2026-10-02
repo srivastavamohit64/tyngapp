@@ -1,22 +1,20 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 import { VenueEventRecord, VenueEventService } from '../../core/services/venue-event.service';
 import { PageSkeletonComponent } from '../../shared/components/skeleton';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 
 @Component({
   selector: 'app-event-detail',
   standalone: true,
-  imports: [CommonModule, IonicModule, PageSkeletonComponent],
+  imports: [CommonModule, IonicModule, PageSkeletonComponent, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true">
+      <app-brand-header-shell>
       <main class="event-page">
-        <button type="button" class="back-button" (click)="back()">
-          <ion-icon name="chevron-back-outline"></ion-icon>
-          <span>Events</span>
-        </button>
 
         <app-page-skeleton *ngIf="loading" variant="detail" label="Loading event"></app-page-skeleton>
         <div *ngIf="!loading && errorMessage" class="state error">
@@ -49,12 +47,12 @@ import { PageSkeletonComponent } from '../../shared/components/skeleton';
           </div>
         </article>
       </main>
+      </app-brand-header-shell>
     </ion-content>
   `,
   styles: [`
     :host { display: block; --event-bg: #f8fafc; }
     .event-page { min-height: 100%; padding: 18px 20px 40px; background: var(--event-bg); color: #111827; }
-    .back-button { display: flex; align-items: center; gap: 6px; border: 0; background: transparent; color: #334155; font-size: 16px; padding: 8px 0 18px; }
     .state { min-height: 60vh; display: grid; place-content: center; text-align: center; color: #64748b; }
     .state h2 { color: #111827; margin: 0 0 8px; }
     .state p { margin: 0 0 18px; }
@@ -77,7 +75,6 @@ import { PageSkeletonComponent } from '../../shared/components/skeleton';
 })
 export class EventDetailPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
   private readonly events = inject(VenueEventService);
 
   event: VenueEventRecord | null = null;
@@ -107,9 +104,5 @@ export class EventDetailPage implements OnInit {
     } finally {
       this.loading = false;
     }
-  }
-
-  back(): void {
-    void this.router.navigateByUrl('/app/home');
   }
 }

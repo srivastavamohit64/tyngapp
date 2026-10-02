@@ -24,9 +24,9 @@ interface XpHistoryGroup {
         <ion-refresher-content pullingText="Pull to refresh"></ion-refresher-content>
       </ion-refresher>
 
-      <app-brand-header-shell [showBrand]="false">
+      <app-brand-header-shell (back)="goBack()">
         <main class="tp-history-page page-with-tab-bar">
-          <app-page-header title="XP History" [showBack]="true" (back)="goBack()"></app-page-header>
+          <app-page-header title="XP History"></app-page-header>
 
           <div class="tp-content">
             <section class="tp-hero" *ngIf="summary() as total; else heroSkeleton">

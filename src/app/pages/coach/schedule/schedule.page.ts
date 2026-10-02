@@ -145,9 +145,7 @@ function buildWeek() {
         <!-- Sticky Header -->
         <div class="sticky-header">
           <div class="app-header-bar flex items-center justify-between px-5 bg-white border-b border-[#F3F4F6]">
-            <button (click)="back()" class="app-header-btn flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
-              <ion-icon name="chevron-back-outline" class="text-xl text-[#111827]"></ion-icon>
-            </button>
+            <span class="app-header-btn" aria-hidden="true"></span>
             <div class="text-center">
               <p class="app-header-title text-[#111827] m-0">Schedule</p>
               <p class="text-[11px] text-[#9CA3AF] font-bold m-0">{{ todayLabel }}</p>
@@ -617,10 +615,6 @@ export class CoachSchedulePage implements OnInit {
 
   private sportImage(sport: string): string {
     return ({ cricket: 'https://images.unsplash.com/photo-1593341646782-e0b495cff86d?w=700&h=350&fit=crop&auto=format', football: 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=700&h=350&fit=crop&auto=format', badminton: 'https://images.unsplash.com/photo-1722087642932-9b070e9a066e?w=700&h=350&fit=crop&auto=format' } as Record<string, string>)[String(sport || '').toLowerCase()] || 'assets/icon/favicon.png';
-  }
-
-  back() {
-    this.router.navigateByUrl('/app/coach/dashboard');
   }
 
   go(path: string) {

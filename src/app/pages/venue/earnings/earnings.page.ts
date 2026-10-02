@@ -8,21 +8,20 @@ import { AuthService } from '../../../core/services/auth.service';
 import { RealtimeService } from '../../../core/services/realtime.service';
 import { VenueEarningsData, VenueService } from '../../../core/services/venue.service';
 import { PageSkeletonComponent } from '../../../shared/components/skeleton';
+import { BrandHeaderShellComponent } from '../../../shared/components/brand-header-shell/brand-header-shell.component';
 
 type PeriodKey = 'today' | 'week' | 'month' | 'year';
 
 @Component({
   selector: 'app-venue-earnings-page',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule, PageSkeletonComponent],
+  imports: [CommonModule, IonicModule, FormsModule, PageSkeletonComponent, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true" class="has-tabs">
+      <app-brand-header-shell>
       <div class="earnings-page text-left">
         <div class="sticky-header">
           <div class="header-row">
-            <button type="button" class="icon-btn" (click)="goBack()" aria-label="Back">
-              <ion-icon name="chevron-back-outline"></ion-icon>
-            </button>
             <div class="header-title">
               <h1>Earnings & Payouts</h1>
               <span class="live-badge" *ngIf="liveConnected()">
@@ -327,6 +326,7 @@ type PeriodKey = 'today' | 'week' | 'month' | 'year';
           </button>
         </div>
       </div>
+      </app-brand-header-shell>
     </ion-content>
   `,
   styles: [
@@ -362,12 +362,12 @@ type PeriodKey = 'today' | 'week' | 'month' | 'year';
         z-index: 30;
         background: #fff;
         border-bottom: 1px solid #f3f4f6;
-        padding: var(--app-chrome-top-inset, var(--safe-area-top)) 16px 12px;
+        padding: 14px 16px 12px;
       }
 
       .header-row {
         display: grid;
-        grid-template-columns: var(--app-header-btn-size) 1fr var(--app-header-btn-size);
+        grid-template-columns: 1fr var(--app-header-btn-size);
         align-items: center;
         gap: 10px;
         height: var(--app-header-height);
@@ -393,7 +393,7 @@ type PeriodKey = 'today' | 'week' | 'month' | 'year';
       .header-title {
         display: flex;
         flex-direction: column;
-        align-items: center;
+        align-items: flex-start;
         justify-content: center;
         gap: 2px;
         min-width: 0;
@@ -669,9 +669,5 @@ export class VenueEarningsPage implements OnInit, OnDestroy {
     this.refreshTimer = setTimeout(() => {
       void this.reload(true);
     }, 350);
-  }
-
-  goBack(): void {
-    void this.router.navigateByUrl('/app/venue/dashboard');
   }
 }

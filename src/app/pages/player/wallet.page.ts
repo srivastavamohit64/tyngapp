@@ -1,7 +1,6 @@
-import { CommonModule, Location } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { ActionSheetController, IonicModule, RefresherCustomEvent, ToastController } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
@@ -30,13 +29,11 @@ type WalletSection = 'wallet' | 'points' | 'gifts';
         <ion-refresher-content></ion-refresher-content>
       </ion-refresher>
 
-      <app-brand-header-shell [showBrand]="false">
+      <app-brand-header-shell>
         <main class="wallet-page">
           <app-page-header
             [title]="pageTitle()"
-            [showBack]="true"
             [showActions]="true"
-            (back)="goBack()"
           >
             <button
               actions
@@ -849,9 +846,6 @@ export class WalletPage implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly toast = inject(ToastController);
   private readonly actionSheet = inject(ActionSheetController);
-  private readonly location = inject(Location);
-  private readonly router = inject(Router);
-
   readonly wallet = signal<WalletSummary | null>(null);
   readonly selectedSection = signal<WalletSection>('wallet');
   readonly transactions = signal<WalletTransaction[]>([]);
@@ -904,14 +898,6 @@ export class WalletPage implements OnInit {
 
   ngOnInit(): void {
     void this.loadAll();
-  }
-
-  goBack(): void {
-    if (typeof window !== 'undefined' && window.history.length > 1) {
-      this.location.back();
-      return;
-    }
-    void this.router.navigateByUrl('/app/home');
   }
 
   openTopupModal(): void {

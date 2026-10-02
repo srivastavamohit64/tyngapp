@@ -7,6 +7,7 @@ import { CoachService } from '../../core/services/coach.service';
 import { ChatService } from '../../core/services/chat.service';
 import { resolveMediaUrl } from '../../core/utils/media-url.util';
 import { PageSkeletonComponent } from '../../shared/components/skeleton';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 
 interface Student {
   id: number;
@@ -169,11 +170,11 @@ const ACHIEVEMENT_COLORS: Record<string, { bg: string; color: string }> = {
 @Component({
   selector: 'app-coach-student-profile',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule, PageSkeletonComponent],
+  imports: [CommonModule, IonicModule, FormsModule, PageSkeletonComponent, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true">
+      <app-brand-header-shell (back)="back()">
       <div *ngIf="!student" class="student-profile-loading">
-        <button type="button" (click)="back()" class="sp-back" aria-label="Back"><ion-icon name="chevron-back-outline"></ion-icon></button>
         <app-page-skeleton *ngIf="loading" variant="detail" label="Loading student profile"></app-page-skeleton>
         <div *ngIf="!loading && loadError" class="sp-error" role="alert">
           <p>{{ loadError }}</p>
@@ -186,10 +187,7 @@ const ACHIEVEMENT_COLORS: Record<string, { bg: string; color: string }> = {
           <img [src]="student.cover" class="w-full h-full object-cover" />
           <div class="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-[#FAFBFC]"></div>
 
-          <div class="absolute top-0 left-0 right-0 flex items-center justify-between px-5 pt-12">
-            <button (click)="back()" class="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/20 border-none">
-              <ion-icon name="chevron-back-outline" class="text-white text-xl"></ion-icon>
-            </button>
+          <div class="absolute top-0 left-0 right-0 flex items-center justify-end px-5 pt-4">
             <div class="flex gap-2">
               <button class="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/20 border-none">
                 <ion-icon name="share-social-outline" class="text-white text-base"></ion-icon>
@@ -486,6 +484,7 @@ const ACHIEVEMENT_COLORS: Record<string, { bg: string; color: string }> = {
           </div>
         </div>
       </div>
+      </app-brand-header-shell>
     </ion-content>
   `,
   styles: [`
@@ -611,8 +610,7 @@ const ACHIEVEMENT_COLORS: Record<string, { bg: string; color: string }> = {
       animation: scanLaser 1.8s infinite ease-in-out;
     }
 
-    .student-profile-loading { padding: calc(var(--safe-area-top, 0px) + 12px) 16px 24px; }
-    .sp-back { width: 40px; height: 40px; margin-bottom: 10px; border: 0; border-radius: 50%; background: #f3f4f6; display: grid; place-items: center; font-size: 20px; color: #111827; }
+    .student-profile-loading { padding: 12px 16px 24px; }
     .sp-error { padding: 40px 12px; text-align: center; color: #6b7280; font-size: 14px; }
     .sp-error button { margin-top: 12px; height: 40px; padding: 0 18px; border: 0; border-radius: 12px; background: var(--app-primary); color: #111827; font-weight: 800; }
 

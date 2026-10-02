@@ -6,6 +6,7 @@ import { IonicModule, ToastController } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 import { SponsorOption, VenueEventService } from '../../../core/services/venue-event.service';
 import { VenueService } from '../../../core/services/venue.service';
+import { BrandHeaderShellComponent } from '../../../shared/components/brand-header-shell/brand-header-shell.component';
 
 const STEPS = [
   'Choose Event Type',
@@ -28,11 +29,11 @@ const TYPES = [
 @Component({
   selector: 'app-venue-create-event',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule],
+  imports: [CommonModule, IonicModule, FormsModule, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true" class="ce-content">
+      <app-brand-header-shell (back)="back()">
       <div class="ce-page">
-        <button type="button" class="back" (click)="back()"><ion-icon name="chevron-back-outline"></ion-icon></button>
         <div class="stepper">
           <i *ngFor="let s of steps; let i = index" [class.on]="i <= step()"></i>
         </div>
@@ -181,6 +182,7 @@ const TYPES = [
           </div>
         </ng-container>
       </div>
+      </app-brand-header-shell>
     </ion-content>
     <div class="ce-foot">
       <button type="button" class="go" [disabled]="busy()" (click)="next()">{{ cta() }}</button>
@@ -189,8 +191,7 @@ const TYPES = [
   styles: [`
     :host { display: block; height: 100%; }
     .ce-content { --background: #fff; }
-    .ce-page { padding: 12px 18px calc(100px + var(--safe-area-bottom)); padding-top: calc(12px + var(--safe-area-top)); }
-    .back { width: 36px; height: 36px; border: none; border-radius: 50%; background: #F3F4F6; }
+    .ce-page { padding: 12px 18px calc(100px + var(--safe-area-bottom)); }
     .stepper { display: flex; gap: 4px; margin: 12px 0; }
     .stepper i { flex: 1; height: 4px; border-radius: 99px; background: #E5E7EB; }
     .stepper i.on { background: #8cf000; }

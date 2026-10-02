@@ -12,9 +12,9 @@ import { PageHeaderComponent } from '../../shared/components/page-header/page-he
   imports: [CommonModule, IonicModule, BrandHeaderShellComponent, PageHeaderComponent],
   template: `
     <ion-content fullscreen>
-      <app-brand-header-shell>
+      <app-brand-header-shell (back)="router.navigateByUrl('/app/profile')">
         <main class="page-with-tab-bar min-h-full bg-[#FAFBFC] px-5 pb-8">
-          <app-page-header title="XP History" [showBack]="true" (back)="router.navigateByUrl('/app/profile')"></app-page-header>
+          <app-page-header title="XP History"></app-page-header>
           <p class="hint">XP has no cash or TP value. This is your progression ledger.</p>
           <div class="row" *ngFor="let row of items()">
             <div>

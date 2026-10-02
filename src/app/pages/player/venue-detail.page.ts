@@ -6,6 +6,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { firstValueFrom } from 'rxjs';
 import { VenueService } from '../../core/services/venue.service';
 import { PageSkeletonComponent } from '../../shared/components/skeleton';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 
 export interface VenueDetail {
   id: number;
@@ -158,17 +159,11 @@ export const VENUE_DATA: VenueDetail[] = [
 @Component({
   selector: 'app-venue-detail',
   standalone: true,
-  imports: [CommonModule, IonicModule, PageSkeletonComponent],
+  imports: [CommonModule, IonicModule, PageSkeletonComponent, BrandHeaderShellComponent],
   template: `
     <ion-content fullscreen>
+      <app-brand-header-shell (back)="back()">
       <div class="min-h-screen bg-[#FAFBFC] venue-detail-page" *ngIf="loading">
-        <button
-          type="button"
-          (click)="back()"
-          class="skeleton-back w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/20 outline-none"
-        >
-          <ion-icon name="chevron-back" class="text-white text-lg"></ion-icon>
-        </button>
         <app-page-skeleton variant="detail" label="Loading venue"></app-page-skeleton>
       </div>
 
@@ -184,14 +179,6 @@ export const VENUE_DATA: VenueDetail[] = [
             />
             <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/50"></div>
           </div>
-
-          <!-- Back -->
-          <button
-            (click)="back()"
-            class="absolute top-12 left-4 z-10 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/20 outline-none"
-          >
-            <ion-icon name="chevron-back" class="text-white text-lg"></ion-icon>
-          </button>
 
           <!-- Favourite -->
           <button
@@ -465,6 +452,7 @@ export const VENUE_DATA: VenueDetail[] = [
         </div>
 
       </div>
+      </app-brand-header-shell>
     </ion-content>
   `,
   styles: [
@@ -495,13 +483,6 @@ export const VENUE_DATA: VenueDetail[] = [
         border-top: 1px solid #f3f4f6;
         box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.09);
         box-sizing: border-box;
-      }
-
-      .skeleton-back {
-        position: fixed;
-        top: calc(12px + var(--app-chrome-top-inset, var(--safe-area-top)));
-        left: 16px;
-        z-index: 20;
       }
     `
   ]

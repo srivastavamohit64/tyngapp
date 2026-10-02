@@ -4,13 +4,15 @@ import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { ApiService } from '../../core/services/api.service';
 import { SkeletonListComponent } from '../../shared/components/skeleton';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, IonicModule, SkeletonListComponent],
+  imports: [CommonModule, IonicModule, SkeletonListComponent, BrandHeaderShellComponent],
   template: `
     <ion-content fullscreen>
+      <app-brand-header-shell>
       <main class="page">
         <header class="hero">
           <div class="hero-top">
@@ -96,6 +98,7 @@ import { SkeletonListComponent } from '../../shared/components/skeleton';
           </div>
         </section>
       </main>
+      </app-brand-header-shell>
     </ion-content>
   `,
   styles: [
@@ -108,7 +111,7 @@ import { SkeletonListComponent } from '../../shared/components/skeleton';
 
       .hero {
         background: linear-gradient(180deg, rgba(var(--app-primary-rgb), 0.2), transparent);
-        padding: calc(24px + var(--safe-area-top)) 24px 32px;
+        padding: 24px 24px 32px;
       }
 
       .hero-top {

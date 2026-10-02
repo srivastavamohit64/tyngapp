@@ -1,10 +1,11 @@
-import { CommonModule, Location } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { Subscription, firstValueFrom } from 'rxjs';
 
 import { AccountSettingsService, CmsPage } from '../../core/services/account-settings.service';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 
 const FALLBACK_TITLES: Record<string, string> = {
   'privacy-policy': 'Privacy Policy',
@@ -14,7 +15,7 @@ const FALLBACK_TITLES: Record<string, string> = {
 @Component({
   selector: 'app-legal-page',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, BrandHeaderShellComponent],
   styleUrls: ['./settings.page.scss', './settings-subpage.scss'],
   styles: [`
     .legal-card {
@@ -64,13 +65,10 @@ const FALLBACK_TITLES: Record<string, string> = {
   `],
   template: `
     <ion-content fullscreen>
+      <app-brand-header-shell>
       <main class="settings-page">
         <header class="settings-header">
-          <button type="button" class="back-btn" (click)="back()" aria-label="Back">
-            <ion-icon name="chevron-back-outline"></ion-icon>
-          </button>
           <h1 class="settings-title">{{ page()?.title || fallbackTitle() }}</h1>
-          <span class="header-spacer"></span>
         </header>
 
         <article class="legal-card" *ngIf="loading()">
@@ -96,14 +94,13 @@ const FALLBACK_TITLES: Record<string, string> = {
           <div class="legal-content" [innerHTML]="p.content"></div>
         </article>
       </main>
+      </app-brand-header-shell>
     </ion-content>
   `,
 })
 export class LegalPagePage implements OnInit, OnDestroy {
   private readonly api = inject(AccountSettingsService);
   private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
-  private readonly location = inject(Location);
   private sub?: Subscription;
   private slug = '';
 
@@ -137,14 +134,6 @@ export class LegalPagePage implements OnInit, OnDestroy {
       this.error.set(status === 404 ? 'This page is not available yet.' : "Couldn't load this page.");
     } finally {
       this.loading.set(false);
-    }
-  }
-
-  back(): void {
-    if (window.history.length > 1) {
-      this.location.back();
-    } else {
-      void this.router.navigateByUrl('/app/settings');
     }
   }
 }

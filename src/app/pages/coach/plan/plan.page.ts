@@ -6,6 +6,7 @@ import { IonicModule } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 import { CoachService } from '../../../core/services/coach.service';
 import { resolveMediaUrl } from '../../../core/utils/media-url.util';
+import { BrandHeaderShellComponent } from '../../../shared/components/brand-header-shell/brand-header-shell.component';
 
 interface Sport {
   id: string;
@@ -113,9 +114,10 @@ function buildDates() {
 @Component({
   selector: 'app-coach-plan',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule],
+  imports: [CommonModule, IonicModule, FormsModule, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true">
+      <app-brand-header-shell (back)="success() ? go('/app/coach/dashboard') : handleBack()">
       <!-- SUCCESS SCREEN -->
       <div *ngIf="success()" class="success-shell">
         <div class="success-hero">
@@ -159,10 +161,7 @@ function buildDates() {
         <!-- Sticky Wizard Header -->
         <div class="sticky-header">
           <div class="app-header-bar flex items-center justify-between px-5 bg-white border-b border-[#F3F4F6]">
-            <button (click)="handleBack()" class="app-header-btn flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
-              <ion-icon name="chevron-back-outline" class="text-xl text-[#111827]"></ion-icon>
-            </button>
-            <div class="text-center">
+            <div>
               <p class="app-header-title text-[#111827]">Create New Session</p>
               <p class="text-[11px] text-[#9CA3AF] font-bold">Step {{ step() }} of 8</p>
             </div>
@@ -657,6 +656,7 @@ function buildDates() {
           <p *ngIf="publishError()" class="mt-2 text-center text-[12px] text-[#DC2626]">{{ publishError() }}</p>
         </div>
       </div>
+      </app-brand-header-shell>
     </ion-content>
   `,
   styles: [`
@@ -670,7 +670,7 @@ function buildDates() {
       min-height: 100%;
       box-sizing: border-box;
       margin: 0 auto;
-      padding: calc(24px + env(safe-area-inset-top)) 20px calc(24px + env(safe-area-inset-bottom));
+      padding: 24px 20px calc(24px + env(safe-area-inset-bottom));
       display: flex;
       flex-direction: column;
       align-items: center;

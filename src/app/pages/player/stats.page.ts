@@ -1,22 +1,20 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 
 @Component({
   selector: 'app-stats',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule],
+  imports: [CommonModule, IonicModule, FormsModule, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true">
+      <app-brand-header-shell>
       <div class="stats-page">
 
         <!-- Header -->
         <div class="stats-header">
-          <button class="back-btn" (click)="back()">
-            <ion-icon name="chevron-back-outline"></ion-icon>
-          </button>
           <h1 class="stats-title">Personal Stats</h1>
           <button class="edit-btn" (click)="editing = !editing" [style.background]="editing ? 'var(--app-primary)' : '#F3F4F6'">
             <ion-icon [name]="editing ? 'checkmark-outline' : 'pencil-outline'"></ion-icon>
@@ -245,6 +243,7 @@ import { IonicModule } from '@ionic/angular';
 
         <div style="height:120px;"></div>
       </div>
+      </app-brand-header-shell>
     </ion-content>
   `,
   styles: [`
@@ -257,13 +256,12 @@ import { IonicModule } from '@ionic/angular';
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: var(--app-chrome-top-inset, var(--safe-area-top)) 20px 0;
-      min-height: calc(var(--app-header-height) + var(--app-chrome-top-inset, var(--safe-area-top)));
+      padding: 14px 20px 6px;
       box-sizing: border-box;
       background: #FFFFFF;
     }
 
-    .back-btn, .edit-btn {
+    .edit-btn {
       width: var(--app-header-btn-size); height: var(--app-header-btn-size);
       border-radius: 50%;
       background: #F3F4F6;
@@ -671,8 +669,6 @@ import { IonicModule } from '@ionic/angular';
   `]
 })
 export class StatsPage {
-  private readonly router = inject(Router);
-
   editing = false;
 
   readonly bloodGroups = ['A+','A−','B+','B−','AB+','AB−','O+','O−'];
@@ -722,9 +718,5 @@ export class StatsPage {
     const idx = this.stats.sports.indexOf(s);
     if (idx >= 0) this.stats.sports.splice(idx, 1);
     else this.stats.sports.push(s);
-  }
-
-  back() {
-    this.router.navigateByUrl('/app/home');
   }
 }

@@ -7,6 +7,7 @@ import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { CoachGalleryCategory, CoachGalleryItem, CoachProfileDetails, CoachProfileDetailsPayload, CoachService, CoachVerificationDocument, CoachVerificationDocumentType } from '../../core/services/coach.service';
 import { SkeletonListComponent } from '../../shared/components/skeleton';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 
 const LANGUAGES = ['English','Hindi','Tamil','Telugu','Kannada','Malayalam','Punjabi','Marathi','Gujarati','Bengali','Other'];
 const LOCATIONS = ['Sports Academy','Sports Club','School','Private Turf',"Player's Venue",'Home Coaching','Public Grounds','Indoor Courts'];
@@ -31,9 +32,10 @@ const ALL_SECTIONS = [
 @Component({
   selector: 'app-coach-complete-profile',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule, SkeletonListComponent],
+  imports: [CommonModule, IonicModule, FormsModule, SkeletonListComponent, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true">
+      <app-brand-header-shell>
       <!-- SUCCESS SCREEN -->
       <div *ngIf="showDone()" class="done-shell px-6">
         <div class="mb-6 flex flex-col items-center">
@@ -74,10 +76,7 @@ const ALL_SECTIONS = [
         <!-- Header -->
         <div class="sticky-header">
           <div class="app-header-bar flex items-center justify-between px-5 bg-white border-b border-[#F3F4F6]">
-            <button (click)="back()" class="app-header-btn flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
-              <ion-icon name="chevron-back-outline" class="text-xl text-[#111827]"></ion-icon>
-            </button>
-            <div class="text-center">
+            <div>
               <p class="app-header-title text-[#111827]">Complete Your Profile</p>
             </div>
             <button *ngIf="!detailsLoading && getProgress() < 100" (click)="back()" class="text-[13px] font-semibold text-[#9CA3AF] bg-transparent border-none">Skip</button>
@@ -581,6 +580,7 @@ const ALL_SECTIONS = [
         </div>
 
       </div>
+      </app-brand-header-shell>
     </ion-content>
   `,
   styles: [`

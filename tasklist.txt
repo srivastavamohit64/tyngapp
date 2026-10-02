@@ -934,3 +934,9 @@ TYNG — TODAY'S WORK SUMMARY
    - Admin: the Badges screen now separates player and coach badges, explains how each is earned, shows how many people earned it, lists those people, and has a "Re-check now" button. Player and coach pages in admin show their badges and progress.
    - Server updated and pushed. 17 automatic checks pass. The player screens were checked in the browser. Coach screens were not opened in the browser.
    - Still to do: the live server has no scheduled-task timer set up, so the daily re-check (and the other existing daily jobs) do not run yet. Players cannot leave coach reviews in the app yet, so the Top Rated coach badge cannot be earned through the app.
+154. SAME TOP BAR ON EVERY SCREEN - 2 October 2026
+   - Every screen inside the app (player, coach, venue staff and admin) now has the same top bar as Find Coaches: menu or back arrow on the left, the tyng name in the middle and the bell on the right. Search, settings, chat, booking, profile, notification, wallet, badges and all coach, venue and admin screens were changed (about 70 screens).
+   - The extra back arrows inside the screens were removed, so the top bar's arrow is the only back button. Screens whose back arrow did something special (going to the previous step of a form, or back to a set screen such as My Bookings, Students or the venue list) still do that through the top bar arrow.
+   - The chat room now keeps the top bar and the message box on screen while only the messages scroll.
+   - Type check passes and the app compiles. Search, Settings, Live Map, Chats, a chat room, Badges and Book a Court were checked in the browser as a player. Coach, venue and admin screens were not opened in the browser.
+   - Not changed: sign-in, password reset and first-time setup screens keep their own layout. A few old unused screen files still contain back arrows but are never shown.

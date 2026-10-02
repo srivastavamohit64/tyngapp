@@ -18,6 +18,7 @@ import { normalizeImageFile } from '../../core/utils/image-file.util';
 import { PrimaryButtonComponent } from '../../shared/components/primary-button/primary-button.component';
 import { LocationFieldComponent } from '../../shared/components/location-field/location-field.component';
 import { TextInputComponent } from '../../shared/components/text-input/text-input.component';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 
 const ADDRESS_TAGS = ['Home', 'Work', 'Other'] as const;
 const COACH_LANGUAGES = ['English','Hindi','Tamil','Telugu','Kannada','Malayalam','Punjabi','Marathi','Gujarati','Bengali','Other'];
@@ -37,14 +38,13 @@ const COACH_ACHIEVEMENTS = ['District Level','State Level','National Level','Int
 @Component({
   selector: 'app-edit-profile-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule, TextInputComponent, LocationFieldComponent, PrimaryButtonComponent],
+  imports: [CommonModule, FormsModule, IonicModule, TextInputComponent, LocationFieldComponent, PrimaryButtonComponent, BrandHeaderShellComponent],
   template: `
     <ion-content fullscreen>
+      <app-brand-header-shell>
       <main class="edit-profile">
         <header class="hdr">
-          <button type="button" class="icon-btn" (click)="back()"><ion-icon name="chevron-back-outline"></ion-icon></button>
           <h1>Edit Profile</h1>
-          <span class="spacer"></span>
         </header>
 
         <div class="avatar-block">
@@ -236,6 +236,7 @@ const COACH_ACHIEVEMENTS = ['District Level','State Level','National Level','Int
           {{ submitting ? 'Saving...' : 'Save Changes' }}
         </app-primary-button>
       </main>
+      </app-brand-header-shell>
     </ion-content>
 
     <ion-modal
@@ -310,11 +311,9 @@ const COACH_ACHIEVEMENTS = ['District Level','State Level','National Level','Int
     </ion-modal>
   `,
   styles: [`
-    .edit-profile { padding: var(--safe-area-top) 20px 32px; min-height: 100%; background: #fafbfc; }
-    .hdr { display: flex; align-items: center; gap: 12px; height: var(--app-header-height); margin-bottom: 24px; }
-    .hdr h1 { flex: 1; text-align: center; font-size: var(--app-header-title-size); font-weight: var(--app-header-title-weight); line-height: var(--app-header-title-line-height); margin: 0; color: #111827; }
-    .spacer { width: var(--app-header-btn-size); }
-    .icon-btn { width: var(--app-header-btn-size); height: var(--app-header-btn-size); border: none; border-radius: 12px; background: #f3f4f6; display: grid; place-items: center; }
+    .edit-profile { padding: 14px 20px 32px; min-height: 100%; background: #fafbfc; }
+    .hdr { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+    .hdr h1 { flex: 1; font-size: var(--app-header-title-size); font-weight: var(--app-header-title-weight); line-height: var(--app-header-title-line-height); margin: 0; color: #111827; }
     .avatar-block { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 24px; }
     .avatar {
       width: 96px; height: 96px; border-radius: 50%; overflow: hidden;

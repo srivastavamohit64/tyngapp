@@ -1,17 +1,17 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 
 @Component({
   selector: 'app-admin-venues',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, BrandHeaderShellComponent],
   template: `
     <ion-content fullscreen>
+      <app-brand-header-shell>
       <main class="page">
         <header class="header">
-          <button type="button" class="back" (click)="back()"><ion-icon name="chevron-back"></ion-icon></button>
           <h1>Venue Management</h1>
         </header>
         <div class="card" *ngFor="let v of venues">
@@ -23,13 +23,13 @@ import { IonicModule } from '@ionic/angular';
           <span class="status" [class.pending]="v.status === 'pending'">{{ v.status }}</span>
         </div>
       </main>
+      </app-brand-header-shell>
     </ion-content>
   `,
   styles: [
     `
-      .page { min-height: 100%; background: #fafbfc; padding: var(--safe-area-top) 20px calc(112px + var(--safe-area-bottom)); }
-      .header { display: flex; align-items: center; gap: 12px; height: var(--app-header-height); margin-bottom: 16px; }
-      .back { width: var(--app-header-btn-size); height: var(--app-header-btn-size); min-height: unset; border-radius: 12px; background: #f3f4f6; display: grid; place-items: center; font-size: 20px; color: #111827; }
+      .page { min-height: 100%; background: #fafbfc; padding: 14px 20px calc(112px + var(--safe-area-bottom)); }
+      .header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
       h1 { margin: 0; font-size: var(--app-header-title-size); font-weight: var(--app-header-title-weight); line-height: var(--app-header-title-line-height); color: #111827; }
       .card { display: flex; align-items: center; gap: 12px; background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 14px; margin-bottom: 10px; }
       .emoji { width: 48px; height: 48px; border-radius: 12px; background: #f3f4f6; display: grid; place-items: center; font-size: 24px; }
@@ -40,11 +40,9 @@ import { IonicModule } from '@ionic/angular';
   ],
 })
 export class AdminVenuesPage {
-  private readonly router = inject(Router);
   readonly venues = [
     { name: 'Phoenix Sports Hub', emoji: '🏟️', location: 'Aliganj', status: 'approved' },
     { name: 'Elite Sports Arena', emoji: '⚽', location: 'Indira Nagar', status: 'pending' },
     { name: 'PlayZone Complex', emoji: '🏀', location: 'Gomti Nagar', status: 'approved' },
   ];
-  back() { void this.router.navigateByUrl('/app/admin/dashboard'); }
 }

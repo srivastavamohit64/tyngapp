@@ -1,10 +1,10 @@
-import { CommonModule, Location } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { IonicModule, ToastController } from '@ionic/angular';
-import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 
 import { AccountSettingsService, NotificationSettings } from '../../core/services/account-settings.service';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 
 const CATEGORY_ICONS: Record<string, string> = {
   bookings: 'calendar-outline',
@@ -19,17 +19,14 @@ const CATEGORY_ICONS: Record<string, string> = {
 @Component({
   selector: 'app-notification-settings-page',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, BrandHeaderShellComponent],
   styleUrls: ['./settings.page.scss', './settings-subpage.scss'],
   template: `
     <ion-content fullscreen>
+      <app-brand-header-shell>
       <main class="settings-page">
         <header class="settings-header">
-          <button type="button" class="back-btn" (click)="back()" aria-label="Back">
-            <ion-icon name="chevron-back-outline"></ion-icon>
-          </button>
           <h1 class="settings-title">Notifications</h1>
-          <span class="header-spacer"></span>
         </header>
 
         <section class="settings-list" *ngIf="loading()">
@@ -77,13 +74,12 @@ const CATEGORY_ICONS: Record<string, string> = {
           </div>
         </section>
       </main>
+      </app-brand-header-shell>
     </ion-content>
   `,
 })
 export class NotificationSettingsPage implements OnInit {
   private readonly api = inject(AccountSettingsService);
-  private readonly location = inject(Location);
-  private readonly router = inject(Router);
   private readonly toast = inject(ToastController);
 
   readonly settings = signal<NotificationSettings | null>(null);
@@ -118,14 +114,6 @@ export class NotificationSettingsPage implements OnInit {
 
   setCategory(key: string, value: boolean): void {
     void this.save(key, { categories: { [key]: value } }, (s) => ({ ...s, categories: { ...s.categories, [key]: value } }));
-  }
-
-  back(): void {
-    if (typeof window !== 'undefined' && window.history.length > 1) {
-      this.location.back();
-      return;
-    }
-    void this.router.navigateByUrl('/app/settings');
   }
 
   private async save(

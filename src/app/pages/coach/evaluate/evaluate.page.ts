@@ -1,9 +1,10 @@
-import { CommonModule, Location } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { CoachService } from '../../../core/services/coach.service';
+import { BrandHeaderShellComponent } from '../../../shared/components/brand-header-shell/brand-header-shell.component';
 
 interface PlayerItem {
   id: number;
@@ -22,14 +23,12 @@ interface CategoryItem {
 @Component({
   selector: 'app-coach-evaluate',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule],
+  imports: [CommonModule, IonicModule, FormsModule, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true" class="evaluation-shell">
+      <app-brand-header-shell>
       <main class="evaluation-page">
         <header class="page-header">
-          <button type="button" class="back-button" aria-label="Go back" (click)="goBack()">
-            <ion-icon name="chevron-back-outline"></ion-icon>
-          </button>
           <h1>Player Evaluation</h1>
           <button type="button" class="history-button" aria-label="View past evaluations" title="Past evaluations" (click)="openEvaluationHistory()">
             <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -145,6 +144,7 @@ interface CategoryItem {
           </ng-container>
         </div>
       </main>
+      </app-brand-header-shell>
 
       <ion-modal
         [isOpen]="historyOpen()"
@@ -203,7 +203,6 @@ interface CategoryItem {
 })
 export class CoachEvaluatePage implements OnInit {
   private readonly router = inject(Router);
-  private readonly location = inject(Location);
   private readonly coach = inject(CoachService);
 
   readonly players = signal<PlayerItem[]>([]);
@@ -369,14 +368,6 @@ export class CoachEvaluatePage implements OnInit {
     if (key.includes('badminton')) return '\u{1F3F8}';
     if (key.includes('tennis')) return '\u{1F3BE}';
     return '\u{1F3C5}';
-  }
-
-  goBack(): void {
-    if (history.length > 1) {
-      this.location.back();
-    } else {
-      void this.router.navigateByUrl('/app/coach/dashboard');
-    }
   }
 
   openStudents(): void {

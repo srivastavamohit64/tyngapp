@@ -1,16 +1,16 @@
-import { CommonModule, Location } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { AlertController, IonicModule, ToastController } from '@ionic/angular';
-import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 
 import { BlockedUser, SocialService } from '../../core/services/social.service';
 import { resolveMediaUrl } from '../../core/utils/media-url.util';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 
 @Component({
   selector: 'app-blocked-users-page',
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule, BrandHeaderShellComponent],
   styleUrls: ['./settings.page.scss', './settings-subpage.scss'],
   styles: [`
     .bu-avatar {
@@ -49,13 +49,10 @@ import { resolveMediaUrl } from '../../core/utils/media-url.util';
   `],
   template: `
     <ion-content fullscreen>
+      <app-brand-header-shell>
       <main class="settings-page">
         <header class="settings-header">
-          <button type="button" class="back-btn" (click)="back()" aria-label="Back">
-            <ion-icon name="chevron-back-outline"></ion-icon>
-          </button>
           <h1 class="settings-title">Blocked Users</h1>
-          <span class="header-spacer"></span>
         </header>
 
         <section class="settings-list" *ngIf="loading()">
@@ -97,13 +94,12 @@ import { resolveMediaUrl } from '../../core/utils/media-url.util';
           </div>
         </section>
       </main>
+      </app-brand-header-shell>
     </ion-content>
   `,
 })
 export class BlockedUsersPage implements OnInit {
   private readonly social = inject(SocialService);
-  private readonly location = inject(Location);
-  private readonly router = inject(Router);
   private readonly alerts = inject(AlertController);
   private readonly toast = inject(ToastController);
 
@@ -160,14 +156,6 @@ export class BlockedUsersPage implements OnInit {
     } finally {
       this.busyId.set(null);
     }
-  }
-
-  back(): void {
-    if (typeof window !== 'undefined' && window.history.length > 1) {
-      this.location.back();
-      return;
-    }
-    void this.router.navigateByUrl('/app/home');
   }
 
   private async showToast(message: string): Promise<void> {

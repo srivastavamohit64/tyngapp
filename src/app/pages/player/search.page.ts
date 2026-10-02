@@ -9,6 +9,7 @@ import { BookingService } from '../../core/services/booking.service';
 import { SocialService } from '../../core/services/social.service';
 import { VenueService } from '../../core/services/venue.service';
 import { resolveMediaUrl } from '../../core/utils/media-url.util';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 type SearchTab = 'all' | 'venues' | 'players' | 'coaches';
 type ResultKind = 'venue' | 'player' | 'coach';
 
@@ -25,14 +26,12 @@ interface SearchRow {
 @Component({
   selector: 'app-search-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule],
+  imports: [CommonModule, FormsModule, IonicModule, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true" class="has-tabs">
+      <app-brand-header-shell>
       <div class="search-page">
         <header class="sp-header">
-          <button type="button" class="sp-back" (click)="back()" aria-label="Back">
-            <ion-icon name="chevron-back-outline"></ion-icon>
-          </button>
           <div class="sp-input-wrap">
             <ion-icon name="search-outline"></ion-icon>
             <input
@@ -110,6 +109,7 @@ interface SearchRow {
           </div>
         </div>
       </div>
+      </app-brand-header-shell>
     </ion-content>
   `,
   styles: [`
@@ -123,23 +123,9 @@ interface SearchRow {
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: var(--app-chrome-top-inset, var(--safe-area-top)) 16px 0;
-      min-height: calc(var(--app-header-height) + var(--app-chrome-top-inset, var(--safe-area-top)));
+      padding: 14px 16px 6px;
       box-sizing: border-box;
       background: transparent;
-    }
-
-    .sp-back {
-      width: var(--app-header-btn-size);
-      height: var(--app-header-btn-size);
-      border: none;
-      border-radius: 50%;
-      background: #f3f4f6;
-      display: grid;
-      place-items: center;
-      font-size: 18px;
-      color: #111827;
-      flex-shrink: 0;
     }
 
     .sp-input-wrap {
@@ -516,10 +502,6 @@ export class SearchPage implements OnInit, AfterViewInit, OnDestroy {
   clearQuery(): void {
     this.query = '';
     void this.runSearch('');
-  }
-
-  back(): void {
-    void this.router.navigateByUrl('/app/home');
   }
 
   openRow(row: SearchRow): void {

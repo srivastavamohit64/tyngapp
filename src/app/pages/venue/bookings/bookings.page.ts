@@ -46,9 +46,6 @@ interface BookingItem {
       <div class="bookings-page">
         <header class="page-header">
           <div class="page-header__row">
-            <button type="button" class="icon-btn" (click)="goHome()" aria-label="Back">
-              <ion-icon name="chevron-back-outline"></ion-icon>
-            </button>
             <h1>Bookings</h1>
             <button type="button" class="icon-btn" (click)="loadBookings()" aria-label="Refresh">
               <ion-icon name="refresh-outline"></ion-icon>
@@ -173,7 +170,7 @@ interface BookingItem {
       z-index: 20;
       background: #fff;
       border-bottom: 1px solid #F3F4F6;
-      padding: var(--app-chrome-top-inset, var(--safe-area-top)) 16px 12px;
+      padding: 0 16px 12px;
     }
 
     .page-header__row {
@@ -789,10 +786,6 @@ export class VenueBookingsPage implements OnInit, OnDestroy {
     } catch (error: any) {
       this.errorMessage.set(error?.error?.message || 'Unable to decline booking.');
     }
-  }
-
-  goHome() {
-    void this.router.navigateByUrl('/app/venue/dashboard');
   }
 
   openBooking(booking: BookingItem) {

@@ -7,6 +7,7 @@ import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { VenueService } from '../../core/services/venue.service';
 import { normalizeSlotInterval, type SlotIntervalMinutes } from '../../core/utils/booking.utils';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 
 interface StatItem {
   label: string;
@@ -54,15 +55,13 @@ const DOC_LABELS: Record<string, string> = {
 @Component({
   selector: 'app-venue-profile',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule],
+  imports: [CommonModule, IonicModule, FormsModule, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true" class="has-tabs">
+      <app-brand-header-shell>
       <div class="venue-profile-page pb-32 text-left">
 
-        <div class="sticky-header app-header-bar flex items-center justify-between px-5 bg-white border-b border-[#F3F4F6]">
-          <button type="button" (click)="back()" class="app-header-btn flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
-            <ion-icon name="chevron-back-outline" class="text-xl text-[#111827]"></ion-icon>
-          </button>
+        <div class="sticky-header flex items-center justify-between px-5 bg-white border-b border-[#F3F4F6]">
           <p class="app-header-title text-[#111827] m-0">Venue Profile</p>
           <button type="button" (click)="editProfile()" class="edit-icon-btn app-header-btn" aria-label="Edit profile">
             <ion-icon name="create-outline"></ion-icon>
@@ -271,6 +270,7 @@ const DOC_LABELS: Record<string, string> = {
           </div>
         </ng-container>
       </div>
+      </app-brand-header-shell>
     </ion-content>
   `,
   styles: [`
@@ -284,8 +284,8 @@ const DOC_LABELS: Record<string, string> = {
       position: sticky;
       top: 0;
       z-index: 30;
-      padding-top: var(--app-chrome-top-inset, var(--safe-area-top));
-      min-height: calc(var(--app-header-height) + var(--app-chrome-top-inset, var(--safe-area-top)));
+      padding-top: 14px;
+      padding-bottom: 6px;
       box-sizing: border-box;
       box-shadow: 0 2px 10px rgba(0,0,0,0.02);
     }
@@ -869,10 +869,6 @@ export class VenueProfilePage implements OnInit, ViewWillEnter {
       });
       await toast.present();
     }
-  }
-
-  back() {
-    void this.router.navigateByUrl('/app/venue/dashboard');
   }
 
   editProfile() {

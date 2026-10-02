@@ -7,6 +7,7 @@ import { IonicModule, ToastController } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 import { BookingService } from '../../core/services/booking.service';
 import { MediaPermissionService } from '../../core/services/media-permission.service';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 
 type BarcodeDetectorLike = {
   detect: (src: CanvasImageSource) => Promise<Array<{ rawValue: string }>>;
@@ -15,12 +16,12 @@ type BarcodeDetectorLike = {
 @Component({
   selector: 'app-check-in',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule],
+  imports: [CommonModule, IonicModule, FormsModule, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true">
+      <app-brand-header-shell (back)="goBack()">
       <div class="ci-page">
         <header>
-          <button type="button" class="back" (click)="goBack()"><ion-icon name="chevron-back-outline"></ion-icon></button>
           <h1>Scan to Check In</h1>
         </header>
 
@@ -43,13 +44,13 @@ type BarcodeDetectorLike = {
         </button>
         <p *ngIf="success()" class="ok">You’re checked in for this session.</p>
       </div>
+      </app-brand-header-shell>
     </ion-content>
   `,
   styles: [`
-    .ci-page { padding: var(--safe-area-top) 18px calc(24px + var(--safe-area-bottom)); }
-    header { display: flex; align-items: center; gap: 8px; min-height: var(--app-header-height); box-sizing: border-box; }
+    .ci-page { padding: 14px 18px calc(24px + var(--safe-area-bottom)); }
+    header { display: flex; align-items: center; gap: 8px; box-sizing: border-box; }
     h1 { margin: 0; font-size: var(--app-header-title-size); font-weight: var(--app-header-title-weight); line-height: var(--app-header-title-line-height); }
-    .back { border: none; background: #F3F4F6; width: var(--app-header-btn-size); height: var(--app-header-btn-size); border-radius: 50%; }
     .lead { color: #6B7280; font-weight: 600; }
     .preview-wrap { position: relative; }
     .preview { width: 100%; height: 280px; background: #111827; border-radius: 18px; object-fit: cover; }

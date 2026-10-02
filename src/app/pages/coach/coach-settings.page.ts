@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { AuthService } from '../../core/services/auth.service';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 
 interface StatusItem {
   id: string;
@@ -23,15 +24,13 @@ const STATUSES: StatusItem[] = [
 @Component({
   selector: 'app-coach-settings',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule],
+  imports: [CommonModule, IonicModule, FormsModule, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true">
+      <app-brand-header-shell>
       <div class="settings-page pb-32">
         <!-- Sticky Header -->
         <div class="sticky-header app-header-bar flex items-center justify-between px-5 bg-white border-b border-[#F3F4F6]">
-          <button (click)="back()" class="app-header-btn flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
-            <ion-icon name="chevron-back-outline" class="text-xl text-[#111827]"></ion-icon>
-          </button>
           <p class="app-header-title text-[#111827] m-0">Settings</p>
           <button (click)="go('/app/coach/notifications')" class="app-header-btn flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
             <ion-icon name="help-circle-outline" class="text-xl text-[#111827]"></ion-icon>
@@ -305,6 +304,7 @@ const STATUSES: StatusItem[] = [
         </div>
 
       </div>
+      </app-brand-header-shell>
     </ion-content>
   `,
   styles: [`
@@ -547,10 +547,6 @@ export class CoachSettingsPage {
 
   getCurrentStatus(): StatusItem {
     return STATUSES.find(s => s.id === this.status()) || STATUSES[0];
-  }
-
-  back() {
-    this.router.navigateByUrl('/app/coach/dashboard');
   }
 
   go(path: string) {

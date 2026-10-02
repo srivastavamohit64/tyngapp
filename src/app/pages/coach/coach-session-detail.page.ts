@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule, IonContent } from '@ionic/angular';
 import { CoachService } from '../../core/services/coach.service';
 import { resolveMediaUrl } from '../../core/utils/media-url.util';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 
 interface Student {
   id: number;
@@ -101,9 +102,10 @@ const SESSIONS: any[] = [
 @Component({
   selector: 'app-coach-session-detail',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule],
+  imports: [CommonModule, IonicModule, FormsModule, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true">
+      <app-brand-header-shell (back)="back()">
       <div *ngIf="loading" class="p-8 text-center text-slate-500">Loading session details…</div>
       <div *ngIf="errorMessage && !loading" class="p-8 text-center">
         <p class="text-slate-700">{{ errorMessage }}</p>
@@ -115,10 +117,7 @@ const SESSIONS: any[] = [
           <img [src]="session.image" [alt]="session.sport + ' session'" class="w-full h-full object-cover" />
           <div class="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-[#FAFBFC]"></div>
 
-          <div class="absolute top-0 left-0 right-0 flex items-center justify-between px-5 pt-12">
-            <button (click)="back()" class="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/20 border-none">
-              <ion-icon name="chevron-back-outline" class="text-white text-xl"></ion-icon>
-            </button>
+          <div class="absolute top-0 left-0 right-0 flex items-center justify-end px-5 pt-4">
             <div class="flex gap-2">
               <button class="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/20 border-none">
                 <ion-icon name="share-social-outline" class="text-white text-base"></ion-icon>
@@ -339,6 +338,7 @@ const SESSIONS: any[] = [
         </div>
         <p *ngIf="actionNotice" class="text-center text-xs text-slate-600 mt-2 mb-0">{{ actionNotice }}</p>
       </div>
+      </app-brand-header-shell>
     </ion-content>
   `,
   styles: [`

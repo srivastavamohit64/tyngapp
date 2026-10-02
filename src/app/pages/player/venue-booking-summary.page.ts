@@ -7,6 +7,7 @@ import { firstValueFrom } from 'rxjs';
 import { BookingService } from '../../core/services/booking.service';
 import { WalletService } from '../../core/services/wallet.service';
 import { VENUE_DATA, type VenueDetail } from './venue-detail.page';
+import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 import {
   blockedMinutesForSlots,
   courtCostFromMinutes,
@@ -28,19 +29,16 @@ interface AppliedCoupon {
 @Component({
   selector: 'app-venue-booking-summary',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule],
+  imports: [CommonModule, IonicModule, FormsModule, BrandHeaderShellComponent],
   template: `
     <ion-content fullscreen class="summary-content">
+      <app-brand-header-shell (back)="back()">
       <div class="summary-page" *ngIf="venue">
         <header class="summary-header">
-          <button type="button" class="icon-btn" (click)="back()" aria-label="Back">
-            <ion-icon name="chevron-back"></ion-icon>
-          </button>
           <div class="summary-header-copy">
             <h1>Booking Summary</h1>
             <p>Review before confirming</p>
           </div>
-          <div class="icon-btn icon-btn--ghost"></div>
         </header>
 
         <div class="summary-body">
@@ -245,6 +243,7 @@ interface AppliedCoupon {
           <p class="save-error" *ngIf="saveError()">{{ saveError() }}</p>
         </div>
       </div>
+      </app-brand-header-shell>
     </ion-content>
 
     <ion-footer *ngIf="venue" class="summary-footer ion-no-border">
@@ -318,20 +317,13 @@ interface AppliedCoupon {
       .summary-header {
         position: sticky; top: 0; z-index: 20;
         display: flex; align-items: center; justify-content: space-between; gap: 12px;
-        padding: var(--app-chrome-top-inset, var(--safe-area-top)) 16px 0;
-        min-height: calc(var(--app-header-height) + var(--app-chrome-top-inset, var(--safe-area-top)));
+        padding: 14px 16px 10px;
         box-sizing: border-box;
         background: rgba(255,255,255,.96); border-bottom: 1px solid #eef0f3;
       }
-      .summary-header-copy { text-align: center; min-width: 0; }
+      .summary-header-copy { min-width: 0; }
       .summary-header-copy h1 { margin: 0; font-size: var(--app-header-title-size); font-weight: var(--app-header-title-weight); line-height: var(--app-header-title-line-height); }
       .summary-header-copy p { margin: 2px 0 0; font-size: 11px; font-weight: 700; color: #9ca3af; }
-      .icon-btn {
-        width: var(--app-header-btn-size); height: var(--app-header-btn-size); border: none; border-radius: 14px; background: #f3f4f6;
-        display: inline-flex; align-items: center; justify-content: center; color: #111827;
-      }
-      .icon-btn ion-icon { font-size: 20px; }
-      .icon-btn--ghost { background: transparent; pointer-events: none; }
       .summary-body { padding: 16px 16px 28px; display: flex; flex-direction: column; gap: 14px; }
       .card {
         background: #fff; border: 1px solid #eef0f3; border-radius: 22px;
