@@ -180,12 +180,18 @@ PLAYER
 - See just your area under your name on the Home page, for example "Preeti Nagar" instead of "Preeti Nagar > Lucknow". If your area is not known, your city is shown.
 - See grey placeholder shapes while Home, the leaderboard, coach profiles, chats, bookings and other screens load, instead of sample text or a "nothing found" message that then changes. A coach profile now shows the real number of reviews.
 - Earn badges automatically as you play. Each badge shows how close you are, for example 1 of 50, and you get a notification the moment you unlock one. Open the new Badges page from Home or your notification. The Good Sport and Fan Favourite badges, earned through good ratings from other players, are now switched on.
+- Open any coach from Coaches to see a full profile page: a cover photo, verified badge, rating, years of experience, sessions and students, when they are next free and their lowest price. Four sections show what they teach and where (Overview), their prices and free times this week (Sessions), their certificates, achievements and past coaching jobs (Experience), and what other players say (Reviews).
+- Book a coach from their profile in a few steps: pick a session type, tap one of their free times or choose your own, check the details and send. A chat with the coach opens so you can agree the place and time.
+- Rate and review a coach after you have finished a session with them. Your star rating counts towards the coach's overall rating, and you can change your review later.
+- Share a coach's profile with friends, or block a coach from the more button at the top of their profile.
 
 COACH
 
 - Use a back button on inner pages. The bottom menu now only appears on your main screens.
 - See grey placeholder shapes on your dashboard, students, schedule, insights, earnings and student pages while they load, instead of sample sessions and requests. Today's completion on your schedule is now worked out from your real sessions.
 - Earn coaching badges for completed sessions, growing your student list, writing player evaluations, great reviews and coaching every week. See your progress on the new Badges page from the side menu or the Milestone card on your dashboard.
+- Fill in three new parts of your profile in Edit Profile so players learn more about you: your specialities (pick from the list or type your own), who you coach (children, adults, beginners and so on), and your coaching history (where you coached, your role and when). They appear on the profile players see.
+- Players now see your training photos as your profile cover, your certificates, partner venues, free times and a reliability score worked out from how often you finish sessions, reply to requests and how well students turn up.
 
 VENUE STAFF
 

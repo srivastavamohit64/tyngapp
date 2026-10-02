@@ -35,6 +35,8 @@ const COACH_TRAVEL_MODES = [
 const COACH_DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 const COACH_TIMES = ['Morning','Afternoon','Evening','Night'];
 const COACH_ACHIEVEMENTS = ['District Level','State Level','National Level','International Level','Former Professional Player','Current Professional Coach','Other'];
+const COACH_SPECIALITIES = ['Fitness','Technique','Beginners','Performance','Kids','Competition Prep','Position Training','Strength & Conditioning','Tactics','Mental Game'];
+const COACH_LEVELS = ['Children','Teenagers','Adults','Seniors','Beginners','Intermediate','Advanced','Professionals'];
 
 @Component({
   selector: 'app-edit-profile-page',
@@ -164,6 +166,40 @@ const COACH_ACHIEVEMENTS = ['District Level','State Level','National Level','Int
             <div class="detail-chips">
               <button type="button" *ngFor="let item of coachAchievementOptions" (click)="toggleCoachArray('achievements', item)" [class.detail-chip-active]="coachDetails.achievements.includes(item)">{{ item }}</button>
             </div>
+          </div>
+
+          <div class="detail-group">
+            <div class="detail-group-heading"><h3>Specialities</h3><span>{{ coachDetails.specialities.length }} selected</span></div>
+            <div class="detail-chips">
+              <button type="button" *ngFor="let item of coachSpecialityOptions" (click)="toggleCoachArray('specialities', item)" [class.detail-chip-active]="coachDetails.specialities.includes(item)">{{ item }}</button>
+              <button type="button" *ngFor="let item of customSpecialities()" (click)="toggleCoachArray('specialities', item)" class="detail-chip-active">{{ item }} ✕</button>
+            </div>
+            <div class="detail-inline-add">
+              <input type="text" [(ngModel)]="customSpeciality" maxlength="60" placeholder="Add your own, e.g. Spin bowling" (keydown.enter)="addCustomSpeciality()" />
+              <button type="button" (click)="addCustomSpeciality()" [disabled]="!customSpeciality.trim()">Add</button>
+            </div>
+          </div>
+
+          <div class="detail-group">
+            <div class="detail-group-heading"><h3>Who do you coach?</h3><span>{{ coachDetails.coachingLevels.length }} selected</span></div>
+            <div class="detail-chips">
+              <button type="button" *ngFor="let item of coachLevelOptions" (click)="toggleCoachArray('coachingLevels', item)" [class.detail-chip-active]="coachDetails.coachingLevels.includes(item)">{{ item }}</button>
+            </div>
+          </div>
+
+          <div class="detail-group">
+            <div class="detail-group-heading"><h3>Coaching history</h3><span>{{ coachDetails.coachingHistory.length }}/10</span></div>
+            <div class="history-edit-list">
+              <div *ngFor="let entry of coachDetails.coachingHistory; let i = index" class="history-edit-row">
+                <input type="text" [(ngModel)]="entry.place" maxlength="120" placeholder="Academy, club or team" />
+                <div class="history-edit-pair">
+                  <input type="text" [(ngModel)]="entry.role" maxlength="120" placeholder="Role, e.g. Head Coach" />
+                  <input type="text" [(ngModel)]="entry.period" maxlength="40" placeholder="e.g. 2022 – Present" />
+                </div>
+                <button type="button" class="history-edit-remove" (click)="removeCoachHistory(i)" aria-label="Remove history entry"><ion-icon name="trash-outline"></ion-icon></button>
+              </div>
+            </div>
+            <button type="button" class="history-edit-add" (click)="addCoachHistory()" [disabled]="coachDetails.coachingHistory.length >= 10"><ion-icon name="add-outline"></ion-icon> Add a place you coached</button>
           </div>
 
           <div class="detail-group">
@@ -372,6 +408,16 @@ const COACH_ACHIEVEMENTS = ['District Level','State Level','National Level','Int
     .mini-toggle-active i { transform:translateX(14px); }
     .detail-group textarea { width:100%; box-sizing:border-box; padding:12px; color:#111827; background:#f8fafc; border:1px solid #edf0f2; border-radius:14px; outline:0; resize:vertical; font:inherit; font-size:13px; line-height:1.5; }
     .detail-group textarea:focus { background:#fff; border-color:var(--app-primary); box-shadow:0 0 0 3px rgba(var(--app-primary-rgb),.12); }
+    .detail-inline-add { display:flex; gap:7px; margin-top:10px; }
+    .detail-inline-add input,.history-edit-row input { min-width:0; width:100%; box-sizing:border-box; padding:9px 11px; color:#111827; background:#f8fafc; border:1px solid #edf0f2; border-radius:11px; outline:0; font:inherit; font-size:12px; }
+    .detail-inline-add input:focus,.history-edit-row input:focus { background:#fff; border-color:var(--app-primary); }
+    .detail-inline-add button { flex-shrink:0; padding:0 14px; color:#111827; background:var(--app-primary); border:0; border-radius:11px; font-size:11px; font-weight:800; }
+    .detail-inline-add button:disabled,.history-edit-add:disabled { opacity:.45; }
+    .history-edit-list { display:flex; flex-direction:column; gap:8px; }
+    .history-edit-row { position:relative; display:flex; flex-direction:column; gap:6px; padding:10px 42px 10px 10px; background:#fff; border:1px solid #edf0f2; border-radius:13px; }
+    .history-edit-pair { display:grid; grid-template-columns:1.3fr 1fr; gap:6px; }
+    .history-edit-remove { position:absolute; top:10px; right:8px; width:28px; height:28px; color:#dc2626; background:#fff; border:1px solid #fee2e2; border-radius:9px; }
+    .history-edit-add { display:flex; align-items:center; justify-content:center; gap:5px; width:100%; margin-top:8px; padding:10px; color:#111827; background:#f8fafc; border:1px dashed #d1d5db; border-radius:12px; font-size:11px; font-weight:800; }
     .verification-edit-list { display:flex; flex-direction:column; gap:8px; }
     .verification-edit-row { display:flex; align-items:center; gap:8px; padding:10px; background:#f8fafc; border:1px solid #edf0f2; border-radius:13px; }
     .verification-edit-copy { min-width:0; flex:1; }
@@ -523,6 +569,9 @@ export class EditProfilePage implements OnInit {
   readonly coachDays = COACH_DAYS;
   readonly coachTimes = COACH_TIMES;
   readonly coachAchievementOptions = COACH_ACHIEVEMENTS;
+  readonly coachSpecialityOptions = COACH_SPECIALITIES;
+  readonly coachLevelOptions = COACH_LEVELS;
+  customSpeciality = '';
   coachDetailsLoaded = false;
   coachDetailsSaving = false;
   coachDetailsError = '';
@@ -585,7 +634,7 @@ export class EditProfilePage implements OnInit {
       languages: [], coachingLocations: [], serviceRadius: '', sessionTypes: [], equipment: [],
       trialEnabled: null, trialType: '', travelMode: '', weeklyAvailability: {},
       feeOptions: { individual: '', group: '', monthly: '' }, feesNegotiable: false,
-      achievements: [], bio: '',
+      achievements: [], specialities: [], coachingLevels: [], coachingHistory: [], bio: '',
     };
   }
 
@@ -603,6 +652,11 @@ export class EditProfilePage implements OnInit {
           weeklyAvailability: result.data.weeklyAvailability && typeof result.data.weeklyAvailability === 'object' ? { ...result.data.weeklyAvailability } : {},
           feeOptions: { individual: '', group: '', monthly: '', ...(result.data.feeOptions || {}) },
           achievements: Array.isArray(result.data.achievements) ? result.data.achievements : [],
+          specialities: Array.isArray(result.data.specialities) ? result.data.specialities : [],
+          coachingLevels: Array.isArray(result.data.coachingLevels) ? result.data.coachingLevels : [],
+          coachingHistory: Array.isArray(result.data.coachingHistory)
+            ? result.data.coachingHistory.map((entry) => ({ place: entry?.place || '', role: entry?.role || '', period: entry?.period || '' }))
+            : [],
         };
         this.coachDetailsLoaded = true;
       },
@@ -610,9 +664,33 @@ export class EditProfilePage implements OnInit {
     });
   }
 
-  toggleCoachArray(field: 'languages' | 'coachingLocations' | 'sessionTypes' | 'equipment' | 'achievements', value: string): void {
+  toggleCoachArray(field: 'languages' | 'coachingLocations' | 'sessionTypes' | 'equipment' | 'achievements' | 'specialities' | 'coachingLevels', value: string): void {
     const values = this.coachDetails[field];
     this.coachDetails[field] = values.includes(value) ? values.filter((item) => item !== value) : [...values, value];
+    this.coachDetailsSuccess = '';
+  }
+
+  addCustomSpeciality(): void {
+    const value = this.customSpeciality.trim().slice(0, 60);
+    if (value && !this.coachDetails.specialities.some((item) => item.toLowerCase() === value.toLowerCase())) {
+      this.coachDetails.specialities = [...this.coachDetails.specialities, value];
+    }
+    this.customSpeciality = '';
+    this.coachDetailsSuccess = '';
+  }
+
+  customSpecialities(): string[] {
+    return this.coachDetails.specialities.filter((item) => !this.coachSpecialityOptions.includes(item));
+  }
+
+  addCoachHistory(): void {
+    if (this.coachDetails.coachingHistory.length >= 10) return;
+    this.coachDetails.coachingHistory = [...this.coachDetails.coachingHistory, { place: '', role: '', period: '' }];
+    this.coachDetailsSuccess = '';
+  }
+
+  removeCoachHistory(index: number): void {
+    this.coachDetails.coachingHistory = this.coachDetails.coachingHistory.filter((_, i) => i !== index);
     this.coachDetailsSuccess = '';
   }
 
@@ -893,6 +971,11 @@ export class EditProfilePage implements OnInit {
           fee_options: this.coachDetails.feeOptions,
           fees_negotiable: this.coachDetails.feesNegotiable,
           achievements: this.coachDetails.achievements,
+          specialities: this.coachDetails.specialities,
+          coaching_levels: this.coachDetails.coachingLevels,
+          coaching_history: this.coachDetails.coachingHistory
+            .map((entry) => ({ place: entry.place.trim(), role: entry.role.trim(), period: entry.period.trim() }))
+            .filter((entry) => entry.place),
           bio: this.coachDetails.bio.trim(),
         };
         await firstValueFrom(this.coachService.saveMyCoachProfileDetails(detailsPayload));

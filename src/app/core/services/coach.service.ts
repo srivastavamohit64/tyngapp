@@ -100,6 +100,10 @@ export class CoachService {
     return this.api.post(`/coaches/${coachId}/booking-requests`, payload);
   }
 
+  submitCoachReview(coachId: number, payload: { rating: number; comment?: string }): Observable<ApiResponse<any>> {
+    return this.api.post(`/coaches/${coachId}/reviews`, payload);
+  }
+
   getMyCoachStudentRequests(): Observable<ApiResponse<any>> {
     return this.api.get('/player/coach-student-requests');
   }
@@ -283,7 +287,16 @@ export interface CoachProfileDetails {
   feeOptions: Record<string, string | number>;
   feesNegotiable: boolean;
   achievements: string[];
+  specialities: string[];
+  coachingLevels: string[];
+  coachingHistory: CoachHistoryEntry[];
   bio: string;
+}
+
+export interface CoachHistoryEntry {
+  place: string;
+  role: string;
+  period: string;
 }
 
 export interface CoachProfileDetailsPayload {
@@ -299,5 +312,8 @@ export interface CoachProfileDetailsPayload {
   fee_options: Record<string, string | number>;
   fees_negotiable: boolean;
   achievements: string[];
+  specialities?: string[];
+  coaching_levels?: string[];
+  coaching_history?: CoachHistoryEntry[];
   bio: string;
 }
