@@ -1,0 +1,535 @@
+// Figma CoachManagementScreen tokens
+$g: #8cf000;
+$g-text: #4d7c0f;
+$o: #ff7a00;
+$b: #38bdf8;
+$v: #7c3aed;
+$fg: #111827;
+$fg2: #6b7280;
+$page: #fafbfc;
+$border: #e5e7eb;
+$muted: #f3f4f6;
+$red: #ef4444;
+
+:host {
+  display: block;
+}
+
+.vc-page {
+  min-height: 100%;
+  background: $page;
+  color: $fg;
+  padding-bottom: calc(112px + env(safe-area-inset-bottom));
+}
+
+.vc-body {
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.vc-card {
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  border: 1px solid $border;
+}
+
+.vc-pad {
+  padding: 18px;
+}
+
+.vc-dark {
+  background: linear-gradient(135deg, $fg 0%, #1e293b 100%);
+  border: none;
+  color: #fff;
+  padding: 22px;
+}
+
+.vc-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 8px;
+
+  h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: $fg;
+  }
+}
+
+.vc-pills {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  &.wrap {
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+
+  button {
+    flex-shrink: 0;
+    border: none;
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    background: $muted;
+    color: $fg2;
+    transition: background 0.15s, color 0.15s;
+
+    &.active {
+      background: $g;
+      color: $fg;
+    }
+  }
+}
+
+.vc-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+
+  ion-icon {
+    font-size: 11px;
+  }
+}
+
+.vc-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+
+  i {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+}
+
+.vc-avatar {
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.vc-statbox {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  border-radius: 16px;
+  background: $muted;
+  min-width: 0;
+
+  b {
+    font-size: 18px;
+    font-weight: 900;
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  span {
+    font-size: 12px;
+    font-weight: 500;
+    color: $fg2;
+    margin-top: 2px;
+  }
+}
+
+.vc-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.vc-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.vc-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid $border;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  span {
+    font-size: 14px;
+    color: $fg2;
+  }
+
+  b {
+    font-size: 14px;
+    font-weight: 600;
+    color: $fg;
+    text-align: right;
+    max-width: 60%;
+    overflow-wrap: anywhere;
+  }
+
+  b.neg {
+    color: $red;
+  }
+}
+
+.vc-net {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(140, 240, 0, 0.07);
+
+  span {
+    font-weight: 700;
+    color: $fg;
+  }
+
+  b {
+    font-size: 20px;
+    font-weight: 900;
+    color: $g-text;
+  }
+}
+
+.vc-btn {
+  border: none;
+  border-radius: 16px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  &:disabled {
+    opacity: 0.55;
+  }
+
+  ion-icon {
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  &.primary {
+    background: $g;
+    color: $fg;
+  }
+
+  &.soft {
+    background: $muted;
+    color: $fg;
+  }
+
+  &.danger {
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+  }
+
+  &.block {
+    width: 100%;
+  }
+
+  &.lg {
+    padding: 16px;
+    border-radius: 24px;
+    font-size: 15px;
+  }
+}
+
+.vc-icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 16px;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+}
+
+.vc-empty {
+  text-align: center;
+  padding: 40px 12px;
+  color: $fg2;
+
+  ion-icon {
+    font-size: 36px;
+    opacity: 0.3;
+  }
+
+  p {
+    margin: 8px 0 14px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+}
+
+.vc-muted-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 16px;
+  background: $muted;
+  font-size: 12px;
+  font-weight: 500;
+  color: $fg2;
+
+  span:first-of-type {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.vc-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.vc-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+
+  > span {
+    font-size: 14px;
+    font-weight: 600;
+    color: $fg;
+  }
+
+  input,
+  select,
+  textarea {
+    width: 100%;
+    min-width: 0;
+    font: inherit;
+    font-size: 14px;
+    color: $fg;
+    background: $muted;
+    border: 1px solid $border;
+    border-radius: 14px;
+    padding: 10px 12px;
+    outline: none;
+
+    &:focus {
+      border-color: $g;
+    }
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 72px;
+  }
+}
+
+.vc-days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+
+  button {
+    border: none;
+    border-radius: 12px;
+    padding: 9px 0;
+    font-size: 12px;
+    font-weight: 700;
+    background: $muted;
+    color: $fg2;
+
+    &.active {
+      background: $g;
+      color: $fg;
+    }
+  }
+}
+
+.vc-error {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #dc2626;
+}
+
+.vc-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.vc-person {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+
+  &.top {
+    align-items: flex-start;
+    margin-bottom: 16px;
+  }
+
+  .grow {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .nm {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: $fg;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+
+    &.lg {
+      font-size: 16px;
+    }
+
+    &.white {
+      color: #fff;
+    }
+  }
+
+  .shield {
+    color: $g;
+    font-size: 14px;
+  }
+
+  .sub {
+    margin: 2px 0 0;
+    font-size: 14px;
+    color: $fg2;
+
+    &.light {
+      color: rgba(255, 255, 255, 0.6);
+    }
+  }
+
+  .tags {
+    display: flex;
+    align-items: center;
+    gap: 8px 12px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+
+  .side {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+  }
+}
+
+.rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 700;
+  color: $fg;
+
+  ion-icon {
+    color: $g;
+    font-size: 12px;
+  }
+
+  &.sm {
+    font-size: 12px;
+    font-weight: 600;
+  }
+}
+
+.vc-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+
+  .grow {
+    flex: 1;
+  }
+}
+
+.vc-hint {
+  margin: 0;
+  font-size: 13px;
+  color: $fg2;
+}
+
+.vc-note {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: $muted;
+  font-size: 13px;
+  color: $fg;
+  font-style: italic;
+}
+
+.vc-modal-bar {
+  --background: rgba(250, 251, 252, 0.95);
+  --border-color: #{$border};
+  border-bottom: 1px solid $border;
+
+  ion-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: $fg;
+  }
+
+  ion-button {
+    --color: #{$fg};
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: none;
+  }
+}
+
+.vc-modal-content {
+  --background: #{$page};
+}

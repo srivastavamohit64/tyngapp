@@ -96,6 +96,8 @@ export interface VenueDashboardData {
     upcomingBookings?: number;
     pendingBookings?: number;
     unreadChat?: number;
+    activeCoaches?: number;
+    coachRequests?: number;
   };
   completion: VenueCompletion;
   todayBookings: {

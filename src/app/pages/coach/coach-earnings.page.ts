@@ -3,6 +3,7 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { CoachEarningsPayload, CoachEarningsPeriod, CoachEarningsSessionItem, CoachService } from '../../core/services/coach.service';
+import { CoachEmployment, VenueCoachService } from '../../core/services/venue-coach.service';
 import { SkeletonListComponent } from '../../shared/components/skeleton';
 import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 
@@ -181,6 +182,28 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
                 {{ data()?.pending_approval?.sessions }} session{{ data()?.pending_approval?.sessions === 1 ? '' : 's' }} ({{ currency(data()?.pending_approval?.amount || 0) }}) waiting for venue approval
               </p>
             </ng-container>
+          </section>
+
+          <section *ngIf="offers().length" class="content-card">
+            <div class="section-title-row">
+              <div><h2>Job Offers</h2><p>Venues that want you on their team</p></div>
+            </div>
+            <article *ngFor="let offer of offers()" class="venue-card">
+              <div class="venue-media"><ion-icon name="briefcase-outline"></ion-icon></div>
+              <div class="venue-copy">
+                <div class="venue-title">
+                  <strong>{{ offer.venueName || 'Venue' }}</strong>
+                  <span class="status-pill">{{ offer.assignment.employmentLabel || 'Offer' }}</span>
+                </div>
+                <span class="venue-sub">{{ offer.assignment.facility || 'Coaching role' }}<ng-container *ngIf="offer.assignment.shiftLabel"> · {{ offer.assignment.shiftLabel }}</ng-container></span>
+                <div class="venue-figures">
+                  <span *ngIf="offer.assignment.monthlySalary"><b>{{ currency(offer.assignment.monthlySalary) }}</b> per month</span>
+                  <span *ngIf="!offer.assignment.monthlySalary && offer.assignment.hourlyRate"><b>{{ currency(offer.assignment.hourlyRate) }}</b> per hour</span>
+                  <span *ngIf="offer.assignment.workDaysLabel"><b>{{ offer.assignment.workDaysLabel }}</b></span>
+                </div>
+                <button type="button" class="venue-link" (click)="go('/app/coach/venue-collab/' + offer.venueId)">View offer <ion-icon name="chevron-forward-outline"></ion-icon></button>
+              </div>
+            </article>
           </section>
 
           <section class="content-card">
@@ -374,6 +397,8 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
 export class CoachEarningsPage implements OnInit {
   private readonly router = inject(Router);
   private readonly coach = inject(CoachService);
+  private readonly venueCoach = inject(VenueCoachService);
+  readonly offers = signal<CoachEmployment[]>([]);
   readonly selectedPeriod = signal<CoachEarningsPeriod>('month');
   readonly loading = signal(true);
   readonly error = signal('');
@@ -404,6 +429,10 @@ export class CoachEarningsPage implements OnInit {
   load(): void {
     this.loading.set(true);
     this.error.set('');
+    this.venueCoach.coachOffers().subscribe({
+      next: (response) => this.offers.set(response.data || []),
+      error: () => this.offers.set([]),
+    });
     this.coach.getEarnings(this.selectedPeriod()).subscribe({
       next: (response) => { this.data.set(response.data || null); this.loading.set(false); },
       error: () => { this.error.set('Could not load your earnings. Please try again.'); this.loading.set(false); },

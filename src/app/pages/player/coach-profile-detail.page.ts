@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ActionSheetController, AlertController, IonModal, IonicModule, ToastController } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
+import { AuthService } from '../../core/services/auth.service';
 import { BackNavigationService } from '../../core/services/back-navigation.service';
 import {
   COACH_REVIEW_CATEGORIES,
@@ -435,7 +436,7 @@ const WEEK_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
         </main>
       </app-brand-header-shell>
 
-      <div slot="fixed" class="cp-action" *ngIf="coach && !coach.viewer.isSelf">
+      <div slot="fixed" class="cp-action" *ngIf="coach && !coach.viewer.isSelf && !isVenueViewer">
         <div class="cp-action-inner">
           <button type="button" class="cp-action-secondary" *ngIf="canMessage" (click)="openCoachChat()"><ion-icon name="chatbubble-outline"></ion-icon> MESSAGE</button>
           <button type="button" class="cp-action-secondary" *ngIf="!canMessage" (click)="requestToJoin()" [disabled]="requesting || coach.viewer.studentRequestStatus === 'pending'">
@@ -786,6 +787,7 @@ export class CoachProfileDetailPage implements OnInit {
   private readonly alertCtrl = inject(AlertController);
   private readonly actionSheet = inject(ActionSheetController);
   private readonly toastCtrl = inject(ToastController);
+  readonly isVenueViewer = inject(AuthService).user()?.role === 'venue';
   @ViewChild('bookingModal') private bookingModal?: IonModal;
 
   readonly tabs: { id: ProfileTab; label: string }[] = [

@@ -223,6 +223,14 @@ const routes: Routes = [
         loadComponent: () => import('./pages/venue/facilities/facilities.page').then((m) => m.VenueFacilitiesPage),
       },
       {
+        path: 'venue/coaches',
+        loadComponent: () => import('./pages/venue/coaches/venue-coaches.page').then((m) => m.VenueCoachesPage),
+      },
+      {
+        path: 'venue/coaches/:id',
+        loadComponent: () => import('./pages/venue/coaches/venue-coach-detail.page').then((m) => m.VenueCoachDetailPage),
+      },
+      {
         path: 'venue/dashboard',
         loadComponent: () => import('./pages/venue/venue-dashboard.page').then((m) => m.VenueDashboardPage),
       },
