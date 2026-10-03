@@ -1,0 +1,421 @@
+<ion-content [fullscreen]="true">
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <app-brand-header-shell title="Coaches">
+    <button headerEnd type="button" class="vc-hdr-btn" [class.on]="showSearch()" (click)="toggleSearch()" aria-label="Search coaches">
+      <ion-icon name="search-outline"></ion-icon>
+    </button>
+
+    <div class="vc-page">
+      <div class="vc-top">
+        <div class="vc-search" *ngIf="showSearch()">
+          <ion-icon name="search-outline"></ion-icon>
+          <input id="vc-search" type="search" [ngModel]="search()" (ngModelChange)="onSearch($event)" placeholder="Search coaches…" autocomplete="off" />
+          <button type="button" *ngIf="search()" (click)="onSearch('')" aria-label="Clear search"><ion-icon name="close"></ion-icon></button>
+        </div>
+        <nav class="vc-tabs" role="tablist">
+          <button type="button" role="tab" *ngFor="let t of tabs" [class.active]="tab() === t.id" [attr.aria-selected]="tab() === t.id" (click)="setTab(t.id)">
+            <span class="emoji" aria-hidden="true">{{ t.icon }}</span>{{ t.label }}
+          </button>
+        </nav>
+      </div>
+
+      <app-page-skeleton *ngIf="loading()" variant="list" [count]="3" label="Loading coaches"></app-page-skeleton>
+
+      <div class="vc-body" *ngIf="!loading() && error() as err">
+        <div class="vc-card vc-empty">
+          <ion-icon name="cloud-offline-outline"></ion-icon>
+          <p>{{ err }}</p>
+          <button type="button" class="vc-btn primary" (click)="load()">Try again</button>
+        </div>
+      </div>
+
+      <ng-container *ngIf="!loading() && !error() && team() as t">
+        <!-- ── My Coaches ── -->
+        <div class="vc-body" *ngIf="tab() === 'coaches'">
+          <div class="vc-pills" *ngIf="teamSports().length > 2">
+            <button type="button" *ngFor="let s of teamSports()" [class.active]="sportFilter() === s" (click)="sportFilter.set(s)">{{ s | titlecase }}</button>
+          </div>
+          <div class="vc-pills" *ngIf="t.coaches.length">
+            <button type="button" *ngFor="let e of employmentFilters" [class.active]="empFilter() === e.value" (click)="empFilter.set(e.value)">{{ e.label }}</button>
+          </div>
+
+          <div class="vc-summary">
+            <div class="vc-card"><b>{{ t.summary.total }}</b><span>Total</span></div>
+            <div class="vc-card"><b class="o">{{ t.summary.onDuty }}</b><span>On Duty</span></div>
+            <div class="vc-card"><b class="g">{{ t.summary.available }}</b><span>Available</span></div>
+            <div class="vc-card"><b class="r">{{ t.summary.onLeave }}</b><span>On Leave</span></div>
+          </div>
+
+          <section *ngIf="t.requests.length">
+            <div class="vc-head"><h3>Join Requests</h3><span class="vc-badge" style="background: #ff7a0018; color: #c2410c">{{ t.requests.length }} new</span></div>
+            <div class="vc-stack">
+              <div class="vc-card vc-pad" *ngFor="let r of t.requests">
+                <div class="vc-person">
+                  <div class="vc-avatar" [style.width.px]="44" [style.height.px]="44" [style.fontSize.px]="15" [style.background]="color(r.coachId) + '22'" [style.color]="color(r.coachId)" [style.border]="'2px solid ' + color(r.coachId) + '44'">
+                    <img *ngIf="r.profileImage" [src]="r.profileImage" [alt]="r.name" />
+                    <ng-container *ngIf="!r.profileImage">{{ initials(r.name) }}</ng-container>
+                  </div>
+                  <div class="grow">
+                    <p class="nm">{{ r.name }} <ion-icon *ngIf="r.verified" name="shield-checkmark" class="shield"></ion-icon></p>
+                    <p class="sub">{{ (r.sport | titlecase) || 'Coach' }}<ng-container *ngIf="r.experienceLabel"> · {{ r.experienceLabel }}</ng-container> · {{ ago(r.requestedAt) }}</p>
+                  </div>
+                  <span class="rating" *ngIf="r.rating"><ion-icon name="star"></ion-icon> {{ r.rating }}</span>
+                </div>
+                <p class="vc-note" *ngIf="r.message">“{{ r.message }}”</p>
+                <div class="vc-actions">
+                  <button type="button" class="vc-btn soft" (click)="viewPublicProfile(r.coachId)"><ion-icon name="eye-outline"></ion-icon></button>
+                  <button type="button" class="vc-btn danger" [disabled]="busyId() === r.id" (click)="decline(r)">Decline</button>
+                  <button type="button" class="vc-btn primary grow" [disabled]="busyId() === r.id" (click)="openApprove(r)"><ion-icon name="checkmark-circle-outline"></ion-icon> Approve</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section *ngIf="t.offers.length">
+            <div class="vc-head"><h3>Offers Sent</h3><span class="vc-badge" style="background: #38bdf818; color: #0369a1">{{ t.offers.length }} waiting</span></div>
+            <div class="vc-stack">
+              <div class="vc-card vc-pad" *ngFor="let o of t.offers">
+                <div class="vc-person">
+                  <div class="vc-avatar" [style.width.px]="44" [style.height.px]="44" [style.fontSize.px]="15" [style.background]="color(o.coachId) + '22'" [style.color]="color(o.coachId)" [style.border]="'2px solid ' + color(o.coachId) + '44'">
+                    <img *ngIf="o.profileImage" [src]="o.profileImage" [alt]="o.name" />
+                    <ng-container *ngIf="!o.profileImage">{{ initials(o.name) }}</ng-container>
+                  </div>
+                  <div class="grow">
+                    <p class="nm">{{ o.name }}</p>
+                    <p class="sub">Sent {{ ago(o.offeredAt) }} · waiting for reply</p>
+                  </div>
+                  <span class="vc-badge" [style.background]="color(o.coachId) + '18'" [style.color]="'#111827'">{{ o.employmentLabel }}</span>
+                </div>
+                <div class="vc-muted-row">
+                  <ion-icon name="location-outline"></ion-icon>
+                  <span>{{ o.facility || 'Facility not set' }} · {{ payLabel(o) }}</span>
+                  <span>{{ o.workDaysLabel }}<ng-container *ngIf="o.shiftLabel"> · {{ o.shiftLabel }}</ng-container></span>
+                </div>
+                <div class="vc-actions">
+                  <button type="button" class="vc-btn soft grow" (click)="viewPublicProfile(o.coachId)"><ion-icon name="eye-outline"></ion-icon> Coach profile</button>
+                  <button type="button" class="vc-btn danger grow" [disabled]="busyId() === o.id" (click)="withdraw(o)"><ion-icon name="close-circle-outline"></ion-icon> Withdraw</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section>
+            <div class="vc-head" *ngIf="t.requests.length || t.offers.length"><h3>My Team</h3></div>
+            <div class="vc-card vc-empty" *ngIf="!filteredCoaches().length">
+              <ion-icon name="people-outline"></ion-icon>
+              <p>{{ t.coaches.length ? 'No coaches match these filters' : 'No coaches on your team yet' }}</p>
+              <button type="button" class="vc-btn primary" *ngIf="!t.coaches.length" (click)="setTab('find')"><ion-icon name="search-outline"></ion-icon> Find coaches</button>
+            </div>
+            <div class="vc-stack">
+              <div class="vc-card vc-pad" *ngFor="let c of filteredCoaches()">
+                <div class="vc-person top">
+                  <div class="vc-avatar" [style.width.px]="52" [style.height.px]="52" [style.fontSize.px]="18" [style.background]="color(c.coachId) + '22'" [style.color]="color(c.coachId)" [style.border]="'2px solid ' + color(c.coachId) + '44'">
+                    <img *ngIf="c.profileImage" [src]="c.profileImage" [alt]="c.name" />
+                    <ng-container *ngIf="!c.profileImage">{{ initials(c.name) }}</ng-container>
+                  </div>
+                  <div class="grow">
+                    <p class="nm lg">{{ c.name }} <ion-icon *ngIf="c.verified" name="shield-checkmark" class="shield"></ion-icon></p>
+                    <p class="sub">{{ (c.sport | titlecase) || 'Coach' }}<ng-container *ngIf="c.experienceYears"> · {{ c.experienceYears }} yrs</ng-container></p>
+                    <div class="tags">
+                      <span class="vc-status" [style.color]="duty[c.dutyStatus]?.color || '#6B7280'"><i></i>{{ duty[c.dutyStatus]?.label || c.dutyStatus }}</span>
+                      <span class="vc-badge" *ngIf="c.employmentLabel" [style.background]="color(c.coachId) + '18'" [style.color]="textColor(c.coachId)">{{ c.employmentLabel }}</span>
+                    </div>
+                  </div>
+                  <div class="side">
+                    <span class="rating"><ion-icon name="star"></ion-icon> {{ c.rating ?? '—' }}</span>
+                    <span class="att" [class.low]="(c.attendancePct ?? 100) < 90">{{ pct(c.attendancePct) }} att.</span>
+                  </div>
+                </div>
+                <div class="vc-mini3">
+                  <div><b>{{ c.sessions }}</b><span>Sessions</span></div>
+                  <div><b>{{ c.students }}</b><span>Students</span></div>
+                  <div><b>{{ payLabel(c) }}</b><span>Pay</span></div>
+                </div>
+                <div class="vc-muted-row">
+                  <ion-icon name="location-outline"></ion-icon>
+                  <span>{{ c.facility || 'No facility assigned' }}<ng-container *ngIf="c.shiftLabel"> · {{ c.shiftLabel }}</ng-container></span>
+                  <span>{{ c.workDaysLabel || '—' }}</span>
+                </div>
+                <button type="button" class="vc-view" [style.background]="color(c.coachId) + '18'" [style.border-color]="color(c.coachId) + '30'" (click)="openProfile(c)">
+                  <ion-icon name="eye-outline"></ion-icon> View Profile
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- ── Find Coaches ── -->
+        <div class="vc-body" *ngIf="tab() === 'find'">
+          <div class="vc-pills" *ngIf="findSports().length > 1">
+            <button type="button" *ngFor="let s of findSports()" [class.active]="findSport() === s" (click)="setFindSport(s)">{{ s | titlecase }}</button>
+          </div>
+          <div class="vc-pills">
+            <button type="button" [class.active]="!shortlistOnly()" (click)="shortlistOnly() && toggleShortlistFilter()">All coaches</button>
+            <button type="button" [class.active]="shortlistOnly()" (click)="!shortlistOnly() && toggleShortlistFilter()"><ion-icon name="bookmark"></ion-icon> Shortlisted</button>
+          </div>
+
+          <app-page-skeleton *ngIf="findLoading() && !findItems().length" variant="list" [count]="3" label="Loading coaches"></app-page-skeleton>
+
+          <div class="vc-card vc-empty" *ngIf="!findLoading() && !visibleFind().length">
+            <ion-icon [name]="shortlistOnly() ? 'bookmark-outline' : 'search-outline'"></ion-icon>
+            <p>{{ shortlistOnly() ? 'No shortlisted coaches yet. Tap the bookmark on a coach to save them here.' : 'No coaches found. Try another sport or search.' }}</p>
+          </div>
+
+          <div class="vc-stack">
+            <div class="vc-card vc-pad" *ngFor="let fc of visibleFind()">
+              <div class="vc-person top">
+                <div class="vc-avatar" [style.width.px]="52" [style.height.px]="52" [style.fontSize.px]="18" [style.background]="color(fc.id) + '22'" [style.color]="color(fc.id)" [style.border]="'2px solid ' + color(fc.id) + '44'">
+                  <img *ngIf="fc.profileImage" [src]="fc.profileImage" [alt]="fc.name" />
+                  <ng-container *ngIf="!fc.profileImage">{{ initials(fc.name) }}</ng-container>
+                </div>
+                <div class="grow">
+                  <p class="nm lg">{{ fc.name }}
+                    <span class="vc-badge verified" *ngIf="fc.idVerified"><ion-icon name="shield-checkmark"></ion-icon> Verified</span>
+                  </p>
+                  <p class="sub">{{ (fc.sports[0] | titlecase) || 'Coach' }}<ng-container *ngIf="fc.experienceLabel"> · {{ fc.experienceLabel }}</ng-container></p>
+                  <div class="tags">
+                    <span class="rating sm" *ngIf="fc.rating"><ion-icon name="star"></ion-icon> {{ fc.rating.toFixed(1) }}</span>
+                    <span class="dist" *ngIf="fc.distanceKm !== null"><ion-icon name="location-outline"></ion-icon> {{ fc.distanceKm }} km</span>
+                    <span class="vc-badge" *ngIf="availability(fc) as av" [style.background]="av.now ? '#8CF00018' : '#FF7A0018'" [style.color]="av.now ? '#4d7c0f' : '#c2410c'">
+                      <ion-icon [name]="av.now ? 'flash' : 'time-outline'"></ion-icon> {{ av.label }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div class="vc-grid-2 vc-rates">
+                <div><b>{{ fc.pricePerHour ? money(fc.pricePerHour) + '/hr' : 'On request' }}</b><span>Hourly Rate</span></div>
+                <div><b>{{ fc.monthlyPrice ? shortMoney(fc.monthlyPrice) + '/mo' : 'On request' }}</b><span>Monthly Expect.</span></div>
+              </div>
+              <div class="vc-actions">
+                <button type="button" class="vc-btn primary grow" (click)="openOffer(fc)"><ion-icon name="send"></ion-icon> Send Offer</button>
+                <button type="button" class="vc-sq" [class.saved]="fc.isSaved" [disabled]="savingId() === fc.id" (click)="toggleShortlist(fc)" [attr.aria-label]="fc.isSaved ? 'Remove from shortlist' : 'Add to shortlist'" [attr.aria-pressed]="!!fc.isSaved">
+                  <ion-icon [name]="fc.isSaved ? 'bookmark' : 'bookmark-outline'"></ion-icon>
+                </button>
+                <button type="button" class="vc-sq" (click)="viewPublicProfile(fc.id)" aria-label="View coach profile"><ion-icon name="eye-outline"></ion-icon></button>
+              </div>
+            </div>
+          </div>
+
+          <button type="button" class="vc-btn soft block" *ngIf="findPage() < findLastPage()" [disabled]="findLoading()" (click)="loadFind()">
+            {{ findLoading() ? 'Loading…' : 'Show more coaches' }}
+          </button>
+        </div>
+
+        <!-- ── Payroll & Performance: coach chips ── -->
+        <div class="vc-body" *ngIf="tab() === 'payroll' || tab() === 'performance'">
+          <div class="vc-card vc-empty" *ngIf="!t.coaches.length">
+            <ion-icon [name]="tab() === 'payroll' ? 'wallet-outline' : 'stats-chart-outline'"></ion-icon>
+            <p>Add coaches to your team to see {{ tab() === 'payroll' ? 'their pay' : 'how they are doing' }} here.</p>
+            <button type="button" class="vc-btn primary" (click)="setTab('find')"><ion-icon name="search-outline"></ion-icon> Find coaches</button>
+          </div>
+
+          <ng-container *ngIf="t.coaches.length">
+            <div class="vc-chips">
+              <button type="button" *ngFor="let c of t.coaches" [class.active]="selectedId() === c.id" (click)="selectCoach(c.id)">
+                <span class="vc-avatar" [style.width.px]="24" [style.height.px]="24" [style.fontSize.px]="9"
+                  [style.background]="(selectedId() === c.id ? '#111827' : color(c.coachId)) + '22'" [style.color]="selectedId() === c.id ? '#111827' : color(c.coachId)">
+                  <img *ngIf="c.profileImage" [src]="c.profileImage" alt="" />
+                  <ng-container *ngIf="!c.profileImage">{{ initials(c.name) }}</ng-container>
+                </span>
+                {{ firstName(c.name) }}
+              </button>
+            </div>
+
+            <app-page-skeleton *ngIf="detailLoading() && !selected()" variant="list" [count]="2" label="Loading coach"></app-page-skeleton>
+
+            <ng-container *ngIf="selected() as d">
+              <!-- Payroll -->
+              <ng-container *ngIf="tab() === 'payroll'">
+                <div class="vc-card vc-dark">
+                  <div class="vc-person">
+                    <div class="vc-avatar" [style.width.px]="48" [style.height.px]="48" [style.fontSize.px]="17" [style.background]="color(d.coachId) + '22'" [style.color]="color(d.coachId)" [style.border]="'2px solid ' + color(d.coachId) + '44'">
+                      <img *ngIf="d.profileImage" [src]="d.profileImage" [alt]="d.name" />
+                      <ng-container *ngIf="!d.profileImage">{{ initials(d.name) }}</ng-container>
+                    </div>
+                    <div class="grow">
+                      <p class="nm white">{{ d.name }}</p>
+                      <p class="sub light">{{ (d.sport | titlecase) || 'Coach' }} · {{ d.employmentLabel || 'Not set' }}</p>
+                    </div>
+                    <span class="vc-badge" style="background: rgba(255,255,255,0.1)" [style.color]="payoutColors[d.payroll.current.status]">{{ d.payroll.current.status | titlecase }}</span>
+                  </div>
+                  <div class="vc-net-big">
+                    <p>Net Payable — {{ d.payroll.current.periodLabel }}</p>
+                    <b>{{ money(d.payroll.current.net) }}</b>
+                    <span *ngIf="d.payroll.current.hours">{{ d.payroll.current.hours }} hours worked</span>
+                  </div>
+                </div>
+
+                <div class="vc-card vc-pad">
+                  <div class="vc-head"><h3>Payroll Breakdown</h3></div>
+                  <div class="vc-row"><span>{{ d.employmentType === 'hourly' || d.employmentType === 'freelance' ? 'Earnings (hours × rate)' : 'Base Salary' }}</span><b>{{ money(d.payroll.current.base) }}</b></div>
+                  <div class="vc-row"><span>Bonus</span><b>+ {{ money(d.payroll.current.bonus) }}</b></div>
+                  <div class="vc-row"><span>Incentives</span><b>+ {{ money(d.payroll.current.incentive) }}</b></div>
+                  <div class="vc-row"><span>Deductions</span><b class="neg">− {{ money(d.payroll.current.deduction) }}</b></div>
+                  <div class="vc-row" *ngIf="d.payroll.current.note"><span>Note</span><b>{{ d.payroll.current.note }}</b></div>
+                  <div class="vc-net"><span>Net Payable</span><b>{{ money(d.payroll.current.net) }}</b></div>
+                  <div class="vc-actions" *ngIf="d.payroll.current.status !== 'paid'">
+                    <button type="button" class="vc-btn soft grow" [disabled]="busyId() === d.id" (click)="adjustPayroll(d)"><ion-icon name="create-outline"></ion-icon> Adjust</button>
+                    <button type="button" class="vc-btn soft grow" *ngIf="d.payroll.current.status === 'pending'" [disabled]="busyId() === d.id" (click)="markProcessing(d)"><ion-icon name="time-outline"></ion-icon> Processing</button>
+                    <button type="button" class="vc-btn primary grow" [disabled]="busyId() === d.id || d.payroll.current.net <= 0" (click)="markPaid(d)"><ion-icon name="checkmark-done-outline"></ion-icon> Mark paid</button>
+                  </div>
+                  <div class="vc-actions" *ngIf="d.payroll.current.status === 'paid'">
+                    <p class="vc-paid">Paid on {{ dateLabel(d.payroll.current.paidAt) }}</p>
+                    <button type="button" class="vc-btn soft" (click)="downloadInvoice(d.payroll.current.id, d.payroll.current.invoiceNumber)"><ion-icon name="download-outline"></ion-icon> Invoice</button>
+                  </div>
+                </div>
+
+                <div class="vc-card vc-pad">
+                  <div class="vc-head"><h3>Payment History</h3></div>
+                  <p class="vc-hint" *ngIf="!d.payroll.history.length">No payments recorded yet.</p>
+                  <div class="vc-timeline" *ngFor="let h of d.payroll.history; let i = index; let last = last">
+                    <div class="rail"><i [class.on]="i === 0"></i><em *ngIf="!last"></em></div>
+                    <div class="box">
+                      <div>
+                        <p class="nm">{{ h.periodLabel }}</p>
+                        <p class="sub">{{ h.invoiceNumber || (h.status | titlecase) }}</p>
+                      </div>
+                      <div class="right">
+                        <b>{{ money(h.net) }}</b>
+                        <button type="button" *ngIf="h.id && h.status === 'paid'" (click)="downloadInvoice(h.id, h.invoiceNumber)"><ion-icon name="download-outline"></ion-icon> Invoice</button>
+                        <span *ngIf="h.status !== 'paid'" [style.color]="payoutColors[h.status]">{{ h.status | titlecase }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </ng-container>
+
+              <!-- Performance -->
+              <ng-container *ngIf="tab() === 'performance'">
+                <div class="vc-card vc-score" [style.background]="'linear-gradient(135deg, ' + color(d.coachId) + '22 0%, ' + color(d.coachId) + '08 100%)'" [style.border-color]="color(d.coachId) + '30'">
+                  <div class="vc-avatar" [style.width.px]="56" [style.height.px]="56" [style.fontSize.px]="19" [style.background]="color(d.coachId) + '22'" [style.color]="color(d.coachId)" [style.border]="'2px solid ' + color(d.coachId) + '44'">
+                    <img *ngIf="d.profileImage" [src]="d.profileImage" [alt]="d.name" />
+                    <ng-container *ngIf="!d.profileImage">{{ initials(d.name) }}</ng-container>
+                  </div>
+                  <div class="grow">
+                    <p class="nm">{{ d.name }}</p>
+                    <p class="sub">{{ (d.sport | titlecase) || 'Coach' }}</p>
+                    <div class="score">
+                      <b [style.color]="d.performance.score !== null ? '#111827' : '#6B7280'">{{ d.performance.score ?? '—' }}</b>
+                      <div><p>Coach Score</p><span>/ 100</span></div>
+                    </div>
+                  </div>
+                  <ion-icon *ngIf="(d.performance.score ?? 0) >= 90" name="ribbon" class="award"></ion-icon>
+                </div>
+
+                <div class="vc-grid-3">
+                  <div class="vc-card vc-kpi"><i style="background: #8cf00015; color: #4d7c0f"><ion-icon name="pulse-outline"></ion-icon></i><b>{{ d.performance.sessions }}</b><span>Sessions</span></div>
+                  <div class="vc-card vc-kpi"><i style="background: #38bdf815; color: #0284c7"><ion-icon name="people-outline"></ion-icon></i><b>{{ d.performance.students }}</b><span>Students</span></div>
+                  <div class="vc-card vc-kpi"><i [style.background]="((d.performance.attendancePct ?? 100) >= 90 ? '#8cf000' : '#ff7a00') + '15'" [style.color]="(d.performance.attendancePct ?? 100) >= 90 ? '#4d7c0f' : '#c2410c'"><ion-icon name="checkmark-circle-outline"></ion-icon></i><b>{{ pct(d.performance.attendancePct) }}</b><span>Attendance</span></div>
+                  <div class="vc-card vc-kpi"><i style="background: #f59e0b15; color: #b45309"><ion-icon name="star-outline"></ion-icon></i><b>{{ d.performance.rating ? '★ ' + d.performance.rating : '—' }}</b><span>Rating</span></div>
+                  <div class="vc-card vc-kpi"><i style="background: #7c3aed15; color: #7c3aed"><ion-icon name="time-outline"></ion-icon></i><b>{{ d.performance.response.label || '—' }}</b><span>Response</span></div>
+                  <div class="vc-card vc-kpi"><i style="background: #8cf00015; color: #4d7c0f"><ion-icon name="calendar-outline"></ion-icon></i><b>{{ monthYear(d.performance.partnerSince) }}</b><span>Since</span></div>
+                </div>
+
+                <div class="vc-card vc-pad">
+                  <div class="vc-head"><h3>Score Trend</h3><span class="vc-hint">Last 6 months</span></div>
+                  <svg *ngIf="trendChart() as c" [attr.viewBox]="'0 0 ' + c.W + ' ' + c.H" width="100%" class="vc-svg" role="img" aria-label="Coach score over the last six months">
+                    <ng-container *ngFor="let tk of c.ticks">
+                      <line [attr.x1]="c.l" [attr.y1]="tk.y" [attr.x2]="c.W - c.r" [attr.y2]="tk.y" stroke="#E5E7EB" stroke-dasharray="3 3" />
+                      <text [attr.x]="c.l - 4" [attr.y]="tk.y + 4" font-size="9" fill="#6B7280" text-anchor="end">{{ tk.v }}</text>
+                    </ng-container>
+                    <polygon *ngIf="c.area" [attr.points]="c.area" [attr.fill]="color(d.coachId)" fill-opacity="0.12" />
+                    <polyline [attr.points]="c.line" fill="none" [attr.stroke]="color(d.coachId)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                    <circle *ngFor="let p of c.points" [attr.cx]="p.x" [attr.cy]="p.y" r="4" [attr.fill]="color(d.coachId)" />
+                    <text *ngFor="let lb of c.labels" [attr.x]="lb.x" [attr.y]="c.H - 4" font-size="9" fill="#6B7280" text-anchor="middle">{{ lb.label }}</text>
+                  </svg>
+                  <p class="vc-hint" *ngIf="!trendChart().hasData">The score appears once attendance, ratings or sessions are recorded.</p>
+                </div>
+
+                <div class="vc-card vc-pad">
+                  <div class="vc-head"><h3>Sessions vs Students</h3></div>
+                  <svg *ngIf="barChart() as c" [attr.viewBox]="'0 0 ' + c.W + ' ' + c.H" width="100%" class="vc-svg" role="img" aria-label="Sessions and students per month">
+                    <ng-container *ngFor="let tk of c.ticks">
+                      <line [attr.x1]="c.l" [attr.y1]="tk.y" [attr.x2]="c.W - c.r" [attr.y2]="tk.y" stroke="#E5E7EB" stroke-dasharray="3 3" />
+                      <text [attr.x]="c.l - 4" [attr.y]="tk.y + 4" font-size="9" fill="#6B7280" text-anchor="end">{{ tk.v }}</text>
+                    </ng-container>
+                    <ng-container *ngFor="let b of c.bars">
+                      <rect [attr.x]="b.sx" [attr.y]="b.sy" [attr.width]="b.bW" [attr.height]="b.sh" fill="#8CF000" rx="4" />
+                      <rect [attr.x]="b.tx" [attr.y]="b.ty" [attr.width]="b.bW" [attr.height]="b.th" fill="#FF7A00" rx="4" />
+                      <text [attr.x]="b.cx" [attr.y]="c.H - 4" font-size="9" fill="#6B7280" text-anchor="middle">{{ b.label }}</text>
+                    </ng-container>
+                    <rect [attr.x]="c.l" y="2" width="10" height="8" fill="#8CF000" rx="2" />
+                    <text [attr.x]="c.l + 13" y="9" font-size="9" fill="#6B7280">Sessions</text>
+                    <rect [attr.x]="c.l + 72" y="2" width="10" height="8" fill="#FF7A00" rx="2" />
+                    <text [attr.x]="c.l + 85" y="9" font-size="9" fill="#6B7280">Students</text>
+                  </svg>
+                  <p class="vc-hint" *ngIf="!barChart().hasData">No sessions at your venue in the last 6 months.</p>
+                </div>
+
+                <div class="vc-card vc-pad">
+                  <div class="vc-head"><h3>Skill Radar</h3></div>
+                  <svg *ngIf="radarChart() as c" [attr.viewBox]="'0 0 ' + c.W + ' ' + c.H" width="100%" class="vc-svg" role="img" aria-label="Skill radar">
+                    <polygon *ngFor="let ring of c.rings" [attr.points]="ring" fill="none" stroke="#E5E7EB" />
+                    <line *ngFor="let a of c.axes" [attr.x1]="c.cx" [attr.y1]="c.cy" [attr.x2]="a.x" [attr.y2]="a.y" stroke="#E5E7EB" />
+                    <path *ngIf="c.hasData" [attr.d]="c.path" [attr.fill]="color(d.coachId)" fill-opacity="0.18" [attr.stroke]="color(d.coachId)" stroke-width="2" stroke-linejoin="round" />
+                    <ng-container *ngIf="c.hasData"><circle *ngFor="let p of c.dots" [attr.cx]="p.x" [attr.cy]="p.y" r="4" [attr.fill]="color(d.coachId)" /></ng-container>
+                    <text *ngFor="let lb of c.labels" [attr.x]="lb.x" [attr.y]="lb.y" font-size="9" fill="#6B7280" text-anchor="middle" dominant-baseline="middle">{{ lb.text }}</text>
+                  </svg>
+                </div>
+
+                <div class="vc-card vc-pad">
+                  <div class="vc-head"><h3>Performance Breakdown</h3></div>
+                  <div class="vc-bar" *ngFor="let b of breakdown()">
+                    <span>{{ b.label }}</span>
+                    <div class="track"><i [style.width.%]="b.value ?? 0" [style.background]="b.color"></i></div>
+                    <b>{{ b.value === null ? '—' : b.value + '%' }}</b>
+                  </div>
+                </div>
+              </ng-container>
+            </ng-container>
+          </ng-container>
+        </div>
+      </ng-container>
+    </div>
+  </app-brand-header-shell>
+
+  <button slot="fixed" type="button" class="vc-fab" *ngIf="tab() !== 'find'" (click)="setTab('find')">
+    <ion-icon name="add"></ion-icon> Hire Coach
+  </button>
+
+  <ion-modal #offerModal [isOpen]="!!offerTarget()" (didDismiss)="offerTarget.set(null)" class="vc-offer-modal">
+    <ng-template>
+      <ion-header class="ion-no-border">
+        <ion-toolbar class="vc-modal-bar">
+          <ion-buttons slot="start">
+            <ion-button (click)="offerModal.dismiss()"><ion-icon slot="start" name="arrow-back"></ion-icon> Cancel</ion-button>
+          </ion-buttons>
+          <ion-title>{{ offerTarget()?.mode === 'approve' ? 'Add to Team' : 'Send Job Offer' }}</ion-title>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="vc-modal-content">
+        <div class="vc-body" *ngIf="offerTarget() as o">
+          <div class="vc-card vc-pad">
+            <div class="vc-person">
+              <div class="vc-avatar" [style.width.px]="48" [style.height.px]="48" [style.fontSize.px]="17" [style.background]="color(o.coachId) + '22'" [style.color]="color(o.coachId)" [style.border]="'2px solid ' + color(o.coachId) + '44'">
+                <img *ngIf="o.photo" [src]="o.photo" [alt]="o.name" />
+                <ng-container *ngIf="!o.photo">{{ initials(o.name) }}</ng-container>
+              </div>
+              <div class="grow"><p class="nm">{{ o.name }}</p><p class="sub">{{ o.sub }}</p></div>
+            </div>
+          </div>
+          <p class="vc-hint" *ngIf="o.mode === 'approve'">Set the work details for this coach. You can change them later from their profile.</p>
+          <app-coach-terms-form [courts]="team()?.courts ?? []" [initial]="null" (termsChange)="onTerms($event)"></app-coach-terms-form>
+          <div class="vc-card vc-pad" *ngIf="o.mode === 'offer'">
+            <label class="vc-field">
+              <span>Message to coach (optional)</span>
+              <textarea maxlength="500" [(ngModel)]="offerMessage" placeholder="Tell the coach about the role"></textarea>
+            </label>
+          </div>
+          <p class="vc-error" *ngIf="offerError">{{ offerError }}</p>
+          <button type="button" class="vc-btn primary block lg" [disabled]="sending() || !!offerError" (click)="submitOffer(offerModal)">
+            <ion-icon [name]="o.mode === 'approve' ? 'checkmark-circle-outline' : 'send'"></ion-icon>
+            {{ sending() ? 'Saving…' : o.mode === 'approve' ? 'Approve & Add Coach' : 'Send Job Offer' }}
+          </button>
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+</ion-content>

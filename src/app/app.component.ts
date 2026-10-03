@@ -80,6 +80,8 @@ export class AppComponent implements OnInit {
     upcomingBookings: number;
     pendingBookings: number;
     unreadChat: number;
+    activeCoaches: number;
+    coachRequests: number;
     checklist: { label: string; done: boolean }[];
   }>({
     profileName: '',
@@ -90,6 +92,8 @@ export class AppComponent implements OnInit {
     upcomingBookings: 0,
     pendingBookings: 0,
     unreadChat: 0,
+    activeCoaches: 0,
+    coachRequests: 0,
     checklist: [],
   });
 
@@ -112,6 +116,9 @@ export class AppComponent implements OnInit {
     const facilitiesSub = m.courtsCount > 0
       ? `${m.courtsCount} court${m.courtsCount === 1 ? '' : 's'}`
       : 'Courts & equipment';
+    const coachesSub = m.activeCoaches > 0
+      ? `${m.activeCoaches} active partner${m.activeCoaches === 1 ? '' : 's'}`
+      : 'Hire & manage coaches';
     const profileSub = `${m.profileName || this.user()?.name?.trim() || 'Venue'} · ${m.profilePercent || this.user()?.profileCompletion || 0}%`;
 
     return [
@@ -119,7 +126,7 @@ export class AppComponent implements OnInit {
       { label: 'Facilities & Amenities', sub: facilitiesSub, path: '/app/venue/facilities', icon: 'cube-outline', live: true },
       { label: 'Wallet', sub: 'Balance & top-up', path: '/app/wallet', icon: 'wallet-outline' },
       { label: 'Earnings', sub: earnings, path: '/app/venue/earnings', icon: 'cash-outline', live: true },
-      { label: 'Coaches', sub: 'Partner coaches', path: '/app/venue/facilities', icon: 'people-outline' },
+      { label: 'Coaches', sub: coachesSub, path: '/app/venue/coaches', icon: 'people-outline', live: true, badge: m.coachRequests > 0 ? String(m.coachRequests) : undefined },
       { label: 'Events', sub: 'Create & manage events', path: '/app/venue/events', icon: 'sparkles-outline' },
       { label: 'Revenue Analytics', sub: 'Occupancy & insights', path: '/app/venue/analytics', icon: 'bar-chart-outline' },
       { label: 'Settings', sub: 'Preferences & billing', path: '/app/settings', icon: 'settings-outline' },
@@ -401,6 +408,8 @@ export class AppComponent implements OnInit {
         upcomingBookings: Number(menu.upcomingBookings || 0),
         pendingBookings: Number(menu.pendingBookings || 0),
         unreadChat: Number(menu.unreadChat || 0),
+        activeCoaches: Number(menu.activeCoaches || 0),
+        coachRequests: Number(menu.coachRequests || 0),
         checklist: (response.data?.completion?.checklist || [])
           .filter((item) => String(item.id || item.label || '').toLowerCase() !== 'amenities')
           .map((item) => ({

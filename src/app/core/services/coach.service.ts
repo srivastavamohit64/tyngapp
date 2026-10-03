@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiResponse, CoachDashboard, CoachDirectoryResponse, CoachInsightsPayload, CoachInsightsPeriod } from '../models/api.model';
 import { ApiService } from './api.service';
+import type { CoachEmployment } from './venue-coach.service';
 
 @Injectable({ providedIn: 'root' })
 export class CoachService {
@@ -407,6 +408,7 @@ export interface CoachVenueCollaborationSession {
 }
 
 export interface CoachVenueCollaborationDetail {
+  employment?: CoachEmployment | null;
   venue_id: number;
   name: string;
   location: string | null;

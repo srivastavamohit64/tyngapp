@@ -259,12 +259,22 @@ COACH
 - Your side menu shows your real rating and number of reviews ("New" if you have none yet), and the Verified badge only appears once you are verified.
 - Settings now only shows options that really work. Switches that never saved anything have been removed.
 - When you plan a session or book a venue, the platform fee and tax now come from TYNG instead of fixed amounts, and the made-up coupon and attendance numbers are gone.
+- When a venue offers you a coaching job, you get a notification and the offer appears under Job Offers on your Earnings page. Open it to see the facility, pay, work days, shift and dates, then accept or decline.
+- Once you join a venue's team, its page shows your work details, this month's attendance and your pay, and you can download a PDF invoice for each paid month.
 
 VENUE STAFF
 
 - Venue screens now use the same colours and text styles as the TYNG design, so they look cleaner and match the rest of the app.
 - Screen names now match the side menu: "Earnings", "Wallet" and "Revenue Analytics". Settings in the side menu now opens your Settings, and Edit Profile there opens your venue profile.
 - Pages opened from the side menu show only a back arrow and the page name, and the back arrow always returns to the screen you came from. Pop-up windows close by themselves before another screen opens.
+- "Coaches" in the side menu now opens your own Coaches page and shows how many coaches work with you.
+- Find coaches with their rating, distance, availability, hourly rate and monthly price, save favourites to a shortlist, and send a job offer with the facility, pay, work days, shift, start date and notice period.
+- Approve or decline coaches who ask to join, and take back an offer that has not been answered yet.
+- Open any coach to see their details, weekly schedule and documents, call or message them, and change their work details.
+- Check coaches in and out each day (late arrivals are marked automatically), or mark a day as absent, half day or leave.
+- See each coach's pay for the month, add bonuses or deductions, mark it as paid (the coach is told) and download a PDF invoice.
+- See a score for each coach, with charts for their score, sessions, students and strengths.
+- Renew, extend or end a coach's contract. Ending it respects the notice period and tells the coach.
 
 Writing rule: Whenever work is finished, add a short note here explaining in everyday words what changed and how it helps players, coaches, or administrators. Write for someone who does not work in software. Avoid programming terms, internal names, and tool names. Describe what the person can now do.
 

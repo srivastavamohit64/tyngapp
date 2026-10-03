@@ -1,9 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IonicModule } from '@ionic/angular';
+import { AlertController, IonicModule, ToastController } from '@ionic/angular';
+import { firstValueFrom } from 'rxjs';
 import { BackNavigationService } from '../../core/services/back-navigation.service';
 import { CoachService, CoachVenueCollaborationDetail, CoachVenueCollaborationSession } from '../../core/services/coach.service';
+import { CoachEmployment, VenueCoachService, saveBlob } from '../../core/services/venue-coach.service';
 import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
 import { PageSkeletonComponent } from '../../shared/components/skeleton';
 
@@ -60,7 +62,62 @@ import { PageSkeletonComponent } from '../../shared/components/skeleton';
             </div>
           </div>
 
-          <div class="section-card p-5 bg-white">
+          <div *ngIf="d.employment as e" class="section-card p-5 bg-white">
+            <div class="flex items-center justify-between mb-4">
+              <p class="section-title mb-0">{{ e.status === 'offered' ? 'Job Offer' : e.status === 'terminated' ? 'Contract Ended' : 'Your Job Here' }}</p>
+              <span *ngIf="e.assignment.employmentLabel" class="emp-badge">{{ e.assignment.employmentLabel }}</span>
+            </div>
+            <p *ngIf="e.status === 'offered'" class="text-[13px] text-[#374151] font-bold m-0 mb-3">
+              {{ e.venueName || d.name }} would like you to join their coaching team.
+            </p>
+            <p *ngIf="e.status === 'offered' && e.message" class="emp-note">“{{ e.message }}”</p>
+            <p *ngIf="e.status === 'pending'" class="text-[13px] text-[#C2410C] font-bold m-0 mb-3">Your request to coach here is waiting for the venue to approve it.</p>
+            <p *ngIf="e.status === 'terminated'" class="text-[13px] text-[#DC2626] font-bold m-0 mb-3">
+              The venue ended this contract<ng-container *ngIf="e.contract.end">. Last working day: {{ formatDate(e.contract.end) }}</ng-container>.
+              <ng-container *ngIf="e.contract.terminationReason"> Reason: {{ e.contract.terminationReason }}</ng-container>
+            </p>
+            <div class="grid grid-cols-2 gap-3">
+              <div *ngFor="let item of employmentRows(e)" class="info-tile">
+                <p class="info-label">{{ item.label }}</p>
+                <p class="info-value">{{ item.value }}</p>
+              </div>
+            </div>
+            <div *ngIf="e.status === 'offered' && e.initiatedBy === 'venue'" class="grid grid-cols-2 gap-3 mt-4">
+              <button type="button" class="emp-btn decline" [disabled]="responding()" (click)="respond(e.partnershipId, 'decline')">Decline</button>
+              <button type="button" class="emp-btn accept" [disabled]="responding()" (click)="respond(e.partnershipId, 'accept')">{{ responding() ? 'Saving…' : 'Accept Offer' }}</button>
+            </div>
+
+            <ng-container *ngIf="e.status === 'active' && e.attendance as a">
+              <p class="section-title mt-5">Attendance · {{ a.month.label }}</p>
+              <div class="today-row">
+                <span>Today</span>
+                <b>{{ a.today.checkIn ? 'In ' + formatTime(a.today.checkIn) : a.today.isWorkDay ? 'Not checked in' : 'Day off' }}<ng-container *ngIf="a.today.checkOut"> · Out {{ formatTime(a.today.checkOut) }}</ng-container></b>
+              </div>
+              <div class="grid grid-cols-4 gap-2 mt-3">
+                <div class="att-tile"><b class="text-[#16A34A]">{{ a.month.present }}</b><span>Present</span></div>
+                <div class="att-tile"><b class="text-[#FF7A00]">{{ a.month.late }}</b><span>Late</span></div>
+                <div class="att-tile"><b class="text-[#EF4444]">{{ a.month.absent }}</b><span>Absent</span></div>
+                <div class="att-tile"><b class="text-[#0284C7]">{{ a.month.hours }}</b><span>Hours</span></div>
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="e.payouts.length">
+              <p class="section-title mt-5">Pay from this venue</p>
+              <div *ngFor="let p of e.payouts" class="pay-row">
+                <div class="min-w-0">
+                  <p class="text-[13px] font-bold text-[#111827] m-0">{{ p.periodLabel }}</p>
+                  <p class="text-[11px] text-[#9CA3AF] font-bold m-0">{{ p.invoiceNumber || (p.status | titlecase) }}</p>
+                </div>
+                <div class="text-right">
+                  <p class="text-[13px] font-black text-[#111827] m-0">{{ money(p.net) }}</p>
+                  <button *ngIf="p.id && p.status === 'paid'" type="button" class="link-btn" (click)="downloadInvoice(p.id, p.invoiceNumber)"><ion-icon name="download-outline"></ion-icon> Invoice</button>
+                  <span *ngIf="p.status !== 'paid'" class="text-[11px] font-bold" [style.color]="p.status === 'processing' ? '#FF7A00' : '#6B7280'">{{ p.status | titlecase }}</span>
+                </div>
+              </div>
+            </ng-container>
+          </div>
+
+          <div class="section-card p-5 bg-white" *ngIf="!d.employment">
             <p class="section-title">Partnership</p>
             <ng-container *ngIf="d.partnership as p; else noPartnership">
               <div class="grid grid-cols-2 gap-3">
@@ -205,6 +262,20 @@ import { PageSkeletonComponent } from '../../shared/components/skeleton';
     .state-card ion-icon { font-size: 34px; color: #9CA3AF; }
     .state-title { font-size: 14px; font-weight: 700; color: #374151; margin: 10px 0 14px; }
     .state-card button { height: 40px; padding: 0 18px; border: 0; border-radius: 12px; background: var(--app-primary); color: #111827; font-weight: 800; }
+    .emp-badge { font-size: 11px; font-weight: 800; color: #2D6600; background: rgba(140,240,0,0.15); border-radius: 999px; padding: 3px 10px; }
+    .emp-note { font-size: 13px; font-style: italic; color: #374151; background: #F3F4F6; border-radius: 16px; padding: 10px 12px; margin: 0 0 12px; }
+    .emp-btn { height: 46px; border: 0; border-radius: 16px; font-size: 14px; font-weight: 800; }
+    .emp-btn:disabled { opacity: 0.55; }
+    .emp-btn.accept { background: #8CF000; color: #111827; }
+    .emp-btn.decline { background: #FEF2F2; color: #DC2626; }
+    .today-row { display: flex; justify-content: space-between; gap: 12px; background: #F9FAFB; border-radius: 16px; padding: 12px 14px; font-size: 13px; }
+    .today-row span { color: #6B7280; font-weight: 700; }
+    .today-row b { color: #111827; text-align: right; }
+    .att-tile { background: #F9FAFB; border-radius: 14px; padding: 10px 4px; text-align: center; }
+    .att-tile b { display: block; font-size: 18px; font-weight: 900; }
+    .att-tile span { font-size: 10px; font-weight: 700; color: #9CA3AF; }
+    .pay-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid #F3F4F6; }
+    .pay-row:last-child { border-bottom: 0; }
   `]
 })
 export class VenueCollabDetailPage implements OnInit {
@@ -212,7 +283,11 @@ export class VenueCollabDetailPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly coach = inject(CoachService);
   readonly backNavigation = inject(BackNavigationService);
+  private readonly venueCoach = inject(VenueCoachService);
+  private readonly alertCtrl = inject(AlertController);
+  private readonly toastCtrl = inject(ToastController);
 
+  readonly responding = signal(false);
   readonly loading = signal(true);
   readonly error = signal('');
   readonly data = signal<CoachVenueCollaborationDetail | null>(null);
@@ -263,6 +338,64 @@ export class VenueCollabDetailPage implements OnInit {
       { label: 'Valid from', value: p.effective_from ? this.formatDate(p.effective_from) : (p.approved_at ? this.formatDate(p.approved_at) : '—') },
       { label: 'Valid until', value: p.effective_until ? this.formatDate(p.effective_until) : 'Open-ended' },
     ];
+  }
+
+  employmentRows(e: CoachEmployment) {
+    const a = e.assignment;
+    const pay = a.monthlySalary && (a.employmentType === 'monthly' || a.employmentType === 'contract' || !a.hourlyRate)
+      ? `${this.money(a.monthlySalary)}/month`
+      : a.hourlyRate ? `${this.money(a.hourlyRate)}/hour` : 'Not set';
+    return [
+      { label: 'Facility', value: a.facility || 'Not set' },
+      { label: 'Pay', value: pay },
+      { label: 'Work days', value: a.workDaysLabel || 'Not set' },
+      { label: 'Shift', value: a.shiftLabel || 'Not set' },
+      { label: 'Starts', value: a.startDate ? this.formatDate(a.startDate) : '—' },
+      { label: 'Ends', value: a.endDate ? this.formatDate(a.endDate) : 'Open-ended' },
+      ...(a.noticeDays !== null ? [{ label: 'Notice period', value: `${a.noticeDays} days` }] : []),
+    ];
+  }
+
+  async respond(partnershipId: number, action: 'accept' | 'decline') {
+    if (action === 'decline') {
+      const alert = await this.alertCtrl.create({
+        header: 'Decline offer?',
+        message: 'The venue will be told you are not taking this job.',
+        buttons: [{ text: 'Cancel', role: 'cancel' }, { text: 'Decline', role: 'confirm' }],
+      });
+      await alert.present();
+      if ((await alert.onDidDismiss()).role !== 'confirm') return;
+    }
+    this.responding.set(true);
+    try {
+      await firstValueFrom(this.venueCoach.respondToOffer(partnershipId, action));
+      await this.toast(action === 'accept' ? 'Offer accepted. Welcome to the team!' : 'Offer declined.');
+      this.load();
+    } catch (err) {
+      const e = err as { error?: { message?: string } };
+      await this.toast(e?.error?.message || 'Could not save your answer. Please try again.');
+    } finally {
+      this.responding.set(false);
+    }
+  }
+
+  async downloadInvoice(payoutId: number, invoiceNumber: string | null) {
+    try {
+      const blob = await firstValueFrom(this.venueCoach.invoice(payoutId));
+      saveBlob(blob, `${invoiceNumber || 'invoice-' + payoutId}.pdf`);
+    } catch {
+      await this.toast('Could not download the invoice.');
+    }
+  }
+
+  formatTime(value: string): string {
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? value : date.toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' });
+  }
+
+  private async toast(message: string) {
+    const t = await this.toastCtrl.create({ message, duration: 2400, position: 'bottom' });
+    await t.present();
   }
 
   sessionStats(d: CoachVenueCollaborationDetail) {

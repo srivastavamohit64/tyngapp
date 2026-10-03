@@ -518,6 +518,8 @@ export interface CoachDirectoryItem {
   activeStudents: number;
   pricePerHour: number | null;
   groupPrice: number | null;
+  monthlyPrice?: number | null;
+  isSaved?: boolean;
   feesNegotiable: boolean;
   idVerified: boolean;
   certified: boolean;

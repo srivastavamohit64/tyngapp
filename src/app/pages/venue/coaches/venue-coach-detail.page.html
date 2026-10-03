@@ -1,0 +1,284 @@
+<ion-content [fullscreen]="true">
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <app-brand-header-shell title="Coach Profile">
+    <div class="vc-page">
+      <app-page-skeleton *ngIf="loading()" variant="detail" label="Loading coach"></app-page-skeleton>
+
+      <div class="vc-body" *ngIf="!loading() && error() as err">
+        <div class="vc-card vc-empty">
+          <ion-icon name="alert-circle-outline"></ion-icon>
+          <p>{{ err }}</p>
+          <button type="button" class="vc-btn primary" (click)="load()">Try again</button>
+        </div>
+      </div>
+
+      <ng-container *ngIf="!loading() && !error() && coach() as c">
+        <div class="cd-hero" [style.background]="'linear-gradient(135deg, ' + accent() + '33 0%, ' + accent() + '11 100%)'">
+          <div class="vc-avatar cd-avatar" [style.background]="accent() + '22'" [style.color]="accent()" [style.border]="'3px solid #fff'">
+            <img *ngIf="c.profileImage" [src]="c.profileImage" [alt]="c.name" />
+            <ng-container *ngIf="!c.profileImage">{{ initials(c.name) }}</ng-container>
+          </div>
+        </div>
+
+        <div class="cd-wrap">
+          <div class="cd-id">
+            <div class="grow">
+              <div class="cd-name">
+                <h1>{{ c.name }}</h1>
+                <span class="vc-badge cd-verified" *ngIf="c.verified"><ion-icon name="shield-checkmark"></ion-icon> Verified</span>
+              </div>
+              <p class="cd-sub">{{ (c.sport | titlecase) || '' }} Coach<ng-container *ngIf="c.experienceYears"> · {{ c.experienceYears }} yrs exp</ng-container></p>
+              <div class="cd-tags">
+                <span class="vc-status" *ngIf="c.status === 'active'" [style.color]="duty[c.dutyStatus]?.color || '#6B7280'"><i></i>{{ duty[c.dutyStatus]?.label || c.dutyStatus }}</span>
+                <span class="vc-badge" *ngIf="c.employmentLabel" [style.background]="accent() + '18'" [style.color]="accentText()">{{ c.employmentLabel }}</span>
+                <span class="rating sm"><ion-icon name="star"></ion-icon> {{ c.rating ?? '—' }}<ng-container *ngIf="c.reviewCount"> ({{ c.reviewCount }})</ng-container></span>
+              </div>
+            </div>
+            <div class="cd-contact">
+              <button type="button" class="vc-icon-btn g" *ngIf="c.phone" (click)="call(c)" aria-label="Call coach"><ion-icon name="call-outline"></ion-icon></button>
+              <button type="button" class="vc-icon-btn o" (click)="openChat(c)" aria-label="Message coach"><ion-icon name="chatbubble-ellipses-outline"></ion-icon></button>
+            </div>
+          </div>
+
+          <div class="vc-card vc-pad cd-banner" *ngIf="c.status !== 'active'">
+            <ng-container [ngSwitch]="c.status">
+              <ng-container *ngSwitchCase="'offered'">
+                <p><b>Job offer sent.</b> Waiting for {{ c.name }} to reply.</p>
+                <div class="vc-actions"><button type="button" class="vc-btn danger grow" [disabled]="busy()" (click)="withdraw(c)">Withdraw offer</button></div>
+              </ng-container>
+              <ng-container *ngSwitchCase="'pending'">
+                <p><b>{{ c.name }} wants to coach at your venue.</b></p>
+                <p class="vc-note" *ngIf="c.message">“{{ c.message }}”</p>
+                <div class="vc-actions">
+                  <button type="button" class="vc-btn danger grow" [disabled]="busy()" (click)="decline(c)">Decline</button>
+                  <button type="button" class="vc-btn primary grow" [disabled]="busy()" (click)="approve(c)">Approve</button>
+                </div>
+              </ng-container>
+              <ng-container *ngSwitchCase="'terminated'">
+                <p><b>Contract ended</b> on {{ dateLabel(c.contract.terminatedAt) }}<ng-container *ngIf="c.contract.end">. Last working day {{ dateLabel(c.contract.end) }}</ng-container>.</p>
+                <p class="vc-hint" *ngIf="c.contract.terminationReason">Reason: {{ c.contract.terminationReason }}</p>
+              </ng-container>
+              <p *ngSwitchDefault>{{ c.status | titlecase }}</p>
+            </ng-container>
+          </div>
+
+          <div class="cd-sections">
+            <button type="button" *ngFor="let s of sections" [class.active]="section() === s" (click)="setSection(s)">{{ s | titlecase }}</button>
+          </div>
+
+          <!-- Overview -->
+          <div class="vc-stack gap16" *ngIf="section() === 'overview'">
+            <div class="vc-grid-3">
+              <div class="vc-statbox"><b [style.color]="accentText()">{{ c.sessions }}</b><span>Sessions</span></div>
+              <div class="vc-statbox"><b [style.color]="accentText()">{{ c.students }}</b><span>Students</span></div>
+              <div class="vc-statbox"><b style="color: #4d7c0f">{{ c.rating ? '★ ' + c.rating : '—' }}</b><span>Rating</span></div>
+              <div class="vc-statbox"><b [style.color]="(c.attendancePct ?? 100) >= 90 ? '#4d7c0f' : '#FF7A00'">{{ pct(c.attendancePct) }}</b><span>Attendance</span></div>
+              <div class="vc-statbox"><b>{{ c.score !== null ? c.score + '/100' : '—' }}</b><span>Score</span></div>
+              <div class="vc-statbox"><b>{{ c.response.label || '—' }}</b><span>Response</span></div>
+            </div>
+
+            <div class="vc-card vc-pad">
+              <div class="vc-head"><h3>Coach Details</h3><button type="button" class="cd-link" (click)="viewPublicProfile(c)">Public profile <ion-icon name="chevron-forward"></ion-icon></button></div>
+              <p class="cd-bio" *ngIf="c.bio">{{ c.bio }}</p>
+              <div class="vc-row"><span>Sport</span><b>{{ c.sports.length ? (c.sports.join(', ') | titlecase) : '—' }}</b></div>
+              <div class="vc-row"><span>Languages</span><b>{{ c.languages.length ? c.languages.join(', ') : '—' }}</b></div>
+              <div class="vc-row"><span>On TYNG since</span><b>{{ monthYear(c.onTyngSince) }}</b></div>
+              <div class="vc-row" *ngIf="c.partnerSince"><span>With your venue since</span><b>{{ monthYear(c.partnerSince) }}</b></div>
+              <div class="vc-row"><span>City</span><b>{{ c.city || '—' }}</b></div>
+              <div class="vc-row" *ngIf="c.phone"><span>Phone</span><b>{{ c.phone }}</b></div>
+              <div class="vc-row" *ngIf="c.email"><span>Email</span><b>{{ c.email }}</b></div>
+            </div>
+
+            <div class="vc-card vc-pad" *ngIf="c.certificates.length">
+              <div class="vc-head"><h3>Certificates</h3></div>
+              <div class="cd-certs">
+                <span class="vc-badge" *ngFor="let cert of c.certificates" [style.background]="accent() + '18'" [style.color]="accentText()"><ion-icon name="ribbon-outline"></ion-icon> {{ cert }}</span>
+              </div>
+            </div>
+
+            <div class="vc-card vc-pad">
+              <div class="vc-head">
+                <h3>Venue Assignment</h3>
+                <button type="button" class="cd-edit" *ngIf="isActive() || c.status === 'offered'" (click)="openEdit()"><ion-icon name="create-outline"></ion-icon> Edit</button>
+              </div>
+              <div class="vc-row"><span>Facility</span><b>{{ c.assignment.facility || '—' }}</b></div>
+              <div class="vc-row"><span>Days</span><b>{{ c.assignment.workDaysLabel || '—' }}</b></div>
+              <div class="vc-row"><span>Hours</span><b>{{ c.assignment.shiftLabel || '—' }}</b></div>
+              <div class="vc-row"><span>Employment</span><b>{{ c.assignment.employmentLabel || '—' }}</b></div>
+              <div class="vc-row"><span>Salary / Rate</span><b>{{ payLabel(c) }}</b></div>
+              <div class="vc-row"><span>Contract Start</span><b>{{ dateLabel(c.assignment.startDate) }}</b></div>
+              <div class="vc-row"><span>Contract End</span><b>{{ c.assignment.endDate ? dateLabel(c.assignment.endDate) : 'Open-ended' }}</b></div>
+            </div>
+          </div>
+
+          <!-- Schedule -->
+          <div class="vc-card vc-pad" *ngIf="section() === 'schedule'">
+            <div class="vc-head"><h3>This Week</h3></div>
+            <div class="cd-day" *ngFor="let day of c.schedule">
+              <div class="cd-daybox" [class.today]="day.isToday" [style.background]="day.isWorkDay || day.sessions.length ? accent() + '15' : '#F3F4F6'" [style.color]="day.isWorkDay || day.sessions.length ? accentText() : '#6B7280'">
+                <b>{{ day.day }}</b>
+              </div>
+              <div class="grow">
+                <ng-container *ngIf="day.isWorkDay || day.sessions.length; else off">
+                  <p class="t">{{ day.shiftLabel || 'Sessions' }}</p>
+                  <p class="s">{{ c.assignment.facility || 'Your venue' }}</p>
+                  <p class="s" *ngFor="let s of day.sessions">• {{ time(s.start) }} {{ s.title }}<ng-container *ngIf="s.court"> · {{ s.court }}</ng-container></p>
+                </ng-container>
+                <ng-template #off><p class="s">Day Off</p></ng-template>
+              </div>
+              <span class="vc-badge" *ngIf="day.attendance" [style.background]="att[day.attendance].color + '18'" [style.color]="att[day.attendance].color">{{ att[day.attendance].label }}</span>
+              <span class="vc-badge" *ngIf="!day.attendance && day.isWorkDay" [style.background]="accent() + '18'" [style.color]="accentText()">{{ day.sessions.length ? day.sessions.length + ' sessions' : 'Active' }}</span>
+            </div>
+            <p class="vc-hint" *ngIf="!c.schedule.length">No schedule yet. Set work days from Venue Assignment.</p>
+          </div>
+
+          <!-- Attendance -->
+          <div class="vc-stack gap16" *ngIf="section() === 'attendance'">
+            <div class="vc-card vc-dark">
+              <div class="cd-att-head">
+                <i><ion-icon name="finger-print-outline"></ion-icon></i>
+                <div>
+                  <p>Today's Attendance</p>
+                  <span>{{ c.attendance.today.isWorkDay ? 'Shift ' + (c.assignment.shiftLabel || 'today') : 'Not a work day' }}</span>
+                </div>
+                <span class="vc-badge" *ngIf="c.attendance.today.status as st" style="background: rgba(255,255,255,0.1)" [style.color]="att[st].color">{{ att[st].label }}</span>
+              </div>
+              <div class="cd-att-grid">
+                <div><b>{{ time(c.attendance.today.checkIn) }}</b><span>Check-In</span></div>
+                <div><b>{{ time(c.attendance.today.checkOut) }}</b><span>Check-Out</span></div>
+                <div><b>{{ hours(c.attendance.today.workedMinutes) }}</b><span>Hours Today</span></div>
+              </div>
+              <div class="vc-actions" *ngIf="isActive()">
+                <button type="button" class="vc-btn primary grow" *ngIf="!c.attendance.today.checkIn" [disabled]="busy()" (click)="checkIn(c)"><ion-icon name="log-in-outline"></ion-icon> Check In</button>
+                <button type="button" class="vc-btn primary grow" *ngIf="c.attendance.today.checkIn && !c.attendance.today.checkOut" [disabled]="busy()" (click)="checkOut(c)"><ion-icon name="log-out-outline"></ion-icon> Check Out</button>
+                <button type="button" class="vc-btn cd-ghost grow" [disabled]="busy()" (click)="markDay(c)"><ion-icon name="create-outline"></ion-icon> Mark day</button>
+              </div>
+            </div>
+
+            <div class="vc-card vc-pad">
+              <div class="vc-head"><h3>Monthly Summary</h3><span class="vc-hint">{{ c.attendance.month.label }}</span></div>
+              <div class="vc-grid-3">
+                <div class="vc-statbox"><b style="color: #4d7c0f">{{ c.attendance.month.present }}</b><span>Present</span></div>
+                <div class="vc-statbox"><b style="color: #EF4444">{{ c.attendance.month.absent }}</b><span>Absent</span></div>
+                <div class="vc-statbox"><b style="color: #FF7A00">{{ c.attendance.month.late }}</b><span>Late</span></div>
+                <div class="vc-statbox"><b style="color: #7C3AED">{{ c.attendance.month.half }}</b><span>Half Days</span></div>
+                <div class="vc-statbox"><b style="color: #0284c7">{{ c.attendance.month.hours }}</b><span>Hours</span></div>
+                <div class="vc-statbox"><b style="color: #4d7c0f">{{ c.attendance.month.overtimeHours }}h</b><span>Overtime</span></div>
+              </div>
+            </div>
+
+            <div class="vc-card vc-pad">
+              <div class="vc-head"><h3>Recent Days</h3></div>
+              <p class="vc-hint" *ngIf="!c.attendance.recent.length">No attendance marked yet.</p>
+              <div class="vc-row" *ngFor="let r of c.attendance.recent">
+                <span>{{ dayLabel(r.date) }}<ng-container *ngIf="r.checkIn"> · {{ time(r.checkIn) }}<ng-container *ngIf="r.checkOut">–{{ time(r.checkOut) }}</ng-container></ng-container></span>
+                <b *ngIf="r.status" [style.color]="att[r.status].color === '#8CF000' ? '#4d7c0f' : att[r.status].color">{{ att[r.status].label }}<ng-container *ngIf="r.workedMinutes"> · {{ hours(r.workedMinutes) }}</ng-container></b>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payroll -->
+          <div class="vc-stack gap16" *ngIf="section() === 'payroll'">
+            <div class="vc-card vc-pad">
+              <div class="vc-head">
+                <h3>{{ c.payroll.current.periodLabel }} Payroll</h3>
+                <span class="vc-badge" [style.background]="payoutColors[c.payroll.current.status] + '18'" [style.color]="c.payroll.current.status === 'paid' ? '#4d7c0f' : payoutColors[c.payroll.current.status]">{{ c.payroll.current.status | titlecase }}</span>
+              </div>
+              <div class="vc-row"><span>{{ c.assignment.employmentType === 'hourly' || c.assignment.employmentType === 'freelance' ? 'Earnings (' + c.payroll.current.hours + ' h)' : 'Base Salary' }}</span><b>{{ money(c.payroll.current.base) }}</b></div>
+              <div class="vc-row"><span>Bonus</span><b>+ {{ money(c.payroll.current.bonus) }}</b></div>
+              <div class="vc-row"><span>Incentives</span><b>+ {{ money(c.payroll.current.incentive) }}</b></div>
+              <div class="vc-row"><span>Deductions</span><b class="neg">− {{ money(c.payroll.current.deduction) }}</b></div>
+              <div class="vc-row" *ngIf="c.payroll.current.note"><span>Note</span><b>{{ c.payroll.current.note }}</b></div>
+              <div class="vc-net"><span>Net Payable</span><b>{{ money(c.payroll.current.net) }}</b></div>
+              <div class="vc-actions" *ngIf="isActive() && c.payroll.current.status !== 'paid'">
+                <button type="button" class="vc-btn soft grow" [disabled]="busy()" (click)="adjustPayroll(c)"><ion-icon name="create-outline"></ion-icon> Adjust</button>
+                <button type="button" class="vc-btn primary grow" [disabled]="busy() || c.payroll.current.net <= 0" (click)="markPaid(c)"><ion-icon name="checkmark-done-outline"></ion-icon> Mark paid</button>
+              </div>
+              <div class="vc-actions" *ngIf="c.payroll.current.status === 'paid'">
+                <p class="cd-paid">Paid on {{ dateLabel(c.payroll.current.paidAt) }}</p>
+                <button type="button" class="vc-btn soft" (click)="downloadInvoice(c.payroll.current.id, c.payroll.current.invoiceNumber)"><ion-icon name="download-outline"></ion-icon> Invoice</button>
+              </div>
+            </div>
+
+            <div class="vc-card vc-pad">
+              <div class="vc-head"><h3>Payment History</h3></div>
+              <p class="vc-hint" *ngIf="!c.payroll.history.length">No payments recorded yet.</p>
+              <div class="cd-pay" *ngFor="let h of c.payroll.history">
+                <i><ion-icon name="cash-outline"></ion-icon></i>
+                <div class="grow">
+                  <p class="t">{{ h.periodLabel }}</p>
+                  <p class="s">{{ h.invoiceNumber || (h.status | titlecase) }}</p>
+                </div>
+                <div class="right">
+                  <b>{{ money(h.net) }}</b>
+                  <button type="button" *ngIf="h.id && h.status === 'paid'" (click)="downloadInvoice(h.id, h.invoiceNumber)"><ion-icon name="download-outline"></ion-icon> Invoice</button>
+                  <span *ngIf="h.status !== 'paid'" [style.color]="payoutColors[h.status]">{{ h.status | titlecase }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Documents -->
+          <div class="vc-card vc-pad" *ngIf="section() === 'documents'">
+            <div class="vc-head"><h3>Coach Documents</h3></div>
+            <p class="vc-hint" *ngIf="!isActive()">Documents are shared once the coach is on your team.</p>
+            <p class="vc-hint" *ngIf="isActive() && !c.documents.length">This coach has not uploaded any documents yet.</p>
+            <div class="vc-stack small">
+              <div class="cd-doc" *ngFor="let d of c.documents">
+                <i><ion-icon [name]="d.type.includes('cert') ? 'ribbon-outline' : 'document-text-outline'"></ion-icon></i>
+                <div class="grow">
+                  <p class="t">{{ d.label }}</p>
+                  <p class="s">{{ d.name || 'Uploaded ' + dateLabel(d.uploadedAt) }}</p>
+                </div>
+                <span class="vc-badge" [style.background]="(d.status === 'approved' || d.status === 'verified' ? '#8CF000' : '#FF7A00') + '18'" [style.color]="d.status === 'approved' || d.status === 'verified' ? '#4d7c0f' : '#c2410c'">{{ d.status === 'approved' ? 'Verified' : (d.status | titlecase) }}</span>
+                <button type="button" (click)="openDocument(c, d.id)" [attr.aria-label]="'Open ' + d.label"><ion-icon name="open-outline"></ion-icon></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contract -->
+          <div class="vc-stack gap16" *ngIf="section() === 'contract'">
+            <div class="vc-card vc-pad">
+              <div class="vc-head"><h3>Current Contract</h3></div>
+              <div class="vc-row"><span>Contract Start</span><b>{{ dateLabel(c.contract.start) }}</b></div>
+              <div class="vc-row"><span>Contract End</span><b>{{ c.contract.end ? dateLabel(c.contract.end) : 'Open-ended' }}</b></div>
+              <div class="vc-row"><span>Notice Period</span><b>{{ c.contract.noticeDays !== null ? c.contract.noticeDays + ' days' : '—' }}</b></div>
+              <div class="vc-row"><span>Employment Type</span><b>{{ c.contract.employmentLabel || '—' }}</b></div>
+              <div class="vc-row"><span>Status</span><b [style.color]="contractMeta[c.contract.status]?.color">{{ contractMeta[c.contract.status]?.label || (c.contract.status | titlecase) }}</b></div>
+            </div>
+            <div class="vc-grid-3" *ngIf="isActive()">
+              <button type="button" class="vc-card cd-cact" [disabled]="busy()" (click)="renew(c)"><i style="background: #8cf00015; color: #4d7c0f"><ion-icon name="refresh-outline"></ion-icon></i><span style="color: #4d7c0f">Renew</span></button>
+              <button type="button" class="vc-card cd-cact" [disabled]="busy()" (click)="extend(c)"><i style="background: #38bdf815; color: #0284c7"><ion-icon name="calendar-outline"></ion-icon></i><span style="color: #0284c7">Extend</span></button>
+              <button type="button" class="vc-card cd-cact" [disabled]="busy()" (click)="terminate(c)"><i style="background: #ef444415; color: #dc2626"><ion-icon name="close-circle-outline"></ion-icon></i><span style="color: #dc2626">Terminate</span></button>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </app-brand-header-shell>
+
+  <ion-modal #editModal [isOpen]="editOpen()" (didDismiss)="editOpen.set(false)">
+    <ng-template>
+      <ion-header class="ion-no-border">
+        <ion-toolbar class="vc-modal-bar">
+          <ion-buttons slot="start">
+            <ion-button (click)="editModal.dismiss()"><ion-icon slot="start" name="arrow-back"></ion-icon> Cancel</ion-button>
+          </ion-buttons>
+          <ion-title>Edit Work Details</ion-title>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="vc-modal-content">
+        <div class="vc-body" *ngIf="coach() as c">
+          <app-coach-terms-form [courts]="c.courts" [initial]="c.assignment" (termsChange)="onTerms($event)"></app-coach-terms-form>
+          <p class="vc-error" *ngIf="editError">{{ editError }}</p>
+          <button type="button" class="vc-btn primary block lg" [disabled]="busy() || !!editError" (click)="saveAssignment(editModal)">
+            <ion-icon name="checkmark-circle-outline"></ion-icon> {{ busy() ? 'Saving…' : 'Save Changes' }}
+          </button>
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+</ion-content>
