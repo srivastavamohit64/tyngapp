@@ -248,7 +248,7 @@ ALL APP USERS
 - The back arrow now always takes you to the screen you were just on, instead of jumping to a fixed screen such as Home or a list. In step-by-step forms it still goes back one step first. If you opened a screen straight from a link, the back arrow takes you to the most sensible screen instead of leaving the app.
 - Pop-up windows, sheets, menus and confirmation boxes now close by themselves when a button inside them takes you to another screen. For example, after booking a coach, "Open coach chat" closes the "Request sent" window and opens the chat. Nothing is left floating over the new screen.
 
-NEW WORK COMPLETED ON 3 OCTOBER 2026
+NEW WORK COMPLETED FROM 11 PM ON 2 OCTOBER 2026 TO 1:45 PM ON 3 OCTOBER 2026
 
 COACH
 
@@ -272,6 +272,7 @@ VENUE STAFF
 - Pages opened from the side menu show only a back arrow and the page name, and the back arrow always returns to the screen you came from. Pop-up windows close by themselves before another screen opens.
 - "Coaches" in the side menu now opens your own Coaches page and shows how many coaches work with you.
 - Find coaches with their rating, distance, availability, hourly rate and monthly price, save favourites to a shortlist, and send a job offer with the facility, pay, work days, shift, start date and notice period.
+- When you open a coach's public profile, the player booking button is hidden, because venues hire coaches with a job offer instead.
 - Approve or decline coaches who ask to join, and take back an offer that has not been answered yet.
 - Open any coach to see their details, weekly schedule and documents, call or message them, and change their work details.
 - Check coaches in and out each day (late arrivals are marked automatically), or mark a day as absent, half day or leave.
@@ -289,6 +290,7 @@ VENUE STAFF
 - The court timeline on Home no longer shows cancelled or missed bookings as busy.
 - Earnings now counts only bookings up to today, so "Today", "This Week" and "This Month" match Home and Revenue Analytics. Comparisons are now fair: the first days of this month are compared with the same days of last month, not the whole month.
 - Court occupancy on Earnings is now the real share of opening hours that were booked.
+- In the payout list on Earnings, the current month shows only what you have earned so far (for example "1–3 Oct so far"), matching the totals above it.
 - Revenue Analytics shows your venue's name in the city ranking.
 
 ADMIN
