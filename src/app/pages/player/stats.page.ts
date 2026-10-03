@@ -311,7 +311,7 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
 
     .profile-name {
       font-size: 20px;
-      font-weight: 800;
+      font-weight: 900;
       color: white;
       margin-bottom: 2px;
     }
@@ -346,7 +346,7 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
 
     .tp-label {
       font-size: 10px;
-      font-weight: 800;
+      font-weight: 900;
       color: var(--app-primary);
       letter-spacing: 0.1em;
       margin-bottom: 2px;
@@ -387,7 +387,7 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
     }
 
     .xp-num { font-size: 11px; color: rgba(255,255,255,0.4); }
-    .xp-pct { font-size: 11px; font-weight: 800; color: var(--app-primary); }
+    .xp-pct { font-size: 11px; font-weight: 900; color: var(--app-primary); }
 
     .xp-bar {
       width: 100%;
@@ -468,7 +468,7 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
 
     .s-card-title {
       font-size: 13px;
-      font-weight: 800;
+      font-weight: 900;
       color: #111827;
       text-transform: uppercase;
       letter-spacing: 0.1em;
@@ -604,7 +604,7 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
       margin-bottom: 5px;
     }
 
-    .skill-name { font-size: 12px; font-weight: 600; color: #374151; }
+    .skill-name { font-size: 12px; font-weight: 600; color: #1f2937; }
     .skill-pct { font-size: 12px; font-weight: 700; }
 
     .skill-bar {
@@ -675,7 +675,7 @@ export class StatsPage {
     { name: 'Ball Control', value: 78, color: 'var(--app-primary)' },
     { name: 'Teamwork', value: 92, color: '#FF7A00' },
     { name: 'Strategy', value: 70, color: '#38BDF8' },
-    { name: 'Leadership', value: 65, color: '#8B5CF6' },
+    { name: 'Leadership', value: 65, color: '#7C3AED' },
   ];
 
   stats = {

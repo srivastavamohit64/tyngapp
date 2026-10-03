@@ -35,7 +35,7 @@
 
 .coach-focus-title {
   color: #111827;
-  font-weight: 800;
+  font-weight: 900;
   margin-right: 2px;
   white-space: nowrap;
 }
@@ -46,7 +46,7 @@
 
   b {
     color: #16A34A;
-    font-weight: 800;
+    font-weight: 900;
   }
 }
 
@@ -80,7 +80,7 @@
 }
 
 .coach-pulse-card {
-  border: 1px solid #EDF1F5;
+  border: 1px solid #EEF0F3;
   box-shadow: 0 6px 24px rgba(19, 35, 58, 0.07);
 }
 
@@ -94,17 +94,17 @@
 
 .section-card.coach-pulse-card { padding:18px; border-radius:23px; }
 .coach-pulse-heading { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
-.coach-pulse-title { margin:0; color:#172033; font-size:12px; line-height:1.2; font-weight:900; letter-spacing:.09em; text-transform:uppercase; }
-.coach-pulse-subtitle { margin:3px 0 0; color:#8C96A6; font-size:10px; line-height:1.25; }
+.coach-pulse-title { margin:0; color:#1a2231; font-size:12px; line-height:1.2; font-weight:900; letter-spacing:.09em; text-transform:uppercase; }
+.coach-pulse-subtitle { margin:3px 0 0; color:#9CA3AF; font-size:10px; line-height:1.25; }
 .coach-pulse-flash { display:grid; place-items:center; width:30px; height:30px; border-radius:50%; background:var(--app-primary); color:#fff; box-shadow:0 3px 10px rgba(var(--app-primary-rgb),.24); font-size:15px; }
 .coach-metric-icon { display:block; font-size:18px; }
-.coach-metric-value { margin:4px 0 0; color:#172033; font-size:23px; line-height:1; font-weight:900; letter-spacing:-.02em; }
-.coach-metric-label { margin:3px 0 0; color:#687386; font-size:11px; line-height:1.2; font-weight:600; }
-.coach-goal-progress { margin-top:14px; padding-top:14px; border-top:1px solid #EEF1F5; }
+.coach-metric-value { margin:4px 0 0; color:#1a2231; font-size:23px; line-height:1; font-weight:900; letter-spacing:-.02em; }
+.coach-metric-label { margin:3px 0 0; color:#6b7280; font-size:11px; line-height:1.2; font-weight:600; }
+.coach-goal-progress { margin-top:14px; padding-top:14px; border-top:1px solid #EEF0F3; }
 .coach-goal-heading { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; font-size:10px; }
-.coach-goal-heading span { color:#8C96A6; font-weight:600; }
-.coach-goal-heading strong { color:#51B900; font-size:10px; font-weight:900; }
-.coach-goal-track { height:7px; overflow:hidden; border-radius:99px; background:#EEF1F5; }
+.coach-goal-heading span { color:#9CA3AF; font-weight:600; }
+.coach-goal-heading strong { color:#6ECC00; font-size:10px; font-weight:900; }
+.coach-goal-track { height:7px; overflow:hidden; border-radius:99px; background:#EEF0F3; }
 
 .section-title {
   font-size: var(--app-section-title-size);
@@ -140,7 +140,7 @@
   background: linear-gradient(135deg, #FF7A00, #FF9A40) !important;
   box-shadow: 0 3px 12px rgba(255, 122, 0, 0.40);
   border: none;
-  font-weight: 800;
+  font-weight: 900;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -156,7 +156,7 @@
   background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to)) !important;
   box-shadow: 0 2px 8px rgba(var(--app-primary-rgb), 0.32);
   border: none;
-  font-weight: 800;
+  font-weight: 900;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -171,7 +171,7 @@
 .btn-green-ghost {
   background: rgba(var(--app-primary-rgb), 0.12) !important;
   border: 1.5px solid rgba(var(--app-primary-rgb), 0.30) !important;
-  font-weight: 800;
+  font-weight: 900;
   color: #111827;
   cursor: pointer;
   display: flex;
@@ -201,7 +201,7 @@
   overflow: hidden;
   padding: 14px;
   border-radius: 20px;
-  background: linear-gradient(115deg, #7435E8 0%, #6325D2 100%);
+  background: linear-gradient(115deg, #7C3AED 0%, #6325D2 100%);
   box-shadow: 0 7px 18px rgba(99, 37, 210, 0.2);
   color: #fff;
 }
@@ -219,24 +219,24 @@
   place-items: center;
   width: 32px;
   height: 36px;
-  color: #FFD04A;
+  color: #FCD34D;
   font-size: 24px;
 }
 
 .coach-milestone-copy { min-width: 0; flex: 1; }
-.coach-milestone-kicker { margin: 0 0 2px; color: #FFFFFFA6; font-size: 8px; font-weight: 850; letter-spacing: .08em; text-transform: uppercase; }
-.coach-milestone-title { margin: 0; color: #fff; font-size: 13px; line-height: 1.22; font-weight: 850; }
+.coach-milestone-kicker { margin: 0 0 2px; color: #FFFFFFA6; font-size: 8px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+.coach-milestone-title { margin: 0; color: #fff; font-size: 13px; line-height: 1.22; font-weight: 900; }
 .coach-milestone-description { margin: 3px 0 0; color: #FFFFFFB3; font-size: 9px; line-height: 1.35; }
 .coach-milestone-link {
   display: inline-flex; align-items: center; gap: 3px; margin-top: 8px; padding: 5px 10px;
   border: 0; border-radius: 999px; background: rgba(255, 255, 255, .18); color: #fff;
-  font-size: 10px; font-weight: 850;
+  font-size: 10px; font-weight: 900;
 }
 .coach-milestone-link ion-icon { font-size: 11px; }
 
 .coach-weather-card {
   padding: 10px 13px;
-  border: 1px solid #EDF1F5;
+  border: 1px solid #EEF0F3;
   border-radius: 18px;
   background: #fff;
   box-shadow: 0 4px 14px rgba(19, 35, 58, .06);
@@ -245,34 +245,34 @@
 .coach-home-extras { display:grid; gap:14px; margin-top:-6px !important; }
 
 .coach-weather-icon { display:grid; flex:0 0 36px; place-items:center; width:36px; height:36px; border-radius:13px; background:#FFFBEB; color:#F59E0B; font-size:20px; }
-.coach-weather-location { margin:0; color:#9AA3B2; font-size:9px; line-height:1.2; }
+.coach-weather-location { margin:0; color:#9CA3AF; font-size:9px; line-height:1.2; }
 .coach-weather-reading { display:flex; align-items:baseline; gap:6px; }
-.coach-weather-temperature { margin:1px 0 0; color:#172033; font-size:21px; line-height:1; font-weight:900; }
-.coach-weather-condition { margin:0; color:#697487; font-size:10px; font-weight:650; }
-.coach-weather-outdoor { padding:6px 9px; border-radius:12px; background:#EFFAF0; text-align:center; }
-.coach-weather-outdoor p { margin:0; color:#159447; font-size:8px; font-weight:900; letter-spacing:.06em; text-transform:uppercase; }
-.coach-weather-outdoor span { color:#22A653; font-size:8px; font-weight:650; white-space:nowrap; }
+.coach-weather-temperature { margin:1px 0 0; color:#1a2231; font-size:21px; line-height:1; font-weight:900; }
+.coach-weather-condition { margin:0; color:#6b7280; font-size:10px; font-weight:700; }
+.coach-weather-outdoor { padding:6px 9px; border-radius:12px; background:#F0FDF4; text-align:center; }
+.coach-weather-outdoor p { margin:0; color:#16a34a; font-size:8px; font-weight:900; letter-spacing:.06em; text-transform:uppercase; }
+.coach-weather-outdoor span { color:#16A34A; font-size:8px; font-weight:700; white-space:nowrap; }
 .coach-weather-outdoor.caution { background:#F3F4F6; }
-.coach-weather-outdoor.caution p,.coach-weather-outdoor.caution span { color:#697487; }
+.coach-weather-outdoor.caution p,.coach-weather-outdoor.caution span { color:#6b7280; }
 
 .coach-dashboard-inline-state {
   min-height: 82px;
   padding: 14px;
-  border: 1px solid #EDF1F5;
+  border: 1px solid #EEF0F3;
   border-radius: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   background: #fff;
-  color: #7B8494;
+  color: #6B7280;
   font-size: 10px;
   text-align: center;
 }
 
 .coach-dashboard-inline-state ion-spinner { width:18px; height:18px; color:var(--app-primary); }
-.coach-dashboard-inline-state button { padding:6px 9px; border:0; border-radius:9px; background:#ECFFD7; color:#315B00; font-size:9px; font-weight:800; }
-.coach-dashboard-inline-state.error { color:#B42318; background:#FFF9F8; }
+.coach-dashboard-inline-state button { padding:6px 9px; border:0; border-radius:9px; background:#F5FFE8; color:#477315; font-size:9px; font-weight:900; }
+.coach-dashboard-inline-state.error { color:#DC2626; background:#FAFBFC; }
 
 .coach-support-card {
   display:flex;
@@ -281,7 +281,7 @@
   width:100%;
   min-height:64px;
   padding:9px 13px;
-  border:1px solid #EDF1F5;
+  border:1px solid #EEF0F3;
   border-radius:18px;
   background:#fff;
   box-shadow:0 4px 14px rgba(19, 35, 58, .06);
@@ -291,9 +291,9 @@
 
 .coach-support-icon { display:grid; flex:0 0 34px; place-items:center; width:34px; height:34px; border-radius:12px; background:#EFF6FF; color:#2563EB; font-size:17px; }
 .coach-support-copy { display:flex; min-width:0; flex:1; flex-direction:column; gap:2px; }
-.coach-support-copy p { margin:0; color:#172033; font-size:11px; font-weight:800; }
-.coach-support-copy span { color:#9AA3B2; font-size:9px; }
-.coach-support-chevron { color:#9AA3B2; font-size:15px; }
+.coach-support-copy p { margin:0; color:#1a2231; font-size:11px; font-weight:900; }
+.coach-support-copy span { color:#9CA3AF; font-size:9px; }
+.coach-support-chevron { color:#9CA3AF; font-size:15px; }
 
 @media (min-width: 700px) {
   .coach-dashboard-heading,.coach-dashboard-content { padding-right:20px; padding-left:20px; }
@@ -305,20 +305,20 @@
 
 .coach-profile-card {
   background: #FFFFFF;
-  border: 1px solid #E9EEF3;
+  border: 1px solid #EDEFF2;
   box-shadow: 0 6px 24px rgba(19, 35, 58, 0.07);
 }
 
 .coach-profile-dismiss {
   border: 0;
-  background: #F3F5F8;
-  color: #7B8494;
+  background: #F3F4F6;
+  color: #6B7280;
 }
 
 .coach-profile-action {
   border: 0;
   background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to));
-  color: #14210A;
+  color: #111827;
   box-shadow: 0 3px 12px rgba(var(--app-primary-rgb), 0.22);
 }
 
@@ -394,8 +394,8 @@
   overflow: visible;
   border: 2px solid var(--app-primary);
   border-radius: 50%;
-  background: #eef1f4;
-  color: #687386;
+  background: #eef0f3;
+  color: #6b7280;
 }
 
 .player-avatar img {
@@ -440,7 +440,7 @@
 
 .player-welcome-copy p {
   margin: 1px 0 0;
-  color: #718096;
+  color: #6b7280;
   font-size: 10px;
   font-weight: 600;
   line-height: 1.2;
@@ -455,12 +455,12 @@
   height: 28px;
   margin-left: 10px;
   padding: 0 10px;
-  border: 1px solid #fed7aa;
+  border: 1px solid #ffedd5;
   border-radius: 999px;
-  background: #fffaf5;
+  background: #f9fafb;
   color: #f97316;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 900;
 }
 
 .player-points-pill ion-icon {
@@ -478,7 +478,7 @@
 .home-hello-name {
   margin: 2px 0 0;
   font-size: 17px;
-  font-weight: 800;
+  font-weight: 900;
   color: #111827;
   line-height: 1.2;
   letter-spacing: -0.02em;
@@ -497,7 +497,7 @@
   background: #fff;
   box-shadow: 0 4px 10px rgba(19, 35, 58, 0.08);
   cursor: pointer;
-  color: #4b5563;
+  color: #6b7280;
 }
 
 .home-location-pin {
@@ -509,7 +509,7 @@
 .home-location-label {
   font-size: 11px;
   font-weight: 700;
-  color: #172033;
+  color: #1a2231;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -574,9 +574,9 @@ ion-popover.search-filter-popover {
 
 .search-filter-menu > p {
   margin: 2px 8px 8px;
-  color: #98a2b3;
+  color: #9ca3af;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 900;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -598,9 +598,9 @@ ion-popover.search-filter-popover {
   font-weight: 700;
 }
 
-.search-filter-menu > button:active { background: #f4f7f2; }
-.search-filter-menu > button ion-icon:first-child { color: #64bd00; font-size: 19px; }
-.search-filter-menu > button ion-icon:last-child { color: #c1c8d0; font-size: 15px; }
+.search-filter-menu > button:active { background: #f3f4f6; }
+.search-filter-menu > button ion-icon:first-child { color: #6ecc00; font-size: 19px; }
+.search-filter-menu > button ion-icon:last-child { color: #c4c9d4; font-size: 15px; }
 
 .addr-sheet {
   padding: 10px 20px calc(20px + var(--safe-area-bottom));
@@ -631,7 +631,7 @@ ion-popover.search-filter-popover {
 .addr-section-label {
   margin: 14px 0 8px;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 900;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: #9ca3af;
@@ -684,7 +684,7 @@ ion-popover.search-filter-popover {
 .addr-option-label {
   margin: 0;
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 900;
   color: #111827;
 }
 
@@ -715,7 +715,7 @@ ion-popover.search-filter-popover {
   background: transparent;
   padding: 12px;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 900;
   color: #2563eb;
   cursor: pointer;
 }
@@ -778,7 +778,7 @@ ion-popover.search-filter-popover {
 .location-line p {
   margin: 0;
   font-size: 18px;
-  font-weight: 800;
+  font-weight: 900;
   line-height: 1.25;
   overflow-wrap: anywhere;
 }
@@ -927,7 +927,7 @@ ion-popover.search-filter-popover {
 
 .suggest-type {
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: #6b7280;
@@ -955,7 +955,7 @@ ion-popover.search-filter-popover {
 }
 
 .suggest-card--muted {
-  background: linear-gradient(to right, #111827, #374151);
+  background: linear-gradient(to right, #111827, #1f2937);
   box-shadow: 0 8px 24px rgba(17, 24, 39, 0.18);
 }
 
@@ -1104,19 +1104,19 @@ ion-popover.search-filter-popover {
 }
 
 .qa-green {
-  background: linear-gradient(170deg, #ffffff 0%, #f5ffe6 100%);
-  box-shadow: 0 2px 0 #bdef52, 0 8px 22px rgba(var(--app-primary-rgb), 0.15);
+  background: linear-gradient(170deg, #ffffff 0%, #f5ffe8 100%);
+  box-shadow: 0 2px 0 #a3e635, 0 8px 22px rgba(var(--app-primary-rgb), 0.15);
   border: 1.5px solid rgba(var(--app-primary-rgb), 0.18);
 }
 
 .qa-dark {
   background: linear-gradient(170deg, #111827 0%, #1f2937 100%);
-  box-shadow: 0 2px 0 #e05500, 0 8px 22px rgba(255, 122, 0, 0.24);
+  box-shadow: 0 2px 0 #f25a00, 0 8px 22px rgba(255, 122, 0, 0.24);
   border: 1.5px solid rgba(255, 122, 0, 0.2);
 }
 
 .qa-blue {
-  background: linear-gradient(170deg, #ffffff 0%, #eff9ff 100%);
+  background: linear-gradient(170deg, #ffffff 0%, #f0f9ff 100%);
   box-shadow: 0 2px 0 #68c8f5, 0 8px 22px rgba(56, 189, 248, 0.15);
   border: 1.5px solid rgba(56, 189, 248, 0.2);
 }
@@ -1260,7 +1260,7 @@ ion-popover.search-filter-popover {
   width: 100%;
   border-radius: 18px;
   overflow: hidden;
-  background: #f8fafc;
+  background: #f9fafb;
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
 }
 
@@ -1274,7 +1274,7 @@ ion-popover.search-filter-popover {
 .home-ads-skeleton {
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 45%, #f1f5f9 100%);
+  background: linear-gradient(90deg, #f3f4f6 0%, #e5e7eb 45%, #f3f4f6 100%);
   background-size: 200% 100%;
   animation: home-ads-shimmer 1.2s ease-in-out infinite;
 }

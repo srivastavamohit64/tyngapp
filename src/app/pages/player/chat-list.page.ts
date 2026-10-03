@@ -260,7 +260,7 @@ import { SkeletonListComponent } from '../../shared/components/skeleton';
       }
       .section-count {
         font-size: 11px;
-        font-weight: 800;
+        font-weight: 900;
         color: #6b7280;
       }
       .section-line {
@@ -281,8 +281,8 @@ import { SkeletonListComponent } from '../../shared/components/skeleton';
         color: var(--app-section-title-color);
       }
       .pinned-card {
-        background: #f8fafc;
-        border: 1px solid #eef2f7;
+        background: #f9fafb;
+        border: 1px solid #eef0f3;
         border-radius: 18px;
         margin-bottom: 8px;
         overflow: hidden;
@@ -345,7 +345,7 @@ import { SkeletonListComponent } from '../../shared/components/skeleton';
         color: #111827;
       }
       .chat-name--bold {
-        font-weight: 800;
+        font-weight: 900;
       }
       .chat-time {
         font-size: 10px;
@@ -400,7 +400,7 @@ import { SkeletonListComponent } from '../../shared/components/skeleton';
         background: var(--app-primary, #a3e635);
         color: #111827;
         font-size: 10px;
-        font-weight: 800;
+        font-weight: 900;
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -437,8 +437,8 @@ import { SkeletonListComponent } from '../../shared/components/skeleton';
       .empty-title {
         margin: 0;
         font-size: 16px;
-        font-weight: 800;
-        color: #0f172a;
+        font-weight: 900;
+        color: #111827;
         letter-spacing: -0.02em;
       }
       .empty-copy {
@@ -446,7 +446,7 @@ import { SkeletonListComponent } from '../../shared/components/skeleton';
         max-width: 260px;
         font-size: 13px;
         line-height: 1.45;
-        color: #64748b;
+        color: #6b7280;
         font-weight: 500;
       }
       .cta-btn {
@@ -460,7 +460,7 @@ import { SkeletonListComponent } from '../../shared/components/skeleton';
         background: var(--app-primary, #a3e635);
         color: #111827;
         font-size: 13px;
-        font-weight: 800;
+        font-weight: 900;
         line-height: 42px;
         letter-spacing: 0;
         text-shadow: none;

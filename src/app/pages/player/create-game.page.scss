@@ -5,13 +5,13 @@ ion-toolbar {
 }
 
 .subtitle {
-  color: #94a3b8;
+  color: #9ca3af;
   font-size: 13px;
   font-weight: 400;
 }
 
 .create-page {
-  background: #0a0f1c;
+  background: #111827;
   min-height: 100%;
 }
 
@@ -35,8 +35,8 @@ ion-toolbar {
   border-radius: 50%;
   display: grid;
   place-items: center;
-  background: #1e293b;
-  color: #64748b;
+  background: #1f2937;
+  color: #6b7280;
   flex: 0 0 auto;
 }
 
@@ -53,7 +53,7 @@ ion-toolbar {
 .line {
   flex: 1;
   height: 2px;
-  background: #1e293b;
+  background: #1f2937;
   margin: 0 8px;
 }
 
@@ -67,7 +67,7 @@ ion-toolbar {
 
 .picker {
   min-height: 134px;
-  color: #94a3b8;
+  color: #9ca3af;
   text-align: center;
 }
 

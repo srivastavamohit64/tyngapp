@@ -35,7 +35,7 @@ import { SportsBadgeComponent } from '../../shared/components/sports-badge/sport
           </ng-container>
 
           <ng-container *ngSwitchCase="'map'">
-            <div class="relative h-[520px] rounded-[24px] border border-white/10 bg-[radial-gradient(circle_at_30%_30%,rgba(37,99,235,.35),transparent_28%),linear-gradient(135deg,#0f172a,#111827)]">
+            <div class="relative h-[520px] rounded-[24px] border border-white/10 bg-[radial-gradient(circle_at_30%_30%,rgba(37,99,235,.35),transparent_28%),linear-gradient(135deg,#111827,#111827)]">
               <button class="absolute left-[42%] top-[35%] grid h-12 w-12 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-2 border-white bg-primary">⚽</button>
               <button class="absolute left-[68%] top-[25%] grid h-12 w-12 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-2 border-white bg-secondary">🏏</button>
               <button class="absolute left-[48%] top-[45%] grid h-12 w-12 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-2 border-white bg-info">8</button>

@@ -110,7 +110,7 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
         align-items: center;
         gap: 12px;
         padding: 14px 16px;
-        border-bottom: 1px solid #f1f5f9;
+        border-bottom: 1px solid #f3f4f6;
       }
 
       .friend-row--last {
@@ -123,7 +123,7 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
         width: 48px;
         border-radius: 14px;
         overflow: hidden;
-        background: #eef2ff;
+        background: #eff6ff;
         flex-shrink: 0;
         display: grid;
         place-items: center;
@@ -137,8 +137,8 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
 
       .avatar-fallback {
         font-size: 14px;
-        font-weight: 800;
-        color: #4338ca;
+        font-weight: 900;
+        color: #4f46e5;
         text-transform: uppercase;
       }
 
@@ -169,8 +169,8 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
       .friend-top h2 {
         margin: 0;
         font-size: 14px;
-        font-weight: 800;
-        color: #0f172a;
+        font-weight: 900;
+        color: #111827;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -190,7 +190,7 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
       .friend-sub {
         margin: 3px 0 0;
         font-size: 12px;
-        color: #64748b;
+        color: #6b7280;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -198,7 +198,7 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
 
       .friend-sub {
         font-size: 11px;
-        color: #94a3b8;
+        color: #9ca3af;
       }
 
       .friend-actions {
@@ -232,7 +232,7 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
         height: 34px;
         width: 34px;
         border-radius: 999px;
-        border: 1px solid #fecaca;
+        border: 1px solid #fee2e2;
         background: #fff;
         color: #dc2626;
         display: grid;
@@ -267,14 +267,14 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
       .empty h2 {
         margin: 0;
         font-size: 16px;
-        font-weight: 800;
+        font-weight: 900;
       }
 
       .empty p {
         margin: 8px auto 16px;
         max-width: 260px;
         font-size: 13px;
-        color: #64748b;
+        color: #6b7280;
         line-height: 1.45;
       }
 
@@ -289,7 +289,7 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
         background: var(--app-primary, #a3e635);
         color: #111827;
         font-size: 13px;
-        font-weight: 800;
+        font-weight: 900;
       }
     `,
   ],

@@ -117,7 +117,7 @@ import { SkeletonListComponent } from '../../shared/components/skeleton';
         background: #111827;
         color: #fff;
         font-size: 12px;
-        font-weight: 800;
+        font-weight: 900;
       }
     `,
   ],

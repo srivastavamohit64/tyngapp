@@ -107,7 +107,7 @@ type BadgeFilter = 'all' | 'earned' | 'locked';
     </ion-content>
   `,
   styles: [`
-    .badges-page { min-height: 100%; background: #f8fafc; padding-bottom: 32px; }
+    .badges-page { min-height: 100%; background: #f9fafb; padding-bottom: 32px; }
     .badges-content { padding: 14px 18px 24px; display: flex; flex-direction: column; gap: 14px; }
 
     .badges-hero {
@@ -145,7 +145,7 @@ type BadgeFilter = 'all' | 'earned' | 'locked';
     .filter-row { display: flex; gap: 8px; }
     .filter-chip {
       padding: 8px 14px; border-radius: 999px; border: 1px solid #e5e7eb; background: #fff;
-      color: #374151; font-size: 12px; font-weight: 800;
+      color: #1f2937; font-size: 12px; font-weight: 900;
     }
     .filter-chip.active { background: #111827; border-color: #111827; color: #fff; }
 
@@ -166,13 +166,13 @@ type BadgeFilter = 'all' | 'earned' | 'locked';
     }
     .badge-title { margin: 0; color: #111827; font-size: 11px; font-weight: 900; }
     .badge-desc { margin: 4px 0 0; color: #9ca3af; font-size: 10px; line-height: 1.35; }
-    .badge-earned { margin: 6px 0 0; color: #16a34a; font-size: 10px; font-weight: 800; }
+    .badge-earned { margin: 6px 0 0; color: #16a34a; font-size: 10px; font-weight: 900; }
     .badge-progress { margin-top: 8px; }
     .badge-track { height: 5px; border-radius: 999px; background: #e5e7eb; overflow: hidden; }
     .badge-track span { display: block; height: 100%; border-radius: inherit; background: #8cf000; }
     .badge-count { margin: 4px 0 0; color: #111827; font-size: 10px; font-weight: 900; }
-    .badge-hint { margin: 2px 0 0; color: #b45309; font-size: 9px; line-height: 1.3; }
-    .secret-card { border-style: dashed; background: #fafafa; }
+    .badge-hint { margin: 2px 0 0; color: #c2410c; font-size: 9px; line-height: 1.3; }
+    .secret-card { border-style: dashed; background: #f9fafb; }
     .secret-medal { background: #111827; color: #8cf000; }
     .empty-note { grid-column: 1 / -1; margin: 8px 0; color: #6b7280; font-size: 13px; text-align: center; }
 
@@ -184,7 +184,7 @@ type BadgeFilter = 'all' | 'earned' | 'locked';
 
     .error-box { padding: 18px; border-radius: 20px; background: #fff; text-align: center; color: #6b7280; font-size: 13px; }
     .error-box button {
-      margin-top: 8px; padding: 8px 16px; border: 0; border-radius: 999px; background: #111827; color: #fff; font-weight: 800;
+      margin-top: 8px; padding: 8px 16px; border: 0; border-radius: 999px; background: #111827; color: #fff; font-weight: 900;
     }
   `],
 })

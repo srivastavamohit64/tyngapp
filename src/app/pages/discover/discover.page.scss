@@ -234,7 +234,7 @@ $page: #fafbfc;
 .dp-skeleton {
   height: 560px;
   border-radius: 30px;
-  background: linear-gradient(90deg, #eef0f3 25%, #f6f7f9 50%, #eef0f3 75%);
+  background: linear-gradient(90deg, #eef0f3 25%, #f5f6f7 50%, #eef0f3 75%);
   background-size: 200% 100%;
   animation: dp-shimmer 1.2s infinite linear;
 }
@@ -321,7 +321,7 @@ $page: #fafbfc;
   position: relative;
   height: 350px;
   overflow: hidden;
-  background: linear-gradient(135deg, #161e2d 0%, #1f2937 100%);
+  background: linear-gradient(135deg, #1c1f2e 0%, #1f2937 100%);
 
   > img {
     width: 100%;

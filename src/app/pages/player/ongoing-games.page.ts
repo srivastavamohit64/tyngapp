@@ -353,7 +353,7 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
       overflow: hidden;
       position: relative;
       height: 180px;
-      background: #E8EEF5;
+      background: #EDEFF2;
     }
 
     .mini-google-map {
@@ -383,7 +383,7 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
       background: var(--app-primary);
       color: #111827;
       font-size: 11px;
-      font-weight: 800;
+      font-weight: 900;
       cursor: pointer;
     }
 
@@ -396,7 +396,7 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
       padding: 4px 12px;
       border-radius: 999px;
       font-size: 11px;
-      font-weight: 800;
+      font-weight: 900;
       letter-spacing: 0.05em;
       margin-bottom: 4px;
     }
@@ -415,7 +415,7 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
 
     .map-count {
       font-size: 16px;
-      font-weight: 800;
+      font-weight: 900;
     }
 
     .map-sub {
@@ -538,11 +538,11 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
       left: 12px;
       background: #FFF7ED;
       color: #C2410C;
-      border: 1px solid #FDBA74;
+      border: 1px solid #FF9A40;
       padding: 4px 10px;
       border-radius: 999px;
       font-size: 10px;
-      font-weight: 800;
+      font-weight: 900;
       z-index: 2;
     }
 
@@ -678,7 +678,7 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
       background: linear-gradient(90deg, var(--app-primary), var(--app-primary-to));
       color: #111827;
       font-size: 14px;
-      font-weight: 800;
+      font-weight: 900;
       border: none;
       cursor: pointer;
       box-shadow: 0 3px 12px rgba(var(--app-primary-rgb),0.3);
@@ -703,7 +703,7 @@ const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1506794778202-cad84cf45
       background: #111827;
       color: #fff;
       font-size: 12px;
-      font-weight: 800;
+      font-weight: 900;
       padding: 10px 16px;
       cursor: pointer;
     }
@@ -1004,8 +1004,8 @@ export class OngoingGamesPage implements OnInit, AfterViewInit, OnDestroy, ViewW
     if (key === 'football') return '#2563EB';
     if (key === 'cricket') return '#22C55E';
     if (key === 'basketball') return '#F97316';
-    if (key === 'tennis') return '#EAB308';
-    if (key === 'badminton') return '#8B5CF6';
+    if (key === 'tennis') return '#F59E0B';
+    if (key === 'badminton') return '#7C3AED';
     return '#111827';
   }
 

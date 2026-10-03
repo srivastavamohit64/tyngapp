@@ -449,7 +449,7 @@ type WalletSection = 'wallet' | 'points' | 'gifts';
       .wallet-segment {
         --background: #ffffff;
         background: #ffffff;
-        border: 1px solid #e8edf2;
+        border: 1px solid #e8ebef;
         border-radius: 18px;
         box-shadow: 0 4px 14px rgba(15, 23, 42, .045);
         padding: 4px;
@@ -457,15 +457,15 @@ type WalletSection = 'wallet' | 'points' | 'gifts';
       .wallet-segment ion-segment-button {
         --background: transparent;
         --background-checked: rgba(105, 217, 0, .15);
-        --color: #738093;
-        --color-checked: #18250d;
-        --indicator-color: #69d900;
+        --color: #6b7280;
+        --color-checked: #111827;
+        --indicator-color: #6ecc00;
         --indicator-box-shadow: none;
         --border-radius: 13px;
         min-width: 0;
         min-height: 52px;
         font-size: 10px;
-        font-weight: 800;
+        font-weight: 900;
         letter-spacing: -.01em;
         text-transform: none;
       }
@@ -508,7 +508,7 @@ type WalletSection = 'wallet' | 'points' | 'gifts';
       }
       .balance-topup-btn ion-icon { font-size: 22px; line-height: 1; }
       .balance-topup-btn span {
-        font-size: 9px; font-weight: 800; letter-spacing: .04em; text-transform: lowercase;
+        font-size: 9px; font-weight: 900; letter-spacing: .04em; text-transform: lowercase;
         line-height: 1; color: rgba(255,255,255,.9);
       }
       .balance-label { margin: 0; padding-right: 56px; font-size: 12px; font-weight: 700; color: rgba(255,255,255,.8); letter-spacing: .04em; text-transform: uppercase; }
@@ -523,7 +523,7 @@ type WalletSection = 'wallet' | 'points' | 'gifts';
         border-radius: 16px; padding: 10px 12px; min-width: 0;
       }
       .balance-stats span { display: block; font-size: 11px; color: rgba(255,255,255,.75); margin-bottom: 4px; }
-      .balance-stats strong { font-size: 15px; font-weight: 800; color: #ffffff !important; overflow-wrap: anywhere; }
+      .balance-stats strong { font-size: 15px; font-weight: 900; color: #ffffff !important; overflow-wrap: anywhere; }
 
       .txn-header h3 { margin: 0; font-size: 16px; font-weight: 900; }
 
@@ -555,7 +555,7 @@ type WalletSection = 'wallet' | 'points' | 'gifts';
       .quick-amounts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
       .quick-amounts button {
         width: 100%; height: 40px; border: 1px solid #e5e7eb; background: #f9fafb; border-radius: 12px;
-        padding: 0; font-size: 13px; font-weight: 800; color: #111827;
+        padding: 0; font-size: 13px; font-weight: 900; color: #111827;
       }
       .quick-amounts button.active { background: #111827; color: #fff; border-color: #111827; }
       .topup-row { display: flex; flex-direction: column; gap: 8px; width: 100%; }
@@ -596,7 +596,7 @@ type WalletSection = 'wallet' | 'points' | 'gifts';
       .page-error { margin-top: 0; }
       .retry-btn {
         margin-top: 12px; height: 40px; padding: 0 16px; border: none; border-radius: 12px;
-        background: #111827; color: #fff; font-size: 13px; font-weight: 800;
+        background: #111827; color: #fff; font-size: 13px; font-weight: 900;
       }
 
       .txn-header { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 12px; flex-shrink: 0; }
@@ -604,50 +604,50 @@ type WalletSection = 'wallet' | 'points' | 'gifts';
       .txn-list { display: flex; flex-direction: column; gap: 10px; }
       .txn-item {
         display: flex; align-items: center; gap: 12px; padding: 12px;
-        border-radius: 18px; background: #fafbfc; border: 1px solid #f0f2f5; min-width: 0;
+        border-radius: 18px; background: #fafbfc; border: 1px solid #f0f1f3; min-width: 0;
       }
       .txn-icon {
         width: 40px; height: 40px; border-radius: 14px; display: grid; place-items: center; flex-shrink: 0;
       }
-      .txn-icon.credit { background: #ecfdf5; color: #059669; }
-      .txn-icon.debit { background: #fff7ed; color: #ea580c; }
+      .txn-icon.credit { background: #f0fdf4; color: #16a34a; }
+      .txn-icon.debit { background: #fff7ed; color: #f25a00; }
       .txn-meta { min-width: 0; flex: 1; }
-      .txn-meta strong { display: block; font-size: 13px; font-weight: 800; }
+      .txn-meta strong { display: block; font-size: 13px; font-weight: 900; }
       .txn-meta span, .txn-meta em {
         display: block; font-size: 11px; color: #6b7280; font-style: normal;
         white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       }
       .txn-amount { font-size: 13px; font-weight: 900; white-space: nowrap; flex-shrink: 0; }
-      .txn-amount.credit { color: #059669; }
-      .txn-amount.debit { color: #ea580c; }
+      .txn-amount.credit { color: #16a34a; }
+      .txn-amount.debit { color: #f25a00; }
       .state-card {
         text-align: center; padding: 28px 16px; border-radius: 18px; background: #f9fafb;
         color: #6b7280; font-size: 13px; font-weight: 600;
       }
       .load-more {
         width: 100%; margin-top: 12px; height: 42px; border-radius: 14px;
-        border: 1px solid #e5e7eb; background: #fff; font-weight: 800; font-size: 13px;
+        border: 1px solid #e5e7eb; background: #fff; font-weight: 900; font-size: 13px;
       }
 
       .tp-card {
         border-radius: 24px; padding: 16px; color: #fff;
-        background: linear-gradient(160deg, #111827 0%, #1e293b 70%);
+        background: linear-gradient(160deg, #111827 0%, #1f2937 70%);
       }
       .tp-top { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
       .tp-main { min-width: 0; flex: 1; }
-      .tp-kicker { margin: 0; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #9CA3AF; }
+      .tp-kicker { margin: 0; font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; color: #9CA3AF; }
       .tp-top h2 { margin: 6px 0 0; font-size: clamp(24px, 8vw, 28px); font-weight: 900; color: #8cf000; line-height: 1.1; overflow-wrap: anywhere; }
       .tp-rate { flex-shrink: 0; text-align: right; font-size: 11px; font-weight: 700; color: #9CA3AF; }
       .tp-rate strong { display: block; margin-top: 4px; color: #8cf000; font-size: 13px; }
       .tp-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin: 14px 0 12px; }
       .tp-stats div { background: rgba(255,255,255,.06); border-radius: 12px; padding: 8px 6px; min-width: 0; text-align: center; }
       .tp-stats span { display: block; font-size: 10px; color: #9CA3AF; font-weight: 700; }
-      .tp-stats strong { display: block; font-size: 12px; font-weight: 800; overflow-wrap: anywhere; }
-      .tp-stats .warn { color: #FDBA74; }
+      .tp-stats strong { display: block; font-size: 12px; font-weight: 900; overflow-wrap: anywhere; }
+      .tp-stats .warn { color: #FF9A40; }
       .tp-convert { display: flex; flex-direction: column; gap: 8px; width: 100%; }
       .tp-convert input {
         width: 100%; height: 44px; border-radius: 12px; border: 1px solid rgba(255,255,255,.12);
-        background: rgba(255,255,255,.08); color: #fff; padding: 0 12px; font-weight: 800;
+        background: rgba(255,255,255,.08); color: #fff; padding: 0 12px; font-weight: 900;
       }
       .tp-convert input::placeholder { color: rgba(255,255,255,.45); }
       .tp-convert button {
@@ -660,7 +660,7 @@ type WalletSection = 'wallet' | 'points' | 'gifts';
       .gift-card-panel {
         position: relative;
         border-radius: 24px; padding: 16px; color: #fff;
-        background: linear-gradient(145deg, #111827 0%, #1f2937 58%, #7c2d12 145%);
+        background: linear-gradient(145deg, #111827 0%, #1f2937 58%, #92400e 145%);
         box-shadow: 0 16px 40px rgba(17,24,39,.18);
       }
       .gift-orb {
@@ -677,7 +677,7 @@ type WalletSection = 'wallet' | 'points' | 'gifts';
       }
       .gift-history-btn ion-icon { font-size: 18px; line-height: 1; }
       .gift-history-btn span {
-        font-size: 9px; font-weight: 800; letter-spacing: .04em; text-transform: lowercase;
+        font-size: 9px; font-weight: 900; letter-spacing: .04em; text-transform: lowercase;
         line-height: 1; color: rgba(255,255,255,.9);
       }
       .gift-panel-top {
@@ -687,7 +687,7 @@ type WalletSection = 'wallet' | 'points' | 'gifts';
       }
       .gift-panel-main { min-width: 0; flex: 1; }
       .gift-kicker {
-        margin: 0; font-size: 11px; font-weight: 800; letter-spacing: .08em;
+        margin: 0; font-size: 11px; font-weight: 900; letter-spacing: .08em;
         text-transform: uppercase; color: #9CA3AF;
       }
       .gift-panel-main h2 {
@@ -695,7 +695,7 @@ type WalletSection = 'wallet' | 'points' | 'gifts';
         color: #ff9a40; line-height: 1.1;
       }
       .gift-panel-main h2 span {
-        font-size: 14px; font-weight: 800; color: rgba(255,255,255,.72); margin-left: 4px;
+        font-size: 14px; font-weight: 900; color: rgba(255,255,255,.72); margin-left: 4px;
       }
       .gift-panel-meta {
         display: none;
@@ -715,19 +715,19 @@ type WalletSection = 'wallet' | 'points' | 'gifts';
         background: rgba(255,255,255,.06); text-align: left; color: #fff;
       }
       .gift-action ion-icon { font-size: 20px; }
-      .gift-action span { font-size: 12px; font-weight: 800; line-height: 1.25; }
+      .gift-action span { font-size: 12px; font-weight: 900; line-height: 1.25; }
       .gift-action.create ion-icon { color: #ff9a40; }
       .gift-action.redeem ion-icon { color: #8cf000; }
 
       .history-gift-list { display: flex; flex-direction: column; gap: 10px; }
       .history-gift-item {
         display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;
-        padding: 12px; border-radius: 16px; background: #fafbfc; border: 1px solid #f0f2f5;
+        padding: 12px; border-radius: 16px; background: #fafbfc; border: 1px solid #f0f1f3;
       }
       .my-gift-main { min-width: 0; flex: 1; }
       .my-gift-main strong { display: block; font-size: 15px; font-weight: 900; color: #111827; }
       .my-gift-code {
-        display: block; margin-top: 2px; font-size: 12px; font-weight: 800; color: #4b5563;
+        display: block; margin-top: 2px; font-size: 12px; font-weight: 900; color: #6b7280;
         letter-spacing: .02em; word-break: break-all;
       }
       .my-gift-main em {
@@ -739,10 +739,10 @@ type WalletSection = 'wallet' | 'points' | 'gifts';
       }
       .status-pill {
         display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 999px;
-        font-size: 10px; font-weight: 800; text-transform: capitalize;
-        background: #f3f4f6; color: #4b5563;
+        font-size: 10px; font-weight: 900; text-transform: capitalize;
+        background: #f3f4f6; color: #6b7280;
       }
-      .status-pill[data-status="active"] { background: #ecfdf5; color: #059669; }
+      .status-pill[data-status="active"] { background: #f0fdf4; color: #16a34a; }
       .status-pill[data-status="redeemed"] { background: #eff6ff; color: #2563eb; }
       .status-pill[data-status="expired"],
       .status-pill[data-status="cancelled"],
@@ -750,7 +750,7 @@ type WalletSection = 'wallet' | 'points' | 'gifts';
       .share-gift-btn {
         display: inline-flex; align-items: center; gap: 4px; height: 30px; padding: 0 10px;
         border: none; border-radius: 10px; background: #ff7a00; color: #fff;
-        font-size: 11px; font-weight: 800;
+        font-size: 11px; font-weight: 900;
       }
       .share-gift-btn:disabled { opacity: .65; }
       .share-gift-btn ion-icon { font-size: 14px; }
@@ -783,7 +783,7 @@ type WalletSection = 'wallet' | 'points' | 'gifts';
       .gift-sheet-header h3 { margin: 0; font-size: 17px; font-weight: 900; color: #111827; }
       .gift-sheet-header p { margin: 4px 0 0; font-size: 12px; font-weight: 600; color: #6b7280; line-height: 1.4; }
       .gift-label {
-        display: block; margin: 0 0 6px; font-size: 12px; font-weight: 800; color: #374151;
+        display: block; margin: 0 0 6px; font-size: 12px; font-weight: 900; color: #1f2937;
       }
       .gift-amounts {
         margin-bottom: 10px;
@@ -796,7 +796,7 @@ type WalletSection = 'wallet' | 'points' | 'gifts';
       }
       .gift-summary {
         display: flex; justify-content: space-between; align-items: center; gap: 12px;
-        padding: 12px; border-radius: 14px; background: #f9fafb; border: 1px solid #f0f2f5;
+        padding: 12px; border-radius: 14px; background: #f9fafb; border: 1px solid #f0f1f3;
         margin-bottom: 10px;
       }
       .gift-summary span { font-size: 12px; font-weight: 700; color: #6b7280; }
@@ -810,7 +810,7 @@ type WalletSection = 'wallet' | 'points' | 'gifts';
       }
       .gift-submit:disabled { opacity: .6; }
       .gift-success { text-align: center; padding: 8px 0 0; }
-      .gift-success ion-icon { font-size: 42px; color: #059669; }
+      .gift-success ion-icon { font-size: 42px; color: #16a34a; }
       .gift-success h4 { margin: 10px 0 6px; font-size: 17px; font-weight: 900; color: #111827; }
       .gift-success > p { margin: 0 0 14px; font-size: 13px; font-weight: 600; color: #6b7280; line-height: 1.45; }
       .gift-secret {
@@ -822,7 +822,7 @@ type WalletSection = 'wallet' | 'points' | 'gifts';
       .gift-secret strong { font-size: 15px; font-weight: 900; letter-spacing: .03em; word-break: break-all; }
       .copy-btn {
         flex-shrink: 0; height: 34px; padding: 0 12px; border: none; border-radius: 10px;
-        background: rgba(255,255,255,.14); color: #fff; font-size: 12px; font-weight: 800;
+        background: rgba(255,255,255,.14); color: #fff; font-size: 12px; font-weight: 900;
       }
 
       @media (min-width: 480px) {

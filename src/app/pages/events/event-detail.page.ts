@@ -51,26 +51,26 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
     </ion-content>
   `,
   styles: [`
-    :host { display: block; --event-bg: #f8fafc; }
+    :host { display: block; --event-bg: #f9fafb; }
     .event-page { min-height: 100%; padding: 18px 20px 40px; background: var(--event-bg); color: #111827; }
-    .state { min-height: 60vh; display: grid; place-content: center; text-align: center; color: #64748b; }
+    .state { min-height: 60vh; display: grid; place-content: center; text-align: center; color: #6b7280; }
     .state h2 { color: #111827; margin: 0 0 8px; }
     .state p { margin: 0 0 18px; }
     .event-card { overflow: hidden; max-width: 720px; margin: 0 auto; border-radius: 24px; background: white; box-shadow: 0 8px 30px rgba(15, 23, 42, .08); }
     .cover { display: block; width: 100%; height: 220px; object-fit: cover; background: #dbeafe; }
     .content { padding: 24px; }
-    .eyebrow { color: #16a34a; font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .eyebrow { color: #16a34a; font-size: 12px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
     h1 { margin: 8px 0 10px; font-size: 30px; line-height: 1.1; }
-    .description { color: #64748b; line-height: 1.5; }
-    .details { display: grid; gap: 14px; margin: 24px 0; color: #334155; }
+    .description { color: #6b7280; line-height: 1.5; }
+    .details { display: grid; gap: 14px; margin: 24px 0; color: #1f2937; }
     .details div { display: flex; align-items: center; gap: 12px; }
-    .details ion-icon { color: #65a30d; font-size: 20px; }
-    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 16px 0; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; }
+    .details ion-icon { color: #477315; font-size: 20px; }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 16px 0; border-top: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; }
     .stats div { display: grid; gap: 3px; text-align: center; }
     .stats strong { font-size: 18px; }
-    .stats span { color: #64748b; font-size: 11px; }
-    .prize { margin-top: 18px; color: #166534; font-weight: 700; }
-    .primary-button { border: 0; border-radius: 999px; padding: 12px 24px; background: #a3f536; color: #365314; font-weight: 700; }
+    .stats span { color: #6b7280; font-size: 11px; }
+    .prize { margin-top: 18px; color: #15803d; font-weight: 700; }
+    .primary-button { border: 0; border-radius: 999px; padding: 12px 24px; background: #a3e635; color: #477315; font-weight: 700; }
   `],
 })
 export class EventDetailPage implements OnInit {

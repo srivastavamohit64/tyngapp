@@ -79,7 +79,7 @@ ion-menu ion-content {
 
 .drawer-name {
   font-size: 18px;
-  font-weight: 800;
+  font-weight: 900;
   color: #111827;
   line-height: 1.2;
   margin: 0 0 2px;
@@ -128,7 +128,7 @@ ion-menu ion-content {
 
 .xp-top5 {
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 900;
   color: var(--app-primary);
   letter-spacing: 0.06em;
   margin-bottom: 2px;
@@ -169,7 +169,7 @@ ion-menu ion-content {
 }
 
 .xp-prog-lbl { font-size: 10px; color: rgba(255,255,255,0.4); }
-.xp-prog-pct { font-size: 10px; font-weight: 800; color: var(--app-primary); }
+.xp-prog-pct { font-size: 10px; font-weight: 900; color: var(--app-primary); }
 
 .xp-bar {
   height: 6px;
@@ -269,7 +269,7 @@ ion-menu ion-content {
   align-items: center;
   justify-content: center;
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 900;
   color: white;
   flex-shrink: 0;
 }
@@ -342,12 +342,12 @@ ion-menu ion-content {
   width: 40px;
   height: 40px;
   padding: 0;
-  border: 1px solid #FECACA;
+  border: 1px solid #FEE2E2;
   border-radius: 13px;
   display: grid;
   place-items: center;
-  background: #FFF7F7;
-  color: #E5484D;
+  background: #FEF2F2;
+  color: #EF4444;
   font-size: 19px;
   box-shadow: 0 3px 10px rgba(229, 72, 77, .10);
   cursor: pointer;
@@ -398,7 +398,7 @@ ion-menu ion-content {
 
 .rating-value {
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 900;
   color: #111827;
 }
 
@@ -612,7 +612,7 @@ ion-menu ion-content {
   border-radius: 14px;
   padding: 13px 12px;
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 900;
   cursor: pointer;
 }
 
