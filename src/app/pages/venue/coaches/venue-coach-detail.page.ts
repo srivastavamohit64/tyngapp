@@ -13,6 +13,8 @@ import {
   saveBlob,
 } from '../../../core/services/venue-coach.service';
 import { BrandHeaderShellComponent } from '../../../shared/components/brand-header-shell/brand-header-shell.component';
+import { QrCodeComponent } from '../../../shared/components/qr/qr-code.component';
+import { QrScannerComponent } from '../../../shared/components/qr/qr-scanner.component';
 import { PageSkeletonComponent } from '../../../shared/components/skeleton';
 import { CoachTermsFormComponent } from './coach-terms-form.component';
 import { DUTY_META, PAYOUT_COLORS, apiErrorMessage, avatarColor, avatarTextColor, initials, money, shortMoney } from './venue-coach.utils';
@@ -27,6 +29,8 @@ const ATTENDANCE_META: Record<string, { label: string; color: string }> = {
   leave: { label: 'Leave', color: '#38BDF8' },
 };
 
+const RATING_WORDS: Record<number, string> = { 5: 'Excellent', 4: 'Good', 3: 'Okay', 2: 'Poor', 1: 'Very poor' };
+
 const CONTRACT_META: Record<string, { label: string; color: string }> = {
   active: { label: 'Active', color: '#4d7c0f' },
   ending_soon: { label: 'Ending soon', color: '#c2410c' },
@@ -39,7 +43,7 @@ const CONTRACT_META: Record<string, { label: string; color: string }> = {
 @Component({
   selector: 'app-venue-coach-detail-page',
   standalone: true,
-  imports: [CommonModule, IonicModule, BrandHeaderShellComponent, PageSkeletonComponent, CoachTermsFormComponent],
+  imports: [CommonModule, IonicModule, BrandHeaderShellComponent, PageSkeletonComponent, CoachTermsFormComponent, QrCodeComponent, QrScannerComponent],
   templateUrl: './venue-coach-detail.page.html',
   styleUrls: ['./venue-coaches.shared.scss', './venue-coach-detail.page.scss'],
 })
@@ -68,6 +72,7 @@ export class VenueCoachDetailPage implements OnInit {
   readonly section = signal<Section>('overview');
   readonly busy = signal(false);
   readonly editOpen = signal(false);
+  readonly scanOpen = signal(false);
   editTerms: VenueCoachTerms | null = null;
   editError: string | null = null;
 
@@ -181,6 +186,51 @@ export class VenueCoachDetailPage implements OnInit {
     const { data, role } = await sheet.onDidDismiss();
     if (role === 'cancel' || !data) return;
     await this.act(() => firstValueFrom(this.svc.attendance(c.id, 'mark', data as AttendanceStatus)), 'Attendance saved.');
+  }
+
+  async onScanned(code: string, modal: IonModal): Promise<void> {
+    if (this.busy()) return;
+    this.busy.set(true);
+    try {
+      const res = await firstValueFrom(this.svc.scan(code));
+      await modal.dismiss();
+      await this.toast(res.message || 'Attendance saved.');
+      if (res.data?.coach && res.data.coach.id === this.id) this.coach.set(res.data.coach);
+    } catch (e) {
+      await this.toast(this.message(e, 'Could not read this code.'));
+    } finally {
+      this.busy.set(false);
+    }
+  }
+
+  // ── Venue rating ──────────────────────────────────────────
+  async rate(c: VenueCoachDetail): Promise<void> {
+    const current = c.venueRating.value || 5;
+    const alert = await this.alertCtrl.create({
+      header: `Rate ${c.name.split(' ')[0]}`,
+      message: 'How happy is your venue with this coach? Only you can see this rating.',
+      inputs: [5, 4, 3, 2, 1].map((n) => ({ type: 'radio' as const, label: `${this.stars(n)}  ${RATING_WORDS[n]}`, value: n, checked: n === current })),
+      buttons: [{ text: 'Cancel', role: 'cancel' }, { text: 'Next', role: 'confirm' }],
+    });
+    await alert.present();
+    const { role, data } = await alert.onDidDismiss();
+    if (role !== 'confirm' || !data?.values) return;
+    const rating = Number(data.values);
+    const noteAlert = await this.alertCtrl.create({
+      header: 'Add a note',
+      message: 'Optional. Only your venue team can see it.',
+      inputs: [{ name: 'note', type: 'textarea', value: c.venueRating.note || '', placeholder: 'e.g. Always on time, great with kids', attributes: { maxlength: 255 } }],
+      buttons: [{ text: 'Skip', role: 'skip' }, { text: 'Save', role: 'confirm' }],
+    });
+    await noteAlert.present();
+    const noteRes = await noteAlert.onDidDismiss();
+    if (noteRes.role === 'backdrop') return;
+    const note = noteRes.role === 'confirm' ? (noteRes.data?.values?.note || '').trim() || null : c.venueRating.note;
+    await this.act(() => firstValueFrom(this.svc.rate(c.id, rating, note)), 'Rating saved.');
+  }
+
+  stars(n: number): string {
+    return '★'.repeat(n) + '☆'.repeat(Math.max(0, 5 - n));
   }
 
   // ── Payroll ───────────────────────────────────────────────

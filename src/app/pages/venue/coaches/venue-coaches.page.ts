@@ -15,11 +15,14 @@ import {
   saveBlob,
 } from '../../../core/services/venue-coach.service';
 import { BrandHeaderShellComponent } from '../../../shared/components/brand-header-shell/brand-header-shell.component';
+import { QrScannerComponent } from '../../../shared/components/qr/qr-scanner.component';
 import { PageSkeletonComponent } from '../../../shared/components/skeleton';
 import { CoachTermsFormComponent, EMPLOYMENT_OPTIONS } from './coach-terms-form.component';
 import { DUTY_META, PAYOUT_COLORS, apiErrorMessage, avatarColor, avatarTextColor, initials, money, shortMoney } from './venue-coach.utils';
 
 type CoachTab = 'coaches' | 'find' | 'payroll' | 'performance';
+
+const RATING_WORDS: Record<number, string> = { 5: 'Excellent', 4: 'Good', 3: 'Okay', 2: 'Poor', 1: 'Very poor' };
 
 interface OfferTarget {
   mode: 'offer' | 'approve';
@@ -34,7 +37,7 @@ interface OfferTarget {
 @Component({
   selector: 'app-venue-coaches-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule, BrandHeaderShellComponent, PageSkeletonComponent, CoachTermsFormComponent],
+  imports: [CommonModule, FormsModule, IonicModule, BrandHeaderShellComponent, PageSkeletonComponent, CoachTermsFormComponent, QrScannerComponent],
   templateUrl: './venue-coaches.page.html',
   styleUrls: ['./venue-coaches.shared.scss', './venue-coaches.page.scss'],
 })
@@ -77,7 +80,11 @@ export class VenueCoachesPage implements OnInit {
   readonly findLastPage = signal(1);
   readonly findSports = signal<string[]>([]);
   readonly findSport = signal('All');
+  readonly findEmployment = signal('all');
   readonly shortlistOnly = signal(false);
+  readonly showPast = signal(false);
+  readonly scanOpen = signal(false);
+  readonly scanning = signal(false);
   readonly savingId = signal<number | null>(null);
   private findLoaded = false;
   private searchTimer?: ReturnType<typeof setTimeout>;
@@ -183,6 +190,7 @@ export class VenueCoachesPage implements OnInit {
     const c = this.selected()?.performance.components;
     return [
       { label: 'Student Satisfaction', value: c?.rating ?? null, color: '#8CF000' },
+      { label: 'Venue Rating', value: c?.venueRating ?? null, color: '#38BDF8' },
       { label: 'Attendance', value: c?.attendance ?? null, color: '#38BDF8' },
       { label: 'Punctuality', value: c?.punctuality ?? null, color: '#8CF000' },
       { label: 'Renewal Rate', value: c?.renewals ?? null, color: '#FF7A00' },
@@ -261,6 +269,7 @@ export class VenueCoachesPage implements OnInit {
           sort: 'top',
           search: this.search().trim() || undefined,
           sport: this.findSport() === 'All' ? undefined : this.findSport(),
+          employment: this.findEmployment() === 'all' ? undefined : this.findEmployment(),
           saved: this.shortlistOnly() || undefined,
         }),
       );
@@ -280,6 +289,11 @@ export class VenueCoachesPage implements OnInit {
 
   setFindSport(sport: string): void {
     this.findSport.set(sport);
+    void this.loadFind(true);
+  }
+
+  setFindEmployment(value: string): void {
+    this.findEmployment.set(value);
     void this.loadFind(true);
   }
 
@@ -305,6 +319,8 @@ export class VenueCoachesPage implements OnInit {
   }
 
   availability(coach: CoachDirectoryItem): { label: string; now: boolean } | null {
+    const prefs = coach.jobPreferences;
+    if (prefs?.label) return { label: prefs.label, now: prefs.availableNow };
     const next = coach.nextAvailable;
     if (!next) return null;
     const today = new Date();
@@ -346,6 +362,58 @@ export class VenueCoachesPage implements OnInit {
       sub: [this.title(card.sport), card.rating ? `★ ${card.rating.toFixed(1)}` : null, card.experienceLabel].filter(Boolean).join(' · '),
       sports: card.sports,
     });
+  }
+
+  openRehire(card: VenueCoachCard): void {
+    this.resetOfferForm();
+    this.offerTarget.set({
+      mode: 'offer',
+      coachId: card.coachId,
+      name: card.name,
+      photo: card.profileImage,
+      sub: [this.title(card.sport), card.rating ? `★ ${card.rating.toFixed(1)}` : null, `Worked here until ${this.dateLabel(card.contractEnd || card.terminatedAt)}`].filter(Boolean).join(' · '),
+      sports: card.sports,
+    });
+  }
+
+  // ── QR attendance ───────────────────────────────────────────
+  async onScanned(code: string, modal: IonModal): Promise<void> {
+    if (this.scanning()) return;
+    this.scanning.set(true);
+    try {
+      const res = await firstValueFrom(this.svc.scan(code));
+      await modal.dismiss();
+      await this.toast(res.message || 'Attendance saved.');
+      if (res.data?.coach) this.details.update((map) => ({ ...map, [res.data!.coach.id]: res.data!.coach }));
+      await this.load(true);
+    } catch (e) {
+      await this.toast(this.message(e, 'Could not read this code.'));
+    } finally {
+      this.scanning.set(false);
+    }
+  }
+
+  async rateCoach(detail: VenueCoachDetail): Promise<void> {
+    const current = detail.venueRating.value ?? 0;
+    const alert = await this.alertCtrl.create({
+      header: `Rate ${this.firstName(detail.name)}`,
+      message: 'How happy is your venue with this coach? Only you can see this rating.',
+      inputs: [5, 4, 3, 2, 1].map((n) => ({ type: 'radio' as const, label: `${'★'.repeat(n)}${'☆'.repeat(5 - n)}  ${RATING_WORDS[n]}`, value: n, checked: n === (current || 5) })),
+      buttons: [{ text: 'Cancel', role: 'cancel' }, { text: 'Save', role: 'confirm' }],
+    });
+    await alert.present();
+    const { role, data } = await alert.onDidDismiss();
+    if (role !== 'confirm' || !data?.values) return;
+    this.busyId.set(detail.id);
+    try {
+      const res = await firstValueFrom(this.svc.rate(detail.id, Number(data.values)));
+      if (res.data) this.details.update((map) => ({ ...map, [detail.id]: res.data! }));
+      await this.toast('Rating saved.');
+    } catch (e) {
+      await this.toast(this.message(e, 'Could not save the rating.'));
+    } finally {
+      this.busyId.set(null);
+    }
   }
 
   private resetOfferForm(): void {

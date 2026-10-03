@@ -520,6 +520,7 @@ export interface CoachDirectoryItem {
   groupPrice: number | null;
   monthlyPrice?: number | null;
   isSaved?: boolean;
+  jobPreferences?: { types: string[]; typeLabels: string[]; availableFrom: string | null; availableNow: boolean; label: string | null };
   feesNegotiable: boolean;
   idVerified: boolean;
   certified: boolean;

@@ -261,6 +261,9 @@ COACH
 - When you plan a session or book a venue, the platform fee and tax now come from TYNG instead of fixed amounts, and the made-up coupon and attendance numbers are gone.
 - When a venue offers you a coaching job, you get a notification and the offer appears under Job Offers on your Earnings page. Open it to see the facility, pay, work days, shift and dates, then accept or decline.
 - Once you join a venue's team, its page shows your work details, this month's attendance and your pay, and you can download a PDF invoice for each paid month.
+- Your venue page shows "My Attendance QR". Show it to the venue supervisor when you arrive and when you leave.
+- In Edit Profile you can choose the types of venue jobs you are open to, the date you can start, and an emergency contact. Venues only see your emergency contact while you work with them.
+- Your monthly pay from a venue shows the full amount, the TYNG fee and the tax before what you receive.
 
 VENUE STAFF
 
@@ -275,6 +278,20 @@ VENUE STAFF
 - See each coach's pay for the month, add bonuses or deductions, mark it as paid (the coach is told) and download a PDF invoice.
 - See a score for each coach, with charts for their score, sessions, students and strengths.
 - Renew, extend or end a coach's contract. Ending it respects the notice period and tells the coach.
+- Check coaches in and out by scanning the QR code on their phone. The first scan of the day checks them in and the next one checks them out. If the camera is not available, you can type the code instead.
+- Coaches who no longer work with you are listed under Past Coaches. You can look at their records or offer them a job again in one tap.
+- When finding coaches, choose the type of job you are offering (monthly, hourly, contract or freelance) to see only coaches who want that kind of work. Each coach shows "Immediate" or the date they can start.
+- Coach pay now shows the TYNG fee and the tax on that fee before the final amount, and the payment history shows how much you have paid in total, this year, and what is still unpaid.
+- Rate each coach from 1 to 5 stars. Only you see the rating, and it counts toward the coach's score.
+- A coach's profile shows their emergency contact while they work with you.
+- Revenue Analytics now shows your real numbers: an overall health score, how your venue ranks in your city, revenue with a forecast, your busiest days and hours, how each court is doing, which sports are most popular, your top coaches, simple tips that link to the right screen, and court status. Download revenue, occupancy, coach or customer reports as spreadsheet files, or share a short summary.
+ADMIN
+
+- In Settings you can set the TYNG fee taken from coach pay at venues (5% unless you change it).
+
+ALL APP USERS
+
+- The app now uses the Inter font and the exact colours from the TYNG design across the screens.
 
 Writing rule: Whenever work is finished, add a short note here explaining in everyday words what changed and how it helps players, coaches, or administrators. Write for someone who does not work in software. Avoid programming terms, internal names, and tool names. Describe what the person can now do.
 

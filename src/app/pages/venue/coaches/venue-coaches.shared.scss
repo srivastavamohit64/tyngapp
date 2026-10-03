@@ -208,6 +208,86 @@ $red: #ef4444;
   b.neg {
     color: $red;
   }
+
+  &.sep span,
+  &.sep b {
+    font-weight: 700;
+    color: $fg;
+  }
+}
+
+.vc-totals {
+  margin-bottom: 14px;
+
+  div {
+    padding: 10px 6px;
+    border-radius: 14px;
+    background: $muted;
+    text-align: center;
+    min-width: 0;
+  }
+
+  b {
+    display: block;
+    font-size: 15px;
+    font-weight: 900;
+    color: $fg;
+
+    &.warn {
+      color: #c2410c;
+    }
+  }
+
+  span {
+    font-size: 11px;
+    color: $fg2;
+  }
+}
+
+.vc-rate {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid $border;
+
+  .nm {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: $fg;
+  }
+
+  .sub {
+    margin: 2px 0 0;
+    font-size: 12px;
+    color: $fg2;
+  }
+}
+
+.vc-qr-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 20px;
+  background: #fff;
+  border: 1px dashed $border;
+
+  .nm {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 800;
+    color: $fg;
+  }
+
+  .sub {
+    margin: 4px 0 10px;
+    font-size: 12px;
+    color: $fg2;
+  }
 }
 
 .vc-net {

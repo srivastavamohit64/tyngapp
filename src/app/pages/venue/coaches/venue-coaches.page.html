@@ -4,9 +4,14 @@
   </ion-refresher>
 
   <app-brand-header-shell title="Coaches">
-    <button headerEnd type="button" class="vc-hdr-btn" [class.on]="showSearch()" (click)="toggleSearch()" aria-label="Search coaches">
-      <ion-icon name="search-outline"></ion-icon>
-    </button>
+    <div headerEnd class="vc-hdr-actions">
+      <button type="button" class="vc-hdr-btn" (click)="scanOpen.set(true)" aria-label="Scan coach QR for attendance">
+        <ion-icon name="qr-code-outline"></ion-icon>
+      </button>
+      <button type="button" class="vc-hdr-btn" [class.on]="showSearch()" (click)="toggleSearch()" aria-label="Search coaches">
+        <ion-icon name="search-outline"></ion-icon>
+      </button>
+    </div>
 
     <div class="vc-page">
       <div class="vc-top">
@@ -145,12 +150,41 @@
               </div>
             </div>
           </section>
+
+          <section *ngIf="t.past.length">
+            <button type="button" class="vc-head vc-toggle" (click)="showPast.set(!showPast())" [attr.aria-expanded]="showPast()">
+              <h3>Past Coaches</h3>
+              <span class="vc-hint">{{ t.past.length }} <ion-icon [name]="showPast() ? 'chevron-up' : 'chevron-down'"></ion-icon></span>
+            </button>
+            <div class="vc-stack" *ngIf="showPast()">
+              <div class="vc-card vc-pad vc-past" *ngFor="let p of t.past">
+                <div class="vc-person">
+                  <div class="vc-avatar" [style.width.px]="44" [style.height.px]="44" [style.fontSize.px]="15" [style.background]="'#F3F4F6'" [style.color]="'#6B7280'">
+                    <img *ngIf="p.profileImage" [src]="p.profileImage" [alt]="p.name" />
+                    <ng-container *ngIf="!p.profileImage">{{ initials(p.name) }}</ng-container>
+                  </div>
+                  <div class="grow">
+                    <p class="nm">{{ p.name }}</p>
+                    <p class="sub">{{ (p.sport | titlecase) || 'Coach' }}<ng-container *ngIf="p.terminatedAt || p.contractEnd"> · Ended {{ dateLabel(p.terminatedAt || p.contractEnd) }}</ng-container></p>
+                  </div>
+                  <span class="rating" *ngIf="p.rating"><ion-icon name="star"></ion-icon> {{ p.rating }}</span>
+                </div>
+                <div class="vc-actions">
+                  <button type="button" class="vc-btn soft grow" (click)="openProfile(p)"><ion-icon name="document-text-outline"></ion-icon> Records</button>
+                  <button type="button" class="vc-btn primary grow" (click)="openRehire(p)"><ion-icon name="refresh-outline"></ion-icon> Re-hire</button>
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
 
         <!-- ── Find Coaches ── -->
         <div class="vc-body" *ngIf="tab() === 'find'">
           <div class="vc-pills" *ngIf="findSports().length > 1">
             <button type="button" *ngFor="let s of findSports()" [class.active]="findSport() === s" (click)="setFindSport(s)">{{ s | titlecase }}</button>
+          </div>
+          <div class="vc-pills">
+            <button type="button" *ngFor="let e of employmentFilters" [class.active]="findEmployment() === e.value" (click)="setFindEmployment(e.value)">{{ e.label }}</button>
           </div>
           <div class="vc-pills">
             <button type="button" [class.active]="!shortlistOnly()" (click)="shortlistOnly() && toggleShortlistFilter()">All coaches</button>
@@ -183,6 +217,7 @@
                       <ion-icon [name]="av.now ? 'flash' : 'time-outline'"></ion-icon> {{ av.label }}
                     </span>
                   </div>
+                  <p class="vc-open" *ngIf="fc.jobPreferences?.typeLabels?.length">Open to: {{ fc.jobPreferences!.typeLabels.join(', ') }}</p>
                 </div>
               </div>
               <div class="vc-grid-2 vc-rates">
@@ -254,6 +289,9 @@
                   <div class="vc-row"><span>Bonus</span><b>+ {{ money(d.payroll.current.bonus) }}</b></div>
                   <div class="vc-row"><span>Incentives</span><b>+ {{ money(d.payroll.current.incentive) }}</b></div>
                   <div class="vc-row"><span>Deductions</span><b class="neg">− {{ money(d.payroll.current.deduction) }}</b></div>
+                  <div class="vc-row sep"><span>Gross Pay</span><b>{{ money(d.payroll.current.gross) }}</b></div>
+                  <div class="vc-row"><span>Platform Fee ({{ d.payroll.rates.platformFeePct }}%)</span><b class="neg">− {{ money(d.payroll.current.platformFee) }}</b></div>
+                  <div class="vc-row"><span>GST ({{ d.payroll.rates.gstPct }}% on fee)</span><b class="neg">− {{ money(d.payroll.current.gst) }}</b></div>
                   <div class="vc-row" *ngIf="d.payroll.current.note"><span>Note</span><b>{{ d.payroll.current.note }}</b></div>
                   <div class="vc-net"><span>Net Payable</span><b>{{ money(d.payroll.current.net) }}</b></div>
                   <div class="vc-actions" *ngIf="d.payroll.current.status !== 'paid'">
@@ -268,7 +306,12 @@
                 </div>
 
                 <div class="vc-card vc-pad">
-                  <div class="vc-head"><h3>Payment History</h3></div>
+                  <div class="vc-head"><h3>Payment History</h3><span class="vc-hint" *ngIf="d.payroll.totals.months">{{ d.payroll.totals.months }} {{ d.payroll.totals.months === 1 ? 'month' : 'months' }}</span></div>
+                  <div class="vc-grid-3 vc-totals" *ngIf="d.payroll.history.length">
+                    <div><b>{{ shortMoney(d.payroll.totals.paid) }}</b><span>Total paid</span></div>
+                    <div><b>{{ shortMoney(d.payroll.totals.paidThisYear) }}</b><span>This year</span></div>
+                    <div><b [class.warn]="d.payroll.totals.unpaid > 0">{{ shortMoney(d.payroll.totals.unpaid) }}</b><span>Unpaid</span></div>
+                  </div>
                   <p class="vc-hint" *ngIf="!d.payroll.history.length">No payments recorded yet.</p>
                   <div class="vc-timeline" *ngFor="let h of d.payroll.history; let i = index; let last = last">
                     <div class="rail"><i [class.on]="i === 0"></i><em *ngIf="!last"></em></div>
@@ -367,6 +410,13 @@
                     <div class="track"><i [style.width.%]="b.value ?? 0" [style.background]="b.color"></i></div>
                     <b>{{ b.value === null ? '—' : b.value + '%' }}</b>
                   </div>
+                  <div class="vc-rate">
+                    <div>
+                      <p class="nm">Your venue rating</p>
+                      <p class="sub">{{ d.venueRating.value ? '★'.repeat(d.venueRating.value) + '☆'.repeat(5 - d.venueRating.value) + ' · ' + dateLabel(d.venueRating.ratedAt) : 'Not rated yet. It counts toward the coach score.' }}</p>
+                    </div>
+                    <button type="button" class="vc-btn soft" [disabled]="busyId() === d.id" (click)="rateCoach(d)"><ion-icon name="star-outline"></ion-icon> {{ d.venueRating.value ? 'Change' : 'Rate' }}</button>
+                  </div>
                 </div>
               </ng-container>
             </ng-container>
@@ -414,6 +464,25 @@
             <ion-icon [name]="o.mode === 'approve' ? 'checkmark-circle-outline' : 'send'"></ion-icon>
             {{ sending() ? 'Saving…' : o.mode === 'approve' ? 'Approve & Add Coach' : 'Send Job Offer' }}
           </button>
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+  <ion-modal #scanModal [isOpen]="scanOpen()" (didDismiss)="scanOpen.set(false)" class="vc-offer-modal">
+    <ng-template>
+      <ion-header class="ion-no-border">
+        <ion-toolbar class="vc-modal-bar">
+          <ion-buttons slot="start">
+            <ion-button (click)="scanModal.dismiss()"><ion-icon slot="start" name="arrow-back"></ion-icon> Close</ion-button>
+          </ion-buttons>
+          <ion-title>Scan Coach QR</ion-title>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="vc-modal-content">
+        <div class="vc-body">
+          <p class="vc-hint">Ask the coach to open their attendance QR in the TYNG app. The first scan of the day checks them in, the next one checks them out.</p>
+          <app-qr-scanner hint="Point the camera at the coach's QR code" [busy]="scanning()" (scanned)="onScanned($event, scanModal)"></app-qr-scanner>
         </div>
       </ion-content>
     </ng-template>

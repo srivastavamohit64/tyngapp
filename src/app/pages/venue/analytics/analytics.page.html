@@ -1,1 +1,314 @@
-<!-- Content replaced by inline template in analytics.page.ts -->
+<ion-content [fullscreen]="true">
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <app-brand-header-shell title="Revenue Analytics">
+    <div headerEnd class="vi-hdr-actions">
+      <button type="button" class="vi-hdr-btn" [disabled]="!data()" (click)="share()" aria-label="Share insights"><ion-icon name="share-social-outline"></ion-icon></button>
+      <button type="button" class="vi-hdr-btn" [disabled]="!data() || !!downloading()" (click)="chooseReport()" aria-label="Download report"><ion-icon name="download-outline"></ion-icon></button>
+    </div>
+
+    <div class="vi-page">
+      <app-page-skeleton *ngIf="loading()" variant="list" [count]="4" label="Loading insights"></app-page-skeleton>
+
+      <div class="vi-body" *ngIf="!loading() && error() as err">
+        <div class="vi-card vi-empty">
+          <ion-icon name="cloud-offline-outline"></ion-icon>
+          <p>{{ err }}</p>
+          <button type="button" class="vi-btn primary" (click)="load()">Try again</button>
+        </div>
+      </div>
+
+      <div class="vi-body" *ngIf="!loading() && !error() && data() as d">
+        <!-- Health score -->
+        <section class="vi-card vi-dark vi-health">
+          <p class="vi-kicker"><ion-icon name="flash"></ion-icon> Venue Health Score</p>
+          <div class="row">
+            <div class="grow">
+              <b class="big">{{ d.health.score ?? '—' }}</b>
+              <p class="lbl">{{ d.health.label }}<ng-container *ngIf="d.health.topPercent"> · Top {{ d.health.topPercent }}% {{ d.ranking.area }}</ng-container></p>
+              <div class="grades">
+                <span *ngFor="let g of d.health.grades">{{ g.label }}: {{ g.grade || '—' }}</span>
+              </div>
+            </div>
+            <svg width="96" height="96" viewBox="0 0 96 96" class="vi-ring" role="img" [attr.aria-label]="'Health score ' + (d.health.score ?? 'not available')">
+              <circle cx="48" cy="48" r="40" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="10" />
+              <circle *ngIf="d.health.score" cx="48" cy="48" r="40" fill="none" [attr.stroke]="G" stroke-width="10" stroke-linecap="round" transform="rotate(-90 48 48)"
+                [attr.stroke-dasharray]="(ringLength * d.health.score / 100) + ' ' + (ringLength * (1 - d.health.score / 100))" />
+              <text x="48" y="54" text-anchor="middle" font-size="18" font-weight="900" fill="#fff">{{ d.health.score ?? '—' }}</text>
+            </svg>
+          </div>
+        </section>
+
+        <!-- Ranking -->
+        <section class="vi-card vi-pad">
+          <p class="vi-kicker dark"><ion-icon name="checkmark-circle" [style.color]="G"></ion-icon> Venue Ranking — {{ d.ranking.area }}</p>
+          <div class="vi-rank-top">
+            <div class="badge">{{ d.ranking.rank ? '#' + d.ranking.rank : '—' }}</div>
+            <div>
+              <p class="nm">Sports Venue</p>
+              <p class="sub">in {{ d.ranking.area }} · {{ d.ranking.total }} {{ d.ranking.total === 1 ? 'venue' : 'venues' }} · Updated {{ updatedLabel(d.updatedAt) }}</p>
+              <span class="pill" *ngIf="d.ranking.topPercent">Top {{ d.ranking.topPercent }}%</span>
+            </div>
+          </div>
+          <div class="vi-rank-row" *ngFor="let r of d.ranking.rows">
+            <div class="head">
+              <span>{{ r.label }}</span>
+              <b [style.color]="r.color === G ? '#4d7c0f' : r.color">{{ r.rank ? '#' + r.rank + ' in ' + d.ranking.area : 'No data yet' }}</b>
+            </div>
+            <div class="track"><i [style.width.%]="r.value ?? 0" [style.background]="r.color"></i></div>
+          </div>
+          <div class="vi-tip">
+            <p class="t">💡 {{ d.ranking.rank && d.ranking.rank > 1 ? 'Improve to #' + (d.ranking.rank - 1) : 'Keep your lead' }}</p>
+            <p class="s">{{ d.ranking.tip }}</p>
+          </div>
+        </section>
+
+        <!-- Stat cards -->
+        <div class="vi-grid-2">
+          <div class="vi-card vi-stat" *ngFor="let s of d.stats">
+            <div class="head">
+              <i [style.background]="(statMeta[s.key]?.color || G) + '18'" [style.color]="statMeta[s.key]?.color || G"><ion-icon [name]="statMeta[s.key]?.icon || 'stats-chart-outline'"></ion-icon></i>
+              <span class="chg" *ngIf="s.changeLabel && !(s.change === 0 && !s.value)" [style.color]="s.up ? '#4d7c0f' : '#EF4444'">
+                <ion-icon [name]="s.up ? 'trending-up' : 'trending-down'"></ion-icon> {{ s.changeLabel }}
+              </span>
+            </div>
+            <b>{{ s.display }}</b>
+            <p>{{ s.label }}</p>
+            <svg *ngIf="sparkline(s.series) as sp; else noSpark" width="100%" height="44" viewBox="0 0 100 44" preserveAspectRatio="none" aria-hidden="true">
+              <polygon [attr.points]="sp.area" [attr.fill]="statMeta[s.key]?.color || G" fill-opacity="0.12" />
+              <polyline [attr.points]="sp.line" fill="none" [attr.stroke]="statMeta[s.key]?.color || G" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" />
+            </svg>
+            <ng-template #noSpark><span class="note">{{ s.note || 'No activity in the last 7 months' }}</span></ng-template>
+          </div>
+        </div>
+        <p class="vi-hint">Cards compare {{ d.periodLabel }} with last month. Lines show the last 7 months.</p>
+
+        <!-- Revenue -->
+        <section class="vi-card vi-pad">
+          <div class="vi-head">
+            <h3>Revenue</h3>
+            <div class="vi-tabs">
+              <button type="button" [class.active]="revenueTab() === 'monthly'" (click)="revenueTab.set('monthly')">Monthly</button>
+              <button type="button" [class.active]="revenueTab() === 'forecast'" (click)="revenueTab.set('forecast')">Forecast</button>
+            </div>
+          </div>
+          <ng-container *ngIf="revenueTab() === 'monthly'">
+            <svg *ngIf="revenueChart() as c" [attr.viewBox]="'0 0 ' + c.W + ' ' + c.H" width="100%" class="vi-svg" role="img" aria-label="Monthly revenue">
+              <ng-container *ngFor="let t of c.ticks">
+                <line [attr.x1]="c.l" [attr.y1]="t.y" [attr.x2]="c.W - c.r" [attr.y2]="t.y" stroke="#E5E7EB" stroke-dasharray="3 3" />
+                <text [attr.x]="c.l - 4" [attr.y]="t.y + 4" font-size="9" fill="#6B7280" text-anchor="end">{{ t.label }}</text>
+              </ng-container>
+              <polygon *ngIf="c.area" [attr.points]="c.area" [attr.fill]="G" fill-opacity="0.12" />
+              <polyline [attr.points]="c.line" fill="none" [attr.stroke]="G" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+              <polyline *ngIf="c.average" [attr.points]="c.average" fill="none" [attr.stroke]="O" stroke-width="1.5" stroke-dasharray="4 4" stroke-linecap="round" />
+              <text *ngFor="let lb of c.labels" [attr.x]="lb.x" [attr.y]="c.H - 4" font-size="9" fill="#6B7280" text-anchor="middle">{{ lb.label }}</text>
+              <line [attr.x1]="c.l" y1="5" [attr.x2]="c.l + 14" y2="5" [attr.stroke]="G" stroke-width="2" />
+              <text [attr.x]="c.l + 18" y="9" font-size="9" fill="#6B7280">Revenue</text>
+              <line [attr.x1]="c.l + 70" y1="5" [attr.x2]="c.l + 84" y2="5" [attr.stroke]="O" stroke-width="2" stroke-dasharray="4 3" />
+              <text [attr.x]="c.l + 88" y="9" font-size="9" fill="#6B7280">3-month average</text>
+            </svg>
+            <p class="vi-hint" *ngIf="!revenueChart().hasData">No paid bookings in the last 7 months yet.</p>
+          </ng-container>
+          <ng-container *ngIf="revenueTab() === 'forecast'">
+            <svg *ngIf="forecastChart() as c" [attr.viewBox]="'0 0 ' + c.W + ' ' + c.H" width="100%" class="vi-svg" role="img" aria-label="Revenue forecast">
+              <ng-container *ngFor="let t of c.ticks">
+                <line [attr.x1]="c.l" [attr.y1]="t.y" [attr.x2]="c.W - c.r" [attr.y2]="t.y" stroke="#E5E7EB" stroke-dasharray="3 3" />
+                <text [attr.x]="c.l - 4" [attr.y]="t.y + 4" font-size="9" fill="#6B7280" text-anchor="end">{{ t.label }}</text>
+              </ng-container>
+              <polyline [attr.points]="c.actual" fill="none" [attr.stroke]="G" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+              <polyline [attr.points]="c.forecast" fill="none" [attr.stroke]="O" stroke-width="2" stroke-dasharray="6 3" stroke-linecap="round" />
+              <circle *ngFor="let p of c.actualDots" [attr.cx]="p.x" [attr.cy]="p.y" r="4" [attr.fill]="G" />
+              <circle *ngFor="let p of c.forecastDots" [attr.cx]="p.x" [attr.cy]="p.y" r="3" [attr.fill]="O" />
+              <text *ngFor="let lb of c.labels" [attr.x]="lb.x" [attr.y]="c.H - 4" font-size="9" fill="#6B7280" text-anchor="middle">{{ lb.label }}</text>
+              <line [attr.x1]="c.l" y1="5" [attr.x2]="c.l + 14" y2="5" [attr.stroke]="G" stroke-width="2" />
+              <text [attr.x]="c.l + 18" y="9" font-size="9" fill="#6B7280">Actual</text>
+              <line [attr.x1]="c.l + 68" y1="5" [attr.x2]="c.l + 82" y2="5" [attr.stroke]="O" stroke-width="2" stroke-dasharray="4 3" />
+              <text [attr.x]="c.l + 86" y="9" font-size="9" fill="#6B7280">Forecast</text>
+            </svg>
+            <p class="vi-hint">Forecast follows the trend of your last 6 months. It is an estimate, not a promise.</p>
+          </ng-container>
+        </section>
+
+        <!-- Occupancy -->
+        <section class="vi-card vi-pad">
+          <div class="vi-head">
+            <h3>Occupancy</h3>
+            <div class="vi-tabs">
+              <button type="button" [class.active]="occupancyTab() === 'heatmap'" (click)="occupancyTab.set('heatmap')">Heatmap</button>
+              <button type="button" [class.active]="occupancyTab() === 'weekly'" (click)="occupancyTab.set('weekly')">Weekly</button>
+            </div>
+          </div>
+          <ng-container *ngIf="occupancyTab() === 'heatmap'">
+            <div class="vi-heat">
+              <div class="hrs"><span class="day"></span><span *ngFor="let h of d.occupancy.hours">{{ h }}</span></div>
+              <div class="hrow" *ngFor="let row of d.occupancy.heatmap; let di = index">
+                <span class="day">{{ d.occupancy.days[di] }}</span>
+                <i *ngFor="let v of row; let hi = index" [style.background]="heatStyle(v).background" [style.opacity]="heatStyle(v).opacity" [attr.title]="d.occupancy.days[di] + ' ' + d.occupancy.hours[hi] + ': ' + v + '%'"></i>
+              </div>
+            </div>
+            <div class="vi-legend">
+              <span><i style="background: #f3f4f6"></i>Low</span>
+              <span><i [style.background]="B"></i>Med</span>
+              <span><i [style.background]="G"></i>High</span>
+              <em>Last {{ d.occupancy.weeks }} weeks · 6 AM to 10 PM</em>
+            </div>
+          </ng-container>
+          <ng-container *ngIf="occupancyTab() === 'weekly'">
+            <svg *ngIf="weeklyChart() as c" [attr.viewBox]="'0 0 ' + c.W + ' ' + c.H" width="100%" class="vi-svg" role="img" aria-label="Occupancy by weekday">
+              <ng-container *ngFor="let t of c.ticks">
+                <line [attr.x1]="c.l" [attr.y1]="t.y" [attr.x2]="c.W - c.r" [attr.y2]="t.y" stroke="#E5E7EB" stroke-dasharray="3 3" />
+                <text [attr.x]="c.l - 4" [attr.y]="t.y + 4" font-size="9" fill="#6B7280" text-anchor="end">{{ t.label }}</text>
+              </ng-container>
+              <ng-container *ngFor="let b of c.bars">
+                <rect [attr.x]="b.x" [attr.y]="b.y" [attr.width]="b.w" [attr.height]="b.h" [attr.fill]="b.color" [attr.fill-opacity]="b.opacity" rx="4" />
+                <text [attr.x]="b.cx" [attr.y]="c.H - 4" font-size="9" fill="#6B7280" text-anchor="middle">{{ b.label }}</text>
+              </ng-container>
+            </svg>
+          </ng-container>
+          <p class="vi-hint" *ngIf="!weeklyChart().hasData">No bookings in the last {{ d.occupancy.weeks }} weeks yet.</p>
+        </section>
+
+        <!-- Facility performance -->
+        <section class="vi-card vi-pad">
+          <div class="vi-head"><h3>Facility Performance</h3><button type="button" class="vi-link" (click)="openRoute('/app/venue/facilities')">Manage <ion-icon name="chevron-forward"></ion-icon></button></div>
+          <p class="vi-hint" *ngIf="!d.facilities.length">Add your courts to see how each one performs.</p>
+          <div class="vi-fac" *ngFor="let f of d.facilities">
+            <div class="head">
+              <span>{{ f.name }}<em *ngIf="f.status !== 'open'"> · {{ f.status | titlecase }}</em></span>
+              <div><b>{{ shortMoney(f.revenue) }}</b><b [style.color]="occupancyColor(f.occupancy)">{{ f.occupancy }}%</b></div>
+            </div>
+            <div class="track"><i [style.width.%]="f.occupancy" [style.background]="f.color"></i></div>
+          </div>
+          <svg *ngIf="d.facilities.length > 1 && facilityChart().hasData && facilityChart() as c" [attr.viewBox]="'0 0 ' + c.W + ' ' + c.H" width="100%" class="vi-svg mt" role="img" aria-label="Occupancy by facility">
+            <ng-container *ngFor="let t of c.ticks">
+              <line [attr.x1]="c.l" [attr.y1]="t.y" [attr.x2]="c.W - c.r" [attr.y2]="t.y" stroke="#E5E7EB" stroke-dasharray="3 3" />
+              <text [attr.x]="c.l - 4" [attr.y]="t.y + 4" font-size="9" fill="#6B7280" text-anchor="end">{{ t.label }}</text>
+            </ng-container>
+            <ng-container *ngFor="let b of c.bars">
+              <rect [attr.x]="b.x" [attr.y]="b.y" [attr.width]="b.w" [attr.height]="b.h" [attr.fill]="b.color" [attr.fill-opacity]="b.opacity" rx="4" />
+              <text [attr.x]="b.cx" [attr.y]="c.H - 4" font-size="8" fill="#6B7280" text-anchor="middle">{{ b.label }}</text>
+            </ng-container>
+          </svg>
+          <p class="vi-hint" *ngIf="d.facilities.length">This month: revenue and share of open hours booked.</p>
+        </section>
+
+        <!-- Booking trends -->
+        <section class="vi-card vi-pad">
+          <div class="vi-head"><h3>Booking Trends</h3></div>
+          <svg *ngIf="trendChart() as c" [attr.viewBox]="'0 0 ' + c.W + ' ' + c.H" width="100%" class="vi-svg" role="img" aria-label="Bookings by players, coaches and events">
+            <ng-container *ngFor="let t of c.ticks">
+              <line [attr.x1]="c.l" [attr.y1]="t.y" [attr.x2]="c.W - c.r" [attr.y2]="t.y" stroke="#E5E7EB" stroke-dasharray="3 3" />
+              <text [attr.x]="c.l - 4" [attr.y]="t.y + 4" font-size="9" fill="#6B7280" text-anchor="end">{{ t.label }}</text>
+            </ng-container>
+            <polyline *ngFor="let ln of c.lines" [attr.points]="ln.points" fill="none" [attr.stroke]="ln.color" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+            <text *ngFor="let lb of c.labels" [attr.x]="lb.x" [attr.y]="c.H - 4" font-size="9" fill="#6B7280" text-anchor="middle">{{ lb.label }}</text>
+          </svg>
+          <div class="vi-legend">
+            <span><i class="dot" [style.background]="G"></i>Players</span>
+            <span><i class="dot" [style.background]="O"></i>Coaches</span>
+            <span><i class="dot" [style.background]="B"></i>Events</span>
+          </div>
+        </section>
+
+        <!-- Sports popularity -->
+        <section class="vi-card vi-pad">
+          <div class="vi-head"><h3>Sports Popularity</h3><span class="vi-hint">Last 90 days</span></div>
+          <p class="vi-hint" *ngIf="!d.sports.length">No bookings in the last 90 days yet.</p>
+          <div class="vi-sports" *ngIf="d.sports.length">
+            <svg width="130" height="130" viewBox="0 0 130 130" class="donut" role="img" aria-label="Bookings by sport">
+              <path *ngFor="let s of donut()" [attr.d]="s.d" [attr.fill]="s.color" />
+            </svg>
+            <div class="list">
+              <div class="item" *ngFor="let s of d.sports">
+                <i [style.background]="s.color"></i>
+                <span class="nm">{{ s.name }}</span>
+                <div class="track"><i [style.width.%]="(s.value / maxSport()) * 100" [style.background]="s.color"></i></div>
+                <b>{{ s.value }}%</b>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Customer satisfaction -->
+        <section class="vi-card vi-pad">
+          <div class="vi-head"><h3>Customer Satisfaction</h3></div>
+          <div class="vi-empty-inline">
+            <ion-icon name="star-half-outline"></ion-icon>
+            <p>Player reviews for venues are not available yet. Your satisfaction score will show here once players can rate their visit.</p>
+          </div>
+        </section>
+
+        <!-- Coach performance -->
+        <section class="vi-card vi-pad">
+          <div class="vi-head"><h3>Coach Performance</h3><button type="button" class="vi-link" (click)="openRoute('/app/venue/coaches')">All Coaches <ion-icon name="chevron-forward"></ion-icon></button></div>
+          <p class="vi-hint" *ngIf="!d.coaches.length">No coach sessions at your venue in the last 90 days.</p>
+          <button type="button" class="vi-coach" *ngFor="let c of d.coaches; let i = index" (click)="openCoach(c)">
+            <span class="rank" [style.color]="i === 0 ? '#4d7c0f' : '#6B7280'">{{ i + 1 }}</span>
+            <span class="av" [style.background]="avatarColor(c.coachId) + '22'" [style.color]="avatarColor(c.coachId)">
+              <img *ngIf="c.profileImage" [src]="c.profileImage" [alt]="c.name" />
+              <ng-container *ngIf="!c.profileImage">{{ initials(c.name) }}</ng-container>
+            </span>
+            <span class="grow">
+              <span class="nm">{{ c.name }}<em *ngIf="c.partner">Team</em></span>
+              <span class="sub">{{ c.sport || 'Coach' }} · {{ c.sessions }} {{ c.sessions === 1 ? 'session' : 'sessions' }}</span>
+            </span>
+            <span class="right">
+              <b>{{ shortMoney(c.revenue) }}</b>
+              <span><ion-icon name="star" [style.color]="G"></ion-icon> {{ c.rating ?? '—' }}</span>
+            </span>
+          </button>
+          <p class="vi-hint" *ngIf="d.coaches.length">Last 90 days · amount is the venue fee from coach sessions.</p>
+        </section>
+
+        <!-- Insights -->
+        <section class="vi-card vi-dark vi-tips">
+          <p class="vi-kicker"><ion-icon name="flash"></ion-icon> TYNG Insights</p>
+          <p class="empty" *ngIf="!d.tips.length">Everything looks good. New suggestions appear here as your bookings change.</p>
+          <div class="tip" *ngFor="let t of d.tips">
+            <span class="ic">{{ t.icon }}</span>
+            <div class="grow">
+              <div class="head">
+                <p>{{ t.title }}</p>
+                <span [style.background]="priorityStyle(t.priority).background" [style.color]="priorityStyle(t.priority).color">{{ t.priority }}</span>
+              </div>
+              <p class="txt">{{ t.text }}</p>
+              <button type="button" (click)="openRoute(t.route)">{{ t.action }} →</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Maintenance -->
+        <section class="vi-card vi-pad">
+          <div class="vi-head"><h3>Maintenance Insights</h3></div>
+          <p class="vi-hint" *ngIf="!d.maintenance.length">Add your courts to track their status here.</p>
+          <div class="vi-maint" *ngFor="let m of d.maintenance">
+            <ion-icon [name]="urgencyIcons[m.urgency]" [style.color]="urgencyColors[m.urgency]"></ion-icon>
+            <div class="grow">
+              <p class="nm">{{ m.name }}</p>
+              <p class="sub">{{ m.text }}</p>
+            </div>
+            <span [style.background]="urgencyColors[m.urgency] + '18'" [style.color]="m.urgency === 'ok' ? '#4d7c0f' : urgencyColors[m.urgency]">{{ m.urgency === 'ok' ? 'ok' : m.status }}</span>
+          </div>
+        </section>
+
+        <!-- Reports -->
+        <section class="vi-card vi-pad">
+          <div class="vi-head"><h3>Download Reports</h3></div>
+          <div class="vi-grid-2 vi-reports">
+            <button type="button" *ngFor="let r of reports" [disabled]="!!downloading()" (click)="download(r.type)">
+              <i [style.background]="r.color + '18'" [style.color]="r.color === G ? '#4d7c0f' : r.color"><ion-icon [name]="downloading() === r.type ? 'hourglass-outline' : r.icon"></ion-icon></i>
+              <span><b>{{ r.label }}</b><em>{{ downloading() === r.type ? 'Preparing…' : 'CSV' }}</em></span>
+            </button>
+          </div>
+        </section>
+      </div>
+    </div>
+  </app-brand-header-shell>
+
+  <div slot="fixed" class="vi-bar" *ngIf="data() && !loading()">
+    <button type="button" class="vi-btn soft" [disabled]="!!downloading()" (click)="chooseReport()"><ion-icon name="download-outline"></ion-icon> Download Report</button>
+    <button type="button" class="vi-btn primary" (click)="share()"><ion-icon name="share-social-outline"></ion-icon> Share Insights</button>
+  </div>
+</ion-content>

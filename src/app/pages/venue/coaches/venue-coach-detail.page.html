@@ -90,6 +90,22 @@
               <div class="vc-row"><span>City</span><b>{{ c.city || '—' }}</b></div>
               <div class="vc-row" *ngIf="c.phone"><span>Phone</span><b>{{ c.phone }}</b></div>
               <div class="vc-row" *ngIf="c.email"><span>Email</span><b>{{ c.email }}</b></div>
+              <div class="vc-row" *ngIf="c.emergencyContact as ec">
+                <span>Emergency contact</span>
+                <b>{{ ec.name || 'Contact' }}<ng-container *ngIf="ec.relation"> ({{ ec.relation }})</ng-container> · <a [href]="'tel:' + ec.phone">{{ ec.phone }}</a></b>
+              </div>
+              <div class="vc-row" *ngIf="c.jobPreferences.typeLabels.length"><span>Open to</span><b>{{ c.jobPreferences.typeLabels.join(', ') }}<ng-container *ngIf="c.jobPreferences.label"> · {{ c.jobPreferences.label }}</ng-container></b></div>
+            </div>
+
+            <div class="vc-card vc-pad" *ngIf="c.status === 'active' || c.status === 'terminated'">
+              <div class="vc-rate cd-rate-top">
+                <div>
+                  <p class="nm">Your venue rating</p>
+                  <p class="sub">{{ c.venueRating.value ? stars(c.venueRating.value) + ' · ' + dateLabel(c.venueRating.ratedAt) : 'Not rated yet. It counts toward the coach score.' }}</p>
+                  <p class="sub" *ngIf="c.venueRating.note">“{{ c.venueRating.note }}”</p>
+                </div>
+                <button type="button" class="vc-btn soft" [disabled]="busy()" (click)="rate(c)"><ion-icon name="star-outline"></ion-icon> {{ c.venueRating.value ? 'Change' : 'Rate' }}</button>
+              </div>
             </div>
 
             <div class="vc-card vc-pad" *ngIf="c.certificates.length">
@@ -158,6 +174,15 @@
               </div>
             </div>
 
+            <div class="vc-qr-card" *ngIf="isActive() && c.attendance.checkInCode">
+              <app-qr-code [value]="c.attendance.checkInCode" [size]="108" label="Coach attendance QR code"></app-qr-code>
+              <div class="grow">
+                <p class="nm">QR Attendance</p>
+                <p class="sub">The coach shows this code in their TYNG app. Supervisor scans to check in/out.</p>
+                <button type="button" class="vc-btn primary" (click)="scanOpen.set(true)"><ion-icon name="scan-outline"></ion-icon> Scan QR</button>
+              </div>
+            </div>
+
             <div class="vc-card vc-pad">
               <div class="vc-head"><h3>Monthly Summary</h3><span class="vc-hint">{{ c.attendance.month.label }}</span></div>
               <div class="vc-grid-3">
@@ -191,9 +216,12 @@
               <div class="vc-row"><span>Bonus</span><b>+ {{ money(c.payroll.current.bonus) }}</b></div>
               <div class="vc-row"><span>Incentives</span><b>+ {{ money(c.payroll.current.incentive) }}</b></div>
               <div class="vc-row"><span>Deductions</span><b class="neg">− {{ money(c.payroll.current.deduction) }}</b></div>
+              <div class="vc-row sep"><span>Gross Pay</span><b>{{ money(c.payroll.current.gross) }}</b></div>
+              <div class="vc-row"><span>Platform Fee ({{ c.payroll.rates.platformFeePct }}%)</span><b class="neg">− {{ money(c.payroll.current.platformFee) }}</b></div>
+              <div class="vc-row"><span>GST ({{ c.payroll.rates.gstPct }}% on fee)</span><b class="neg">− {{ money(c.payroll.current.gst) }}</b></div>
               <div class="vc-row" *ngIf="c.payroll.current.note"><span>Note</span><b>{{ c.payroll.current.note }}</b></div>
               <div class="vc-net"><span>Net Payable</span><b>{{ money(c.payroll.current.net) }}</b></div>
-              <div class="vc-actions" *ngIf="isActive() && c.payroll.current.status !== 'paid'">
+              <div class="vc-actions" *ngIf="(isActive() || c.status === 'terminated') && c.payroll.current.status !== 'paid'">
                 <button type="button" class="vc-btn soft grow" [disabled]="busy()" (click)="adjustPayroll(c)"><ion-icon name="create-outline"></ion-icon> Adjust</button>
                 <button type="button" class="vc-btn primary grow" [disabled]="busy() || c.payroll.current.net <= 0" (click)="markPaid(c)"><ion-icon name="checkmark-done-outline"></ion-icon> Mark paid</button>
               </div>
@@ -204,7 +232,12 @@
             </div>
 
             <div class="vc-card vc-pad">
-              <div class="vc-head"><h3>Payment History</h3></div>
+              <div class="vc-head"><h3>Payment History</h3><span class="vc-hint" *ngIf="c.payroll.totals.months">{{ c.payroll.totals.months }} {{ c.payroll.totals.months === 1 ? 'month' : 'months' }}</span></div>
+              <div class="vc-grid-3 vc-totals" *ngIf="c.payroll.history.length">
+                <div><b>{{ money(c.payroll.totals.paid) }}</b><span>Total paid</span></div>
+                <div><b>{{ money(c.payroll.totals.paidThisYear) }}</b><span>This year</span></div>
+                <div><b [class.warn]="c.payroll.totals.unpaid > 0">{{ money(c.payroll.totals.unpaid) }}</b><span>Unpaid</span></div>
+              </div>
               <p class="vc-hint" *ngIf="!c.payroll.history.length">No payments recorded yet.</p>
               <div class="cd-pay" *ngFor="let h of c.payroll.history">
                 <i><ion-icon name="cash-outline"></ion-icon></i>
@@ -277,6 +310,25 @@
           <button type="button" class="vc-btn primary block lg" [disabled]="busy() || !!editError" (click)="saveAssignment(editModal)">
             <ion-icon name="checkmark-circle-outline"></ion-icon> {{ busy() ? 'Saving…' : 'Save Changes' }}
           </button>
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+  <ion-modal #scanModal [isOpen]="scanOpen()" (didDismiss)="scanOpen.set(false)">
+    <ng-template>
+      <ion-header class="ion-no-border">
+        <ion-toolbar class="vc-modal-bar">
+          <ion-buttons slot="start">
+            <ion-button (click)="scanModal.dismiss()"><ion-icon slot="start" name="arrow-back"></ion-icon> Close</ion-button>
+          </ion-buttons>
+          <ion-title>Scan Coach QR</ion-title>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="vc-modal-content">
+        <div class="vc-body">
+          <p class="vc-hint">The first scan of the day checks the coach in, the next one checks them out.</p>
+          <app-qr-scanner hint="Point the camera at the coach's QR code" [busy]="busy()" (scanned)="onScanned($event, scanModal)"></app-qr-scanner>
         </div>
       </ion-content>
     </ng-template>

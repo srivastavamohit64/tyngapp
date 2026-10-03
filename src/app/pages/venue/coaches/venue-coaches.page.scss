@@ -33,6 +33,35 @@ ion-content {
   }
 }
 
+.vc-hdr-actions {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.vc-toggle {
+  width: 100%;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+
+  .vc-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+}
+
+.vc-past {
+  opacity: 0.92;
+}
+
+.vc-open {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: $fg2;
+}
+
 .vc-top {
   position: sticky;
   top: 0;

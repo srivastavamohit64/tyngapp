@@ -39,6 +39,15 @@ export interface VenueCoachCard {
   offeredAt: string | null;
   requestedAt: string | null;
   contractEnd: string | null;
+  terminatedAt: string | null;
+}
+
+export interface CoachJobPreferences {
+  types: EmploymentType[];
+  typeLabels: string[];
+  availableFrom: string | null;
+  availableNow: boolean;
+  label: string | null;
 }
 
 export interface VenueCourtOption {
@@ -48,10 +57,11 @@ export interface VenueCourtOption {
 }
 
 export interface VenueCoachTeam {
-  summary: { total: number; onDuty: number; available: number; onLeave: number; offers: number; requests: number };
+  summary: { total: number; onDuty: number; available: number; onLeave: number; offers: number; requests: number; past: number };
   coaches: VenueCoachCard[];
   offers: VenueCoachCard[];
   requests: VenueCoachCard[];
+  past: VenueCoachCard[];
   excludedCoachIds: number[];
   courts: VenueCourtOption[];
 }
@@ -99,6 +109,7 @@ export interface VenueCoachAttendance {
   today: VenueCoachAttendanceDay & { isWorkDay: boolean };
   month: { label: string; present: number; late: number; half: number; absent: number; leave: number; hours: number; overtimeHours: number; ratePct: number | null };
   recent: VenueCoachAttendanceDay[];
+  checkInCode: string;
 }
 
 export interface VenueCoachPayout {
@@ -109,6 +120,9 @@ export interface VenueCoachPayout {
   bonus: number;
   incentive: number;
   deduction: number;
+  gross: number;
+  platformFee: number;
+  gst: number;
   net: number;
   hours: number;
   status: PayoutStatus;
@@ -129,7 +143,7 @@ export interface VenueCoachScheduleDay {
 
 export interface VenueCoachPerformance {
   score: number | null;
-  components: { attendance: number | null; punctuality: number | null; rating: number | null; renewals: number | null; response: number | null; students: number | null };
+  components: { attendance: number | null; punctuality: number | null; rating: number | null; venueRating: number | null; renewals: number | null; response: number | null; students: number | null };
   trend: { month: string; label: string; score: number | null; sessions: number; students: number }[];
   attendancePct: number | null;
   sessions: number;
@@ -142,6 +156,9 @@ export interface VenueCoachPerformance {
 export interface VenueCoachDetail extends VenueCoachCard {
   phone: string | null;
   email: string | null;
+  emergencyContact: { name: string | null; phone: string; relation: string | null } | null;
+  venueRating: { value: number | null; note: string | null; ratedAt: string | null };
+  jobPreferences: CoachJobPreferences;
   bio: string | null;
   languages: string[];
   city: string | null;
@@ -152,7 +169,12 @@ export interface VenueCoachDetail extends VenueCoachCard {
   assignment: VenueCoachAssignment;
   schedule: VenueCoachScheduleDay[];
   attendance: VenueCoachAttendance;
-  payroll: { current: VenueCoachPayout; history: VenueCoachPayout[] };
+  payroll: {
+    current: VenueCoachPayout;
+    history: VenueCoachPayout[];
+    totals: { paid: number; paidThisYear: number; unpaid: number; months: number };
+    rates: { platformFeePct: number; gstPct: number };
+  };
   documents: { id: number; type: string; label: string; name: string | null; mimeType: string | null; status: string; uploadedAt: string | null }[];
   contract: VenueCoachContract;
   performance: VenueCoachPerformance;
@@ -226,6 +248,14 @@ export class VenueCoachService {
 
   attendance(id: number, action: 'check_in' | 'check_out' | 'mark', status?: AttendanceStatus, date?: string): Observable<ApiResponse<VenueCoachDetail>> {
     return this.api.post<VenueCoachDetail>(`/venue/coaches/${id}/attendance`, { action, status: status ?? null, date: date ?? null });
+  }
+
+  scan(code: string): Observable<ApiResponse<{ action: 'check_in' | 'check_out'; coach: VenueCoachDetail }>> {
+    return this.api.post<{ action: 'check_in' | 'check_out'; coach: VenueCoachDetail }>('/venue/coaches/attendance/scan', { code });
+  }
+
+  rate(id: number, rating: number, note?: string | null): Observable<ApiResponse<VenueCoachDetail>> {
+    return this.api.post<VenueCoachDetail>(`/venue/coaches/${id}/rating`, { rating, note: note || null });
   }
 
   savePayroll(id: number, body: { period?: string; bonus?: number; incentive?: number; deduction?: number; status?: PayoutStatus; note?: string | null }): Observable<ApiResponse<VenueCoachDetail>> {

@@ -271,6 +271,30 @@ const COACH_OFFER_TYPES: Array<{ id: CoachOfferType; label: string }> = [
           </div>
 
           <div class="detail-group">
+            <div class="detail-group-heading"><h3>Venue jobs I'm open to</h3><span>{{ coachDetails.employmentTypes.length }} selected</span></div>
+            <p class="detail-hint">Venues looking for coaches can filter by these. Leave empty if you are not looking for venue work.</p>
+            <div class="detail-chips">
+              <button type="button" *ngFor="let item of coachEmploymentOptions" (click)="toggleEmploymentType(item.value)" [class.detail-chip-active]="coachDetails.employmentTypes.includes(item.value)">{{ item.label }}</button>
+            </div>
+            <label class="detail-date" *ngIf="coachDetails.employmentTypes.length">
+              <span>Available from</span>
+              <input type="date" [(ngModel)]="coachDetails.availableFrom" [min]="todayIso" />
+              <button type="button" *ngIf="coachDetails.availableFrom" (click)="coachDetails.availableFrom = null">Available now</button>
+            </label>
+          </div>
+
+          <div class="detail-group">
+            <div class="detail-group-heading"><h3>Emergency contact</h3><span>Only shared with venues you work at</span></div>
+            <div class="history-edit-row emergency-row">
+              <input type="text" [(ngModel)]="coachDetails.emergencyContact.name" maxlength="80" placeholder="Contact name" autocomplete="off" />
+              <div class="history-edit-pair">
+                <input type="tel" [(ngModel)]="coachDetails.emergencyContact.phone" maxlength="20" placeholder="Phone number" inputmode="tel" autocomplete="off" />
+                <input type="text" [(ngModel)]="coachDetails.emergencyContact.relation" maxlength="40" placeholder="Relation, e.g. Father" autocomplete="off" />
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-group">
             <div class="detail-group-heading"><h3>Coach bio</h3><span>{{ coachDetails.bio.length }}/2000</span></div>
             <textarea [(ngModel)]="coachDetails.bio" maxlength="2000" rows="4" placeholder="Tell players about your coaching experience, approach and what they can expect."></textarea>
           </div>
@@ -496,6 +520,10 @@ const COACH_OFFER_TYPES: Array<{ id: CoachOfferType; label: string }> = [
     .history-edit-pair { display:grid; grid-template-columns:1.3fr 1fr; gap:6px; }
     .history-edit-remove { position:absolute; top:10px; right:8px; width:28px; height:28px; color:#dc2626; background:#fff; border:1px solid #fee2e2; border-radius:9px; }
     .detail-hint { margin:-4px 0 10px; color:#6b7280; font-size:11px; line-height:1.5; }
+    .emergency-row { padding-right:10px; }
+    .detail-date { display:flex; align-items:center; gap:8px; margin-top:10px; font-size:12px; font-weight:700; color:#374151; }
+    .detail-date input { flex:1; min-width:0; padding:9px 11px; color:#111827; background:#f9fafb; border:1px solid #edf0f2; border-radius:11px; font:inherit; font-size:12px; outline:0; }
+    .detail-date button { flex-shrink:0; padding:8px 10px; color:#4d7c0f; background:#8cf00018; border:0; border-radius:11px; font-size:11px; font-weight:900; }
     .offer-edit-grid { display:grid; grid-template-columns:1.1fr .8fr 1fr; gap:6px; }
     .offer-edit-grid select { min-width:0; width:100%; padding:9px 8px; color:#111827; background:#f9fafb; border:1px solid #edf0f2; border-radius:11px; font:inherit; font-size:12px; outline:0; }
     .offer-edit-unit { display:flex; align-items:center; gap:4px; min-width:0; padding:0 10px; background:#f9fafb; border:1px solid #edf0f2; border-radius:11px; }
@@ -664,6 +692,13 @@ export class EditProfilePage implements OnInit {
   readonly coachAchievementOptions = COACH_ACHIEVEMENTS;
   readonly coachSpecialityOptions = COACH_SPECIALITIES;
   readonly coachLevelOptions = COACH_LEVELS;
+  readonly coachEmploymentOptions = [
+    { value: 'monthly', label: 'Monthly salary' },
+    { value: 'hourly', label: 'Hourly' },
+    { value: 'contract', label: 'Fixed contract' },
+    { value: 'freelance', label: 'Freelance' },
+  ];
+  readonly todayIso = new Date().toISOString().slice(0, 10);
   readonly coachOfferTypes = COACH_OFFER_TYPES;
   customSpeciality = '';
   coachDetailsLoaded = false;
@@ -731,6 +766,7 @@ export class EditProfilePage implements OnInit {
       feeOptions: { individual: '', group: '', monthly: '' }, feesNegotiable: false,
       achievements: [], specialities: [], coachingLevels: [], coachingHistory: [],
       experienceYears: null, experienceSummary: '', sportExperience: [], sessionOffers: [], bio: '',
+      emergencyContact: { name: '', phone: '', relation: '' }, employmentTypes: [], availableFrom: null,
     };
   }
 
@@ -774,6 +810,13 @@ export class EditProfilePage implements OnInit {
               description: offer?.description || '',
             }))
             : [],
+          emergencyContact: {
+            name: result.data.emergencyContact?.name || '',
+            phone: result.data.emergencyContact?.phone || '',
+            relation: result.data.emergencyContact?.relation || '',
+          },
+          employmentTypes: Array.isArray(result.data.employmentTypes) ? result.data.employmentTypes : [],
+          availableFrom: result.data.availableFrom || null,
         };
         this.coachDetailsLoaded = true;
       },
@@ -784,6 +827,13 @@ export class EditProfilePage implements OnInit {
   toggleCoachArray(field: 'languages' | 'coachingLocations' | 'sessionTypes' | 'equipment' | 'achievements' | 'specialities' | 'coachingLevels', value: string): void {
     const values = this.coachDetails[field];
     this.coachDetails[field] = values.includes(value) ? values.filter((item) => item !== value) : [...values, value];
+    this.coachDetailsSuccess = '';
+  }
+
+  toggleEmploymentType(value: string): void {
+    const values = this.coachDetails.employmentTypes;
+    this.coachDetails.employmentTypes = values.includes(value) ? values.filter((item) => item !== value) : [...values, value];
+    if (!this.coachDetails.employmentTypes.length) this.coachDetails.availableFrom = null;
     this.coachDetailsSuccess = '';
   }
 
@@ -1167,6 +1217,13 @@ export class EditProfilePage implements OnInit {
               description: offer.description.trim(),
             })),
           bio: this.coachDetails.bio.trim(),
+          emergency_contact: {
+            name: this.coachDetails.emergencyContact.name.trim(),
+            phone: this.coachDetails.emergencyContact.phone.trim(),
+            relation: this.coachDetails.emergencyContact.relation.trim(),
+          },
+          employment_types: this.coachDetails.employmentTypes,
+          available_from: this.coachDetails.availableFrom || null,
         };
         await firstValueFrom(this.coachService.saveMyCoachProfileDetails(detailsPayload));
         this.coachDetailsSuccess = 'Coaching details updated successfully.';

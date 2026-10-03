@@ -7,12 +7,13 @@ import { BackNavigationService } from '../../core/services/back-navigation.servi
 import { CoachService, CoachVenueCollaborationDetail, CoachVenueCollaborationSession } from '../../core/services/coach.service';
 import { CoachEmployment, VenueCoachService, saveBlob } from '../../core/services/venue-coach.service';
 import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
+import { QrCodeComponent } from '../../shared/components/qr/qr-code.component';
 import { PageSkeletonComponent } from '../../shared/components/skeleton';
 
 @Component({
   selector: 'app-venue-collab-detail',
   standalone: true,
-  imports: [CommonModule, IonicModule, BrandHeaderShellComponent, PageSkeletonComponent],
+  imports: [CommonModule, IonicModule, BrandHeaderShellComponent, PageSkeletonComponent, QrCodeComponent],
   template: `
     <ion-content [fullscreen]="true">
       <app-brand-header-shell title="Venue Collaboration" (back)="back()">
@@ -99,6 +100,13 @@ import { PageSkeletonComponent } from '../../shared/components/skeleton';
                 <div class="att-tile"><b class="text-[#EF4444]">{{ a.month.absent }}</b><span>Absent</span></div>
                 <div class="att-tile"><b class="text-[#0284C7]">{{ a.month.hours }}</b><span>Hours</span></div>
               </div>
+              <div class="qr-att" *ngIf="a.checkInCode">
+                <app-qr-code [value]="a.checkInCode" [size]="132" label="My attendance QR code"></app-qr-code>
+                <div class="min-w-0">
+                  <p class="text-[14px] font-black text-[#111827] m-0">My Attendance QR</p>
+                  <p class="text-[12px] text-[#6B7280] font-bold m-0 mt-1">Show this to the venue supervisor when you arrive and when you leave. They scan it to check you in or out.</p>
+                </div>
+              </div>
             </ng-container>
 
             <ng-container *ngIf="e.payouts.length">
@@ -107,6 +115,7 @@ import { PageSkeletonComponent } from '../../shared/components/skeleton';
                 <div class="min-w-0">
                   <p class="text-[13px] font-bold text-[#111827] m-0">{{ p.periodLabel }}</p>
                   <p class="text-[11px] text-[#9CA3AF] font-bold m-0">{{ p.invoiceNumber || (p.status | titlecase) }}</p>
+                  <p *ngIf="p.platformFee > 0" class="text-[11px] text-[#9CA3AF] font-bold m-0">Gross {{ money(p.gross) }} · Fee {{ money(p.platformFee) }} · GST {{ money(p.gst) }}</p>
                 </div>
                 <div class="text-right">
                   <p class="text-[13px] font-black text-[#111827] m-0">{{ money(p.net) }}</p>
@@ -276,6 +285,7 @@ import { PageSkeletonComponent } from '../../shared/components/skeleton';
     .att-tile span { font-size: 10px; font-weight: 700; color: #9CA3AF; }
     .pay-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid #F3F4F6; }
     .pay-row:last-child { border-bottom: 0; }
+    .qr-att { display: flex; align-items: center; gap: 14px; margin-top: 14px; padding: 14px; border-radius: 20px; border: 1px dashed #E5E7EB; background: #fff; }
   `]
 })
 export class VenueCollabDetailPage implements OnInit {

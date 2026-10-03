@@ -506,6 +506,9 @@ export interface CoachProfileDetails {
   sportExperience: CoachSportExperience[];
   sessionOffers: CoachSessionOffer[];
   bio: string;
+  emergencyContact: { name: string; phone: string; relation: string };
+  employmentTypes: string[];
+  availableFrom: string | null;
 }
 
 export interface CoachHistoryEntry {
@@ -560,6 +563,9 @@ export interface CoachProfileDetailsPayload {
   experience_years?: number | null;
   experience_summary?: string;
   sport_experience?: CoachSportExperience[];
+  emergency_contact?: { name: string; phone: string; relation: string } | null;
+  employment_types?: string[];
+  available_from?: string | null;
   session_offers?: Array<{
     name: string;
     type: CoachOfferType;
