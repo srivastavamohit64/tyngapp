@@ -189,7 +189,7 @@ interface CalendarBookingItem {
     .month-label {
       margin: 0;
       font-size: 16px;
-      font-weight: 800;
+      font-weight: 900;
       color: #111827;
     }
 
@@ -213,8 +213,8 @@ interface CalendarBookingItem {
     .weekday-row span {
       text-align: center;
       font-size: 10px;
-      font-weight: 800;
-      letter-spacing: 0.04em;
+      font-weight: 700;
+      letter-spacing: 0.05em;
       color: #9CA3AF;
       text-transform: uppercase;
       padding: 4px 0;
@@ -304,8 +304,8 @@ interface CalendarBookingItem {
     .stat__label {
       margin: 4px 0 0;
       font-size: 10px;
-      font-weight: 800;
-      letter-spacing: 0.04em;
+      font-weight: 700;
+      letter-spacing: 0.05em;
       text-transform: uppercase;
       color: #9CA3AF;
     }
@@ -334,7 +334,7 @@ interface CalendarBookingItem {
       border-radius: 999px;
       padding: 8px 12px;
       font-size: 12px;
-      font-weight: 800;
+      font-weight: 700;
       color: #6B7280;
       white-space: nowrap;
     }
@@ -361,7 +361,7 @@ interface CalendarBookingItem {
       background: #111827;
       color: #fff;
       font-size: 11px;
-      font-weight: 800;
+      font-weight: 700;
       padding: 6px 10px;
       cursor: pointer;
     }
@@ -425,15 +425,16 @@ interface CalendarBookingItem {
       background: rgba(var(--app-primary-rgb), 0.2);
       color: #166534;
       font-size: 10px;
-      font-weight: 800;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.03em;
+      letter-spacing: 0.05em;
     }
 
     .event-status {
       font-size: 10px;
-      font-weight: 800;
+      font-weight: 700;
       text-transform: uppercase;
+      letter-spacing: 0.05em;
       color: #16A34A;
     }
 
@@ -450,7 +451,7 @@ interface CalendarBookingItem {
     .event-date {
       margin: 0;
       font-size: 12px;
-      font-weight: 800;
+      font-weight: 700;
       color: #6B7280;
     }
 

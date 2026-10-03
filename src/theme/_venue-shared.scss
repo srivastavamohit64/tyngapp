@@ -128,7 +128,7 @@ $venue-card-shadow: 0 2px 16px rgba(0, 0, 0, 0.07);
     font-weight: 900;
     color: $venue-primary;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.1em;
   }
 }
 
@@ -172,7 +172,7 @@ $venue-card-shadow: 0 2px 16px rgba(0, 0, 0, 0.07);
 .venue-metric-label {
   font-size: 10px;
   color: rgba(255, 255, 255, 0.4);
-  font-weight: 500;
+  font-weight: 400;
   position: relative;
 }
 
@@ -240,19 +240,19 @@ $venue-card-shadow: 0 2px 16px rgba(0, 0, 0, 0.07);
 }
 
 .venue-completion-kicker {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 900;
   color: $venue-primary;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.1em;
   margin: 0 28px 6px 0;
 }
 
 .venue-completion-desc {
-  font-size: 12px;
+  font-size: 11px;
   color: rgba(255, 255, 255, 0.62);
   margin: 0 0 14px;
-  line-height: 1.45;
+  line-height: 1.625;
   max-width: 92%;
 }
 
@@ -264,12 +264,13 @@ $venue-card-shadow: 0 2px 16px rgba(0, 0, 0, 0.07);
   font-size: 11px;
 
   span:first-child {
+    font-size: 10px;
     color: rgba(255, 255, 255, 0.55);
-    font-weight: 600;
+    font-weight: 400;
   }
 
   span:last-child {
-    font-size: 13px;
+    font-size: 11px;
     font-weight: 900;
     color: $venue-primary;
   }
@@ -284,7 +285,7 @@ $venue-card-shadow: 0 2px 16px rgba(0, 0, 0, 0.07);
 }
 
 .venue-completion-card .venue-progress-fill {
-  background: linear-gradient(90deg, var(--app-primary) 0%, #b8f54a 100%);
+  background: linear-gradient(90deg, var(--app-primary) 0%, #ff7a00 100%);
 }
 
 .venue-checklist {
@@ -336,8 +337,8 @@ $venue-card-shadow: 0 2px 16px rgba(0, 0, 0, 0.07);
 }
 
 .venue-check-label {
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 10px;
+  font-weight: 500;
   line-height: 1.2;
 }
 
@@ -778,7 +779,7 @@ $venue-card-shadow: 0 2px 16px rgba(0, 0, 0, 0.07);
     font-weight: 900;
     color: #16a34a;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.05em;
     margin: 0;
   }
 

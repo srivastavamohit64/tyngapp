@@ -113,7 +113,7 @@ import { BrandHeaderShellComponent } from '../../shared/components/brand-header-
       .notif-body h2 {
         margin: 0 0 4px;
         font-size: 14px;
-        font-weight: 800;
+        font-weight: 700;
         color: #111827;
       }
       .notif-body p {

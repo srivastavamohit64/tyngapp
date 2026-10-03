@@ -83,11 +83,11 @@ export interface VenueDocRow {
       box-shadow: 0 20px 50px rgba(0,0,0,.2);
     }
     .head h2 { margin: 0 0 8px; font-size: 20px; font-weight: 900; color: #111827; }
-    .head p { margin: 0 0 18px; font-size: 13px; line-height: 1.45; color: #6B7280; font-weight: 600; }
+    .head p { margin: 0 0 18px; font-size: 13px; line-height: 1.45; color: #6B7280; font-weight: 400; }
     .list { display: grid; gap: 12px; margin-bottom: 14px; }
     .doc { border: 1px solid #E5E7EB; border-radius: 16px; padding: 12px 14px; background: #FAFBFC; }
     .doc-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-    .label { font-size: 14px; font-weight: 800; color: #111827; }
+    .label { font-size: 14px; font-weight: 700; color: #111827; }
     .status { margin-top: 4px; font-size: 12px; font-weight: 700; color: #9CA3AF; }
     .status.ok { color: #16A34A; }
     .status.bad { color: #DC2626; }
@@ -95,7 +95,7 @@ export interface VenueDocRow {
     .fname { margin-top: 4px; font-size: 11px; color: #6B7280; word-break: break-all; }
     .pick {
       flex-shrink: 0; height: 36px; padding: 0 12px; border-radius: 12px;
-      background: #111827; color: #fff; font-size: 12px; font-weight: 800;
+      background: #111827; color: #fff; font-size: 12px; font-weight: 700;
       display: inline-flex; align-items: center; cursor: pointer;
     }
     .busy { margin-top: 8px; font-size: 12px; font-weight: 700; color: #2563EB; }

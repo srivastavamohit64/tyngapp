@@ -134,16 +134,16 @@ type EventsTab = 'home' | 'leagues' | 'rankings' | 'analytics';
   `,
   styles: [`
     :host { display: block; height: 100%; }
-    .ev-content { --background: #F4F6F8; --padding-bottom: 0; }
+    .ev-content { --background: #FAFBFC; --padding-bottom: 0; }
     .ev-page { padding: 12px 16px calc(190px + var(--safe-area-bottom)); }
     .ev-tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; scrollbar-width: none; }
-    .ev-tab { flex: 0 0 auto; border: none; border-radius: 999px; padding: 8px 14px; background: #F3F4F6; font-weight: 800; font-size: 13px; color: #111827; }
+    .ev-tab { flex: 0 0 auto; border: none; border-radius: 999px; padding: 8px 14px; background: #F3F4F6; font-weight: 700; font-size: 13px; color: #111827; }
     .ev-tab.on { background: #111827; color: #8cf000; box-shadow: inset 0 -2px 0 #8cf000; }
     .hero { background: #111827; color: #fff; border-radius: 22px; padding: 18px; }
     .hero-top { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
     .kicker { margin: 0; color: #9CA3AF; font-size: 12px; font-weight: 700; }
     .hero h1 { margin: 6px 0 14px; font-size: 22px; font-weight: 900; line-height: 1.2; }
-    .mini-create { border: none; border-radius: 999px; background: #8cf000; color: #111827; font-weight: 800; height: 32px; padding: 0 10px; white-space: nowrap; }
+    .mini-create { border: none; border-radius: 999px; background: #8cf000; color: #111827; font-weight: 700; height: 32px; padding: 0 10px; white-space: nowrap; }
     .hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .hero-grid > div { display: flex; gap: 8px; align-items: center; background: rgba(255,255,255,.06); border-radius: 12px; padding: 8px; }
     .hero-grid p { margin: 0; font-size: 11px; color: #9CA3AF; }
@@ -151,34 +151,34 @@ type EventsTab = 'home' | 'leagues' | 'rankings' | 'analytics';
     .sec-head { display: flex; justify-content: space-between; align-items: center; margin: 18px 0 10px; }
     .page-h { margin: 8px 0 12px; font-size: 20px; font-weight: 900; color: #111827; }
     .sec-head h2 { margin: 8px 0 12px; color: var(--app-section-title-color); font-size: var(--app-section-title-size); font-weight: var(--app-section-title-weight); line-height: var(--app-section-title-line-height); letter-spacing: var(--app-section-title-tracking); text-transform: uppercase; }
-    .link { border: none; background: none; color: #65a30d; font-weight: 800; }
+    .link { border: none; background: none; color: #5A9E00; font-weight: 700; }
     .type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .type-card { text-align: left; border: none; background: #fff; border-radius: 18px; padding: 14px; box-shadow: 0 2px 12px rgba(17,24,39,.05); }
     .orb { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; font-size: 18px; margin-bottom: 8px; }
-    .type-card strong { display: block; font-size: 14px; }
-    .type-card p { margin: 4px 0 0; font-size: 11px; color: #6B7280; font-weight: 600; }
+    .type-card strong { display: block; font-size: 14px; font-weight: 900; }
+    .type-card p { margin: 4px 0 0; font-size: 11px; color: #6B7280; font-weight: 400; }
     .league, .card { background: #fff; border-radius: 18px; padding: 14px; margin-bottom: 12px; box-shadow: 0 2px 12px rgba(17,24,39,.05); }
     .league-top { display: flex; gap: 8px; align-items: flex-start; }
     .league-top h3 { margin: 0; font-size: 15px; }
     .league-top p { margin: 2px 0 0; font-size: 12px; color: #9CA3AF; }
-    .active { margin-left: auto; background: #DCFCE7; color: #15803D; border-radius: 999px; padding: 3px 8px; font-size: 11px; font-weight: 800; }
+    .active { margin-left: auto; background: #F0FDF4; color: #16A34A; border-radius: 999px; padding: 3px 8px; font-size: 11px; font-weight: 700; }
     .prog { display: flex; justify-content: space-between; margin-top: 10px; font-size: 12px; font-weight: 700; }
     .bar { height: 8px; background: #F3F4F6; border-radius: 99px; overflow: hidden; margin: 6px 0 10px; }
     .bar i { display: block; height: 100%; background: #8cf000; }
     .league-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .league-meta div { background: #F9FAFB; border-radius: 12px; padding: 8px; }
     .league-meta span { display: block; font-size: 11px; color: #9CA3AF; }
-    .table-btn { width: 100%; margin-top: 10px; height: 42px; border: 1.5px solid #E5E7EB; border-radius: 12px; background: #fff; font-weight: 800; }
-    .dashed { width: 100%; height: 52px; border: 1.5px dashed #D1D5DB; border-radius: 16px; background: transparent; font-weight: 800; color: #6B7280; }
+    .table-btn { width: 100%; margin-top: 10px; height: 42px; border: 1.5px solid #E5E7EB; border-radius: 12px; background: #fff; font-weight: 700; }
+    .dashed { width: 100%; height: 52px; border: 1.5px dashed #D1D5DB; border-radius: 16px; background: transparent; font-weight: 700; color: #6B7280; }
     .rank { display: flex; gap: 10px; align-items: center; background: #fff; border-radius: 14px; padding: 12px; margin-bottom: 8px; }
     .kpi { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
     .kpi-card { background: #fff; border-radius: 16px; padding: 12px; }
     .kpi-card p { margin: 0; font-size: 12px; color: #6B7280; font-weight: 700; }
     .kpi-card strong { display: block; font-size: 20px; margin: 4px 0; }
-    .kpi-card span { color: #16A34A; font-size: 12px; font-weight: 800; }
+    .kpi-card span { color: #16A34A; font-size: 12px; font-weight: 700; }
     .rev-row { display: flex; gap: 10px; align-items: center; padding: 8px 0; }
     .rev-copy { flex: 1; min-width: 0; }
-    .rev-copy p { margin: 0 0 4px; font-weight: 800; font-size: 13px; }
+    .rev-copy p { margin: 0 0 4px; font-weight: 700; font-size: 13px; }
     .card h3 { margin: 0 0 8px; font-size: 15px; }
     .badges { display: flex; justify-content: space-between; text-align: center; font-size: 11px; font-weight: 700; }
     .muted { color: #9CA3AF; font-weight: 700; padding: 12px 0; }
@@ -198,7 +198,7 @@ type EventsTab = 'home' | 'leagues' | 'rankings' | 'analytics';
       position: fixed;
       right: 18px; bottom: calc(150px + var(--safe-area-bottom));
       width: 52px; height: 52px; border: none; border-radius: 50%; background: #8cf000;
-      color: #111827; font-size: 28px; font-weight: 800; z-index: 21;
+      color: #111827; font-size: 28px; font-weight: 900; z-index: 21;
       box-shadow: 0 8px 20px rgba(140,240,0,.4);
     }
   `],
@@ -221,10 +221,10 @@ export class VenueEventsHubPage implements OnInit {
   ];
 
   readonly types = [
-    { id: 'community_game', emoji: '🟢', title: 'Community Game', sub: 'Grow your sports community.', orb: 'radial-gradient(circle at 30% 30%, #d9f99d, #22c55e)' },
-    { id: 'hosted_match', emoji: '🔵', title: 'Hosted Match', sub: 'Subsidised play for your community.', orb: 'radial-gradient(circle at 30% 30%, #bfdbfe, #2563eb)' },
+    { id: 'community_game', emoji: '🟢', title: 'Community Game', sub: 'Grow your sports community.', orb: 'radial-gradient(circle at 30% 30%, #ecfccb, #22c55e)' },
+    { id: 'hosted_match', emoji: '🔵', title: 'Hosted Match', sub: 'Subsidised play for your community.', orb: 'radial-gradient(circle at 30% 30%, #eff6ff, #2563eb)' },
     { id: 'competition', emoji: '🏆', title: 'Competition', sub: 'Compete for prizes and rankings.', orb: '#FEF3C7' },
-    { id: 'festival', emoji: '🎉', title: 'Festival', sub: 'Create unforgettable experiences.', orb: '#FFE4E6' },
+    { id: 'festival', emoji: '🎉', title: 'Festival', sub: 'Create unforgettable experiences.', orb: '#FFF0F6' },
   ];
 
   ngOnInit(): void {

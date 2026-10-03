@@ -121,8 +121,8 @@ export class AppComponent implements OnInit {
       { label: 'Earnings', sub: earnings, path: '/app/venue/earnings', icon: 'cash-outline', live: true },
       { label: 'Coaches', sub: 'Partner coaches', path: '/app/venue/facilities', icon: 'people-outline' },
       { label: 'Events', sub: 'Create & manage events', path: '/app/venue/events', icon: 'sparkles-outline' },
-      { label: 'Analytics', sub: 'Occupancy & insights', path: '/app/venue/analytics', icon: 'bar-chart-outline' },
-      { label: 'Settings', sub: 'Preferences & billing', path: '/app/venue/profile', icon: 'settings-outline' },
+      { label: 'Revenue Analytics', sub: 'Occupancy & insights', path: '/app/venue/analytics', icon: 'bar-chart-outline' },
+      { label: 'Settings', sub: 'Preferences & billing', path: '/app/settings', icon: 'settings-outline' },
     ];
   });
 

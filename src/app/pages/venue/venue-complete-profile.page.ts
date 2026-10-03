@@ -150,7 +150,7 @@ const STEP_TITLES = [
           <app-page-skeleton variant="detail" label="Loading your venue details"></app-page-skeleton>
         </div>
         <div *ngIf="!profileLoading()" class="px-5 pt-5">
-          <div *ngIf="saveError()" class="mb-4 rounded-2xl bg-[#FEF2F2] border border-[#FECACA] px-4 py-3 text-[13px] font-bold text-[#DC2626]">
+          <div *ngIf="saveError()" class="mb-4 rounded-2xl bg-[#FEF2F2] border border-[#FEE2E2] px-4 py-3 text-[13px] font-bold text-[#DC2626]">
             {{ saveError() }}
           </div>
           <!-- STEP 1: BUSINESS INFORMATION -->
@@ -343,7 +343,7 @@ const STEP_TITLES = [
                 <p class="text-[11px] font-bold text-[#9CA3AF] m-0">Tap trash to remove</p>
               </div>
               <div *ngFor="let f of facilities(); trackBy: trackFacility" class="bg-white rounded-[22px] overflow-hidden border border-[#F3F4F6] shadow-sm text-left">
-                <div class="relative h-[100px] bg-slate-200">
+                <div class="relative h-[100px] bg-[#E5E7EB]">
                   <img [src]="f.photo" class="w-full h-full object-cover" [alt]="f.name" />
                   <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none"></div>
                   <button
@@ -536,7 +536,7 @@ const STEP_TITLES = [
               <p class="text-[13px] text-[#9CA3AF] m-0 mt-0.5">Add photos from camera, gallery, or files</p>
             </div>
             <div class="grid grid-cols-2 gap-3">
-              <div *ngFor="let photo of uploadedPhotos(); let idx = index" class="aspect-video rounded-2xl overflow-hidden relative bg-slate-200">
+              <div *ngFor="let photo of uploadedPhotos(); let idx = index" class="aspect-video rounded-2xl overflow-hidden relative bg-[#E5E7EB]">
                 <img [src]="photo" class="w-full h-full object-cover" [alt]="'Venue photo ' + (idx + 1)" />
                 <button type="button" (click)="removePhoto(idx)" class="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/50 text-white flex items-center justify-center border-none text-xs">×</button>
               </div>
@@ -739,8 +739,8 @@ const STEP_TITLES = [
     .field-label {
       margin: 0 0 8px;
       font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.06em;
+      font-weight: 600;
+      letter-spacing: 0.05em;
       text-transform: uppercase;
       color: #9ca3af;
     }
@@ -809,7 +809,7 @@ const STEP_TITLES = [
       background: #fff;
       color: #6B7280;
       font-size: 11px;
-      font-weight: 800;
+      font-weight: 700;
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -860,7 +860,7 @@ const STEP_TITLES = [
       background: #fff;
       color: #111827;
       font-size: 11px;
-      font-weight: 800;
+      font-weight: 700;
       text-decoration: none;
       box-shadow: 0 2px 10px rgba(0,0,0,0.12);
     }
@@ -961,7 +961,7 @@ const STEP_TITLES = [
       border-radius: 10px;
       background: #F3F4F6;
       font-size: 11px;
-      font-weight: 800;
+      font-weight: 700;
       color: #111827;
       text-align: center;
       padding: 4px 6px;
@@ -988,7 +988,7 @@ const STEP_TITLES = [
       color: #111827;
       font-size: 9px;
       font-weight: 900;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.05em;
       text-transform: uppercase;
     }
 
@@ -998,7 +998,7 @@ const STEP_TITLES = [
       background: transparent;
       color: #2563EB;
       font-size: 11px;
-      font-weight: 800;
+      font-weight: 700;
       padding: 0;
     }
 
@@ -1150,7 +1150,7 @@ const STEP_TITLES = [
 
     .doc-edit-option-label {
       font-size: 13px;
-      font-weight: 800;
+      font-weight: 700;
       color: #111827;
     }
 

@@ -18,7 +18,7 @@ type PeriodKey = 'today' | 'week' | 'month' | 'year';
   imports: [CommonModule, IonicModule, FormsModule, PageSkeletonComponent, BrandHeaderShellComponent],
   template: `
     <ion-content [fullscreen]="true" class="has-tabs">
-      <app-brand-header-shell title="Earnings & Payouts">
+      <app-brand-header-shell title="Earnings">
       <button headerEnd type="button" class="icon-btn" (click)="reload()" aria-label="Refresh">
         <ion-icon name="refresh-outline"></ion-icon>
       </button>
@@ -70,7 +70,7 @@ type PeriodKey = 'today' | 'week' | 'month' | 'year';
               </p>
               <div class="flex items-baseline gap-1.5 mb-1">
                 <span class="text-[16px] font-bold text-white/50">₹</span>
-                <p class="text-[38px] font-black text-white leading-none m-0">
+                <p class="text-[40px] font-black text-white leading-none m-0">
                   {{ formatInr(mainEarnings()) }}
                 </p>
               </div>
@@ -84,7 +84,7 @@ type PeriodKey = 'today' | 'week' | 'month' | 'year';
                   <p class="text-[16px] font-black text-white mt-0.5 mb-0">₹{{ formatInr(item.value) }}</p>
                   <div class="flex items-center justify-between mt-1">
                     <p class="text-[10px] text-white/40 m-0 leading-none">{{ item.label }}</p>
-                    <span class="text-[9px] font-black" [style.color]="item.color">{{ item.pct }}</span>
+                    <span class="text-[9px] font-bold" [style.color]="item.color">{{ item.pct }}</span>
                   </div>
                 </div>
               </div>
@@ -103,7 +103,7 @@ type PeriodKey = 'today' | 'week' | 'month' | 'year';
                     </div>
                     <div>
                       <p class="text-[13px] font-bold text-[#111827] m-0 leading-none mb-1">{{ f.name }}</p>
-                      <p class="text-[10px] text-[#9CA3AF] m-0 leading-none font-bold">
+                      <p class="text-[10px] text-[#9CA3AF] m-0 leading-none">
                         {{ f.bookings }} bookings ·
                         <span [style.color]="f.occupancy >= 85 ? '#16A34A' : '#D97706'">{{ f.occupancy }}% occupancy</span>
                       </p>
@@ -138,7 +138,7 @@ type PeriodKey = 'today' | 'week' | 'month' | 'year';
                 <div class="absolute -bottom-3 -right-3 w-10 h-10 rounded-full opacity-20" [style.backgroundColor]="card.color"></div>
                 <div class="relative text-left">
                   <p class="text-[19px] font-black text-[#111827] m-0 leading-none mb-1">{{ card.value }}</p>
-                  <p class="text-[9px] text-[#6B7280] font-black uppercase tracking-wider m-0">{{ card.label }}</p>
+                  <p class="text-[9px] text-[#6B7280] m-0">{{ card.label }}</p>
                 </div>
               </div>
             </div>
@@ -147,7 +147,7 @@ type PeriodKey = 'today' | 'week' | 'month' | 'year';
           <!-- Trends -->
           <div class="card p-5">
             <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest m-0 mb-4">Booking Trends (7 days)</p>
-            <p class="text-[11px] text-[#9CA3AF] font-bold uppercase tracking-wider mb-2 m-0">Revenue Trend (₹)</p>
+            <p class="text-[11px] text-[#9CA3AF] font-semibold mb-2 m-0">Revenue Trend (₹)</p>
             <div class="bg-[#F9FAFB] rounded-2xl p-4 mb-4">
               <svg width="100%" height="80" viewBox="0 0 280 80" preserveAspectRatio="none" style="overflow: visible;">
                 <line x1="0" y1="20" x2="280" y2="20" stroke="#F3F4F6" stroke-width="1"></line>
@@ -158,17 +158,17 @@ type PeriodKey = 'today' | 'week' | 'month' | 'year';
               </svg>
             </div>
 
-            <p class="text-[11px] text-[#9CA3AF] font-bold uppercase tracking-wider mb-2 m-0">Bookings Per Day</p>
+            <p class="text-[11px] text-[#9CA3AF] font-semibold mb-2 m-0">Bookings Per Day</p>
             <div class="bg-[#F9FAFB] rounded-2xl p-4">
               <div class="flex items-end justify-around gap-1 h-20">
                 <div *ngFor="let val of barData(); let idx = index" class="flex flex-col items-center gap-1 flex-1">
-                  <span class="text-[8px] font-black text-[#9CA3AF]">{{ val }}</span>
+                  <span class="text-[8px] font-bold text-[#9CA3AF]">{{ val }}</span>
                   <div
                     class="w-full rounded-t-md"
                     [style.backgroundColor]="idx === barData().length - 1 ? 'var(--app-primary)' : '#E5E7EB'"
                     [style.height.px]="barHeight(val)"
                   ></div>
-                  <span class="text-[8px] text-[#C4C9D4] font-bold">{{ barLabels()[idx] }}</span>
+                  <span class="text-[8px] text-[#C4C9D4]">{{ barLabels()[idx] }}</span>
                 </div>
               </div>
             </div>
@@ -179,32 +179,32 @@ type PeriodKey = 'today' | 'week' | 'month' | 'year';
             <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-3 m-0">Earnings Breakdown</p>
             <div class="space-y-0 mb-4">
               <div class="flex items-center justify-between py-3 border-b border-[#F9FAFB]">
-                <span class="text-[13px] text-[#6B7280] font-bold">Gross Booking Revenue</span>
-                <span class="text-[13px] font-black text-[#111827]">₹{{ formatInr(data()!.breakdown.gross) }}</span>
+                <span class="text-[13px] text-[#6B7280] font-medium">Gross Booking Revenue</span>
+                <span class="text-[13px] font-bold text-[#111827]">₹{{ formatInr(data()!.breakdown.gross) }}</span>
               </div>
               <div class="flex items-center justify-between py-3 border-b border-[#F9FAFB]">
-                <span class="text-[13px] text-[#6B7280] font-bold">Platform Fee (5%)</span>
-                <span class="text-[13px] font-black text-[#EF4444]">-₹{{ formatInr(data()!.breakdown.platformFee) }}</span>
+                <span class="text-[13px] text-[#6B7280] font-medium">Platform Fee (5%)</span>
+                <span class="text-[13px] font-bold text-[#EF4444]">-₹{{ formatInr(data()!.breakdown.platformFee) }}</span>
               </div>
               <div class="flex items-center justify-between py-3 border-b border-[#F9FAFB]">
-                <span class="text-[13px] text-[#6B7280] font-bold">GST (18% on fee)</span>
-                <span class="text-[13px] font-black text-[#EF4444]">-₹{{ formatInr(data()!.breakdown.gstOnFee) }}</span>
+                <span class="text-[13px] text-[#6B7280] font-medium">GST (18% on fee)</span>
+                <span class="text-[13px] font-bold text-[#EF4444]">-₹{{ formatInr(data()!.breakdown.gstOnFee) }}</span>
               </div>
               <div class="flex items-center justify-between py-3 border-b border-[#F9FAFB]">
-                <span class="text-[13px] text-[#6B7280] font-bold">Discounts Applied</span>
-                <span class="text-[13px] font-black text-[#EF4444]">-₹{{ formatInr(data()!.breakdown.discounts) }}</span>
+                <span class="text-[13px] text-[#6B7280] font-medium">Discounts Applied</span>
+                <span class="text-[13px] font-bold text-[#EF4444]">-₹{{ formatInr(data()!.breakdown.discounts) }}</span>
               </div>
               <div class="flex items-center justify-between py-3 border-b border-[#F9FAFB]">
-                <span class="text-[13px] text-[#6B7280] font-bold">Refunds</span>
-                <span class="text-[13px] font-black text-[#EF4444]">-₹{{ formatInr(data()!.breakdown.refunds) }}</span>
+                <span class="text-[13px] text-[#6B7280] font-medium">Refunds</span>
+                <span class="text-[13px] font-bold text-[#EF4444]">-₹{{ formatInr(data()!.breakdown.refunds) }}</span>
               </div>
             </div>
             <div class="bg-[#111827] rounded-2xl px-5 py-4 flex items-center justify-between">
               <div>
                 <p class="text-[11px] text-white/50 uppercase tracking-wider m-0 leading-none mb-1">Net Earnings</p>
-                <p class="text-[11px] text-white/30 m-0 leading-none font-bold">After all deductions</p>
+                <p class="text-[11px] text-white/30 m-0 leading-none">After all deductions</p>
               </div>
-              <p class="text-[26px] font-black text-[var(--app-primary)] m-0">₹{{ formatInr(data()!.breakdown.net) }}</p>
+              <p class="text-[28px] font-black text-[var(--app-primary)] m-0">₹{{ formatInr(data()!.breakdown.net) }}</p>
             </div>
           </div>
 
@@ -216,10 +216,10 @@ type PeriodKey = 'today' | 'week' | 'month' | 'year';
                 <div class="flex items-start justify-between mb-3">
                   <div>
                     <p class="text-[14px] font-black text-[#111827] m-0 mb-1">{{ p.month }}</p>
-                    <p class="text-[11px] text-[#9CA3AF] m-0 font-bold">{{ p.period }} · {{ p.date }}</p>
+                    <p class="text-[11px] text-[#9CA3AF] m-0">{{ p.period }} · {{ p.date }}</p>
                   </div>
                   <span
-                    class="text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider"
+                    class="text-[10px] font-bold px-2.5 py-1 rounded-full"
                     [style.backgroundColor]="payoutStyle(p.status).bg"
                     [style.color]="payoutStyle(p.status).color"
                   >
@@ -227,21 +227,21 @@ type PeriodKey = 'today' | 'week' | 'month' | 'year';
                   </span>
                 </div>
                 <div class="grid grid-cols-2 gap-2 text-center">
-                  <div class="bg-white rounded-xl py-2 shadow-sm border border-slate-50">
+                  <div class="bg-white rounded-xl py-2 shadow-sm border border-[#F3F4F6]">
                     <p class="text-[13px] font-black text-[#111827] m-0">₹{{ formatInr(p.gross) }}</p>
-                    <p class="text-[9px] text-[#9CA3AF] font-bold uppercase m-0 mt-0.5">Gross</p>
+                    <p class="text-[9px] text-[#9CA3AF] m-0 mt-0.5">Gross</p>
                   </div>
-                  <div class="bg-white rounded-xl py-2 shadow-sm border border-slate-50">
+                  <div class="bg-white rounded-xl py-2 shadow-sm border border-[#F3F4F6]">
                     <p class="text-[13px] font-black text-[#111827] m-0">₹{{ formatInr(p.fee) }}</p>
-                    <p class="text-[9px] text-[#9CA3AF] font-bold uppercase m-0 mt-0.5">Fee</p>
+                    <p class="text-[9px] text-[#9CA3AF] m-0 mt-0.5">Fee</p>
                   </div>
-                  <div class="bg-white rounded-xl py-2 shadow-sm border border-slate-50">
+                  <div class="bg-white rounded-xl py-2 shadow-sm border border-[#F3F4F6]">
                     <p class="text-[13px] font-black text-[#111827] m-0">₹{{ formatInr(p.gst) }}</p>
-                    <p class="text-[9px] text-[#9CA3AF] font-bold uppercase m-0 mt-0.5">GST</p>
+                    <p class="text-[9px] text-[#9CA3AF] m-0 mt-0.5">GST</p>
                   </div>
-                  <div class="bg-white rounded-xl py-2 shadow-sm border border-slate-50">
+                  <div class="bg-white rounded-xl py-2 shadow-sm border border-[#F3F4F6]">
                     <p class="text-[13px] font-black text-[#16A34A] m-0">₹{{ formatInr(p.net) }}</p>
-                    <p class="text-[9px] text-[#9CA3AF] font-bold uppercase m-0 mt-0.5">Net Credited</p>
+                    <p class="text-[9px] text-[#9CA3AF] m-0 mt-0.5">Net Credited</p>
                   </div>
                 </div>
               </div>
@@ -269,13 +269,13 @@ type PeriodKey = 'today' | 'week' | 'month' | 'year';
                   {{ t.id.slice(-3) }}
                 </div>
                 <div class="flex-1 min-w-0">
-                  <p class="text-[12px] font-black text-[#111827] truncate m-0 mb-1">{{ t.facility }}</p>
-                  <p class="text-[10px] text-[#9CA3AF] font-bold m-0">{{ t.name }} · {{ t.date }}</p>
+                  <p class="text-[12px] font-bold text-[#111827] truncate m-0 mb-1">{{ t.facility }}</p>
+                  <p class="text-[10px] text-[#9CA3AF] m-0">{{ t.name }} · {{ t.date }}</p>
                 </div>
                 <div class="text-right flex-shrink-0">
                   <p class="text-[13px] font-black text-[#111827] m-0 mb-1">₹{{ formatInr(t.net) }}</p>
                   <span
-                    class="text-[9px] font-black uppercase tracking-wider"
+                    class="text-[9px] font-bold"
                     [style.color]="t.status === 'Completed' ? '#16A34A' : t.status === 'Pending' ? '#D97706' : '#DC2626'"
                   >
                     {{ t.status }}
@@ -298,12 +298,12 @@ type PeriodKey = 'today' | 'week' | 'month' | 'year';
             <div class="relative">
               <div class="flex items-center gap-2 mb-3">
                 <ion-icon name="flash-outline" class="text-[#111827] text-lg font-bold"></ion-icon>
-                <p class="text-[14px] font-black text-[#111827] m-0 uppercase tracking-wider">AI Revenue Insights</p>
+                <p class="text-[14px] font-black text-[#111827] m-0">AI Revenue Insights</p>
               </div>
               <div class="space-y-2">
                 <div *ngFor="let tip of data()!.aiTips" class="flex items-start gap-2.5 bg-white/25 rounded-2xl px-3.5 py-2.5">
                   <span class="text-base flex-shrink-0 mt-0.5">{{ tip.emoji }}</span>
-                  <p class="text-[12px] font-bold text-[#111827] leading-relaxed m-0">{{ tip.text }}</p>
+                  <p class="text-[12px] font-semibold text-[#111827] leading-relaxed m-0">{{ tip.text }}</p>
                 </div>
               </div>
             </div>
@@ -313,12 +313,12 @@ type PeriodKey = 'today' | 'week' | 'month' | 'year';
 
       <div class="action-footer" *ngIf="data()">
         <div class="flex gap-3 max-w-md mx-auto">
-          <button type="button" class="flex-1 h-12 rounded-2xl text-[13px] font-black text-[#6B7280] bg-[#F3F4F6] border-none flex items-center justify-center gap-1.5">
+          <button type="button" class="flex-1 h-12 rounded-2xl text-[13px] font-bold text-[#6B7280] bg-[#F3F4F6] border-none flex items-center justify-center gap-1.5">
             <ion-icon name="download-outline" class="text-base"></ion-icon>Monthly Report
           </button>
           <button
             type="button"
-            class="flex-1 h-12 rounded-2xl text-[13px] font-black text-white border-none flex items-center justify-center gap-1.5 shadow-md"
+            class="flex-1 h-12 rounded-2xl text-[14px] font-black text-white border-none flex items-center justify-center gap-1.5 shadow-md"
             style="background: linear-gradient(135deg, #FF7A00, #FF9A40);"
           >
             <ion-icon name="cash-outline" class="text-base"></ion-icon>Withdraw Funds
@@ -402,7 +402,7 @@ type PeriodKey = 'today' | 'week' | 'month' | 'year';
         align-items: center;
         gap: 5px;
         font-size: 10px;
-        font-weight: 800;
+        font-weight: 700;
         color: #16a34a;
         letter-spacing: 0.02em;
         line-height: 1;
@@ -430,7 +430,7 @@ type PeriodKey = 'today' | 'week' | 'month' | 'year';
         background: #f3f4f6;
         color: #6b7280;
         font-size: 11px;
-        font-weight: 800;
+        font-weight: 700;
         padding: 0 6px;
         white-space: nowrap;
         overflow: hidden;
@@ -481,7 +481,7 @@ type PeriodKey = 'today' | 'week' | 'month' | 'year';
         color: #fff;
         height: 40px;
         padding: 0 16px;
-        font-weight: 800;
+        font-weight: 900;
       }
     `,
   ],

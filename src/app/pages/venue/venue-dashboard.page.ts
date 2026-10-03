@@ -403,15 +403,15 @@ export class VenueDashboardPage implements OnInit, OnDestroy, ViewWillEnter {
   facilityStatusStyle(status?: string): { row: string; dot: string; badgeBg: string; badgeColor: string; badgeBorder: string } {
     const key = String(status || 'open').toLowerCase();
     if (key === 'maintenance') {
-      return { row: '#FFF7ED', dot: '#F97316', badgeBg: '#FFEDD5', badgeColor: '#EA580C', badgeBorder: '#FDBA74' };
+      return { row: '#FFFBEB66', dot: '#F59E0B', badgeBg: '#FFFBEB', badgeColor: '#D97706', badgeBorder: '#D9770640' };
     }
     if (key === 'closed') {
-      return { row: '#FEF2F2', dot: '#DC2626', badgeBg: '#FEE2E2', badgeColor: '#DC2626', badgeBorder: '#FECACA' };
+      return { row: '#FEF2F266', dot: '#EF4444', badgeBg: '#FEF2F2', badgeColor: '#DC2626', badgeBorder: '#DC262640' };
     }
     if (key === 'reserved') {
-      return { row: '#FFF7ED', dot: '#C2410C', badgeBg: '#FFEDD5', badgeColor: '#C2410C', badgeBorder: '#FDBA74' };
+      return { row: '#FFF7ED66', dot: '#FF7A00', badgeBg: '#FFF7ED', badgeColor: '#C2410C', badgeBorder: '#C2410C40' };
     }
-    return { row: '#F0FDF4', dot: '#22C55E', badgeBg: '#DCFCE7', badgeColor: '#16A34A', badgeBorder: '#86EFAC' };
+    return { row: '#F0FDF466', dot: '#22C55E', badgeBg: '#F0FDF4', badgeColor: '#16A34A', badgeBorder: '#16A34A40' };
   }
 
   getStatusStyle(status: string) {

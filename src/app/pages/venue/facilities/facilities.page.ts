@@ -333,7 +333,7 @@ const STATUS_OPTIONS: StatusOption[] = [
   styles: [`
     .fac-page {
       min-height: 100%;
-      background: #F7F8FA;
+      background: #FAFBFC;
       padding-bottom: 16px;
     }
 
@@ -425,8 +425,8 @@ const STATUS_OPTIONS: StatusOption[] = [
       right: 8px;
       bottom: 6px;
       color: #fff;
-      font-size: 11px;
-      font-weight: 800;
+      font-size: 10px;
+      font-weight: 900;
       line-height: 1.2;
       text-shadow: 0 1px 4px rgba(0,0,0,.45);
       display: -webkit-box;
@@ -445,8 +445,8 @@ const STATUS_OPTIONS: StatusOption[] = [
 
     .fac-chip-sport {
       font-size: 9px;
-      font-weight: 800;
-      letter-spacing: .04em;
+      font-weight: 900;
+      letter-spacing: .025em;
       text-transform: uppercase;
       color: #9CA3AF;
       flex: 1;
@@ -458,14 +458,14 @@ const STATUS_OPTIONS: StatusOption[] = [
 
     .fac-chip-price {
       font-size: 10px;
-      font-weight: 800;
+      font-weight: 900;
       color: #111827;
       white-space: nowrap;
     }
 
     .fac-chip-status {
       font-size: 8px;
-      font-weight: 800;
+      font-weight: 700;
       text-transform: lowercase;
       border-radius: 999px;
       padding: 2px 6px;
@@ -492,9 +492,9 @@ const STATUS_OPTIONS: StatusOption[] = [
       margin: 0 0 12px;
       font-size: 12px;
       font-weight: 900;
-      letter-spacing: .08em;
+      letter-spacing: .1em;
       text-transform: uppercase;
-      color: #6B7280;
+      color: #111827;
     }
 
     .fac-card-head {
@@ -508,9 +508,9 @@ const STATUS_OPTIONS: StatusOption[] = [
 
     .fac-lock {
       font-size: 10px;
-      font-weight: 800;
-      color: #B45309;
-      background: #FEF3C7;
+      font-weight: 700;
+      color: #D97706;
+      background: #FFFBEB;
       border-radius: 999px;
       padding: 4px 8px;
     }
@@ -519,8 +519,10 @@ const STATUS_OPTIONS: StatusOption[] = [
       display: block;
       margin: 12px 0 6px;
       font-size: 11px;
-      font-weight: 800;
-      color: #6B7280;
+      font-weight: 600;
+      color: #9CA3AF;
+      text-transform: uppercase;
+      letter-spacing: .05em;
     }
 
     .fac-card > .fac-label:first-of-type { margin-top: 0; }
@@ -534,7 +536,7 @@ const STATUS_OPTIONS: StatusOption[] = [
       border-radius: 12px;
       background: #F9FAFB;
       font-size: 14px;
-      font-weight: 700;
+      font-weight: 600;
       color: #111827;
       outline: none;
     }
@@ -584,7 +586,7 @@ const STATUS_OPTIONS: StatusOption[] = [
       background: #F9FAFB;
       color: #6B7280;
       font-size: 12px;
-      font-weight: 800;
+      font-weight: 700;
     }
 
     .fac-pills--wrap .fac-pill {
@@ -622,7 +624,7 @@ const STATUS_OPTIONS: StatusOption[] = [
 
     .fac-status strong {
       font-size: 13px;
-      font-weight: 800;
+      font-weight: 700;
       color: #111827;
     }
 
@@ -648,7 +650,7 @@ const STATUS_OPTIONS: StatusOption[] = [
     }
 
     .fac-equip-copy { flex: 1; min-width: 0; }
-    .fac-equip-copy p { margin: 0; font-size: 13px; font-weight: 800; color: #111827; }
+    .fac-equip-copy p { margin: 0; font-size: 13px; font-weight: 700; color: #111827; }
 
     .fac-stepper {
       display: flex;
@@ -663,7 +665,7 @@ const STATUS_OPTIONS: StatusOption[] = [
       border-radius: 999px;
       border: 1px solid #E5E7EB;
       background: #fff;
-      font-weight: 800;
+      font-weight: 700;
       color: #6B7280;
     }
 
@@ -677,13 +679,14 @@ const STATUS_OPTIONS: StatusOption[] = [
       width: 18px;
       text-align: center;
       font-size: 14px;
+      font-weight: 900;
       color: #111827;
     }
 
     .fac-hint {
       margin: 8px 0 0;
       font-size: 12px;
-      font-weight: 600;
+      font-weight: 400;
       color: #9CA3AF;
       line-height: 1.4;
     }
@@ -691,7 +694,7 @@ const STATUS_OPTIONS: StatusOption[] = [
     .fac-sub {
       margin: -6px 0 12px;
       font-size: 12px;
-      font-weight: 600;
+      font-weight: 400;
       color: #9CA3AF;
     }
 
@@ -706,17 +709,17 @@ const STATUS_OPTIONS: StatusOption[] = [
       border-radius: 999px;
       padding: 8px 12px;
       background: #F3F4F6;
-      color: #4B5563;
-      font-size: 12px;
-      font-weight: 800;
+      color: #6B7280;
+      font-size: 11px;
+      font-weight: 600;
       white-space: nowrap;
       line-height: 1.2;
     }
 
     .amenity-pill.is-on {
-      background: #F7FEE7;
+      background: rgba(140, 240, 0, 0.14);
       border-color: var(--app-primary);
-      color: #3F6212;
+      color: #111827;
     }
 
     .fac-page button {
@@ -751,9 +754,9 @@ const STATUS_OPTIONS: StatusOption[] = [
       flex-direction: column;
       align-items: center;
       gap: 6px;
-      color: #9CA3AF;
+      color: #C4C9D4;
       font-size: 12px;
-      font-weight: 800;
+      font-weight: 500;
     }
 
     .photo-empty ion-icon { font-size: 28px; }
@@ -767,7 +770,7 @@ const STATUS_OPTIONS: StatusOption[] = [
       border-radius: 999px;
       padding: 4px 10px;
       font-size: 11px;
-      font-weight: 800;
+      font-weight: 700;
     }
 
     .photo-grid {
@@ -786,7 +789,7 @@ const STATUS_OPTIONS: StatusOption[] = [
       place-items: center;
       color: #9CA3AF;
       font-size: 22px;
-      font-weight: 800;
+      font-weight: 700;
       padding: 0;
       line-height: 1;
     }
@@ -804,7 +807,7 @@ const STATUS_OPTIONS: StatusOption[] = [
       gap: 2px;
       color: #6B7280;
       font-size: 11px;
-      font-weight: 800;
+      font-weight: 700;
     }
 
     .sup-photo-row {
@@ -871,8 +874,8 @@ const STATUS_OPTIONS: StatusOption[] = [
       height: 40px;
       padding: 0 12px;
       border-radius: 999px;
-      font-size: 13px;
-      font-weight: 800;
+      font-size: 11px;
+      font-weight: 700;
       white-space: nowrap;
       line-height: 1;
     }
@@ -944,8 +947,8 @@ const STATUS_OPTIONS: StatusOption[] = [
     }
 
     .fac-alert--error { background: #FEF2F2; color: #DC2626; }
-    .fac-alert--ok { background: #F0FDF4; color: #15803D; }
-    .fac-alert--warn { background: #FFFBEB; color: #B45309; margin: 8px 0 12px; }
+    .fac-alert--ok { background: #F0FDF4; color: #16A34A; }
+    .fac-alert--warn { background: #FFF7ED; color: #C2410C; margin: 8px 0 12px; }
 
     .fac-footer {
       display: flex;
@@ -961,16 +964,18 @@ const STATUS_OPTIONS: StatusOption[] = [
       border: none;
       border-radius: 16px;
       font-size: 14px;
-      font-weight: 800;
+      font-weight: 900;
     }
 
     .fac-ghost {
       flex: 1;
       background: #F3F4F6;
       color: #6B7280;
+      font-weight: 700;
     }
 
     .fac-primary {
+      font-size: 16px;
       background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to));
       color: #111827;
       box-shadow: 0 4px 12px rgba(var(--app-primary-rgb), 0.28);

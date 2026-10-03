@@ -38,18 +38,18 @@ interface PeakHour {
           <div>
             <p class="app-section-title mb-3">Revenue Overview</p>
             <div class="space-y-3">
-              <div *ngFor="let stat of stats" class="bg-white p-4 rounded-2xl border border-slate-50 flex items-center justify-between shadow-sm">
+              <div *ngFor="let stat of stats" class="bg-white p-4 rounded-2xl border border-[#F3F4F6] flex items-center justify-between shadow-sm">
                 <div class="flex items-center gap-4">
                   <div class="w-12 h-12 rounded-xl flex items-center justify-center"
                     [style.backgroundColor]="stat.accent + '15'">
                     <ion-icon [name]="stat.icon" [style.color]="stat.accent" class="text-xl font-bold"></ion-icon>
                   </div>
                   <div>
-                    <p class="text-[#9CA3AF] text-[12px] font-bold uppercase m-0 leading-none mb-1.5">{{ stat.label }}</p>
+                    <p class="text-[#9CA3AF] text-[11px] font-bold uppercase tracking-wider m-0 leading-none mb-1.5">{{ stat.label }}</p>
                     <p class="text-[#111827] text-[22px] font-black m-0 leading-none">{{ stat.value }}</p>
                   </div>
                 </div>
-                <div class="bg-[#F0FDF4] text-[#16A34A] text-xs font-black px-2.5 py-1 rounded-full">
+                <div class="bg-[#F0FDF4] text-[#16A34A] text-[11px] font-bold px-2.5 py-1 rounded-full">
                   {{ stat.change }}
                 </div>
               </div>

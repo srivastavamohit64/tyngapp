@@ -28,7 +28,7 @@ type WalletSection = 'wallet' | 'points' | 'gifts';
         <ion-refresher-content></ion-refresher-content>
       </ion-refresher>
 
-      <app-brand-header-shell [title]="pageTitle()">
+      <app-brand-header-shell title="Wallet">
         <button
           headerEnd
           type="button"
@@ -872,10 +872,6 @@ export class WalletPage implements OnInit {
   quickAmounts = [200, 500, 1000, 2000];
   giftQuickAmounts = [100, 250, 500, 1000, 2000, 5000];
   private page = 1;
-
-  pageTitle(): string {
-    return this.auth.user()?.role === 'venue' ? 'Venue Account' : 'Wallet';
-  }
 
   selectSection(value: string | number | undefined): void {
     if (value === 'wallet' || value === 'points' || value === 'gifts') {
