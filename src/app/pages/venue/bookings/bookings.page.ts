@@ -264,7 +264,7 @@ interface BookingItem {
       background: #F3F4F6;
       color: #6B7280;
       font-size: 12px;
-      font-weight: 800;
+      font-weight: 700;
       text-transform: capitalize;
       letter-spacing: 0;
       white-space: nowrap;
@@ -297,7 +297,7 @@ interface BookingItem {
       margin-bottom: 12px;
       border-radius: 16px;
       background: #FEF2F2;
-      border: 1px solid #FECACA;
+      border: 1px solid #FEE2E2;
       padding: 12px 14px;
       font-size: 13px;
       font-weight: 700;
@@ -379,9 +379,9 @@ interface BookingItem {
       padding: 5px 10px;
       border-radius: 999px;
       font-size: 10px;
-      font-weight: 800;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.03em;
+      letter-spacing: 0.05em;
       background: #F0FDF4;
       color: #16A34A;
     }
@@ -415,7 +415,7 @@ interface BookingItem {
     .payment-box__label {
       margin: 0 0 2px;
       font-size: 10px;
-      font-weight: 800;
+      font-weight: 700;
       letter-spacing: 0.05em;
       text-transform: uppercase;
       color: #9CA3AF;
@@ -470,7 +470,7 @@ interface BookingItem {
     .detail-box__label {
       margin: 0 0 4px;
       font-size: 10px;
-      font-weight: 800;
+      font-weight: 700;
       letter-spacing: 0.05em;
       text-transform: uppercase;
       color: #9CA3AF;

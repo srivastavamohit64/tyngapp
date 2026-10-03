@@ -86,7 +86,7 @@ const DOC_LABELS: Record<string, string> = {
             <section>
               <ion-skeleton-text animated class="skel-section-title"></ion-skeleton-text>
               <div class="grid grid-cols-3 gap-3">
-                <div class="bg-white p-4 rounded-2xl border border-slate-50 text-center shadow-sm" *ngFor="let i of [1,2,3]">
+                <div class="bg-white p-4 rounded-2xl border border-[#F3F4F6] text-center shadow-sm" *ngFor="let i of [1,2,3]">
                   <ion-skeleton-text animated class="skel-stat-icon"></ion-skeleton-text>
                   <ion-skeleton-text animated class="skel-stat-value"></ion-skeleton-text>
                   <ion-skeleton-text animated class="skel-stat-label"></ion-skeleton-text>
@@ -117,7 +117,7 @@ const DOC_LABELS: Record<string, string> = {
               <ion-icon name="location-outline" class="text-[var(--app-primary)] flex-shrink-0"></ion-icon>
               <span class="truncate">{{ locationLabel() }}</span>
             </div>
-            <div class="flex items-center gap-2 px-4 py-2 bg-white rounded-full border border-slate-50 shadow-sm">
+            <div class="flex items-center gap-2 px-4 py-2 bg-white rounded-full border border-[#F3F4F6] shadow-sm">
               <ion-icon name="star" class="text-[#F59E0B] text-base"></ion-icon>
               <span class="text-[13px] font-bold text-[#111827]">
                 {{ rating() }} <span class="text-[#9CA3AF]">({{ reviewCount() }} reviews)</span>
@@ -178,7 +178,7 @@ const DOC_LABELS: Record<string, string> = {
                     <strong>{{ doc.label }}{{ doc.required ? ' *' : '' }}</strong>
                     <p>{{ doc.name || 'Not uploaded' }}</p>
                     <p class="text-[11px] font-bold m-0 mt-1"
-                      [style.color]="doc.status === 'approved' ? '#166534' : doc.status === 'rejected' ? '#B91C1C' : doc.status === 'pending' ? '#B45309' : '#6B7280'">
+                      [style.color]="doc.status === 'approved' ? '#166534' : doc.status === 'rejected' ? '#B91C1C' : doc.status === 'pending' ? '#D97706' : '#6B7280'">
                       Status: {{ doc.status === 'not_submitted' ? 'Missing' : (doc.status | titlecase) }}
                     </p>
                     <p *ngIf="doc.rejectionReason" class="text-[11px] font-bold text-[#B91C1C] m-0 mt-1">
@@ -214,12 +214,12 @@ const DOC_LABELS: Record<string, string> = {
             <section>
               <p class="section-title">Performance stats</p>
               <div class="grid grid-cols-3 gap-3">
-                <div *ngFor="let stat of stats()" class="bg-white p-4 rounded-2xl border border-slate-50 text-center shadow-sm">
+                <div *ngFor="let stat of stats()" class="bg-white p-4 rounded-2xl border border-[#F3F4F6] text-center shadow-sm">
                   <div class="w-8 h-8 rounded-xl bg-[var(--app-primary)]/10 flex items-center justify-center mx-auto mb-2">
                     <ion-icon [name]="stat.icon" class="text-[var(--app-primary)] text-base"></ion-icon>
                   </div>
                   <div class="text-[18px] font-black text-[#111827] mb-0.5 leading-none">{{ stat.value }}</div>
-                  <div class="text-[10px] text-[#9CA3AF] font-bold mt-1.5 uppercase leading-none">{{ stat.label }}</div>
+                  <div class="text-[10px] text-[#9CA3AF] font-bold mt-1.5 uppercase tracking-wider leading-none">{{ stat.label }}</div>
                 </div>
               </div>
             </section>
@@ -332,7 +332,7 @@ const DOC_LABELS: Record<string, string> = {
     .detail-value {
       color: #111827;
       font-size: 13px;
-      font-weight: 800;
+      font-weight: 600;
       text-align: right;
       word-break: break-word;
     }
@@ -469,7 +469,7 @@ const DOC_LABELS: Record<string, string> = {
       border-radius: 12px;
       padding: 10px 0;
       font-size: 13px;
-      font-weight: 800;
+      font-weight: 700;
     }
 
     .slot-opt.active {
@@ -530,7 +530,7 @@ const DOC_LABELS: Record<string, string> = {
       gap: 2px;
       color: #6B7280;
       font-size: 10px;
-      font-weight: 800;
+      font-weight: 700;
     }
 
     .doc-file-fallback ion-icon { font-size: 22px; }
@@ -566,7 +566,7 @@ const DOC_LABELS: Record<string, string> = {
       background: transparent;
       color: #2563EB;
       font-size: 12px;
-      font-weight: 800;
+      font-weight: 700;
       padding: 0;
     }
 
@@ -588,7 +588,7 @@ const DOC_LABELS: Record<string, string> = {
       border: none;
       background: transparent;
       color: #2563EB;
-      font-weight: 800;
+      font-weight: 700;
       font-size: 13px;
       padding: 0;
     }

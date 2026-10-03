@@ -16,8 +16,24 @@ export class CoachService {
     return this.api.get(`/coach/insights?${params.toString()}`);
   }
 
-  getEarnings(period: 'today' | 'week' | 'month' | 'year' = 'month'): Observable<ApiResponse<any>> {
-    return this.api.get(`/coach/earnings?period=${encodeURIComponent(period)}`);
+  getEarnings(period: CoachEarningsPeriod = 'month'): Observable<ApiResponse<CoachEarningsPayload>> {
+    return this.api.get<CoachEarningsPayload>(`/coach/earnings?period=${encodeURIComponent(period)}`);
+  }
+
+  getVenueCollaborations(): Observable<ApiResponse<CoachVenueCollaboration[]>> {
+    return this.api.get<CoachVenueCollaboration[]>('/coach/venue-collaborations');
+  }
+
+  getVenueCollaboration(venueId: number | string): Observable<ApiResponse<CoachVenueCollaborationDetail>> {
+    return this.api.get<CoachVenueCollaborationDetail>(`/coach/venue-collaborations/${encodeURIComponent(String(venueId))}`);
+  }
+
+  getTeams(): Observable<ApiResponse<CoachTeam[]>> {
+    return this.api.get<CoachTeam[]>('/coach/teams');
+  }
+
+  completeSchedulingSession(id: string): Observable<ApiResponse<{ id: string; status: string }>> {
+    return this.api.patch(`/coach/scheduling/sessions/${encodeURIComponent(id)}/status`, { status: 'completed' });
   }
 
   getCoaches(search = '', sport = '', perPage = 20, sort = ''): Observable<ApiResponse<any>> {
@@ -278,6 +294,170 @@ export class CoachService {
   createSession(payload: Record<string, unknown>): Observable<ApiResponse<any>> {
     return this.api.post('/coach/scheduling/sessions', payload);
   }
+}
+
+export type CoachEarningsPeriod = 'today' | 'week' | 'month' | 'year';
+
+export interface CoachEarningsSessionItem {
+  id: string;
+  source: 'scheduling' | 'legacy';
+  title: string;
+  sport: string | null;
+  status: string;
+  state: 'upcoming' | 'awaiting_completion' | 'completed' | 'pending' | 'cancelled' | 'expired';
+  student_name: string | null;
+  students_count: number;
+  venue_name: string | null;
+  date: string;
+  starts_at: string;
+  ends_at: string | null;
+  amount: number;
+}
+
+export interface CoachEarningsBreakdownItem {
+  label: string;
+  sessions: number;
+  amount: number;
+  percentage: number;
+}
+
+export interface CoachEarningsPayload {
+  period: CoachEarningsPeriod;
+  range: { from: string; to: string; label: string; previous_label: string };
+  total: number;
+  previous_total: number;
+  change_percent: number | null;
+  sessions: number;
+  previous_sessions: number;
+  hours: number;
+  average_per_session: number;
+  lifetime_total: number;
+  stats: { today: number; week: number; month: number; year: number };
+  wallet_balance: number;
+  currency: string;
+  chart: { granularity: 'hour' | 'day' | 'month'; max: number; points: { label: string; from: string; to: string; amount: number; sessions: number }[] };
+  breakdown: CoachEarningsBreakdownItem[];
+  breakdown_by_type: CoachEarningsBreakdownItem[];
+  upcoming: { amount: number; sessions: number; items: CoachEarningsSessionItem[] };
+  awaiting_completion: { amount: number; sessions: number; items: CoachEarningsSessionItem[] };
+  pending_approval: { amount: number; sessions: number };
+  venues: {
+    venue_id: number;
+    name: string;
+    location: string | null;
+    image: string | null;
+    sports: string[];
+    partnership_status: string | null;
+    sessions: number;
+    completed_sessions: number;
+    upcoming_sessions: number;
+    amount: number;
+    lifetime_amount: number;
+    next_session_at: string | null;
+    last_session_at: string;
+  }[];
+  top_students: { id: number; name: string; photo: string | null; sessions: number; amount: number }[];
+  recent_sessions: CoachEarningsSessionItem[];
+  transactions: { id: number; type: string; label: string; description: string | null; amount: number; is_credit: boolean; status: string; created_at: string | null }[];
+}
+
+export interface CoachVenuePartnershipInfo {
+  id: number;
+  status: string;
+  agreement_type: string | null;
+  approval_policy: string | null;
+  sports: string[];
+  venue_rate: number | null;
+  effective_from: string | null;
+  effective_until: string | null;
+  approved_at: string | null;
+  requested_at: string | null;
+}
+
+export interface CoachVenueCollaboration {
+  venue_id: number;
+  name: string;
+  location: string | null;
+  image: string | null;
+  partnership: CoachVenuePartnershipInfo | null;
+  status: string;
+  sports: string[];
+  this_month_earnings: number;
+  total_earnings: number;
+  sessions: number;
+  completed_sessions: number;
+  upcoming_sessions: number;
+  next_session: { id: string; title: string; starts_at: string } | null;
+  schedule: string | null;
+}
+
+export interface CoachVenueCollaborationSession {
+  id: string;
+  title: string;
+  sport: string | null;
+  court: string | null;
+  status: string;
+  state: string;
+  starts_at: string;
+  ends_at: string | null;
+  minutes: number;
+  students: number;
+  student_names: string[];
+  amount: number;
+}
+
+export interface CoachVenueCollaborationDetail {
+  venue_id: number;
+  name: string;
+  location: string | null;
+  image: string | null;
+  phone: string | null;
+  manager_name: string | null;
+  city: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  open_time: string | null;
+  close_time: string | null;
+  operating_days: string[];
+  amenities: string[];
+  rating: number | null;
+  partnership: CoachVenuePartnershipInfo | null;
+  status: string;
+  sports: string[];
+  first_session_at: string | null;
+  schedule: string | null;
+  stats: {
+    sessions: number;
+    completed_sessions: number;
+    upcoming_sessions: number;
+    awaiting_completion: number;
+    pending_approval: number;
+    cancelled_sessions: number;
+    hours_coached: number;
+    upcoming_hours: number;
+    students: number;
+    attendance_rate: number | null;
+    cancellation_rate: number | null;
+  };
+  earnings: { this_month: number; total: number; upcoming: number; monthly: { month: string; year: number; amount: number; sessions: number }[] };
+  upcoming: CoachVenueCollaborationSession[];
+  recent: CoachVenueCollaborationSession[];
+}
+
+export interface CoachTeam {
+  id: string;
+  name: string;
+  sport: string | null;
+  players: number;
+  members: { id: number; name: string; photo: string | null }[];
+  avg_age: number | null;
+  sessions: number;
+  completed_sessions: number;
+  attendance_rate: number | null;
+  venue_name: string | null;
+  status: 'active' | 'inactive';
+  next_session: { id: string; title: string; venue: string | null; status: string; starts_at: string } | null;
+  last_session_at: string;
 }
 
 export type CoachGalleryCategory = 'profile_photo' | 'training_photo' | 'video' | 'certificate';

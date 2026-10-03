@@ -5,17 +5,17 @@ import { BackNavigationService } from '../../core/services/back-navigation.servi
 import { FormsModule } from '@angular/forms';
 import { IonicModule, IonContent } from '@ionic/angular';
 import { CoachService } from '../../core/services/coach.service';
+import { ChatService } from '../../core/services/chat.service';
 import { resolveMediaUrl } from '../../core/utils/media-url.util';
 import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
+import { PageSkeletonComponent } from '../../shared/components/skeleton';
 
 interface Student {
   id: number;
   name: string;
   photo: string;
-  skill: string;
-  attendance: number;
-  sessions: number;
   attendanceStatus?: 'present' | 'absent' | null;
+  participantStatus: string;
 }
 
 interface CoachSession {
@@ -32,9 +32,7 @@ interface CoachSession {
   time: string;
   duration: string;
   type: 'Training' | 'One-on-One' | 'Academy' | 'Group Session';
-  status: 'Confirmed' | 'Completed' | 'Pending' | 'Cancelled';
-  weather: string;
-  distance: string;
+  status: 'Confirmed' | 'Completed' | 'Pending' | 'Cancelled' | 'Needs completion';
   startsIn?: string | null;
   earnings: number;
   studentsConfirmed: number;
@@ -52,62 +50,14 @@ interface CoachSession {
   tab: 'today' | 'upcoming' | 'completed' | 'cancelled';
 }
 
-const MOCK_STUDENTS: Student[] = [
-  { id: 1, name: 'Rahul Sharma', photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&auto=format', skill: 'Advanced', attendance: 94, sessions: 18 },
-  { id: 2, name: 'Priya Verma', photo: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=80&h=80&fit=crop&auto=format', skill: 'Intermediate', attendance: 88, sessions: 12 },
-  { id: 3, name: 'Vikram Singh', photo: 'https://images.unsplash.com/photo-1557862921-37829c790f19?w=80&h=80&fit=crop&auto=format', skill: 'Expert', attendance: 96, sessions: 24 },
-  { id: 4, name: 'Ananya Patel', photo: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=80&h=80&fit=crop&auto=format', skill: 'Beginner', attendance: 82, sessions: 6 },
-  { id: 5, name: 'Kabir Malhotra', photo: 'https://images.unsplash.com/photo-1552058544-f2b08422138a?w=80&h=80&fit=crop&auto=format', skill: 'Advanced', attendance: 91, sessions: 15 },
-  { id: 6, name: 'Meena Krishnan', photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&h=80&fit=crop&auto=format', skill: 'Intermediate', attendance: 85, sessions: 9 },
-];
-
-const SESSIONS: any[] = [
-  {
-    id: 's1', name: 'Elite Cricket Academy', sport: 'Cricket', emoji: '🏏',
-    image: 'https://images.unsplash.com/photo-1593341646782-e0b495cff86d?w=700&h=350&fit=crop&auto=format',
-    teamName: 'Advanced Batch', venue: 'Phoenix Arena', address: 'Gomti Nagar, Lucknow',
-    date: 'Today', time: '6:00 PM', duration: '2 hours', type: 'Training', status: 'Confirmed',
-    weather: 'Clear ☀️ 28°C', distance: '2.3 km', startsIn: '35 min',
-    earnings: 1500, studentsConfirmed: 10, studentsTotal: 12,
-    students: MOCK_STUDENTS, tab: 'today'
-  },
-  {
-    id: 's2', name: 'Football Skills Workshop', sport: 'Football', emoji: '⚽',
-    image: 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=700&h=350&fit=crop&auto=format',
-    teamName: 'Junior Squad', venue: 'K.D. Singh Stadium', address: 'Nehru Nagar, Lucknow',
-    date: 'Today', time: '7:30 PM', duration: '90 min', type: 'Group Session', status: 'Confirmed',
-    weather: 'Clear ☀️ 26°C', distance: '3.8 km', startsIn: '1h 55m',
-    earnings: 1200, studentsConfirmed: 8, studentsTotal: 10,
-    students: MOCK_STUDENTS.slice(0, 5), tab: 'today'
-  },
-  {
-    id: 's3', name: 'Priya – Individual Coaching', sport: 'Badminton', emoji: '🏸',
-    image: 'https://images.unsplash.com/photo-1722087642932-9b070e9a066e?w=700&h=350&fit=crop&auto=format',
-    studentName: 'Priya Verma', venue: 'Sports Authority Complex', address: 'Gomti Nagar, Lucknow',
-    date: 'Today', time: '4:00 PM', duration: '60 min', type: 'One-on-One', status: 'Completed',
-    weather: 'Clear ☀️', distance: '4.5 km', startsIn: null,
-    earnings: 800, studentsConfirmed: 1, studentsTotal: 1,
-    students: [MOCK_STUDENTS[1]], tab: 'today'
-  },
-  {
-    id: 's4', name: 'Junior Tennis Camp', sport: 'Tennis', emoji: '🎾',
-    image: 'https://images.unsplash.com/photo-1761156896762-2ef13f932004?w=700&h=350&fit=crop&auto=format',
-    teamName: 'Weekend Juniors', venue: 'Phoenix Sports Hub', address: 'Aliganj, Lucknow',
-    date: 'Today', time: '10:00 AM', duration: '90 min', type: 'Academy', status: 'Completed',
-    weather: 'Clear ☀️', distance: '5.2 km', startsIn: null,
-    earnings: 750, studentsConfirmed: 6, studentsTotal: 6,
-    students: MOCK_STUDENTS.slice(2, 6), tab: 'today'
-  },
-];
-
 @Component({
   selector: 'app-coach-session-detail',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule, BrandHeaderShellComponent],
+  imports: [CommonModule, IonicModule, FormsModule, BrandHeaderShellComponent, PageSkeletonComponent],
   template: `
     <ion-content [fullscreen]="true">
       <app-brand-header-shell title="Session Details" (back)="back()">
-      <div *ngIf="loading" class="p-8 text-center text-slate-500">Loading session details…</div>
+      <app-page-skeleton *ngIf="loading" variant="detail" label="Loading session details"></app-page-skeleton>
       <div *ngIf="errorMessage && !loading" class="p-8 text-center">
         <p class="text-slate-700">{{ errorMessage }}</p>
         <button (click)="back()" class="mt-3 px-5 py-3 rounded-xl bg-white border border-slate-200">Back to schedule</button>
@@ -120,11 +70,8 @@ const SESSIONS: any[] = [
 
           <div class="absolute top-0 left-0 right-0 flex items-center justify-end px-5 pt-4">
             <div class="flex gap-2">
-              <button class="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/20 border-none">
+              <button type="button" (click)="shareSession()" aria-label="Share session details" class="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/20 border-none">
                 <ion-icon name="share-social-outline" class="text-white text-base"></ion-icon>
-              </button>
-              <button (click)="liked = !liked" class="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/20 border-none">
-                <ion-icon [name]="liked ? 'heart' : 'heart-outline'" [class.text-red-500]="liked" class="text-white text-base"></ion-icon>
               </button>
             </div>
           </div>
@@ -134,8 +81,8 @@ const SESSIONS: any[] = [
               {{ session.emoji }} {{ session.sport }}
             </span>
             <span class="text-[11px] font-bold px-3 py-1.5 rounded-full"
-              [style.backgroundColor]="session.status === 'Confirmed' ? '#F0FDF4' : '#F3F4F6'"
-              [style.color]="session.status === 'Confirmed' ? '#16A34A' : '#6B7280'">
+              [style.backgroundColor]="session.status === 'Confirmed' ? '#F0FDF4' : session.status === 'Needs completion' ? '#FFF7ED' : '#F3F4F6'"
+              [style.color]="session.status === 'Confirmed' ? '#16A34A' : session.status === 'Needs completion' ? '#C2410C' : '#6B7280'">
               {{ session.status }}
             </span>
           </div>
@@ -163,13 +110,28 @@ const SESSIONS: any[] = [
             </div>
 
             <div class="flex gap-2.5 mt-4 pt-4 border-t border-[#F3F4F6]">
-              <button (click)="go('/app/coach/chat')" class="action-btn">
+              <button type="button" (click)="openSessionChat()" class="action-btn">
                 <ion-icon name="chatbubbles-outline"></ion-icon>Chat
               </button>
-              <button (click)="navigateToVenue()" class="action-btn">
+              <button type="button" (click)="navigateToVenue()" class="action-btn">
                 <ion-icon name="navigate-outline"></ion-icon>Navigate
               </button>
             </div>
+          </div>
+
+          <div *ngIf="session.status === 'Needs completion'" class="complete-card text-left">
+            <div class="flex items-start gap-3">
+              <div class="complete-icon"><ion-icon name="flag-outline"></ion-icon></div>
+              <div class="flex-1 min-w-0">
+                <p class="text-[14px] font-black text-[#111827] m-0">Did this session take place?</p>
+                <p class="text-[12px] text-[#8A6A48] mt-1 mb-0">Mark it as completed to add ₹{{ session.coachFee | number:'1.0-0' }} to your earnings. Record attendance first if you haven't.</p>
+              </div>
+            </div>
+            <button type="button" (click)="markCompleted()" [disabled]="completing" class="complete-btn">
+              <ion-spinner *ngIf="completing" name="crescent"></ion-spinner>
+              <ion-icon *ngIf="!completing" name="checkmark-done-outline"></ion-icon>
+              {{ completing ? 'Saving…' : 'Mark as completed' }}
+            </button>
           </div>
 
           <!-- Present roster checklist -->
@@ -188,31 +150,25 @@ const SESSIONS: any[] = [
                 <div class="flex-1 min-w-0">
                   <p class="text-[13px] font-bold text-[#111827] m-0">{{ s.name }}</p>
                   <div class="flex items-center gap-2 text-[10px] text-[#9CA3AF]">
-                    <span class="font-bold">{{ s.attendanceStatus || 'Attendance not marked' }}</span>
-                    <span>·</span>
-                    <span></span>
+                    <span class="font-bold capitalize">{{ s.attendanceStatus || 'Attendance not marked' }}</span>
+                    <ng-container *ngIf="s.participantStatus">
+                      <span>·</span>
+                      <span>{{ participantStatusLabel(s.participantStatus) }}</span>
+                    </ng-container>
                   </div>
                 </div>
                 <div class="flex items-center gap-2 flex-shrink-0">
-                  <button (click)="go('/app/coach/chat')" class="w-8 h-8 rounded-full bg-[#EFF6FF] border-none flex items-center justify-center">
+                  <button type="button" (click)="go('/app/coach/student/' + s.id)" [attr.aria-label]="'Open ' + s.name + ' profile'" class="w-8 h-8 rounded-full bg-[#F3F4F6] border-none flex items-center justify-center">
+                    <ion-icon name="person-outline" class="text-[#6B7280] text-sm"></ion-icon>
+                  </button>
+                  <button type="button" (click)="openStudentChat(s)" [disabled]="openingChatId === s.id" [attr.aria-label]="'Chat with ' + s.name" class="w-8 h-8 rounded-full bg-[#EFF6FF] border-none flex items-center justify-center">
                     <ion-icon name="chatbubble-ellipses-outline" class="text-[#2563EB] text-sm"></ion-icon>
                   </button>
-                  <button (click)="toggleAttendance(s.id)" [disabled]="savingAttendance[s.id] || !session.attendanceSupported" class="w-8 h-8 rounded-full border-none flex items-center justify-center transition-all"
+                  <button type="button" (click)="toggleAttendance(s.id)" [disabled]="savingAttendance[s.id] || !session.attendanceSupported" [attr.aria-label]="'Mark ' + s.name + ' ' + (s.attendanceStatus === 'present' ? 'absent' : 'present')" class="w-8 h-8 rounded-full border-none flex items-center justify-center transition-all"
                     [style.backgroundColor]="s.attendanceStatus === 'present' ? 'var(--app-primary)' : '#F3F4F6'">
                     <ion-icon [name]="s.attendanceStatus === 'present' ? 'checkmark-outline' : s.attendanceStatus === 'absent' ? 'close-outline' : 'ellipse-outline'" [style.color]="s.attendanceStatus === 'present' ? '#111827' : '#C4C9D4'" style="font-weight:bold;"></ion-icon>
                   </button>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Amenities are not provided by the session API, so don't show invented venue features. -->
-          <div *ngIf="session && false" class="bg-white rounded-[24px] p-5 shadow-sm border border-slate-100 text-left">
-            <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-4 m-0">Venue Amenities</p>
-            <div class="grid grid-cols-4 gap-2.5">
-              <div *ngFor="let a of amenities" class="flex flex-col items-center gap-1.5 py-3 bg-[#F9FAFB] rounded-2xl border border-slate-100">
-                <ion-icon [name]="a.icon" class="text-slate-500 text-base"></ion-icon>
-                <span class="text-[9px] font-bold text-[#9CA3AF]">{{ a.label }}</span>
               </div>
             </div>
           </div>
@@ -245,34 +201,6 @@ const SESSIONS: any[] = [
             </div>
           </div>
 
-          <!-- Payments card -->
-          <div *ngIf="session && false" class="bg-white rounded-[24px] p-5 shadow-sm border border-slate-100 text-left">
-            <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-4 m-0">Payment</p>
-            <div class="space-y-3">
-              <div class="flex justify-between py-2 border-b border-[#F9FAFB]">
-                <span class="text-[13px] text-[#6B7280]">Session total</span>
-                <span class="text-[13px] font-bold text-[#111827]">₹{{ session.earnings.toLocaleString() }}</span>
-              </div>
-              <div class="flex justify-between py-2 border-b border-[#F9FAFB]">
-                <span class="text-[13px] text-[#6B7280]">Payment Status</span>
-                <span class="text-[13px] font-bold" [style.color]="session.status === 'Completed' ? '#16A34A' : '#D97706'">
-                  {{ session.status === 'Completed' ? 'Received ✓' : 'Pending' }}
-                </span>
-              </div>
-              <div class="flex justify-between py-2 border-b border-[#F9FAFB]">
-                <span class="text-[13px] text-[#6B7280]">Venue fee</span>
-                <span class="text-[13px] font-bold text-[#6B7280]">₹49</span>
-              </div>
-              <div class="flex justify-between py-2 border-b border-[#F9FAFB]">
-                <span class="text-[13px] text-[#6B7280]">Coach fee</span>
-                <span class="text-[13px] font-black text-[#16A34A]">₹{{ Math.max(0, session.earnings - 49).toLocaleString() }}</span>
-              </div>
-            </div>
-            <button class="mt-4 w-full h-10 rounded-2xl text-[13px] font-bold text-[#6B7280] bg-[#F9FAFB] border border-[#F3F4F6] flex items-center justify-center gap-1">
-              View Full Breakdown<ion-icon name="chevron-forward-outline"></ion-icon>
-            </button>
-          </div>
-
           <div class="bg-white rounded-[24px] p-5 shadow-sm border border-slate-100 text-left">
             <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-4 m-0">Session price details</p>
             <div class="flex justify-between py-2 border-b border-slate-50"><span>Coach fee</span><strong>₹{{ session.coachFee | number:'1.2-2' }}</strong></div>
@@ -280,56 +208,19 @@ const SESSIONS: any[] = [
             <div class="flex justify-between py-2 border-b border-slate-50"><span>Platform fee</span><strong>₹{{ session.platformFee | number:'1.2-2' }}</strong></div>
             <div class="flex justify-between py-2 border-b border-slate-50"><span>Tax</span><strong>₹{{ session.taxAmount | number:'1.2-2' }}</strong></div>
             <div class="flex justify-between pt-3 font-bold"><span>Total listed price</span><strong>₹{{ session.earnings | number:'1.2-2' }}</strong></div>
-            <p class="text-[11px] text-slate-500 mt-3 mb-0">Payment collection is not connected to this session record.</p>
-          </div>
-
-          <!-- Coach Assistant AI card -->
-          <div *ngIf="false" class="rounded-[24px] p-5 relative overflow-hidden bg-gradient-to-br from-[var(--app-primary)] to-[var(--app-primary-to)] text-left">
-            <div class="absolute top-0 right-0 w-24 h-24 rounded-full bg-white/10 -translate-y-8 translate-x-8"></div>
-            <div class="relative">
-              <div class="flex items-center gap-2 mb-3">
-                <ion-icon name="flame-outline" class="text-[#111827] text-lg font-bold"></ion-icon>
-                <p class="text-[14px] font-black text-[#111827] m-0">Coach Assistant</p>
-                <span class="text-[9px] bg-[#111827]/15 text-[#111827] font-black px-2 py-0.5 rounded-full">AI</span>
-              </div>
-              <div class="space-y-2 mb-4">
-                <div *ngFor="let tip of ['🚗 Leave 15 minutes early to avoid evening traffic on Gomti Nagar.','☀️ Weather is ideal for outdoor coaching today.','🔄 One student has requested a reschedule — review before you leave.']"
-                  class="flex items-start gap-2 bg-white/20 rounded-2xl px-3.5 py-2.5">
-                  <p class="text-[12px] text-[#111827] leading-relaxed m-0 font-semibold">{{ tip }}</p>
-                </div>
-              </div>
-              <button class="w-full h-10 rounded-2xl text-[13px] font-black bg-gradient-to-br from-[#FF7A00] to-[#FF9A40] text-white border-none shadow-md">
-                View All Suggestions →
-              </button>
-            </div>
-          </div>
-
-          <!-- Recent activities list -->
-          <div *ngIf="false" class="bg-white rounded-[24px] px-5 py-5 shadow-sm border border-slate-100 text-left">
-            <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-3 m-0">Recent Activity</p>
-            <div class="space-y-0">
-              <div *ngFor="let a of activityList; let idx = index" class="flex items-center gap-3 py-3" [class.border-b]="idx < activityList.length - 1" class="border-slate-50">
-                <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-sm" [style.backgroundColor]="a.bg">
-                  {{ a.icon }}
-                </div>
-                <div class="flex-1 min-w-0">
-                  <p class="text-[12px] font-bold text-[#111827] leading-snug m-0">{{ a.text }}</p>
-                  <p class="text-[10px] text-[#9CA3AF] mt-0.5 m-0 font-medium">{{ a.time }}</p>
-                </div>
-              </div>
-            </div>
+            <p class="text-[11px] text-slate-500 mt-3 mb-0">Your earnings are the coach fee, counted once the session is marked as completed. Player payments are not collected through this session yet.</p>
           </div>
 
         </div>
       </div>
 
       <!-- Bottom Sticky Footer Actions -->
-      <div class="fixed-bottom-bar bg-white px-5 pt-4 pb-8">
+      <div *ngIf="session && !loading" class="fixed-bottom-bar bg-white px-5 pt-4 pb-8">
         <div class="grid grid-cols-3 gap-2.5">
-          <button (click)="go('/app/coach/chat')" class="footer-action-btn">
+          <button type="button" (click)="openSessionChat()" class="footer-action-btn">
             <ion-icon name="chatbubbles-outline"></ion-icon>Chat
           </button>
-          <button (click)="navigateToVenue()" class="footer-action-btn">
+          <button type="button" (click)="navigateToVenue()" class="footer-action-btn">
             <ion-icon name="navigate-outline"></ion-icon>Navigate
           </button>
           <button (click)="openAttendance()" class="footer-action-btn font-black text-white bg-gradient-to-br from-[#FF7A00] to-[#FF9A40] shadow-md border-none"
@@ -525,6 +416,44 @@ const SESSIONS: any[] = [
       box-shadow: 0 2px 8px rgba(var(--app-primary-rgb),0.30);
     }
 
+    .complete-card {
+      padding: 18px;
+      border: 1px solid #FFE1BF;
+      border-radius: 24px;
+      background: #FFF8EF;
+    }
+
+    .complete-icon {
+      width: 38px;
+      height: 38px;
+      flex: 0 0 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      background: #FFE9D1;
+      color: #E06A00;
+      font-size: 19px;
+    }
+
+    .complete-btn {
+      width: 100%;
+      height: 46px;
+      margin-top: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: 0;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to));
+      color: #111827;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .complete-btn:disabled { opacity: 0.6; }
+
     .fixed-bottom-bar {
       position: fixed;
       bottom: 0;
@@ -545,36 +474,18 @@ export class CoachSessionDetailPage implements OnInit {
   private readonly router = inject(Router);
   readonly backNavigation = inject(BackNavigationService);
   private readonly coachService = inject(CoachService);
+  private readonly chat = inject(ChatService);
 
   session: CoachSession | null = null;
   loading = true;
   errorMessage = '';
   actionNotice = '';
-  liked = false;
   notes = '';
   savedNotes = false;
   savingNotes = false;
+  completing = false;
+  openingChatId: number | null = null;
   savingAttendance: Record<number, boolean> = {};
-  attendance: Record<number, boolean> = {};
-
-  readonly Math = Math;
-  readonly amenities = [
-    { icon: 'car-outline', label: 'Parking' },
-    { icon: 'water-outline', label: 'Washroom' },
-    { icon: 'shirt-outline', label: 'Changing Room' },
-    { icon: 'cube-outline', label: 'Equipment' },
-    { icon: 'flash-outline', label: 'Floodlights' },
-    { icon: 'cafe-outline', label: 'Café' },
-    { icon: 'water-outline', label: 'Water' },
-    { icon: 'lock-closed-outline', label: 'Lockers' },
-  ];
-
-  readonly activityList = [
-    { icon: '⭐', bg: '#FFFBEB', text: 'New 5-Star Review received from Ananya', time: '1 hr ago' },
-    { icon: '🏆', bg: '#F5F3FF', text: 'Student Aarav won District Championship', time: '3 hrs ago' },
-    { icon: '💰', bg: '#F0FDF4', text: '₹1,200 payment received', time: '5 hrs ago' },
-    { icon: '📅', bg: '#EFF6FF', text: 'Session rescheduled — Priya moved to 7 PM', time: 'Yesterday' },
-  ];
 
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
@@ -598,7 +509,7 @@ export class CoachSessionDetailPage implements OnInit {
     const startsAt = item.starts_at ? new Date(item.starts_at) : new Date();
     const endsAt = item.ends_at ? new Date(item.ends_at) : startsAt;
     const participants = Array.isArray(item.participants) ? item.participants : [];
-    const status = this.statusLabel(item.status);
+    const status = this.statusLabel(item.status, startsAt);
     return {
       id: String(item.id), source: item.source === 'legacy' ? 'legacy' : 'scheduling',
       name: item.title || 'Coaching Session', sport: item.sport || 'Training', emoji: this.sportEmoji(item.sport), image: 'assets/hero-sports.png',
@@ -607,20 +518,87 @@ export class CoachSessionDetailPage implements OnInit {
       venue: item.venue || 'Venue pending', address: [item.venue_location, item.court].filter(Boolean).join(' · ') || 'Location pending',
       date: startsAt.toLocaleDateString(), time: `${startsAt.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })} · ${startsAt.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`,
       duration: this.durationLabel(startsAt, endsAt), type: participants.length === 1 ? 'One-on-One' : 'Group Session', status,
-      weather: '', distance: '', earnings: Number(item.price ?? 0), studentsConfirmed: Number(item.confirmed_participants_count ?? 0), studentsTotal: participants.length,
+      earnings: Number(item.price ?? 0), studentsConfirmed: Number(item.confirmed_participants_count ?? 0), studentsTotal: participants.length,
       coachFee: Number(item.coach_fee ?? item.price ?? 0), venueFee: Number(item.venue_fee ?? 0), platformFee: Number(item.platform_fee ?? 0),
       taxAmount: Number(item.tax_amount ?? 0), paymentStatus: 'No payment recorded', description: item.description || '', coachNotes: item.coach_notes || '',
       attendanceSupported: item.attendance_supported !== false && ['confirmed', 'completed', 'scheduled'].includes(item.status),
-      students: participants.map((player: any) => ({ id: Number(player.id), name: player.name || 'Player', photo: resolveMediaUrl(player.photo) || '', skill: '', attendance: 0, sessions: 0, attendanceStatus: player.attendance || null })),
+      students: participants.map((player: any) => ({ id: Number(player.id), name: player.name || 'Player', photo: resolveMediaUrl(player.photo) || '', attendanceStatus: player.attendance || null, participantStatus: player.status && player.status !== 'legacy' ? String(player.status) : '' })),
       tab: status === 'Completed' ? 'completed' : status === 'Cancelled' ? 'cancelled' : 'upcoming',
     };
   }
 
-  private statusLabel(status: string): CoachSession['status'] {
+  private statusLabel(status: string, startsAt: Date): CoachSession['status'] {
     if (status === 'completed') return 'Completed';
     if (['cancelled', 'rejected', 'expired'].includes(status)) return 'Cancelled';
-    if (['confirmed', 'scheduled'].includes(status)) return 'Confirmed';
+    if (['confirmed', 'scheduled'].includes(status)) return startsAt.getTime() <= Date.now() ? 'Needs completion' : 'Confirmed';
     return 'Pending';
+  }
+
+  participantStatusLabel(status: string): string {
+    const labels: Record<string, string> = {
+      pending_venue_approval: 'Awaiting venue approval',
+      pending: 'Awaiting confirmation',
+      invited: 'Invited',
+      confirmed: 'Confirmed',
+      declined: 'Declined',
+    };
+    return labels[status] || status.replace(/_/g, ' ');
+  }
+
+  markCompleted(): void {
+    if (!this.session || this.completing) return;
+    this.completing = true;
+    this.actionNotice = '';
+    this.coachService.completeSchedulingSession(this.session.id).subscribe({
+      next: (response) => {
+        this.completing = false;
+        if (!response.success || !this.session) {
+          this.actionNotice = response.message || 'This session could not be marked as completed.';
+          return;
+        }
+        this.session = { ...this.session, status: 'Completed', tab: 'completed' };
+        this.actionNotice = `Session completed. ₹${Math.round(this.session.coachFee).toLocaleString('en-IN')} added to your earnings.`;
+      },
+      error: (error) => {
+        this.completing = false;
+        this.actionNotice = error?.error?.message || 'This session could not be marked as completed.';
+      },
+    });
+  }
+
+  async shareSession(): Promise<void> {
+    if (!this.session) return;
+    const text = `${this.session.name} · ${this.session.time} at ${this.session.venue}${this.session.address && this.session.address !== 'Location pending' ? ` (${this.session.address})` : ''}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: this.session.name, text });
+        return;
+      }
+      await navigator.clipboard.writeText(text);
+      this.actionNotice = 'Session details copied to the clipboard.';
+    } catch (error: any) {
+      if (error?.name !== 'AbortError') this.actionNotice = 'Session details could not be shared from this device.';
+    }
+  }
+
+  async openStudentChat(student: Student): Promise<void> {
+    this.openingChatId = student.id;
+    const response = await this.chat.openPrivate({ id: student.id, name: student.name, avatar: student.photo || null });
+    this.openingChatId = null;
+    if (response.success && response.data?.id) {
+      void this.router.navigateByUrl(`/app/coach/chat/${encodeURIComponent(response.data.id)}`);
+    } else {
+      this.actionNotice = response.message || `Could not open a chat with ${student.name}.`;
+    }
+  }
+
+  openSessionChat(): void {
+    const students = this.session?.students ?? [];
+    if (students.length === 1) {
+      void this.openStudentChat(students[0]);
+      return;
+    }
+    void this.router.navigateByUrl('/app/coach/chat');
   }
 
   private durationLabel(start: Date, end: Date): string {
@@ -696,7 +674,7 @@ export class CoachSessionDetailPage implements OnInit {
     this.savingAttendance[id] = true;
     this.coachService.saveSchedulingAttendance(this.session.id, id, status).subscribe({
       next: () => { this.savingAttendance[id] = false; },
-      error: error => { student.attendanceStatus = previous; this.savingAttendance[id] = false; this.errorMessage = error?.error?.message || 'Attendance could not be saved.'; },
+      error: error => { student.attendanceStatus = previous; this.savingAttendance[id] = false; this.actionNotice = error?.error?.message || 'Attendance could not be saved.'; },
     });
   }
 
@@ -705,16 +683,9 @@ export class CoachSessionDetailPage implements OnInit {
     this.savingNotes = true;
     this.coachService.saveSchedulingSessionNotes(this.session.id, this.notes).subscribe({
       next: () => { this.savedNotes = true; this.savingNotes = false; },
-      error: error => { this.savedNotes = false; this.savingNotes = false; this.errorMessage = error?.error?.message || 'Session notes could not be saved.'; },
+      error: error => { this.savedNotes = false; this.savingNotes = false; this.actionNotice = error?.error?.message || 'Session notes could not be saved.'; },
     });
   }
 
   initials(name: string): string { return (name || 'Player').trim().split(/\s+/).slice(0, 2).map(part => part[0]).join('').toUpperCase(); }
-
-  getSkillColor(skill: string) {
-    if (skill === 'Expert') return '#C2410C';
-    if (skill === 'Advanced') return '#D97706';
-    if (skill === 'Intermediate') return '#1D4ED8';
-    return '#16A34A';
-  }
 }

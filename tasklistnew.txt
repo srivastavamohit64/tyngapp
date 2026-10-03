@@ -248,6 +248,24 @@ ALL APP USERS
 - The back arrow now always takes you to the screen you were just on, instead of jumping to a fixed screen such as Home or a list. In step-by-step forms it still goes back one step first. If you opened a screen straight from a link, the back arrow takes you to the most sensible screen instead of leaving the app.
 - Pop-up windows, sheets, menus and confirmation boxes now close by themselves when a button inside them takes you to another screen. For example, after booking a coach, "Open coach chat" closes the "Request sent" window and opens the chat. Nothing is left floating over the new screen.
 
+NEW WORK COMPLETED ON 3 OCTOBER 2026
+
+COACH
+
+- Your Earnings page now shows your real money: totals, a revenue chart, your wallet and payments, earnings by session type and sport, money still to come, the venues you work at, your top students and recent sessions. It also reminds you about sessions you still need to mark as finished.
+- Insights and your Home page now show real revenue charts and real numbers instead of sample figures. The daily goal on Home counts the sessions you finished today out of today's sessions.
+- Your schedule, session details, student pages, teams, venue partner pages and your own profile now only show your real students, sessions, ratings and achievements. Search, directions, chat, share and call buttons all work.
+- Mark a session as finished once it has started, straight from the session page.
+- Your side menu shows your real rating and number of reviews ("New" if you have none yet), and the Verified badge only appears once you are verified.
+- Settings now only shows options that really work. Switches that never saved anything have been removed.
+- When you plan a session or book a venue, the platform fee and tax now come from TYNG instead of fixed amounts, and the made-up coupon and attendance numbers are gone.
+
+VENUE STAFF
+
+- Venue screens now use the same colours and text styles as the TYNG design, so they look cleaner and match the rest of the app.
+- Screen names now match the side menu: "Earnings", "Wallet" and "Revenue Analytics". Settings in the side menu now opens your Settings, and Edit Profile there opens your venue profile.
+- Pages opened from the side menu show only a back arrow and the page name, and the back arrow always returns to the screen you came from. Pop-up windows close by themselves before another screen opens.
+
 Writing rule: Whenever work is finished, add a short note here explaining in everyday words what changed and how it helps players, coaches, or administrators. Write for someone who does not work in software. Avoid programming terms, internal names, and tool names. Describe what the person can now do.
 
 RECENT IMPROVEMENTS - 23 SEPTEMBER 2026

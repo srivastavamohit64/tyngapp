@@ -11,11 +11,19 @@
           <img *ngIf="profileImage()" [src]="profileImage()!" alt="" class="h-full w-full object-cover" />
           <span *ngIf="!profileImage()">👨‍🏫</span>
         </div>
-        <h1 class="mb-1 text-[24px] font-black text-[#111827]">{{ auth.user()?.name || 'Coach Arvind' }}</h1>
-        <div class="mb-3 text-sm text-[#9CA3AF]">Football & Cricket</div>
-        <div class="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 shadow-sm border border-[#F3F4F6]">
-          <ion-icon name="star" class="text-xl text-[#FF7A00]"></ion-icon>
-          <span class="font-semibold text-[#111827]">4.9 Rating</span>
+        <h1 class="mb-1 text-[24px] font-black text-[#111827]">{{ auth.user()?.name || 'Coach' }}</h1>
+        <div *ngIf="coachSportsLabel()" class="mb-3 text-sm text-[#9CA3AF] capitalize">{{ coachSportsLabel() }}</div>
+        <div class="flex flex-wrap items-center justify-center gap-2">
+          <div class="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 shadow-sm border border-[#F3F4F6]">
+            <ion-icon name="star" class="text-xl text-[#FF7A00]"></ion-icon>
+            <span *ngIf="(auth.user()?.reviewCount ?? 0) > 0 && auth.user()?.rating != null; else noReviews" class="font-semibold text-[#111827]">
+              {{ auth.user()?.rating | number:'1.1-1' }} · {{ auth.user()?.reviewCount }} {{ auth.user()?.reviewCount === 1 ? 'review' : 'reviews' }}
+            </span>
+            <ng-template #noReviews><span class="font-semibold text-[#111827]">No reviews yet</span></ng-template>
+          </div>
+          <div *ngIf="auth.user()?.coachVerified" class="inline-flex items-center gap-1.5 rounded-full bg-[#F0FDF4] px-3 py-2 text-[#16A34A] text-sm font-bold">
+            <ion-icon name="shield-checkmark-outline"></ion-icon>Verified
+          </div>
         </div>
       </div>
     </section>
@@ -25,64 +33,64 @@
         <div class="grid grid-cols-2 gap-4">
           <div>
             <div class="text-sm text-[#9CA3AF] mb-1">Experience</div>
-            <div class="font-semibold text-[#111827]">12 years</div>
+            <div *ngIf="!coachLoading(); else infoSkel" class="font-semibold text-[#111827]">{{ coachExperience() }}</div>
           </div>
           <div>
-            <div class="text-sm text-[#9CA3AF] mb-1">Certification</div>
-            <div class="font-semibold text-[#111827]">UEFA Pro License</div>
+            <div class="text-sm text-[#9CA3AF] mb-1">Specialities</div>
+            <div *ngIf="!coachLoading(); else infoSkel" class="font-semibold text-[#111827]">{{ coachSpecialities() }}</div>
           </div>
         </div>
+        <ng-template #infoSkel><ion-skeleton-text animated style="width:80px;height:16px;border-radius:6px;margin:0"></ion-skeleton-text></ng-template>
       </div>
 
       <div>
         <h3 class="app-section-title mb-3">Stats</h3>
         <div class="grid grid-cols-3 gap-3">
-          <div class="rounded-xl border border-[#F3F4F6] bg-white p-4 text-center shadow-sm">
-            <ion-icon name="people-outline" class="mx-auto mb-2 text-2xl text-[var(--app-primary)]"></ion-icon>
-            <div class="mb-1 text-xl font-black text-[#111827]">3</div>
-            <div class="text-xs text-[#9CA3AF]">Teams Coached</div>
-          </div>
-          <div class="rounded-xl border border-[#F3F4F6] bg-white p-4 text-center shadow-sm">
-            <ion-icon name="trending-up-outline" class="mx-auto mb-2 text-2xl text-[var(--app-primary)]"></ion-icon>
-            <div class="mb-1 text-xl font-black text-[#111827]">45</div>
-            <div class="text-xs text-[#9CA3AF]">Total Players</div>
-          </div>
-          <div class="rounded-xl border border-[#F3F4F6] bg-white p-4 text-center shadow-sm">
-            <ion-icon name="trophy-outline" class="mx-auto mb-2 text-2xl text-[var(--app-primary)]"></ion-icon>
-            <div class="mb-1 text-xl font-black text-[#111827]">72%</div>
-            <div class="text-xs text-[#9CA3AF]">Success Rate</div>
-          </div>
+          <button *ngFor="let stat of coachStats()" type="button" (click)="router.navigateByUrl(stat.path)" class="rounded-xl border border-[#F3F4F6] bg-white p-4 text-center shadow-sm">
+            <ion-icon [name]="stat.icon" class="mx-auto mb-2 text-2xl text-[var(--app-primary)]"></ion-icon>
+            <div class="mb-1 text-xl font-black text-[#111827]">
+              <ng-container *ngIf="!coachLoading(); else statSkel">{{ stat.value }}</ng-container>
+              <ng-template #statSkel><ion-skeleton-text animated style="width:28px;height:20px;border-radius:6px;margin:0 auto"></ion-skeleton-text></ng-template>
+            </div>
+            <div class="text-xs text-[#9CA3AF]">{{ stat.label }}</div>
+          </button>
         </div>
       </div>
 
       <div>
         <h3 class="app-section-title mb-3">Achievements</h3>
-        <div class="grid grid-cols-2 gap-3">
-          <div *ngFor="let achievement of coachAchievements" class="flex items-center gap-3 rounded-xl border border-[#F3F4F6] bg-white p-4 shadow-sm">
-            <div class="grid h-10 w-10 place-items-center rounded-lg bg-[var(--app-primary)]/20">
-              <ion-icon [name]="achievement.icon" class="text-xl" [style.color]="achievement.color"></ion-icon>
+        <div *ngIf="coachAchievements().length; else noAchievements" class="grid grid-cols-2 gap-3">
+          <div *ngFor="let achievement of coachAchievements(); let i = index" class="flex items-center gap-3 rounded-xl border border-[#F3F4F6] bg-white p-4 shadow-sm">
+            <div class="grid h-10 w-10 flex-shrink-0 place-items-center rounded-lg bg-[var(--app-primary)]/20">
+              <ion-icon [name]="achievementIcons[i % achievementIcons.length].icon" class="text-xl" [style.color]="achievementIcons[i % achievementIcons.length].color"></ion-icon>
             </div>
-            <span class="text-sm font-medium text-[#111827]">{{ achievement.name }}</span>
+            <span class="text-sm font-medium text-[#111827]">{{ achievement }}</span>
           </div>
         </div>
+        <ng-template #noAchievements>
+          <button type="button" (click)="router.navigateByUrl('/app/coach/complete-profile')" class="w-full rounded-xl border border-dashed border-[#D1D5DB] bg-white p-4 text-sm text-[#6B7280] text-left">
+            {{ coachLoading() ? 'Loading achievements…' : 'No achievements added yet. Tap to add your playing and coaching achievements.' }}
+          </button>
+        </ng-template>
       </div>
 
       <div>
         <div class="mb-3 flex items-center justify-between">
-          <h3 class="app-section-title m-0">Recent Sessions</h3>
+          <h3 class="app-section-title m-0">Sessions</h3>
           <button type="button" class="flex items-center gap-1 text-sm font-bold text-[var(--app-primary)] bg-transparent border-none" (click)="router.navigateByUrl('/app/coach/schedule')">
             View All
             <ion-icon name="chevron-forward-outline"></ion-icon>
           </button>
         </div>
         <div class="space-y-2">
-          <div *ngFor="let session of coachRecentSessions" class="flex items-center justify-between rounded-xl border border-[#F3F4F6] bg-white p-4 shadow-sm">
-            <div>
-              <div class="font-semibold text-[#111827]">{{ session.team }}</div>
-              <div class="text-sm text-[#9CA3AF] mt-0.5">{{ session.date }}</div>
+          <button *ngFor="let session of coachSessions()" type="button" (click)="router.navigateByUrl('/app/coach/session/' + session.id)" class="w-full flex items-center justify-between gap-3 rounded-xl border border-[#F3F4F6] bg-white p-4 shadow-sm text-left">
+            <div class="min-w-0">
+              <div class="font-semibold text-[#111827] truncate">{{ session.title }}</div>
+              <div class="text-sm text-[#9CA3AF] mt-0.5 truncate">{{ session.starts_at | date:'MMM d, y · h:mm a' }}<ng-container *ngIf="session.venue_name"> · {{ session.venue_name }}</ng-container></div>
             </div>
-            <span class="px-2.5 py-1 bg-[var(--app-primary)]/20 text-[#111827] text-xs font-bold rounded-full">{{ session.type }}</span>
-          </div>
+            <span class="flex-shrink-0 px-2.5 py-1 bg-[var(--app-primary)]/20 text-[#111827] text-xs font-bold rounded-full">{{ sessionStateLabel(session.state) }}</span>
+          </button>
+          <p *ngIf="!coachLoading() && !coachSessions().length" class="text-sm text-[#9CA3AF] m-0">No upcoming or completed sessions yet.</p>
         </div>
       </div>
     </section>

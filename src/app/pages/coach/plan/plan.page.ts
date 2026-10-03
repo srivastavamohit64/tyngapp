@@ -38,6 +38,8 @@ interface Venue {
   openTime: string;
   closeTime: string;
   slotIntervalMinutes: number;
+  platformFee: number;
+  taxRate: number;
 }
 
 interface VenueCourt {
@@ -62,13 +64,6 @@ const SPORTS: Sport[] = [
   { id:'tennis',     name:'Tennis',       emoji:'🎾', image:'https://images.unsplash.com/photo-1761156896762-2ef13f932004?w=300&h=400&fit=crop&auto=format' },
   { id:'tabletennis',name:'Table Tennis', emoji:'🏓', image:'https://images.unsplash.com/photo-1676827613262-5fba25cee5fd?w=300&h=400&fit=crop&auto=format' },
   { id:'volleyball', name:'Volleyball',   emoji:'🏐', image:'https://images.unsplash.com/photo-1601512986351-9b0e01780eef?w=300&h=400&fit=crop&auto=format' },
-];
-
-const PREV_BATCHES = [
-  { id:'b1', label:'Saturday Cricket Batch',  sport:'Cricket',  members:12 },
-  { id:'b2', label:'Football Academy Group',   sport:'Football', members:18 },
-  { id:'b3', label:'Summer Camp Group',        sport:'Multi',    members:24 },
-  { id:'b4', label:'Beginners Badminton',      sport:'Badminton',members:6  },
 ];
 
 const SESSION_TYPES = [
@@ -96,12 +91,6 @@ const DURATIONS = [
   { id:'60min',  label:'60 min',  hrs:1   },
   { id:'90min',  label:'90 min',  hrs:1.5 },
   { id:'120min', label:'120 min', hrs:2   },
-];
-
-const MOCK_STUDENTS: Student[] = [
-  { id: 1, name: 'Rahul Sharma', photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&auto=format', skill: 'Intermediate', attendance: 95 },
-  { id: 2, name: 'Priya Verma', photo: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=80&h=80&fit=crop&auto=format', skill: 'Beginner', attendance: 88 },
-  { id: 3, name: 'Vikram Patel', photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop&auto=format', skill: 'Advanced', attendance: 92 },
 ];
 
 function buildDates() {
@@ -245,7 +234,7 @@ function buildDates() {
                   <img [src]="s.photo" class="w-10 h-10 rounded-full object-cover flex-shrink-0" />
                   <div class="flex-1 text-left">
                     <p class="text-[13px] font-bold text-[#111827]">{{ s.name }}</p>
-                    <p class="text-[10px] text-[#9CA3AF]">{{ s.skill }} · {{ s.attendance }}% attendance</p>
+                    <p class="text-[10px] text-[#9CA3AF] capitalize">{{ s.skill }}</p>
                   </div>
                   <div class="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
                     [style.backgroundColor]="selStudents.includes(s.id) ? 'var(--app-primary)' : '#F3F4F6'">
@@ -276,11 +265,10 @@ function buildDates() {
             </div>
 
             <!-- Add new -->
-            <div *ngIf="studTab === 'new'">
-              <div class="flex items-center gap-2 bg-[#F3F4F6] rounded-2xl px-3 h-12">
-                <ion-icon name="search-outline" class="text-[#9CA3AF]"></ion-icon>
-                <input placeholder="Search by name, mobile or TYNG ID…" class="flex-1 bg-transparent text-[14px] text-[#111827] focus:outline-none min-h-0 border-none" />
-              </div>
+            <div *ngIf="studTab === 'new'" class="bg-[#F9FAFB] rounded-2xl p-5 text-center">
+              <ion-icon name="person-add-outline" class="text-[28px] text-[#6B7280]"></ion-icon>
+              <p class="text-[13px] text-[#6B7280] mt-2 mb-4">Only your active students can be invited. Enroll a new student first, then come back to plan the session.</p>
+              <button type="button" (click)="go('/app/coach/enroll-student')" class="h-10 px-5 rounded-xl bg-[var(--app-primary)] text-[#111827] text-[13px] font-black border-none">Enroll a Student</button>
             </div>
           </div>
 
@@ -309,12 +297,12 @@ function buildDates() {
                 <div class="px-4 py-3">
                   <div class="flex items-start justify-between mb-1">
                     <p class="text-[14px] font-black text-[#111827] m-0">{{ v.name }}</p>
-                    <div class="flex items-center gap-1">
+                    <div *ngIf="v.rating > 0" class="flex items-center gap-1">
                       <ion-icon name="star" class="text-[#F59E0B] text-xs"></ion-icon>
                       <span class="text-[11px] font-bold text-[#111827]">{{ v.rating }}</span>
                     </div>
                   </div>
-                  <p class="text-[11px] text-[#9CA3AF] m-0">{{ v.address }} · {{ v.distance }}</p>
+                  <p class="text-[11px] text-[#9CA3AF] m-0">{{ v.address }}</p>
                 </div>
               </button>
             </div>
@@ -502,7 +490,6 @@ function buildDates() {
                 <div class="flex items-center gap-2 mb-2">
                   <ion-icon name="sparkles" class="text-[var(--app-primary)]"></ion-icon>
                   <p class="text-[14px] font-black text-[var(--app-primary)] m-0">TYNG Smart Pricing</p>
-                  <span class="text-[9px] bg-[var(--app-primary)]/20 text-[var(--app-primary)] px-2 py-0.5 rounded-full font-black">AI</span>
                 </div>
                 <p class="text-[12px] text-white/50 mb-4 leading-normal">Enter only your coaching fee. TYNG calculates everything else automatically.</p>
                 <div class="bg-white/10 rounded-2xl p-4">
@@ -533,34 +520,18 @@ function buildDates() {
                 </div>
                 <div class="flex justify-between py-2 border-b border-[#F9FAFB]">
                   <span class="text-[13px] text-[#6B7280]">Platform Fee</span>
-                  <span class="text-[13px] font-bold text-[#6B7280]">₹49</span>
+                  <span class="text-[13px] font-bold text-[#6B7280]">₹{{ getPlatformFee() }}</span>
                 </div>
                 <div class="flex justify-between py-2 border-b border-[#F9FAFB]">
-                  <span class="text-[13px] text-[#6B7280]">GST (18%)</span>
+                  <span class="text-[13px] text-[#6B7280]">GST ({{ getTaxPercent() }}%)</span>
                   <span class="text-[13px] font-bold text-[#6B7280]">₹{{ getGst() }}</span>
                 </div>
-                <div *ngIf="coupon" class="flex justify-between py-2 border-b border-[#F9FAFB] text-[#22C55E]">
-                  <span class="text-[13px]">Coupon: {{ coupon.code }}</span>
-                  <span class="text-[13px] font-bold">-₹{{ coupon.discount }}</span>
+                <div class="flex justify-between pt-2">
+                  <span class="text-[13px] font-black text-[#111827]">Session Total</span>
+                  <span class="text-[13px] font-black text-[#111827]">₹{{ getSessionTotal() }}</span>
                 </div>
               </div>
 
-              <!-- Coupon input -->
-              <div *ngIf="!coupon" class="coupon-entry">
-                <input [(ngModel)]="couponInp" placeholder="Enter coupon code" aria-label="Coupon code"
-                  class="coupon-input" />
-                <button type="button" (click)="applyCoupon()" [disabled]="!couponInp.trim()" class="coupon-apply"
-                  [style.backgroundColor]="couponInp.trim() ? 'var(--app-primary)' : '#F3F4F6'"
-                  [style.color]="couponInp.trim() ? '#111827' : '#C4C9D4'">
-                  Apply
-                </button>
-              </div>
-              <div *ngIf="coupon" class="flex items-center gap-2 bg-[#F0FDF4] rounded-xl px-3 py-2 mt-3">
-                <ion-icon name="checkmark-circle-outline" class="text-[#22C55E]"></ion-icon>
-                <span class="text-[12px] font-bold text-[#111827] flex-1">{{ coupon.code }} applied</span>
-                <button (click)="coupon = null" class="bg-transparent border-none p-0 flex"><ion-icon name="close-outline" class="text-[#9CA3AF]"></ion-icon></button>
-              </div>
-              <p *ngIf="couponErr" class="text-[11px] text-[#EF4444] mt-1 m-0">{{ couponErr }}</p>
             </div>
 
             <!-- Total payments per student -->
@@ -1184,9 +1155,7 @@ export class CoachPlanPage implements OnInit {
   equip: string[] = [];
   equipSrc = 'venue';
   coachFee = '';
-  couponInp = '';
-  coupon: { code: string; discount: number } | null = null;
-  couponErr = '';
+  pricing = { platformFee: 0, taxRate: 0 };
   automate = true;
   sessionTitle = '';
   private generatedSessionTitle = '';
@@ -1233,13 +1202,17 @@ export class CoachPlanPage implements OnInit {
         })).filter((court: VenueCourt) => court.id > 0);
         return {
           id: Number(item.id), name: item.name, image: resolveMediaUrl(item.image) || 'assets/icon/favicon.png',
-          distance: '', pricePerHour: courts[0]?.pricePerHour || 0, rating: 0,
+          distance: '', pricePerHour: courts[0]?.pricePerHour || 0, rating: Number(item.rating || 0),
           address: item.location || 'Location pending', sportEmojis: [], isCoachFriendly: item.partnership?.status === 'active',
           courts,
           openTime: item.open_time || '6:00 AM', closeTime: item.close_time || '10:00 PM',
           slotIntervalMinutes: Number(item.slot_interval_minutes || 0),
+          platformFee: Number(item.pricing?.platform_fee ?? 0),
+          taxRate: Number(item.pricing?.tax_rate ?? 0),
         };
       }).filter((item: Venue) => item.id > 0 && item.courts.length > 0);
+      const pricedVenue = this.venueOptions.find(item => item.platformFee > 0 || item.taxRate > 0);
+      if (pricedVenue) this.pricing = { platformFee: pricedVenue.platformFee, taxRate: pricedVenue.taxRate };
       this.batchOptions = (batchesResponse.data || []).map((item: any) => ({
         id: String(item.id), label: item.label || 'Previous group session', sport: item.sport || 'Training',
         members: Number(item.members || 0), studentIds: (item.studentIds || []).map(Number),
@@ -1531,33 +1504,29 @@ export class CoachPlanPage implements OnInit {
     return this.selectedVenue.courts.filter(court => this.courtSupportsSelectedSport(court));
   }
 
+  getPlatformFee(): number {
+    return this.selectedVenue?.platformFee ?? this.pricing.platformFee;
+  }
+
+  getTaxPercent(): number {
+    return Math.round((this.selectedVenue?.taxRate ?? this.pricing.taxRate) * 100);
+  }
+
   getGst(): number {
-    const subtotal = this.getCoachFeeNumber() + this.getVenueCost() + 49;
-    return Math.round(subtotal * 0.18);
+    const subtotal = this.getCoachFeeNumber() + this.getVenueCost() + this.getPlatformFee();
+    return Math.round(subtotal * (this.selectedVenue?.taxRate ?? this.pricing.taxRate));
+  }
+
+  getSessionTotal(): number {
+    return Math.round(this.getCoachFeeNumber() + this.getVenueCost() + this.getPlatformFee() + this.getGst());
   }
 
   getPricePerStudent(): number {
-    const subtotal = this.getCoachFeeNumber() + this.getVenueCost() + 49;
-    const gst = this.getGst();
-    const disc = this.coupon ? this.coupon.discount : 0;
-    const total = subtotal + gst - disc;
-    const count = this.selStudents.length || 1;
-    return Math.round(total / count);
+    return Math.round(this.getSessionTotal() / this.getNumStudents());
   }
 
   getNumStudents(): number {
     return this.selStudents.length || 1;
-  }
-
-  applyCoupon() {
-    if (this.couponInp.toUpperCase() === 'COACH15') {
-      const subtotal = this.getCoachFeeNumber() + this.getVenueCost() + 49;
-      this.coupon = { code: 'COACH15', discount: Math.round(subtotal * 0.15) };
-      this.couponErr = '';
-      this.couponInp = '';
-    } else {
-      this.couponErr = 'Invalid code. Try COACH15';
-    }
   }
 
   getStepTitleLabel(): string {
@@ -1580,13 +1549,21 @@ export class CoachPlanPage implements OnInit {
   }
 
   successItems(): string[] {
+    const count = this.selStudents.length;
+    const students = `${count} ${count === 1 ? 'student' : 'students'}`;
+    if (this.sessionCreatedConfirmed()) {
+      return [
+        `${this.selectedCourt()?.name || 'Court'} booked at ${this.selectedVenue?.name || 'the venue'}`,
+        'Session added to your schedule',
+        `${students} invited`,
+        `Each student pays ₹${this.getPricePerStudent().toLocaleString('en-IN')}`,
+      ];
+    }
     return [
-      this.sessionCreatedConfirmed() ? 'Venue booking confirmed' : 'Venue approval requested',
-      'Coaching session created',
-      'Student invitations sent',
-      'Session chat created',
-      'Coach schedule updated',
-      'Attendance QR ready',
+      `Approval requested from ${this.selectedVenue?.name || 'the venue'}`,
+      'Court held for 30 minutes while the venue reviews it',
+      'Session added to your schedule as pending',
+      `${students} will be invited once the venue approves`,
     ];
   }
 

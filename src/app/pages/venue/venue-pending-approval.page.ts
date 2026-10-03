@@ -63,18 +63,18 @@ import { AuthService } from '../../core/services/auth.service';
     .icon-wrap.docs { background: #EFF6FF; color: #2563EB; }
     .icon-wrap ion-icon { font-size: 48px; }
     h1 { margin: 0 0 10px; font-size: 26px; font-weight: 900; color: #111827; }
-    .sub { margin: 0 0 24px; font-size: 14px; line-height: 1.5; color: #6B7280; font-weight: 600; max-width: 360px; }
+    .sub { margin: 0 0 24px; font-size: 14px; line-height: 1.5; color: #6B7280; font-weight: 400; max-width: 360px; }
     .card {
       width: 100%; max-width: 360px; background: #fff; border: 1px solid #F3F4F6;
       border-radius: 20px; padding: 16px 18px; text-align: left; margin-bottom: 24px;
     }
-    .row { display: flex; align-items: center; gap: 10px; padding: 8px 0; font-size: 13px; font-weight: 800; color: #111827; }
+    .row { display: flex; align-items: center; gap: 10px; padding: 8px 0; font-size: 13px; font-weight: 600; color: #111827; }
     .row ion-icon { color: #16A34A; font-size: 18px; }
     .row.muted { color: #9CA3AF; }
     .row.muted ion-icon { color: #F59E0B; }
     .actions { width: 100%; max-width: 360px; display: grid; gap: 10px; }
     .btn {
-      height: 48px; border-radius: 16px; border: none; font-size: 15px; font-weight: 800; cursor: pointer;
+      height: 48px; border-radius: 16px; border: none; font-size: 15px; font-weight: 900; cursor: pointer;
     }
     .btn.primary { background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to)); color: #111827; }
     .btn.ghost { background: #F3F4F6; color: #111827; }

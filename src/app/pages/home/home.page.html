@@ -248,9 +248,11 @@
               <p class="text-[10px] font-bold text-[#22C55E] mt-0.5">{{ earn.trend }}</p>
             </div>
           </div>
-          <div class="h-10 bg-[#F9FAFB] rounded-2xl flex items-end justify-around px-3 pb-1.5">
-            <div *ngFor="let h of [40, 65, 50, 80, 55, 90, 70]; let i = index" class="w-3 rounded-t-sm"
-              [style.height]="h + '%'" [style.backgroundColor]="i === 5 ? 'var(--app-primary)' : '#E5E7EB'" style="max-height: 36px;"></div>
+          <div *ngIf="coachEarningsTrend.length" class="h-10 bg-[#F9FAFB] rounded-2xl flex items-end justify-around px-3 pb-1.5"
+            role="img" aria-label="Completed-session earnings for the last 7 days">
+            <div *ngFor="let day of coachEarningsTrend" class="w-3 rounded-t-sm" [title]="day.label + ': ' + day.display"
+              [style.height]="day.height + '%'" [style.backgroundColor]="day.amount > 0 ? 'var(--app-primary)' : '#E5E7EB'"
+              [style.opacity]="day.today || day.amount <= 0 ? 1 : 0.7" style="max-height: 36px;"></div>
           </div>
         </div>
 

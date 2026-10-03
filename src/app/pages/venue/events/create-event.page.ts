@@ -199,33 +199,33 @@ const TYPES = [
     h1 { margin: 8px 0 16px; font-size: 26px; font-weight: 900; color: #111827; }
     .stack { display: flex; flex-direction: column; gap: 10px; }
     .pick { display: flex; gap: 12px; align-items: center; text-align: left; border: 1.5px solid #E5E7EB; background: #fff; border-radius: 16px; padding: 14px; }
-    .pick.on { border-color: #8cf000; background: #F7FEE7; }
+    .pick.on { border-color: #8cf000; background: rgba(140, 240, 0, 0.07); }
     .pick p { margin: 2px 0 0; color: #6B7280; font-size: 12px; }
-    .form label { display: block; margin: 12px 0 6px; font-size: 13px; font-weight: 800; }
+    .form label { display: block; margin: 12px 0 6px; font-size: 11px; font-weight: 600; color: #9CA3AF; text-transform: uppercase; letter-spacing: .05em; }
     .form input, .form select, .form textarea {
-      width: 100%; border: 1.5px solid #E5E7EB; border-radius: 12px; height: 46px; padding: 0 12px; font-weight: 700;
+      width: 100%; border: 1.5px solid #E5E7EB; border-radius: 12px; height: 46px; padding: 0 12px; font-weight: 600;
     }
     .form textarea { height: 88px; padding: 10px 12px; }
     .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .chips { display: flex; gap: 8px; flex-wrap: wrap; }
-    .chips button { border: none; border-radius: 999px; padding: 8px 12px; background: #F3F4F6; font-weight: 800; font-size: 12px; }
+    .chips button { border: none; border-radius: 999px; padding: 8px 12px; background: #F3F4F6; font-weight: 700; font-size: 12px; }
     .chips button.on { background: #8cf000; }
-    .upload { width: 100%; border: 1.5px dashed #D1D5DB; border-radius: 14px; padding: 22px; background: #FAFAFA; font-weight: 700; color: #6B7280; }
+    .upload { width: 100%; border: 1.5px dashed #D1D5DB; border-radius: 14px; padding: 22px; background: #FAFBFC; font-weight: 700; color: #6B7280; }
     .proj { background: #111827; color: #fff; border-radius: 18px; padding: 14px; margin-top: 14px; }
     .proj > div { display: flex; justify-content: space-between; padding: 6px 0; font-size: 13px; }
-    .proj .k { margin: 0 0 8px; color: #9CA3AF; letter-spacing: .12em; font-size: 11px; font-weight: 800; }
+    .proj .k { margin: 0 0 8px; color: #9CA3AF; letter-spacing: .1em; font-size: 11px; font-weight: 900; }
     .profit strong { color: #8cf000; font-size: 18px; }
     .note { font-size: 12px; color: #6B7280; font-weight: 600; }
     .hint { background: #FEF9C3; border-radius: 14px; padding: 10px 12px; font-size: 12px; font-weight: 700; color: #854D0E; }
     .auto { display: flex; gap: 8px; background: #ECFCCB; border-radius: 14px; padding: 12px; margin-top: 12px; text-align: left; }
-    .auto p { margin: 4px 0 0; font-size: 12px; color: #3F6212; }
+    .auto p { margin: 4px 0 0; font-size: 12px; color: #4D7C0F; }
     .sponsor, .sponsor-option { display: flex; gap: 10px; align-items: center; background: #fff; border-radius: 14px; padding: 10px; box-shadow: 0 2px 10px rgba(17,24,39,.05); margin-bottom: 8px; }
-    .sponsor-option { width: 100%; border: 1px solid #E5E7EB; text-align: left; } .sponsor-option.selected { border-color: #8cf000; background: #f7ffe9; } .sponsor-option > span { flex: 1; } .sponsor-option small { display:block; color:#9CA3AF; margin-top:2px; } .sponsor-option ion-icon { font-size: 22px; color: #65a30d; }
+    .sponsor-option { width: 100%; border: 1px solid #E5E7EB; text-align: left; } .sponsor-option.selected { border-color: #8cf000; background: rgba(140, 240, 0, 0.07); } .sponsor-option > span { flex: 1; } .sponsor-option small { display:block; color:#9CA3AF; margin-top:2px; } .sponsor-option ion-icon { font-size: 22px; color: #5A9E00; }
     .sponsor-img { width: 54px; height: 36px; object-fit: contain; border-radius: 8px; background: #F3F4F6; flex-shrink: 0; } .catalog-empty { color:#9CA3AF; font-size:13px; padding:12px 0; }
     .av { width: 40px; height: 40px; border-radius: 50%; background: #E5E7EB; display: grid; place-items: center; font-weight: 900; }
     .x { border: none; width: 28px; height: 28px; border-radius: 50%; background: #F3F4F6; }
-    .add-box { display: flex; flex-direction: column; gap: 8px; border: 1.5px dashed #93C5FD; border-radius: 14px; padding: 12px; }
-    .add { border: none; background: none; color: #2563EB; font-weight: 800; }
+    .add-box { display: flex; flex-direction: column; gap: 8px; border: 1.5px dashed #38BDF8; border-radius: 14px; padding: 12px; }
+    .add { border: none; background: none; color: #2563EB; font-weight: 700; }
     .review { background: #fff; border-radius: 16px; padding: 8px 4px; }
     .review div { display: flex; justify-content: space-between; padding: 8px 4px; border-bottom: 1px solid #F3F4F6; font-size: 13px; }
     .sub { color: #6B7280; font-weight: 600; }
