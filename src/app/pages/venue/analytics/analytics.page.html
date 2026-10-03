@@ -47,7 +47,7 @@
           <div class="vi-rank-top">
             <div class="badge">{{ d.ranking.rank ? '#' + d.ranking.rank : '—' }}</div>
             <div>
-              <p class="nm">Sports Venue</p>
+              <p class="nm">{{ d.venueName }}</p>
               <p class="sub">in {{ d.ranking.area }} · {{ d.ranking.total }} {{ d.ranking.total === 1 ? 'venue' : 'venues' }} · Updated {{ updatedLabel(d.updatedAt) }}</p>
               <span class="pill" *ngIf="d.ranking.topPercent">Top {{ d.ranking.topPercent }}%</span>
             </div>
@@ -83,7 +83,7 @@
             <ng-template #noSpark><span class="note">{{ s.note || 'No activity in the last 7 months' }}</span></ng-template>
           </div>
         </div>
-        <p class="vi-hint">Cards compare {{ d.periodLabel }} with last month. Lines show the last 7 months.</p>
+        <p class="vi-hint">Cards compare {{ d.periodLabel }} so far with the same days last month. Lines show the last 7 months.</p>
 
         <!-- Revenue -->
         <section class="vi-card vi-pad">

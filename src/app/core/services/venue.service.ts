@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ApiResponse, AuthUser } from '../models/api.model';
+import { ApiResponse, AuthUser, CoachDashboardWeather } from '../models/api.model';
 import { ApiService } from './api.service';
 
 export interface VenueCourtCard {
@@ -135,6 +135,7 @@ export interface VenueDashboardData {
   activities: { emoji: string; bg: string; text: string; time: string }[];
   pendingActions: { label: string; sub: string; urgency: string; bookingId?: string; coachSessionId?: string; approvalDeadlineAt?: string | null }[];
   aiTips: { emoji: string; text: string }[];
+  weather?: CoachDashboardWeather;
 }
 
 export interface VenueEarningsData {

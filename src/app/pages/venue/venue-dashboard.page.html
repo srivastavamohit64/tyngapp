@@ -273,25 +273,25 @@
           </ng-template>
         </section>
 
-        <!-- Weather: temperature placeholder; location from GPS -->
+        <!-- Weather at the venue's saved location -->
         <section class="venue-card venue-card-padded">
           <div class="venue-weather-row">
             <div class="venue-weather-left">
               <div class="venue-weather-icon">
-                <ion-icon name="sunny"></ion-icon>
+                <ion-icon [name]="weather.icon"></ion-icon>
               </div>
               <div>
                 <p *ngIf="weatherLocation; else weatherPlaceSkel" class="venue-weather-place">Today · {{ weatherLocation }}</p>
                 <ng-template #weatherPlaceSkel><ion-skeleton-text animated style="display:block;width:120px;height:11px;margin:2px 0 6px;border-radius:999px"></ion-skeleton-text></ng-template>
                 <div class="venue-weather-temp">
-                  <strong>{{ weatherTemp }}°</strong>
-                  <span>{{ weatherCondition }}</span>
+                  <strong>{{ weather.temperature !== null && weather.temperature !== undefined ? weather.temperature + '°' : '—' }}</strong>
+                  <span>{{ weather.condition }}</span>
                 </div>
               </div>
             </div>
-            <div class="venue-weather-tag">
-              <p>Outdoor</p>
-              <p>Excellent Conditions</p>
+            <div class="venue-weather-tag" [class.caution]="!weather.outdoorSuitable">
+              <p>{{ weather.available ? 'Outdoor' : 'Weather' }}</p>
+              <p>{{ weather.outdoorLabel }}</p>
             </div>
           </div>
         </section>

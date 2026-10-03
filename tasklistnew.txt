@@ -285,6 +285,12 @@ VENUE STAFF
 - Rate each coach from 1 to 5 stars. Only you see the rating, and it counts toward the coach's score.
 - A coach's profile shows their emergency contact while they work with you.
 - Revenue Analytics now shows your real numbers: an overall health score, how your venue ranks in your city, revenue with a forecast, your busiest days and hours, how each court is doing, which sports are most popular, your top coaches, simple tips that link to the right screen, and court status. Download revenue, occupancy, coach or customer reports as spreadsheet files, or share a short summary.
+- The weather card on Home now shows the real temperature and sky at your venue's address, and says whether conditions are good for outdoor play.
+- The court timeline on Home no longer shows cancelled or missed bookings as busy.
+- Earnings now counts only bookings up to today, so "Today", "This Week" and "This Month" match Home and Revenue Analytics. Comparisons are now fair: the first days of this month are compared with the same days of last month, not the whole month.
+- Court occupancy on Earnings is now the real share of opening hours that were booked.
+- Revenue Analytics shows your venue's name in the city ranking.
+
 ADMIN
 
 - In Settings you can set the TYNG fee taken from coach pay at venues (5% unless you change it).

@@ -3,6 +3,7 @@ import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActionSheetController, IonicModule, ViewWillEnter } from '@ionic/angular';
 import { Subscription, firstValueFrom } from 'rxjs';
+import { CoachDashboardWeather } from '../../core/models/api.model';
 import { AuthService } from '../../core/services/auth.service';
 import { LocationService } from '../../core/services/location.service';
 import { RealtimeService } from '../../core/services/realtime.service';
@@ -66,10 +67,12 @@ export class VenueDashboardPage implements OnInit, OnDestroy, ViewWillEnter {
   /** True after first successful dashboard payload — used to skip skeleton on refresh. */
   readonly hasDashboard = signal(false);
 
-  /** Weather card: temp stays placeholder; place comes from GPS. */
+  /** Weather is for the venue's saved location; GPS only names the place when the venue has none. */
   weatherLocation = '';
-  readonly weatherTemp = '-';
-  readonly weatherCondition = '—';
+  weather: CoachDashboardWeather = {
+    available: false, temperature: null, condition: 'Weather unavailable',
+    icon: 'cloud-offline-outline', outdoorSuitable: false, outdoorLabel: 'Add location',
+  };
 
   pulseMetrics = [
     { emoji: '🏟️', label: "Today's Bookings", value: '0', accent: 'var(--app-primary)' },
@@ -225,10 +228,12 @@ export class VenueDashboardPage implements OnInit, OnDestroy, ViewWillEnter {
   private async loadWeatherLocation() {
     try {
       const location = await this.locationService.getCurrentLocationWithAddress();
+      this.locationService.saveLocation(location);
+      if (this.weather.location) return;
       this.weatherLocation =
         (location.city || location.postalArea || location.shortLabel || '').trim() || 'Your location';
-      this.locationService.saveLocation(location);
     } catch {
+      if (this.weather.location) return;
       const saved = this.locationService.getSavedLocation();
       const profile = (this.auth.user()?.location || '').split(/[>,\-\/|]+/)[0]?.trim();
       this.weatherLocation =
@@ -322,6 +327,11 @@ export class VenueDashboardPage implements OnInit, OnDestroy, ViewWillEnter {
     this.activities = data.activities || [];
     this.aiTips = data.aiTips || [];
     this.pendingActions = data.pendingActions || [];
+    if (data.weather) {
+      this.weather = data.weather;
+      const place = (data.weather.location || '').trim();
+      if (place) this.weatherLocation = place;
+    }
     this.bookingBlockMessage.set(
       data.bookingPolicy?.isBookingBlocked
         ? (data.bookingPolicy.blockMessage
