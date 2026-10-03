@@ -50,11 +50,11 @@ const ALL_SECTIONS = [
         </div>
 
         <div class="w-full max-w-sm space-y-2.5 mb-8">
-          <div *ngFor="let r of [{ ok:true, label:'Profile Complete', color:'#16A34A' }, { ok:true, label:'Eligible for Bookings', color:'#16A34A' }, { ok:false, label:'Verified Coach — Pending Approval', color:'#1D4ED8' }]"
+          <div *ngFor="let r of doneChecklist()"
             class="flex items-center gap-3 bg-white rounded-2xl px-4 py-3 shadow-sm border border-slate-100">
             <div class="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
-              [style.backgroundColor]="r.ok ? '#F0FDF4' : '#EFF6FF'">
-              <ion-icon name="checkmark-outline" [style.color]="r.color" style="font-size:12px;font-weight:bold;"></ion-icon>
+              [style.backgroundColor]="r.bg">
+              <ion-icon [name]="r.icon" [style.color]="r.color" style="font-size:12px;font-weight:bold;"></ion-icon>
             </div>
             <p class="text-[13px] font-semibold text-[#111827]">{{ r.label }}</p>
           </div>
@@ -1236,6 +1236,23 @@ export class CoachCompleteProfilePage implements DoCheck, OnInit {
     if (id === 'gallery') return this.galleryUp;
     if (id === 'verification') return this.verifyUp;
     return false;
+  }
+
+  doneChecklist(): { label: string; icon: string; color: string; bg: string }[] {
+    const done = { icon: 'checkmark-outline', color: '#16A34A', bg: '#F0FDF4' };
+    const idDocument = this.verificationFor('government_id');
+    const verification = idDocument?.status === 'approved'
+      ? { label: 'Verified Coach', ...done }
+      : idDocument?.status === 'rejected'
+        ? { label: 'ID document rejected — upload a new one', icon: 'close-outline', color: '#DC2626', bg: '#FEF2F2' }
+        : idDocument
+          ? { label: 'Verified Coach — Pending Approval', icon: 'time-outline', color: '#1D4ED8', bg: '#EFF6FF' }
+          : { label: 'Upload a government ID to get verified', icon: 'alert-outline', color: '#C2410C', bg: '#FFF7ED' };
+    return [
+      { label: `Profile ${this.getProgress()}% complete`, ...done },
+      { label: 'Profile published to players', ...done },
+      verification,
+    ];
   }
 
   getCompletedCount() {

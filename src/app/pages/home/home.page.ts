@@ -436,14 +436,15 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
   };
   coachEarningsSnapshot = [
     { period: 'Today', amount: '₹0', trend: 'Expected earnings' },
+    { period: 'Last 7 Days', amount: '₹0', trend: 'Completed sessions' },
     { period: 'Upcoming', amount: '0', trend: 'Scheduled sessions' },
-    { period: 'Completed', amount: '0', trend: 'All-time sessions' },
   ];
+  coachEarningsTrend: Array<{ label: string; amount: number; display: string; height: number; today: boolean }> = [];
   coachPulseMetrics = [
-    { icon: '📅', label: "Today's Sessions", value: '4', accent: 'var(--app-primary)' },
-    { icon: '💰', label: 'Expected Earnings', value: '₹4,250', accent: '#FF7A00' },
-    { icon: '⭐', label: 'New Reviews', value: '3', accent: '#F59E0B' },
-    { icon: '👥', label: 'Booking Requests', value: '5', accent: '#38BDF8' },
+    { icon: '📅', label: "Today's Sessions", value: '0', accent: 'var(--app-primary)' },
+    { icon: '💰', label: 'Expected Earnings', value: '₹0', accent: '#FF7A00' },
+    { icon: '⭐', label: 'New Reviews', value: '0', accent: '#F59E0B' },
+    { icon: '👥', label: 'Booking Requests', value: '0', accent: '#38BDF8' },
   ];
   coachSessions: Array<{ id: number; sport: string; emoji: string; image: string; title: string; team: string; venue: string; time: string; type: string; status: string; startsIn: string | null }> = [];
   readonly coachQuickActions = [
@@ -703,11 +704,20 @@ export class HomePage implements ViewWillEnter, ViewWillLeave, OnDestroy {
             ? `${dashboard.stats.pendingStudentRequests} student request${dashboard.stats.pendingStudentRequests === 1 ? ' is' : 's are'} waiting for your response.`
             : 'Open your schedule to add availability and invite more student requests.',
         };
+    const trend = dashboard.earningsTrend;
     this.coachEarningsSnapshot = [
       { period: 'Today', amount: this.formatCurrency(dashboard.stats.expectedEarnings), trend: 'Expected earnings' },
+      { period: 'Last 7 Days', amount: this.formatCurrency(trend?.total ?? 0), trend: `${trend?.sessions ?? 0} completed` },
       { period: 'Upcoming', amount: String(dashboard.stats.upcomingSessions), trend: 'Scheduled sessions' },
-      { period: 'Completed', amount: String(dashboard.stats.completedSessions), trend: 'All-time sessions' },
     ];
+    const trendMax = Math.max(0, ...(trend?.days ?? []).map((day) => day.amount));
+    this.coachEarningsTrend = (trend?.days ?? []).map((day, index, days) => ({
+      label: day.label,
+      amount: day.amount,
+      display: this.formatCurrency(day.amount),
+      height: trendMax > 0 && day.amount > 0 ? Math.max(12, Math.round((day.amount / trendMax) * 100)) : 8,
+      today: index === days.length - 1,
+    }));
     this.coachPulseMetrics = [
       { icon: 'ðŸ“…', label: "Today's Sessions", value: String(dashboard.stats.todaySessions), accent: 'var(--app-primary)' },
       { icon: 'ðŸ’°', label: 'Expected Earnings', value: this.formatCurrency(dashboard.stats.expectedEarnings), accent: '#FF7A00' },

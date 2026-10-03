@@ -31,6 +31,8 @@ export interface AuthUser {
   xpToNextLevel?: number;
   percentileRank?: string | null;
   rating?: number | null;
+  reviewCount?: number | null;
+  coachVerified?: boolean | null;
   gamesPlayed?: number | null;
   profileCompletion?: number;
   sportsLabel?: string;
@@ -133,6 +135,11 @@ export interface CoachDashboard {
     pendingStudentRequests: number;
     dailyGoalProgress: number;
   };
+  earningsTrend?: {
+    total: number;
+    sessions: number;
+    days: Array<{ date: string; label: string; amount: number; sessions: number }>;
+  };
   todaySessions: CoachDashboardSession[];
   recentReviews: CoachDashboardReview[];
   recentActivity: CoachDashboardActivity[];
@@ -164,6 +171,15 @@ export interface CoachInsightsPayload {
   quickStats: Array<{ icon: string; label: string; value: string }>;
   performance: CoachInsightMetric[];
   businessMetrics: Array<{ id: string; label: string; value: string; sub: string; pct: number; color: string }>;
+  revenue?: {
+    total: number;
+    previous: number;
+    change: string;
+    positive: boolean;
+    sessions: number;
+    average: number;
+    points: Array<{ label: string; from: string; to: string; amount: number; sessions: number }>;
+  };
   studentGrowth: { activeStudents: number; evaluatedStudents: number; improvedStudents: number; averageImprovement: number };
   studentHighlights: Array<{ icon: string; label: string; name: string; sub: string; badgeIcon: string }>;
   retention: {

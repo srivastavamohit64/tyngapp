@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, signal, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BackNavigationService } from '../../core/services/back-navigation.service';
 import { FormsModule } from '@angular/forms';
@@ -20,7 +20,6 @@ interface Student {
   emoji: string;
   skillLevel: 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert';
   sessionsCompleted: number;
-  attendance: number;
   trainingFocus: string[];
   lastSession: string;
   coachSince: string;
@@ -28,11 +27,9 @@ interface Student {
   stats: {
     sessions: number;
     hours: number;
-    attendance: number;
-    improvement: number;
+    attendance: number | null;
+    improvement: number | null;
     streak: number;
-    tournamentWins: number;
-    personalBest: string;
   };
   evaluation: {
     technique: number;
@@ -46,103 +43,9 @@ interface Student {
   achievements: any[];
   timeline: { icon: string; text: string; date: string; done: boolean }[];
   managedProfile?: any;
-  upcomingSession?: { venue: string; date: string; time: string; focus: string[]; weather: string };
+  upcomingSession?: { id: string; title: string; venue: string; date: string; time: string; pending: boolean };
+  attendanceSessionId: string | null;
 }
-
-const STUDENTS: Student[] = [
-  {
-    id: 1, name: 'Rahul Sharma', age: 19,
-    photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&auto=format',
-    cover: 'https://images.unsplash.com/photo-1593341646782-e0b495cff86d?w=700&h=350&fit=crop&auto=format',
-    sport: 'Cricket', emoji: '🏏', skillLevel: 'Advanced',
-    sessionsCompleted: 18, attendance: 94,
-    trainingFocus: ['🏏 Batting', '💪 Fitness', '🧠 Game Awareness'],
-    lastSession: '2 days ago', coachSince: 'Jan 2024', membershipStatus: 'Active',
-    stats: { sessions: 18, hours: 27, attendance: 94, improvement: 28, streak: 5, tournamentWins: 2, personalBest: 'Top 10 District' },
-    evaluation: { technique: 8, fitness: 7, gameAwareness: 8, discipline: 9, teamwork: 7, confidence: 8 },
-    notes: [
-      { text: 'Excellent attitude during practice. Very coachable.', date: '28 Jun 2025' },
-      { text: 'Needs better footwork positioning for defence shots.', date: '20 Jun 2025' },
-      { text: 'Ready for district-level trials. Remarkable progress.', date: '10 Jun 2025' },
-    ],
-    achievements: ['Perfect Attendance', 'Most Improved', 'Consistency Award'],
-    timeline: [
-      { icon: '✓', text: 'Joined TYNG', date: 'Jan 2024', done: true },
-      { icon: '✓', text: 'First Coaching Session', date: 'Jan 2024', done: true },
-      { icon: '⭐', text: 'Skill Level Upgraded to Advanced', date: 'Mar 2024', done: true },
-      { icon: '🏆', text: 'Won District U-21 Tournament', date: 'May 2024', done: true },
-      { icon: '📈', text: 'Personal Best in Batting Average', date: 'Jun 2025', done: true },
-    ],
-    upcomingSession: { venue: 'Phoenix Arena', date: 'Today', time: '6:00 PM', focus: ['🏏 Batting', '🧠 Game Awareness'], weather: 'Clear ☀️ 28°C' },
-  },
-  {
-    id: 2, name: 'Priya Verma', age: 17,
-    photo: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=200&h=200&fit=crop&auto=format',
-    cover: 'https://images.unsplash.com/photo-1722087642932-9b070e9a066e?w=700&h=350&fit=crop&auto=format',
-    sport: 'Badminton', emoji: '🏸', skillLevel: 'Intermediate',
-    sessionsCompleted: 12, attendance: 88,
-    trainingFocus: ['🏃 Footwork', '⚡ Speed', '🛡 Defence'],
-    lastSession: 'Yesterday', coachSince: 'Mar 2024', membershipStatus: 'Active',
-    stats: { sessions: 12, hours: 18, attendance: 88, improvement: 35, streak: 3, tournamentWins: 0, personalBest: 'Fastest Smash Speed' },
-    evaluation: { technique: 7, fitness: 8, gameAwareness: 6, discipline: 8, teamwork: 6, confidence: 7 },
-    notes: [
-      { text: 'Great natural talent. Needs consistent practice on backhand.', date: '25 Jun 2025' },
-      { text: 'Attendance improved significantly this month.', date: '15 Jun 2025' },
-    ],
-    achievements: ['Fast Learner', 'Consistency Award'],
-    timeline: [
-      { icon: '✓', text: 'Joined TYNG', date: 'Mar 2024', done: true },
-      { icon: '✓', text: 'First Coaching Session', date: 'Mar 2024', done: true },
-      { icon: '⭐', text: 'Upgraded to Intermediate', date: 'May 2024', done: true },
-      { icon: '🏆', text: 'Runner-Up City Tennis League', date: 'Jun 2025', done: true },
-    ],
-    upcomingSession: { venue: 'Sports Authority Complex', date: 'Tomorrow', time: '5:30 PM', focus: ['🏃 Footwork', '🎾 Backhand'], weather: 'Partly Cloudy ⛅' },
-  },
-  {
-    id: 3, name: 'Vikram Singh', age: 22,
-    photo: 'https://images.unsplash.com/photo-1557862921-37829c790f19?w=200&h=200&fit=crop&auto=format',
-    cover: 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=700&h=350&fit=crop&auto=format',
-    sport: 'Football', emoji: '⚽', skillLevel: 'Expert',
-    sessionsCompleted: 34, attendance: 96,
-    trainingFocus: ['🥅 Goalkeeping', '🛡 Defence', '🤝 Teamwork'],
-    lastSession: 'Today', coachSince: 'Sep 2023', membershipStatus: 'Active',
-    stats: { sessions: 34, hours: 51, attendance: 96, improvement: 42, streak: 12, tournamentWins: 4, personalBest: 'District Champion 2024' },
-    evaluation: { technique: 9, fitness: 9, gameAwareness: 9, discipline: 10, teamwork: 8, confidence: 9 },
-    notes: [
-      { text: 'Outstanding dedication. Ready for state-level selection.', date: '26 Jun 2025' },
-    ],
-    achievements: ['Tournament Winner', 'Most Improved', 'Perfect Attendance', 'Team Captain'],
-    timeline: [
-      { icon: '✓', text: 'Joined TYNG', date: 'Sep 2023', done: true },
-      { icon: '⭐', text: 'Upgraded to Advanced', date: 'Dec 2023', done: true },
-      { icon: '⭐', text: 'Upgraded to Expert', date: 'Mar 2024', done: true },
-      { icon: '🏆', text: 'Won District Championship', date: 'May 2024', done: true },
-      { icon: '📈', text: 'Personal Best — All-time Best Rating', date: 'Jun 2025', done: true },
-    ],
-    upcomingSession: { venue: 'K.D. Singh Stadium', date: 'Today', time: '7:30 PM', focus: ['🥅 Goalkeeping', '🛡 Defence'], weather: 'Clear ☀️' },
-  },
-  {
-    id: 4, name: 'Ananya Patel', age: 15,
-    photo: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&h=200&fit=crop&auto=format',
-    cover: 'https://images.unsplash.com/photo-1761156896762-2ef13f932004?w=700&h=350&fit=crop&auto=format',
-    sport: 'Tennis', emoji: '🎾', skillLevel: 'Beginner',
-    sessionsCompleted: 6, attendance: 82,
-    trainingFocus: ['🎯 Serving', '🎯 Accuracy', '🧠 Game Awareness'],
-    lastSession: '3 days ago', coachSince: 'May 2025', membershipStatus: 'Active',
-    stats: { sessions: 6, hours: 9, attendance: 82, improvement: 65, streak: 2, tournamentWins: 0, personalBest: 'First Match Win' },
-    evaluation: { technique: 5, fitness: 6, gameAwareness: 5, discipline: 7, teamwork: 7, confidence: 6 },
-    notes: [
-      { text: 'Great potential. Improving rapidly for a beginner.', date: '22 Jun 2025' },
-    ],
-    achievements: ['Fast Learner'],
-    timeline: [
-      { icon: '✓', text: 'Joined TYNG', date: 'May 2025', done: true },
-      { icon: '✓', text: 'First Coaching Session', date: 'May 2025', done: true },
-      { icon: '📈', text: 'First Match Win', date: 'Jun 2025', done: true },
-    ],
-    upcomingSession: { venue: 'Phoenix Sports Hub', date: 'Wed', time: '4:00 PM', focus: ['🎯 Serving', '🎯 Accuracy'], weather: 'Clear ☀️' },
-  },
-];
 
 const FOCUS_AREAS = [
   { id: 'serving', emoji: '🎯', label: 'Serving' },
@@ -188,16 +91,6 @@ const ACHIEVEMENT_COLORS: Record<string, { bg: string; color: string }> = {
           <img [src]="student.cover" class="w-full h-full object-cover" />
           <div class="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-[#FAFBFC]"></div>
 
-          <div class="absolute top-0 left-0 right-0 flex items-center justify-end px-5 pt-4">
-            <div class="flex gap-2">
-              <button class="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/20 border-none">
-                <ion-icon name="share-social-outline" class="text-white text-base"></ion-icon>
-              </button>
-              <button (click)="liked = !liked" class="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/20 border-none">
-                <ion-icon [name]="liked ? 'heart' : 'heart-outline'" [class.text-red-500]="liked" class="text-white text-base"></ion-icon>
-              </button>
-            </div>
-          </div>
         </div>
 
         <!-- Student Title details card overlay -->
@@ -215,19 +108,21 @@ const ACHIEVEMENT_COLORS: Record<string, { bg: string; color: string }> = {
             </div>
             <div class="pb-1">
               <h1 class="text-[22px] font-black text-[#111827] m-0">{{ student.name }}</h1>
-              <p class="text-[13px] text-[#9CA3AF] m-0">Age {{ student.age }} · {{ student.emoji }} {{ student.sport }}</p>
+              <p class="text-[13px] text-[#9CA3AF] m-0 capitalize"><ng-container *ngIf="student.age > 0">Age {{ student.age }} · </ng-container>{{ student.sport }}</p>
               <div class="flex items-center gap-2 mt-1">
-                <span class="text-[11px] bg-[#F0FDF4] text-[#16A34A] font-bold px-2.5 py-0.5 rounded-full">
+                <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full"
+                  [style.backgroundColor]="student.membershipStatus === 'Active' ? '#F0FDF4' : '#F3F4F6'"
+                  [style.color]="student.membershipStatus === 'Active' ? '#16A34A' : '#6B7280'">
                   {{ student.membershipStatus }}
                 </span>
-                <span class="text-[11px] text-[#9CA3AF]">Coach since {{ student.coachSince }}</span>
+                <span *ngIf="student.coachSince" class="text-[11px] text-[#9CA3AF]">Coaching since {{ formatDate(student.coachSince) }}</span>
               </div>
             </div>
           </div>
 
           <!-- Quick statistics row -->
           <div class="grid grid-cols-3 gap-3 mb-5">
-            <div *ngFor="let s of [{ label:'Attendance', val: student.attendance + '%', color:'#16A34A' }, { label:'Rating', val: getOverallRating(), color:'#D97706' }, { label:'Sessions', val: student.sessionsCompleted, color:'#1D4ED8' }]"
+            <div *ngFor="let s of [{ label:'Attendance', val: student.stats.attendance === null ? '—' : student.stats.attendance + '%', color:'#16A34A' }, { label:'Rating', val: getOverallRating(), color:'#D97706' }, { label:'Completed', val: student.sessionsCompleted, color:'#1D4ED8' }]"
               class="bg-white rounded-2xl p-3 text-center shadow-sm border border-slate-100">
               <p class="text-[20px] font-black m-0" [style.color]="s.color">{{ s.val }}</p>
               <p class="text-[10px] text-[#9CA3AF] mt-0.5 m-0 font-bold">{{ s.label }}</p>
@@ -308,7 +203,7 @@ const ACHIEVEMENT_COLORS: Record<string, { bg: string; color: string }> = {
                   <span class="text-[13px] font-bold text-[#111827]">{{ getSkillLabel(key) }}</span>
                   <span class="text-[13px] font-black text-[var(--app-primary)]">{{ evaluation[key] }}/10</span>
                 </div>
-                <input type="range" min="1" max="10" [(ngModel)]="evaluation[key]" (input)="scheduleEvaluationSave()" class="w-full range-slider" />
+                <input type="range" min="1" max="10" [(ngModel)]="evaluation[key]" (input)="evalSaved = false" [attr.aria-label]="getSkillLabel(key)" class="w-full range-slider" />
               </div>
             </div>
 
@@ -391,19 +286,16 @@ const ACHIEVEMENT_COLORS: Record<string, { bg: string; color: string }> = {
             <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-4">Upcoming Session</p>
             <div class="bg-[#F9FAFB] rounded-2xl p-4 border border-slate-100 text-left">
               <div class="flex items-center justify-between mb-3">
-                <div>
+                <div class="min-w-0">
                   <p class="text-[15px] font-black text-[#111827] m-0">{{ student.upcomingSession.date }} · {{ student.upcomingSession.time }}</p>
-                  <p class="text-[12px] text-[#9CA3AF] m-0">{{ student.upcomingSession.venue }}</p>
+                  <p class="text-[12px] text-[#9CA3AF] m-0 truncate">{{ student.upcomingSession.title }}<ng-container *ngIf="student.upcomingSession.venue"> · {{ student.upcomingSession.venue }}</ng-container></p>
                 </div>
-                <div class="text-right">
-                  <p class="text-[11px] text-[#9CA3AF] m-0">Weather</p>
-                  <p class="text-[12px] font-black text-[#111827] m-0">{{ student.upcomingSession.weather }}</p>
-                </div>
+                <span *ngIf="student.upcomingSession.pending" class="text-[10px] font-bold px-2 py-1 rounded-full bg-[#FFFBEB] text-[#D97706] flex-shrink-0">Awaiting venue</span>
               </div>
-              <div class="flex flex-wrap gap-1.5 mb-3">
-                <span *ngFor="let f of student.upcomingSession.focus" class="text-[10px] font-bold bg-[var(--app-primary)]/12 text-[#111827] px-2 py-1 rounded-full border border-[var(--app-primary)]/25">{{ f }}</span>
+              <div *ngIf="selectedFocus.length" class="flex flex-wrap gap-1.5 mb-3">
+                <span *ngFor="let f of selectedFocus" class="text-[10px] font-bold bg-[var(--app-primary)]/12 text-[#111827] px-2 py-1 rounded-full border border-[var(--app-primary)]/25">{{ getFocusLabel(f) }}</span>
               </div>
-              <button (click)="go('/app/coach/schedule')" class="w-full h-10 rounded-xl text-[13px] font-black btn-green-gradient border-none text-[#111827] flex items-center justify-center gap-1">
+              <button (click)="go('/app/coach/session/' + student.upcomingSession.id)" class="w-full h-10 rounded-xl text-[13px] font-black btn-green-gradient border-none text-[#111827] flex items-center justify-center gap-1">
                 View Session
               </button>
             </div>
@@ -427,63 +319,12 @@ const ACHIEVEMENT_COLORS: Record<string, { bg: string; color: string }> = {
             <ion-icon name="calendar-outline"></ion-icon>
             <span>Schedule</span>
           </button>
-          <button (click)="openQRScanner()" class="quick-action-btn" style="background-color:rgba(124,58,237,0.08);color:#7C3AED;">
-            <ion-icon name="qr-code-outline"></ion-icon>
+          <button (click)="openAttendance()" class="quick-action-btn" style="background-color:rgba(124,58,237,0.08);color:#7C3AED;">
+            <ion-icon name="checkmark-done-outline"></ion-icon>
             <span>Attendance</span>
           </button>
         </div>
-      </div>
-
-      <!-- Scan Attendance modal overlay -->
-      <div *ngIf="showQR()" class="modal-overlay">
-        <div class="modal-backdrop" (click)="showQR.set(false)"></div>
-        <div class="modal-content-card bg-white p-6 rounded-[32px] max-w-sm w-full mx-6 relative z-50">
-          <div class="w-10 h-1 rounded-full bg-[#E5E7EB] mx-auto mb-5"></div>
-
-          <!-- SUCCESS MARKED STATE -->
-          <div *ngIf="scanState() === 'success'" class="flex flex-col items-center text-center">
-            <div class="success-circle mb-4">
-              <ion-icon name="checkmark-outline" class="text-white text-5xl font-black"></ion-icon>
-            </div>
-            <p class="text-[20px] font-black text-[#111827] mb-1">Attendance Marked!</p>
-            <p class="text-[14px] text-[#9CA3AF] mb-1">{{ student?.name }}</p>
-            <p class="text-[12px] text-[#9CA3AF] mb-4">12:30 PM · {{ todayString }}</p>
-            <div class="bg-[#F0FDF4] rounded-2xl px-4 py-2.5 w-full border border-[var(--app-primary)]/22">
-              <p class="text-[12px] font-semibold text-[#16A34A] text-center m-0">Attendance updated to {{ student ? Math.min(student.attendance + 2, 100) : 96 }}%</p>
-            </div>
-            <button (click)="closeQRScanner()" class="mt-4 w-full h-11 rounded-2xl text-[14px] font-black btn-green-gradient text-[#111827] border-none">
-              Done
-            </button>
-          </div>
-
-          <!-- READY SCANNING STATE -->
-          <div *ngIf="scanState() !== 'success'" class="flex flex-col items-center">
-            <p class="text-[18px] font-black text-[#111827] text-center mb-1">Mark Attendance</p>
-            <p class="text-[13px] text-[#9CA3AF] text-center mb-5">Scan {{ student?.name }}'s TYNG QR Code</p>
-
-            <!-- Camera scan frame simulation -->
-            <div class="relative w-full aspect-square rounded-2xl bg-[#111827] overflow-hidden mb-5 flex items-center justify-center">
-              <div *ngIf="scanState() === 'scanning'" class="absolute inset-0 flex items-center justify-center">
-                <div class="scanning-laser"></div>
-                <p class="relative z-10 text-white text-[13px] font-semibold">Scanning…</p>
-              </div>
-              <div *ngIf="scanState() === 'ready'" class="flex flex-col items-center gap-3">
-                <ion-icon name="camera-outline" class="text-white/30 text-5xl"></ion-icon>
-                <p class="text-white/50 text-[13px] font-bold">Tap to start scanning</p>
-              </div>
-
-              <!-- Brackets corners visual -->
-              <div class="absolute top-3 left-3 w-6 h-6 border-t-4 border-l-4 border-[var(--app-primary)]"></div>
-              <div class="absolute top-3 right-3 w-6 h-6 border-t-4 border-r-4 border-[var(--app-primary)]"></div>
-              <div class="absolute bottom-3 left-3 w-6 h-6 border-b-4 border-l-4 border-[var(--app-primary)]"></div>
-              <div class="absolute bottom-3 right-3 w-6 h-6 border-b-4 border-r-4 border-[var(--app-primary)]"></div>
-            </div>
-
-            <button (click)="startScanning()" class="w-full h-12 rounded-2xl text-[15px] font-black btn-green-gradient text-[#111827] border-none">
-              {{ scanState() === 'scanning' ? 'Scanning…' : 'Start Scanning' }}
-            </button>
-          </div>
-        </div>
+        <p *ngIf="saveError" class="text-center text-xs text-[#B42318] mt-2 mb-0" role="alert">{{ saveError }}</p>
       </div>
       </app-brand-header-shell>
     </ion-content>
@@ -574,52 +415,9 @@ const ACHIEVEMENT_COLORS: Record<string, { bg: string; color: string }> = {
       }
     }
 
-    /* Modal styles */
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 50;
-    }
-
-    .modal-backdrop {
-      position: absolute;
-      inset: 0;
-      background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(4px);
-    }
-
-    .modal-content-card {
-      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
-    }
-
-    .success-circle {
-      width: 80px; height: 80px;
-      border-radius: 50%;
-      background: var(--app-primary);
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 8px 32px rgba(var(--app-primary-rgb),0.45);
-    }
-
-    .scanning-laser {
-      position: absolute;
-      left: 0; right: 0;
-      height: 2px;
-      background: var(--app-primary);
-      animation: scanLaser 1.8s infinite ease-in-out;
-    }
-
     .student-profile-loading { padding: 12px 16px 24px; }
     .sp-error { padding: 40px 12px; text-align: center; color: #6b7280; font-size: 14px; }
     .sp-error button { margin-top: 12px; height: 40px; padding: 0 18px; border: 0; border-radius: 12px; background: var(--app-primary); color: #111827; font-weight: 800; }
-
-    @keyframes scanLaser {
-      0% { top: 10%; }
-      50% { top: 90%; }
-      100% { top: 10%; }
-    }
   `]
 })
 export class CoachStudentProfilePage implements OnInit {
@@ -633,10 +431,6 @@ export class CoachStudentProfilePage implements OnInit {
   loading = true;
   loadError = '';
   studentId = 0;
-  liked = false;
-  showQR = signal(false);
-  scanState = signal<'ready' | 'scanning' | 'success'>('ready');
-  todayString = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
 
   selectedFocus: string[] = [];
   evaluation: any = { technique: 5, fitness: 5, gameAwareness: 5, discipline: 5, teamwork: 5, confidence: 5 };
@@ -646,9 +440,7 @@ export class CoachStudentProfilePage implements OnInit {
   newNote = '';
   notes: { text: string; date: string }[] = [];
   notesExpanded = false;
-  private evaluationTimer?: ReturnType<typeof setTimeout>;
 
-  readonly Math = Math;
   readonly focusAreas = FOCUS_AREAS;
 
   ngOnInit() {
@@ -667,15 +459,35 @@ export class CoachStudentProfilePage implements OnInit {
       const managedProfile = relation?.profile;
       const player = relation?.student || {};
       const sessions = data?.sessions || [];
+      const stats = data?.stats || {};
+      const upcoming = data?.upcoming_session;
+      const upcomingStart = upcoming?.starts_at ? new Date(upcoming.starts_at) : null;
+      const needsAttendance = sessions.find((session: any) => session.state === 'awaiting_completion' && !session.attendance)
+        || sessions.find((session: any) => session.state === 'awaiting_completion');
       const evaluations = data?.evaluations || [];
       const latest = evaluations[0] || {};
       const skillRatings = latest.skill_ratings || {};
       this.student = {
         id: Number(player.id || id), name: player.name || 'Student', age: this.ageFromDob(player.dob),
         photo: resolveMediaUrl(player.profile_image) || 'assets/icon/favicon.png', cover: resolveMediaUrl(player.cover_image) || resolveMediaUrl(player.profile_image) || 'assets/icon/favicon.png', sport: (player.sports || ['Coaching'])[0], emoji: '',
-        skillLevel: managedProfile?.skill_level || 'Beginner', sessionsCompleted: sessions.length, attendance: 0,
-        trainingFocus: relation?.training_focus || [], lastSession: sessions[0]?.session_date || '', coachSince: relation?.enrolled_at || '', membershipStatus: relation?.status === 'active' ? 'Active' : 'Inactive', managedProfile,
-        stats: { sessions: sessions.length, hours: 0, attendance: 0, improvement: 0, streak: 0, tournamentWins: 0, personalBest: '—' },
+        skillLevel: managedProfile?.skill_level || 'Beginner', sessionsCompleted: Number(stats.completed_sessions ?? 0),
+        trainingFocus: relation?.training_focus || [], lastSession: stats.last_session_at || '', coachSince: relation?.enrolled_at || '', membershipStatus: relation?.status === 'active' ? 'Active' : 'Inactive', managedProfile,
+        stats: {
+          sessions: Number(stats.sessions ?? sessions.length),
+          hours: Number(stats.hours ?? 0),
+          attendance: stats.attendance_rate ?? null,
+          improvement: stats.improvement ?? null,
+          streak: Number(stats.streak ?? 0),
+        },
+        upcomingSession: upcoming && upcomingStart ? {
+          id: String(upcoming.id),
+          title: upcoming.title || 'Coaching session',
+          venue: upcoming.venue || '',
+          date: this.relativeDay(upcomingStart),
+          time: upcomingStart.toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit', hour12: true }),
+          pending: upcoming.status === 'pending_venue_approval',
+        } : undefined,
+        attendanceSessionId: needsAttendance?.id ? String(needsAttendance.id) : (upcoming?.id ? String(upcoming.id) : null),
         evaluation: { technique: skillRatings.technique || latest.rating || 5, fitness: skillRatings.fitness || latest.rating || 5, gameAwareness: skillRatings.gameAwareness || latest.rating || 5, discipline: skillRatings.discipline || latest.rating || 5, teamwork: skillRatings.teamwork || latest.rating || 5, confidence: skillRatings.confidence || latest.rating || 5 },
         notes: (data?.notes || []).map((n: any) => ({ text: n.note, date: n.created_at || '' })), achievements: data?.achievements || [], timeline: data?.timeline || [],
       };
@@ -762,13 +574,18 @@ export class CoachStudentProfilePage implements OnInit {
     return [
       { emoji: '📅', label: 'Sessions', value: String(this.student.stats.sessions), accent: 'var(--app-primary)' },
       { emoji: '⏱', label: 'Training Hours', value: `${this.student.stats.hours}h`, accent: '#FF7A00' },
-      { emoji: '✅', label: 'Attendance', value: `${this.student.stats.attendance}%`, accent: '#38BDF8' },
-      { emoji: '📈', label: 'Improvement', value: `+${this.student.stats.improvement}%`, accent: '#22C55E' },
-      { emoji: '🔥', label: 'Streak', value: `${this.student.stats.streak} sessions`, accent: '#EF4444' },
-      { emoji: '🏆', label: 'Tournament Wins', value: String(this.student.stats.tournamentWins), accent: '#F59E0B' },
-      { emoji: '🎯', label: 'Personal Best', value: this.student.stats.personalBest, accent: '#7C3AED' },
+      { emoji: '✅', label: 'Attendance', value: this.student.stats.attendance === null ? '—' : `${this.student.stats.attendance}%`, accent: '#38BDF8' },
+      { emoji: '📈', label: 'Improvement', value: this.formatImprovement(this.student.stats.improvement), accent: '#22C55E' },
+      { emoji: '🔥', label: 'Streak', value: `${this.student.stats.streak} ${this.student.stats.streak === 1 ? 'session' : 'sessions'}`, accent: '#EF4444' },
+      { emoji: '🎯', label: 'Completed', value: String(this.student.sessionsCompleted), accent: '#7C3AED' },
+      { emoji: '🗓', label: 'Last Completed', value: this.student.lastSession ? this.formatDate(this.student.lastSession) : '—', accent: '#1D4ED8' },
       { emoji: '⭐', label: 'Overall Rating', value: this.getOverallRating(), accent: '#F59E0B' },
     ];
+  }
+
+  private formatImprovement(value: number | null): string {
+    if (value === null || value === undefined) return '—';
+    return `${value > 0 ? '+' : ''}${value}%`;
   }
 
   toggleFocus(id: string) {
@@ -828,12 +645,6 @@ export class CoachStudentProfilePage implements OnInit {
     }
   }
 
-  scheduleEvaluationSave() {
-    this.evalSaved = false;
-    if (this.evaluationTimer) clearTimeout(this.evaluationTimer);
-    this.evaluationTimer = setTimeout(() => this.saveEvaluation(), 600);
-  }
-
   addNote() {
     if (!this.newNote.trim()) return;
     if (!this.student) return;
@@ -850,22 +661,22 @@ export class CoachStudentProfilePage implements OnInit {
     });
   }
 
-  openQRScanner() {
-    this.scanState.set('ready');
-    this.showQR.set(true);
+  openAttendance() {
+    if (!this.student?.attendanceSessionId) {
+      this.saveError = 'There is no current or upcoming session with this student to mark attendance for.';
+      return;
+    }
+    this.saveError = '';
+    this.go('/app/coach/session/' + this.student.attendanceSessionId);
   }
 
-  startScanning() {
-    this.scanState.set('scanning');
-    setTimeout(() => {
-      this.scanState.set('success');
-      if (this.student) {
-        this.student.attendance = Math.min(this.student.attendance + 2, 100);
-      }
-    }, 1800);
-  }
-
-  closeQRScanner() {
-    this.showQR.set(false);
+  private relativeDay(date: Date): string {
+    const today = new Date();
+    const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+    const startOfDate = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+    const days = Math.round((startOfDate - startOfToday) / 86400000);
+    if (days === 0) return 'Today';
+    if (days === 1) return 'Tomorrow';
+    return date.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
   }
 }

@@ -23,10 +23,10 @@
         <div class="coach-rating-row">
           <div class="coach-rating">
             <ion-icon name="star" class="star-icon"></ion-icon>
-            <span class="rating-value">4.8</span>
-            <span class="rating-count">(128)</span>
+            <span class="rating-value">{{ user()?.rating != null && (user()?.reviewCount ?? 0) > 0 ? (user()?.rating | number:'1.1-1') : 'New' }}</span>
+            <span class="rating-count" *ngIf="(user()?.reviewCount ?? 0) > 0">({{ user()?.reviewCount }})</span>
           </div>
-          <div class="verified-pill">
+          <div class="verified-pill" *ngIf="user()?.coachVerified">
             <ion-icon name="shield-checkmark-outline"></ion-icon>
             <span>Verified Coach</span>
           </div>

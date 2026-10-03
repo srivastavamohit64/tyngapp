@@ -29,6 +29,8 @@ interface Venue {
   amenities: string[];
   rentalEquipment: RentalItem[];
   courts: Court[];
+  platformFee: number;
+  taxRate: number;
 }
 
 interface RentalItem {
@@ -176,8 +178,8 @@ const DURATIONS = [
               <h3>Price breakdown</h3>
               <div><span>Court ({{ durationMinutes() / 60 | number:'1.0-1' }}h)</span><b>₹{{ courtCost() | number:'1.0-0' }}</b></div>
               <div *ngIf="equipmentCost()"><span>Equipment</span><b>₹{{ equipmentCost() | number:'1.0-0' }}</b></div>
-              <div><span>Platform fee</span><b>₹49</b></div>
-              <div><span>GST (18%)</span><b>₹{{ taxCost() | number:'1.0-0' }}</b></div>
+              <div><span>Platform fee</span><b>₹{{ platformFee() | number:'1.0-0' }}</b></div>
+              <div><span>GST ({{ taxPercent() }}%)</span><b>₹{{ taxCost() | number:'1.0-0' }}</b></div>
               <div class="total"><span>Total session cost</span><b>₹{{ totalCost() | number:'1.0-0' }}</b></div>
               <small>₹{{ perStudentCost() | number:'1.0-0' }} per selected student</small>
             </article>
@@ -257,6 +259,8 @@ export class CoachVenueBookingPage implements OnInit {
       const rawVenue = this.navigationVenue || venueRows.find((item: any) => Number(item.id) === venueId);
       if (!rawVenue) throw new Error('Choose a venue from the Book Venue page.');
       const mappedVenue = this.mapVenue(rawVenue);
+      const pricing = rawVenue.pricing || venueRows.find((item: any) => Number(item.id) === mappedVenue.id)?.pricing || venueRows.find((item: any) => item.pricing)?.pricing;
+      if (pricing) { mappedVenue.platformFee = Number(pricing.platform_fee ?? 0); mappedVenue.taxRate = Number(pricing.tax_rate ?? 0); }
       if (!mappedVenue.courts.length) throw new Error('This venue has no active courts available for booking.');
       this.venue.set(mappedVenue);
       this.selectCourt(mappedVenue.courts[0], false);
@@ -349,8 +353,10 @@ export class CoachVenueBookingPage implements OnInit {
 
   courtCost(): number { return (this.selectedCourt()?.pricePerHour || 0) * (this.durationMinutes() / 60); }
   equipmentCost(): number { const venue = this.venue(); return venue ? venue.rentalEquipment.reduce((sum, item) => sum + item.price * this.equipmentQty(item.id), 0) : 0; }
-  taxCost(): number { return Math.round((this.courtCost() + this.equipmentCost() + 49) * .18); }
-  totalCost(): number { return Math.round(this.courtCost() + this.equipmentCost() + 49 + this.taxCost()); }
+  platformFee(): number { return this.venue()?.platformFee ?? 0; }
+  taxPercent(): number { return Math.round((this.venue()?.taxRate ?? 0) * 100); }
+  taxCost(): number { return Math.round((this.courtCost() + this.equipmentCost() + this.platformFee()) * (this.venue()?.taxRate ?? 0)); }
+  totalCost(): number { return Math.round(this.courtCost() + this.equipmentCost() + this.platformFee() + this.taxCost()); }
   perStudentCost(): number { return Math.round(this.totalCost() / Math.max(1, this.selectedStudentIds().length)); }
   footerLabel(): string { return this.step() === 3 ? 'Available times' : this.step() === 4 ? 'Students selected' : this.step() === 6 ? 'Total session cost' : 'Current selection'; }
   footerValue(): string {
@@ -375,7 +381,7 @@ export class CoachVenueBookingPage implements OnInit {
     const rentalEquipment: RentalItem[] = (Array.isArray(item.rental_equipment ?? item.rentalEquipment) ? (item.rental_equipment ?? item.rentalEquipment) : []).map((equipment: any) => ({
       id: String(equipment.id), label: String(equipment.label || equipment.name || 'Equipment'), emoji: String(equipment.emoji || '🎽'), qty: Math.max(0, Number(equipment.qty || equipment.quantity || 0)), price: Math.max(0, Number(equipment.price || 0)),
     })).filter((item: RentalItem) => item.id && item.qty > 0);
-    return { id: Number(item.id), name: String(item.name || 'Venue'), address: String(item.address || item.location || ''), image: String(item.image || ''), openTime: String(item.open_time || item.openTime || '6:00 AM'), closeTime: String(item.close_time || item.closeTime || '10:00 PM'), autoConfirm: !!(item.auto_confirm ?? item.autoConfirm), amenities: Array.isArray(item.amenities) ? item.amenities.map(String) : [], rentalEquipment, courts };
+    return { id: Number(item.id), name: String(item.name || 'Venue'), address: String(item.address || item.location || ''), image: String(item.image || ''), openTime: String(item.open_time || item.openTime || '6:00 AM'), closeTime: String(item.close_time || item.closeTime || '10:00 PM'), autoConfirm: !!(item.auto_confirm ?? item.autoConfirm), amenities: Array.isArray(item.amenities) ? item.amenities.map(String) : [], rentalEquipment, courts, platformFee: Number(item.pricing?.platform_fee ?? 0), taxRate: Number(item.pricing?.tax_rate ?? 0) };
   }
   private buildDates(): DateOption[] {
     const today = new Date();

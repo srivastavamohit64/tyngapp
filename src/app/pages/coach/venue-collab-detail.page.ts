@@ -1,595 +1,345 @@
 import { CommonModule } from '@angular/common';
-import { Component, signal, computed, inject, OnInit } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BackNavigationService } from '../../core/services/back-navigation.service';
-import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
+import { BackNavigationService } from '../../core/services/back-navigation.service';
+import { CoachService, CoachVenueCollaborationDetail, CoachVenueCollaborationSession } from '../../core/services/coach.service';
 import { BrandHeaderShellComponent } from '../../shared/components/brand-header-shell/brand-header-shell.component';
-
-interface CollabContract {
-  start: string;
-  end: string;
-  duration: string;
-  paymentCycle: string;
-  gst: string;
-  method: string;
-}
-
-interface CollabSessions {
-  scheduled: number;
-  completed: number;
-  hours: number;
-  remaining: number;
-  attendance: number;
-  cancellation: number;
-}
-
-interface CollabEarnings {
-  coaching: number;
-  bonus: number;
-  incentive: number;
-}
-
-interface CollabTimeline {
-  month: string;
-  amount: number;
-  status: string;
-  date: string;
-}
-
-interface CollabAttendance {
-  date: string;
-  time: string;
-  duration: string;
-  students: number;
-  status: string;
-}
-
-interface CollabPayment {
-  bank: string;
-  upi: string;
-  ref: string;
-  date: string;
-  invoice: string;
-  gst: string;
-}
-
-interface CollabManager {
-  name: string;
-  title: string;
-  photo: string;
-  phone: string;
-  email: string;
-}
-
-interface CollabNote {
-  text: string;
-  date: string;
-}
-
-interface CollabVenueData {
-  venueName: string;
-  sport: string;
-  emoji: string;
-  image: string;
-  status: string;
-  contractType: string;
-  monthly: number;
-  schedule: string;
-  time: string;
-  contract: CollabContract;
-  sessions: CollabSessions;
-  earnings: CollabEarnings;
-  timeline: CollabTimeline[];
-  attendance: CollabAttendance[];
-  payment: CollabPayment;
-  manager: CollabManager;
-  notes: CollabNote[];
-}
-
-const COLLAB_DATA: Record<string, CollabVenueData> = {
-  '1': {
-    venueName:    'Elite Cricket Academy',
-    sport:        'Cricket', emoji: '🏏',
-    image:        'https://images.unsplash.com/photo-1593341646782-e0b495cff86d?w=800&h=420&fit=crop&auto=format',
-    status:       'Active',
-    contractType: 'Monthly Contract',
-    monthly:      35000,
-    schedule:     'Monday · Wednesday · Friday',
-    time:         '4:00 PM – 7:00 PM',
-    contract: {
-      start:    '1 July 2026', end: '31 December 2026',
-      duration: '6 Months', paymentCycle: 'Monthly',
-      gst: '18%', method: 'Bank Transfer',
-    },
-    sessions: { scheduled: 48, completed: 44, hours: 132, remaining: 12, attendance: 98, cancellation: 2 },
-    earnings: { coaching: 35000, bonus: 2000, incentive: 1500 },
-    timeline: [
-      { month: 'July',      amount: 35000, status: 'Paid',       date: '5 Aug 2026' },
-      { month: 'August',    amount: 35000, status: 'Paid',       date: '5 Sep 2026' },
-      { month: 'September', amount: 35000, status: 'Processing', date: 'Estimated 5 Oct' },
-      { month: 'October',   amount: 35000, status: 'Upcoming',   date: 'Due 5 Nov' },
-      { month: 'November',  amount: 35000, status: 'Upcoming',   date: 'Due 5 Dec' },
-      { month: 'December',  amount: 35000, status: 'Upcoming',   date: 'Due 5 Jan' },
-    ],
-    attendance: [
-      { date: '12 Sep', time: '4 PM–7 PM', duration: '3 hrs', students: 11, status: 'Completed' },
-      { date: '10 Sep', time: '4 PM–7 PM', duration: '3 hrs', students: 12, status: 'Completed' },
-      { date: '8 Sep',  time: '4 PM–7 PM', duration: '3 hrs', students: 10, status: 'Completed' },
-      { date: '5 Sep',  time: '4 PM–7 PM', duration: '3 hrs', students: 11, status: 'Completed' },
-      { date: '3 Sep',  time: '4 PM–7 PM', duration: '3 hrs', students: 12, status: 'Completed' },
-    ],
-    payment: { bank: 'HDFC Bank · XXXX 4589', upi: 'rajesh@hdfc', ref: 'TXN-EC-20261001', date: '5 Sep 2026', invoice: 'INV-EC-2026-09', gst: 'GSTIN29AA1234Z1' },
-    manager: { name: 'Suresh Kumar', title: 'Venue Manager', photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&auto=format', phone: '+91 98765 43210', email: 'suresh@elitecricket.in' },
-    notes: [
-      { text: 'Excellent attendance this month. Coach Rajesh has maintained 98% attendance consistently.', date: '10 Sep 2026' },
-      { text: 'Performance bonus awarded for conducting 2 additional weekend sessions in August.', date: '2 Sep 2026' },
-      { text: 'Contract renewed until December 2026 with updated payment terms.', date: '28 Jul 2026' },
-    ],
-  },
-  '2': {
-    venueName:    'Phoenix Sports Hub',
-    sport:        'Badminton', emoji: '🏸',
-    image:        'https://images.unsplash.com/photo-1722087642932-9b070e9a066e?w=800&h=420&fit=crop&auto=format',
-    status:       'Active',
-    contractType: 'Per Session',
-    monthly:      18000,
-    schedule:     'Tuesday · Thursday · Saturday',
-    time:         '6:00 AM – 9:00 AM',
-    contract: { start: '1 Jun 2026', end: '30 Nov 2026', duration: '6 Months', paymentCycle: 'Weekly', gst: '18%', method: 'UPI' },
-    sessions: { scheduled: 36, completed: 32, hours: 96, remaining: 12, attendance: 94, cancellation: 6 },
-    earnings: { coaching: 18000, bonus: 0, incentive: 500 },
-    timeline: [
-      { month: 'June',    amount: 18000, status: 'Paid',     date: '5 Jul 2026' },
-      { month: 'July',    amount: 18000, status: 'Paid',     date: '5 Aug 2026' },
-      { month: 'August',  amount: 18000, status: 'Paid',     date: '5 Sep 2026' },
-      { month: 'September', amount: 18000, status: 'Upcoming', date: 'Due 5 Oct' },
-    ],
-    attendance: [
-      { date: '10 Sep', time: '6 AM–9 AM', duration: '3 hrs', students: 5, status: 'Completed' },
-      { date: '8 Sep',  time: '6 AM–9 AM', duration: '3 hrs', students: 4, status: 'Completed' },
-    ],
-    payment: { bank: 'HDFC Bank · XXXX 4589', upi: 'rajesh@hdfc', ref: 'TXN-PS-20260901', date: '5 Sep 2026', invoice: 'INV-PS-2026-09', gst: 'GSTIN29AA1234Z1' },
-    manager: { name: 'Rekha Sharma', title: 'Sports Director', photo: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=80&h=80&fit=crop&auto=format', phone: '+91 87654 32109', email: 'rekha@phoenixsports.in' },
-    notes: [{ text: 'Good performance. Attendance slightly lower than target this month.', date: '8 Sep 2026' }],
-  },
-};
-
-const DOCS = [
-  { name: 'Monthly Invoice',     sub: 'September 2026 · PDF', size: '124 KB' },
-  { name: 'GST Invoice',         sub: 'GSTIN · September 2026', size: '89 KB' },
-  { name: 'Payment Receipt',     sub: 'TXN-EC-20261001 · PDF',  size: '56 KB' },
-  { name: 'Contract Agreement',  sub: 'Jul–Dec 2026 · PDF',      size: '342 KB' },
-  { name: 'Attendance Report',   sub: 'September 2026 · PDF',   size: '178 KB' },
-];
+import { PageSkeletonComponent } from '../../shared/components/skeleton';
 
 @Component({
   selector: 'app-venue-collab-detail',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule, BrandHeaderShellComponent],
+  imports: [CommonModule, IonicModule, BrandHeaderShellComponent, PageSkeletonComponent],
   template: `
     <ion-content [fullscreen]="true">
       <app-brand-header-shell title="Venue Collaboration" (back)="back()">
-      <div headerEnd class="hdr-actions">
-        <button type="button" aria-label="Download" class="app-header-btn flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
-          <ion-icon name="download-outline" class="text-[#111827] text-lg"></ion-icon>
-        </button>
-        <button type="button" aria-label="Share" class="app-header-btn flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
-          <ion-icon name="share-social-outline" class="text-[#111827] text-lg"></ion-icon>
-        </button>
-      </div>
-      <div class="collab-detail-page pb-36 text-left">
-        <div class="min-w-0 px-5 pt-4">
-          <p class="text-[12px] text-[#9CA3AF] m-0 font-bold">{{ data().venueName }}</p>
+      <div class="collab-detail-page pb-12 text-left">
+        <app-page-skeleton *ngIf="loading()" variant="detail" label="Loading venue collaboration"></app-page-skeleton>
+
+        <div *ngIf="!loading() && error()" class="state-card">
+          <ion-icon name="business-outline"></ion-icon>
+          <p class="state-title">{{ error() }}</p>
+          <button type="button" (click)="load()">Try again</button>
         </div>
 
-        <div class="px-5 pt-4 space-y-4">
-          <!-- Cover card banner -->
-          <div class="section-card bg-white overflow-hidden shadow-sm border border-slate-50">
-            <div class="relative h-[160px] overflow-hidden bg-gray-200">
-              <img [src]="data().image" class="w-full h-full object-cover" />
+        <div *ngIf="!loading() && data() as d" class="px-5 pt-4 space-y-4">
+          <div class="section-card bg-white overflow-hidden border border-slate-50">
+            <div class="relative h-[160px] overflow-hidden cover-fallback">
+              <img *ngIf="d.image" [src]="d.image" [alt]="d.name" class="w-full h-full object-cover" />
               <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
               <div class="absolute top-3 right-3">
-                <span class="text-[11px] font-black px-2.5 py-1 rounded-full"
-                  [style.backgroundColor]="getStatusStyle(data().status).bg"
-                  [style.color]="getStatusStyle(data().status).color">
-                  {{ data().status }}
+                <span class="text-[11px] font-black px-2.5 py-1 rounded-full capitalize"
+                  [style.backgroundColor]="statusStyle(d.status).bg" [style.color]="statusStyle(d.status).color">
+                  {{ d.status }}
                 </span>
               </div>
               <div class="absolute bottom-3 left-4 right-4">
-                <div class="flex items-center gap-2 mb-0.5">
-                  <span class="text-2xl">{{ data().emoji }}</span>
-                  <p class="text-white font-black text-[18px] drop-shadow-md m-0 leading-none">{{ data().venueName }}</p>
-                </div>
-                <p class="text-white/70 text-[12px] m-0 mt-1 font-bold">{{ data().sport }} · {{ data().contractType }}</p>
+                <p class="text-white font-black text-[18px] drop-shadow-md m-0 leading-tight">{{ d.name }}</p>
+                <p *ngIf="d.sports.length || d.location" class="text-white/75 text-[12px] m-0 mt-1 font-bold capitalize truncate">
+                  {{ d.sports.join(', ') }}<ng-container *ngIf="d.sports.length && d.location"> · </ng-container>{{ d.location }}
+                </p>
               </div>
             </div>
 
-            <div class="px-5 py-4 text-left">
-              <div class="flex items-start justify-between mb-3 flex-wrap gap-2">
+            <div class="px-5 py-4">
+              <div class="flex items-start justify-between gap-3">
                 <div>
-                  <p class="text-[11px] text-[#9CA3AF] font-bold m-0 uppercase tracking-wider">Monthly Contract</p>
-                  <p class="text-[26px] font-black text-[#111827] m-0">₹{{ data().monthly.toLocaleString('en-IN') }}<span class="text-[13px] text-[#9CA3AF] font-medium"> /month</span></p>
+                  <p class="text-[11px] text-[#9CA3AF] font-bold m-0 uppercase tracking-wider">Earned this month</p>
+                  <p class="text-[26px] font-black text-[#111827] m-0">{{ money(d.earnings.this_month) }}</p>
+                  <p class="text-[11px] text-[#6B7280] font-bold m-0">{{ money(d.earnings.total) }} earned in total</p>
                 </div>
-                <div class="text-right">
-                  <p class="text-[12px] font-black text-[#111827] m-0">{{ data().schedule }}</p>
-                  <p class="text-[11px] text-[#9CA3AF] m-0 font-bold mt-1">{{ data().time }}</p>
+                <div class="text-right" *ngIf="d.schedule || d.rating !== null">
+                  <p *ngIf="d.schedule" class="text-[12px] font-black text-[#111827] m-0">{{ d.schedule }}</p>
+                  <p *ngIf="d.rating !== null" class="text-[11px] text-[#9CA3AF] m-0 font-bold mt-1">★ {{ d.rating }} venue rating</p>
                 </div>
               </div>
-              <button class="w-full h-10 rounded-2xl text-[13px] font-bold text-[#111827] flex items-center justify-center gap-1 border-none bg-[var(--app-primary)]/12 border-[var(--app-primary)]/30 border-2">
-                View Venue Profile<ion-icon name="chevron-forward-outline"></ion-icon>
-              </button>
-            </div>
-          </div>
-
-          <!-- Contract summary parameters list -->
-          <div class="section-card p-5 bg-white">
-            <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-4 m-0">Contract Summary</p>
-            <div class="grid grid-cols-2 gap-3">
-              <div *ngFor="let item of getContractList()" class="bg-[#F9FAFB] rounded-2xl px-3.5 py-3 border border-slate-50 text-left">
-                <p class="text-[10px] text-[#9CA3AF] uppercase tracking-wider mb-0.5 m-0 font-bold">{{ item.label }}</p>
-                <p class="text-[13px] font-black text-[#111827] leading-tight m-0">{{ item.val }}</p>
+              <div *ngIf="d.earnings.upcoming > 0" class="mt-3 rounded-2xl bg-[#FFF7ED] px-3.5 py-2.5 text-[12px] font-bold text-[#C2410C]">
+                {{ money(d.earnings.upcoming) }} more from {{ d.stats.upcoming_sessions }} upcoming {{ d.stats.upcoming_sessions === 1 ? 'session' : 'sessions' }}
               </div>
             </div>
           </div>
 
-          <!-- Session statistics counters -->
           <div class="section-card p-5 bg-white">
-            <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-4 m-0">Session Summary</p>
+            <p class="section-title">Partnership</p>
+            <ng-container *ngIf="d.partnership as p; else noPartnership">
+              <div class="grid grid-cols-2 gap-3">
+                <div *ngFor="let item of partnershipRows(d)" class="info-tile">
+                  <p class="info-label">{{ item.label }}</p>
+                  <p class="info-value capitalize">{{ item.value }}</p>
+                </div>
+              </div>
+            </ng-container>
+            <ng-template #noPartnership>
+              <p class="text-[13px] text-[#6B7280] m-0 leading-relaxed">
+                You coach here by booking sessions directly. There is no formal partnership agreement with this venue yet.
+                <ng-container *ngIf="d.first_session_at"> Your first session here was on {{ formatDate(d.first_session_at) }}.</ng-container>
+              </p>
+            </ng-template>
+          </div>
+
+          <div class="section-card p-5 bg-white">
+            <p class="section-title">Session Summary</p>
             <div class="grid grid-cols-2 gap-3 mb-4">
-              <div *ngFor="let s of getSessionStatsList()" class="rounded-[20px] p-3.5 relative overflow-hidden border"
+              <div *ngFor="let s of sessionStats(d)" class="rounded-[20px] p-3.5 relative overflow-hidden border"
                 [style.backgroundColor]="s.color + '10'" [style.borderColor]="s.color + '22'">
-                <div class="absolute -bottom-3 -right-3 w-10 h-10 rounded-full opacity-20" [style.backgroundColor]="s.color"></div>
-                <span class="text-xl relative leading-none">{{ s.emoji }}</span>
-                <p class="text-[20px] font-black text-[#111827] mt-1.5 leading-none relative m-0">{{ s.val }}</p>
-                <p class="text-[10px] text-[#6B7280] mt-1 relative m-0 font-bold">{{ s.label }}</p>
-                <p class="text-[9px] text-[#9CA3AF] relative m-0 font-bold">{{ s.sub }}</p>
+                <ion-icon [name]="s.icon" class="text-xl" [style.color]="s.color"></ion-icon>
+                <p class="text-[20px] font-black text-[#111827] mt-1.5 leading-none m-0">{{ s.value }}</p>
+                <p class="text-[10px] text-[#6B7280] mt-1 m-0 font-bold">{{ s.label }}</p>
               </div>
             </div>
-            <!-- Attendance percentage rates -->
             <div class="grid grid-cols-2 gap-3">
-              <div class="bg-[#F9FAFB] rounded-2xl px-4 py-3 text-center border border-slate-50">
-                <p class="text-[22px] font-black text-[#22C55E] m-0">{{ data().sessions.attendance }}%</p>
-                <p class="text-[10px] text-[#9CA3AF] mt-0.5 m-0 font-bold">Attendance Rate</p>
+              <div class="rate-tile">
+                <p class="text-[22px] font-black text-[#22C55E] m-0">{{ d.stats.attendance_rate === null ? '—' : d.stats.attendance_rate + '%' }}</p>
+                <p class="text-[10px] text-[#9CA3AF] mt-0.5 m-0 font-bold">Attendance rate</p>
               </div>
-              <div class="bg-[#F9FAFB] rounded-2xl px-4 py-3 text-center border border-slate-50">
-                <p class="text-[22px] font-black text-[#EF4444] m-0">{{ data().sessions.cancellation }}%</p>
-                <p class="text-[10px] text-[#9CA3AF] mt-0.5 m-0 font-bold">Cancellation Rate</p>
+              <div class="rate-tile">
+                <p class="text-[22px] font-black text-[#EF4444] m-0">{{ d.stats.cancellation_rate === null ? '—' : d.stats.cancellation_rate + '%' }}</p>
+                <p class="text-[10px] text-[#9CA3AF] mt-0.5 m-0 font-bold">Cancellation rate</p>
               </div>
             </div>
+            <p *ngIf="d.stats.awaiting_completion > 0" class="text-[12px] font-bold text-[#C2410C] mt-3 mb-0">
+              {{ d.stats.awaiting_completion }} {{ d.stats.awaiting_completion === 1 ? 'session needs' : 'sessions need' }} to be marked as completed.
+            </p>
+            <p *ngIf="d.stats.pending_approval > 0" class="text-[12px] font-bold text-[#6B7280] mt-2 mb-0">
+              {{ d.stats.pending_approval }} {{ d.stats.pending_approval === 1 ? 'request is' : 'requests are' }} waiting for venue approval.
+            </p>
           </div>
 
-          <!-- Invoice Breakdown -->
-          <div class="section-card p-5 bg-white">
-            <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-4 m-0">Earnings Breakdown</p>
-            <div class="space-y-0.5">
-              <div class="flex items-start justify-between py-3 border-b border-[#F9FAFB]">
-                <div>
-                  <p class="text-[13px] font-bold text-[#6B7280] m-0">Coaching Charges</p>
-                </div>
-                <p class="text-[13px] font-black text-[#111827] m-0">₹{{ data().earnings.coaching.toLocaleString('en-IN') }}</p>
-              </div>
-
-              <div *ngIf="data().earnings.bonus > 0" class="flex items-start justify-between py-3 border-b border-[#F9FAFB]">
-                <div>
-                  <p class="text-[13px] font-bold text-[#6B7280] m-0">Performance Bonus</p>
-                  <p class="text-[10px] text-[#9CA3AF] m-0 font-bold">Weekend additional sessions</p>
-                </div>
-                <p class="text-[13px] font-black text-[#111827] m-0">+₹{{ data().earnings.bonus.toLocaleString('en-IN') }}</p>
-              </div>
-
-              <div *ngIf="data().earnings.incentive > 0" class="flex items-start justify-between py-3 border-b border-[#F9FAFB]">
-                <div>
-                  <p class="text-[13px] font-bold text-[#6B7280] m-0">Venue Incentive</p>
-                  <p class="text-[10px] text-[#9CA3AF] m-0 font-bold">Attendance excellence bonus</p>
-                </div>
-                <p class="text-[13px] font-black text-[#111827] m-0">+₹{{ data().earnings.incentive.toLocaleString('en-IN') }}</p>
-              </div>
-
-              <div class="flex items-start justify-between py-3 border-b border-[#F9FAFB]">
-                <div>
-                  <p class="text-[13px] font-black text-[#111827] m-0">Gross Amount</p>
-                </div>
-                <p class="text-[14px] font-black text-[#111827] m-0">₹{{ getGross().toLocaleString('en-IN') }}</p>
-              </div>
-
-              <div class="flex items-start justify-between py-3 border-b border-[#F9FAFB] pt-4">
-                <div>
-                  <p class="text-[13px] font-bold text-[#6B7280] m-0">GST (18%)</p>
-                  <p class="text-[10px] text-[#9CA3AF] m-0 font-bold">Collected from venue, not deducted</p>
-                </div>
-                <p class="text-[13px] font-black text-[#111827] m-0">₹0</p>
-              </div>
-
-              <div class="flex items-start justify-between py-3 border-b border-[#F9FAFB]">
-                <div>
-                  <p class="text-[13px] font-bold text-[#6B7280] m-0">Platform Fee</p>
-                  <p class="text-[10px] text-[#9CA3AF] m-0 font-bold">TYNG processing charge</p>
-                </div>
-                <p class="text-[13px] font-black text-[#EF4444] m-0">−₹750</p>
-              </div>
-
-              <div class="flex items-start justify-between py-3 border-b border-[#F9FAFB]">
-                <div>
-                  <p class="text-[13px] font-bold text-[#6B7280] m-0">TDS (10%)</p>
-                  <p class="text-[10px] text-[#9CA3AF] m-0 font-bold">Section 194C applicable</p>
-                </div>
-                <p class="text-[13px] font-black text-[#EF4444] m-0">−₹{{ getTDS().toLocaleString('en-IN') }}</p>
-              </div>
-            </div>
-
-            <!-- Net payable hero -->
-            <div class="mt-4 rounded-[20px] px-5 py-4 flex items-center justify-between bg-gradient-to-br from-[#111827] to-[#1F2937] text-white">
-              <div class="absolute -top-5 -right-5 w-20 h-20 rounded-full bg-[var(--app-primary)]/10"></div>
-              <div>
-                <p class="text-[11px] font-black text-[var(--app-primary)] uppercase tracking-wider mb-0.5 m-0">Net Payable</p>
-                <p class="text-[11px] text-white/40 m-0 font-bold">After deductions</p>
-              </div>
-              <p class="text-[32px] font-black text-[var(--app-primary)] m-0">₹{{ getNet().toLocaleString('en-IN') }}</p>
-            </div>
-          </div>
-
-          <!-- Timeline steps of payments -->
-          <div class="section-card p-5 bg-white">
-            <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-4 m-0">Payment Timeline</p>
-            <div class="space-y-2.5">
-              <div *ngFor="let t of data().timeline" class="flex items-center gap-3 bg-[#F9FAFB] rounded-2xl px-4 py-3.5 border border-slate-50">
-                <div class="w-10 h-10 rounded-2xl bg-white flex items-center justify-center flex-shrink-0 shadow-sm">
-                  <ion-icon name="calendar-outline" class="text-[#6B7280] text-base"></ion-icon>
-                </div>
-                <div class="flex-grow">
-                  <p class="text-[13px] font-bold text-[#111827] m-0">{{ t.month }}</p>
-                  <p class="text-[11px] text-[#9CA3AF] m-0 mt-0.5 font-bold">{{ t.date }}</p>
-                </div>
-                <div class="text-right">
-                  <p class="text-[14px] font-black text-[#111827] m-0">₹{{ t.amount.toLocaleString('en-IN') }}</p>
-                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block mt-0.5"
-                    [style.backgroundColor]="getStatusStyle(t.status).bg"
-                    [style.color]="getStatusStyle(t.status).color">
-                    {{ t.status }}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Attendance Logs -->
           <div class="section-card p-5 bg-white">
             <div class="flex items-center justify-between mb-4">
-              <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-0 m-0">Attendance Log</p>
-              <button class="text-[12px] font-bold text-[var(--app-primary)] flex items-center gap-0.5 bg-transparent border-none">
-                All Sessions<ion-icon name="chevron-forward-outline"></ion-icon>
-              </button>
+              <p class="section-title mb-0">Earnings · last 6 months</p>
+              <button type="button" class="link-btn" (click)="go('/app/coach/earnings')">Earnings<ion-icon name="chevron-forward-outline"></ion-icon></button>
             </div>
-            <div class="space-y-0.5">
-              <div *ngFor="let a of data().attendance" class="flex items-center gap-3 py-3.5 border-b border-[#F9FAFB] last:border-none">
-                <div class="w-10 h-10 rounded-2xl bg-[#F0FDF4] flex items-center justify-center flex-shrink-0 border border-slate-50 shadow-sm">
-                  <ion-icon name="checkmark-circle-outline" class="text-[#22C55E] text-base"></ion-icon>
-                </div>
-                <div class="flex-grow">
-                  <p class="text-[13px] font-bold text-[#111827] m-0">{{ a.date }} · {{ a.time }}</p>
-                  <p class="text-[11px] text-[#9CA3AF] m-0 mt-0.5 font-bold">{{ a.duration }} · {{ a.students }} students</p>
-                </div>
-                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                  [style.backgroundColor]="getStatusStyle(a.status).bg"
-                  [style.color]="getStatusStyle(a.status).color">
-                  {{ a.status }}
-                </span>
+            <div class="month-chart" role="img" [attr.aria-label]="'Monthly earnings at ' + d.name">
+              <div *ngFor="let m of d.earnings.monthly" class="month-col">
+                <span class="month-amount">{{ m.amount > 0 ? compactMoney(m.amount) : '' }}</span>
+                <div class="month-track"><div class="month-bar" [style.height.%]="barHeight(m.amount)"></div></div>
+                <span class="month-label">{{ m.month }}</span>
               </div>
             </div>
+            <p *ngIf="!hasMonthlyEarnings()" class="text-[12px] text-[#9CA3AF] font-bold text-center mt-3 mb-0">No completed sessions here in the last 6 months.</p>
           </div>
 
-          <!-- Documents list -->
           <div class="section-card p-5 bg-white">
-            <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-4 m-0">Documents</p>
-            <div class="space-y-3">
-              <div *ngFor="let doc of docOptions" class="flex items-center gap-3 bg-[#F9FAFB] rounded-2xl px-4 py-3.5 border border-slate-50">
-                <div class="w-10 h-10 rounded-2xl bg-[#EFF6FF] flex items-center justify-center flex-shrink-0 shadow-sm">
-                  <ion-icon name="document-text-outline" class="text-[#2563EB] text-lg"></ion-icon>
-                </div>
-                <div class="flex-grow">
-                  <p class="text-[13px] font-bold text-[#111827] m-0">{{ doc.name }}</p>
-                  <p class="text-[11px] text-[#9CA3AF] m-0 mt-0.5 font-bold">{{ doc.sub }} · {{ doc.size }}</p>
-                </div>
-                <button class="w-9 h-9 rounded-xl flex items-center justify-center border-none shadow-sm btn-orange-gradient">
-                  <ion-icon name="download-outline" class="text-white text-sm"></ion-icon>
-                </button>
-              </div>
-            </div>
+            <p class="section-title">Upcoming Sessions</p>
+            <ng-container *ngTemplateOutlet="sessionList; context: { $implicit: d.upcoming, empty: 'No upcoming sessions at this venue.' }"></ng-container>
           </div>
 
-          <!-- Payout detail log rows -->
           <div class="section-card p-5 bg-white">
-            <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-4 m-0">Payment Information</p>
-            <div class="space-y-1">
-              <div *ngFor="let item of getPaymentDetailsList()" class="flex items-center justify-between py-2.5 border-b border-[#F9FAFB] last:border-none">
-                <span class="text-[12px] text-[#9CA3AF] font-bold">{{ item.label }}</span>
-                <span class="text-[13px] font-black text-[#111827] max-w-[55%] truncate">{{ item.val }}</span>
-              </div>
+            <p class="section-title">Recent Sessions</p>
+            <ng-container *ngTemplateOutlet="sessionList; context: { $implicit: d.recent, empty: 'No past sessions at this venue yet.' }"></ng-container>
+          </div>
+
+          <div *ngIf="d.amenities.length || d.open_time || d.operating_days.length" class="section-card p-5 bg-white">
+            <p class="section-title">Venue Details</p>
+            <p *ngIf="d.open_time && d.close_time" class="text-[13px] font-bold text-[#111827] m-0">
+              Open {{ formatClock(d.open_time) }} – {{ formatClock(d.close_time) }}
+            </p>
+            <p *ngIf="d.operating_days.length" class="text-[12px] text-[#6B7280] font-bold mt-1 mb-0 capitalize">{{ d.operating_days.join(' · ') }}</p>
+            <div *ngIf="d.amenities.length" class="flex flex-wrap gap-1.5 mt-3">
+              <span *ngFor="let a of d.amenities" class="amenity">{{ a }}</span>
             </div>
           </div>
 
-          <!-- Manager card contact profile -->
-          <div class="section-card p-5 bg-white">
-            <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-4 m-0">Venue Contact</p>
-            <div class="flex items-center gap-4 mb-4">
-              <img [src]="data().manager.photo" class="w-14 h-14 rounded-2xl object-cover flex-shrink-0 border border-slate-100 shadow-sm" />
-              <div class="flex-grow min-w-0">
-                <p class="text-[15px] font-black text-[#111827] m-0 leading-none">{{ data().manager.name }}</p>
-                <p class="text-[12px] text-[#9CA3AF] m-0 mt-1 font-bold">{{ data().manager.title }}</p>
-                <div class="flex items-center gap-1 text-[11px] text-[#9CA3AF] mt-1.5 font-bold">
-                  <ion-icon name="phone-portrait-outline"></ion-icon><span>{{ data().manager.phone }}</span>
-                </div>
-              </div>
+          <div *ngIf="d.phone || d.manager_name || hasMapLocation(d)" class="section-card p-5 bg-white">
+            <p class="section-title">Venue Contact</p>
+            <p *ngIf="d.manager_name" class="text-[15px] font-black text-[#111827] m-0">{{ d.manager_name }}</p>
+            <p *ngIf="d.phone" class="text-[12px] text-[#6B7280] font-bold mt-1 mb-0">{{ d.phone }}</p>
+            <div class="grid gap-2 mt-4" [class.grid-cols-2]="d.phone && hasMapLocation(d)">
+              <a *ngIf="d.phone" [href]="'tel:' + d.phone" class="contact-btn bg-[#F0FDF4] text-[#16A34A]">
+                <ion-icon name="call-outline"></ion-icon><span>Call</span>
+              </a>
+              <a *ngIf="hasMapLocation(d)" [href]="mapUrl(d)" target="_blank" rel="noopener" class="contact-btn bg-[#EFF6FF] text-[#2563EB]">
+                <ion-icon name="navigate-outline"></ion-icon><span>Directions</span>
+              </a>
             </div>
-            <div class="grid grid-cols-3 gap-2">
-              <button class="flex flex-col items-center gap-1.5 py-3 rounded-2xl border-none bg-[#F0FDF4] text-[#22C55E]">
-                <ion-icon name="call-outline" class="text-lg"></ion-icon>
-                <span class="text-[11px] font-bold">Call</span>
-              </button>
-              <button (click)="go('/app/coach/chat')" class="flex flex-col items-center gap-1.5 py-3 rounded-2xl border-none bg-[#EFF6FF] text-[#2563EB]">
-                <ion-icon name="chatbubble-ellipses-outline" class="text-lg"></ion-icon>
-                <span class="text-[11px] font-bold">Chat</span>
-              </button>
-              <button class="flex flex-col items-center gap-1.5 py-3 rounded-2xl border-none bg-[#FFF7ED] text-[#FF7A00]">
-                <ion-icon name="mail-outline" class="text-lg"></ion-icon>
-                <span class="text-[11px] font-bold">Email</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Notes -->
-          <div class="section-card p-5 bg-white">
-            <p class="text-[12px] font-black text-[#111827] uppercase tracking-widest mb-4 m-0">Notes & Remarks</p>
-            <div class="space-y-3">
-              <div *ngFor="let n of data().notes" class="bg-[#F9FAFB] rounded-2xl px-4 py-3.5 border-l-4 border-[var(--app-primary)] border-t border-r border-b border-slate-100">
-                <p class="text-[13px] text-[#111827] leading-relaxed mb-1 m-0 font-medium">"{{ n.text }}"</p>
-                <p class="text-[10px] text-[#9CA3AF] m-0 mt-2 font-bold">{{ n.date }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Sticky bottom footer action buttons -->
-        <div class="fixed bottom-0 left-0 right-0 z-30 bg-white max-w-md mx-auto px-4 pt-3 pb-8 shadow-2xl border-t border-[#F3F4F6]">
-          <div class="grid grid-cols-3 gap-2.5">
-            <button class="flex flex-col items-center gap-1 py-3 rounded-2xl text-[10px] font-black border-none btn-green-gradient">
-              <ion-icon name="download-outline" class="text-base"></ion-icon>Download Receipt
-            </button>
-            <button class="flex flex-col items-center gap-1 py-3 rounded-2xl text-[10px] font-black border-none btn-orange-gradient">
-              <ion-icon name="document-text-outline" class="text-base"></ion-icon>Download Invoice
-            </button>
-            <button class="flex flex-col items-center gap-1 py-3 rounded-2xl text-[10px] font-bold border-none bg-[#F3F4F6] text-[#6B7280]">
-              <ion-icon name="share-social-outline" class="text-base"></ion-icon>Share PDF
-            </button>
           </div>
         </div>
       </div>
+
+      <ng-template #sessionList let-items let-empty="empty">
+        <p *ngIf="!items.length" class="text-[12px] text-[#9CA3AF] font-bold m-0">{{ empty }}</p>
+        <button *ngFor="let s of items" type="button" class="session-row" (click)="openSession(s)">
+          <div class="session-icon" [style.backgroundColor]="sessionStyle(s).bg" [style.color]="sessionStyle(s).color">
+            <ion-icon [name]="sessionStyle(s).icon"></ion-icon>
+          </div>
+          <div class="flex-grow min-w-0 text-left">
+            <p class="text-[13px] font-bold text-[#111827] m-0 truncate">{{ s.title }}</p>
+            <p class="text-[11px] text-[#9CA3AF] m-0 mt-0.5 font-bold truncate">
+              {{ formatDateTime(s.starts_at) }} · {{ s.students }} {{ s.students === 1 ? 'student' : 'students' }}<ng-container *ngIf="s.court"> · {{ s.court }}</ng-container>
+            </p>
+          </div>
+          <div class="text-right flex-shrink-0">
+            <p class="text-[13px] font-black text-[#111827] m-0">{{ money(s.amount) }}</p>
+            <span class="text-[10px] font-bold" [style.color]="sessionStyle(s).color">{{ sessionStyle(s).label }}</span>
+          </div>
+        </button>
+      </ng-template>
       </app-brand-header-shell>
     </ion-content>
   `,
   styles: [`
-    .collab-detail-page {
-      background: #FAFBFC;
-      min-height: 100%;
-    }
-
-    .hdr-actions {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .section-card {
-      border-radius: 24px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
-    }
-
-    .btn-green-gradient {
-      background: linear-gradient(135deg, var(--app-primary), var(--app-primary-to));
-      box-shadow: 0 4px 12px rgba(var(--app-primary-rgb),0.30);
-      color: #111827;
-    }
-
-    .btn-orange-gradient {
-      background: linear-gradient(135deg, #FF7A00, #FF9A40);
-      box-shadow: 0 4px 12px rgba(255,122,0,0.30);
-      color: white;
-    }
-
-    .no-scrollbar {
-      scrollbar-width: none;
-      &::-webkit-scrollbar {
-        display: none;
-      }
-    }
+    .collab-detail-page { background: #FAFBFC; min-height: 100%; }
+    .section-card { border-radius: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.05); }
+    .section-title { font-size: 12px; font-weight: 900; color: #111827; text-transform: uppercase; letter-spacing: 0.1em; margin: 0 0 16px; }
+    .cover-fallback { background: linear-gradient(135deg, #1F2937, #111827); }
+    .info-tile { background: #F9FAFB; border-radius: 16px; padding: 12px 14px; }
+    .info-label { font-size: 10px; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; margin: 0 0 2px; }
+    .info-value { font-size: 13px; font-weight: 900; color: #111827; margin: 0; line-height: 1.25; }
+    .rate-tile { background: #F9FAFB; border-radius: 16px; padding: 12px 16px; text-align: center; }
+    .link-btn { display: inline-flex; align-items: center; gap: 2px; background: transparent; border: 0; font-size: 12px; font-weight: 700; color: #16A34A; }
+    .month-chart { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; align-items: end; height: 150px; }
+    .month-col { display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; min-width: 0; }
+    .month-amount { font-size: 9px; font-weight: 800; color: #6B7280; min-height: 12px; white-space: nowrap; }
+    .month-track { flex: 1; width: 100%; max-width: 28px; display: flex; align-items: flex-end; background: #F3F4F6; border-radius: 10px; overflow: hidden; }
+    .month-bar { width: 100%; min-height: 3px; border-radius: 10px; background: linear-gradient(180deg, var(--app-primary), var(--app-primary-to)); }
+    .month-label { font-size: 10px; font-weight: 800; color: #9CA3AF; }
+    .session-row { width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 0; background: transparent; border: 0; border-bottom: 1px solid #F3F4F6; }
+    .session-row:last-child { border-bottom: 0; }
+    .session-icon { width: 40px; height: 40px; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 18px; }
+    .amenity { font-size: 11px; font-weight: 700; color: #374151; background: #F3F4F6; border-radius: 999px; padding: 4px 10px; text-transform: capitalize; }
+    .contact-btn { display: flex; align-items: center; justify-content: center; gap: 6px; height: 44px; border-radius: 16px; font-size: 13px; font-weight: 800; text-decoration: none; }
+    .contact-btn ion-icon { font-size: 18px; }
+    .state-card { margin: 40px 20px; padding: 28px 20px; border-radius: 24px; background: #fff; text-align: center; box-shadow: 0 2px 12px rgba(0,0,0,0.05); }
+    .state-card ion-icon { font-size: 34px; color: #9CA3AF; }
+    .state-title { font-size: 14px; font-weight: 700; color: #374151; margin: 10px 0 14px; }
+    .state-card button { height: 40px; padding: 0 18px; border: 0; border-radius: 12px; background: var(--app-primary); color: #111827; font-weight: 800; }
   `]
 })
 export class VenueCollabDetailPage implements OnInit {
   private readonly router = inject(Router);
-  readonly backNavigation = inject(BackNavigationService);
   private readonly route = inject(ActivatedRoute);
+  private readonly coach = inject(CoachService);
+  readonly backNavigation = inject(BackNavigationService);
 
-  collabId = signal('1');
-  readonly docOptions = DOCS;
+  readonly loading = signal(true);
+  readonly error = signal('');
+  readonly data = signal<CoachVenueCollaborationDetail | null>(null);
+  private venueId = '';
 
-  data = computed((): CollabVenueData => {
-    const id = this.collabId();
-    return COLLAB_DATA[id] || COLLAB_DATA['1'];
-  });
+  readonly monthlyMax = computed(() => Math.max(0, ...(this.data()?.earnings.monthly || []).map(m => m.amount)));
+  readonly hasMonthlyEarnings = computed(() => this.monthlyMax() > 0);
 
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
-      const idStr = params.get('id');
-      if (idStr) {
-        this.collabId.set(idStr);
-      }
+      this.venueId = params.get('id') || '';
+      this.load();
     });
   }
 
-  getGross(): number {
-    const d = this.data();
-    return d.earnings.coaching + d.earnings.bonus + d.earnings.incentive;
+  load() {
+    if (!this.venueId) {
+      this.loading.set(false);
+      this.error.set('This venue collaboration could not be found.');
+      return;
+    }
+    this.loading.set(true);
+    this.error.set('');
+    this.coach.getVenueCollaboration(this.venueId).subscribe({
+      next: response => {
+        this.data.set(response.data ?? null);
+        if (!response.data) this.error.set('This venue collaboration could not be found.');
+        this.loading.set(false);
+      },
+      error: err => {
+        this.data.set(null);
+        this.error.set(err?.status === 404
+          ? 'You have no sessions or partnership with this venue.'
+          : 'This venue collaboration could not be loaded. Check your connection and try again.');
+        this.loading.set(false);
+      },
+    });
   }
 
-  getTDS(): number {
-    return Math.round(this.getGross() * 0.10);
-  }
-
-  getNet(): number {
-    return this.getGross() - 750 - this.getTDS();
-  }
-
-  getStatusStyle(status: string) {
-    if (status === 'Active' || status === 'Paid' || status === 'Completed') {
-      return { bg: '#F0FDF4', color: '#16A34A' };
-    }
-    if (status === 'Processing') {
-      return { bg: '#EFF6FF', color: '#1D4ED8' };
-    }
-    if (status === 'Pending') {
-      return { bg: '#FFF7ED', color: '#C2410C' };
-    }
-    if (status === 'Cancelled' || status === 'Failed') {
-      return { bg: '#FEF2F2', color: '#DC2626' };
-    }
-    return { bg: '#F3F4F6', color: '#6B7280' }; // Upcoming
-  }
-
-  getContractList() {
-    const d = this.data();
+  partnershipRows(d: CoachVenueCollaborationDetail) {
+    const p = d.partnership;
+    if (!p) return [];
     return [
-      { label: 'Start Date', val: d.contract.start },
-      { label: 'End Date', val: d.contract.end },
-      { label: 'Duration', val: d.contract.duration },
-      { label: 'Monthly Payment', val: `₹${d.monthly.toLocaleString('en-IN')}` },
-      { label: 'Payment Cycle', val: d.contract.paymentCycle },
-      { label: 'Payment Method', val: d.contract.method },
-      { label: 'GST Applicable', val: d.contract.gst },
-      { label: 'Contract Status', val: d.status },
+      { label: 'Status', value: p.status.replace(/_/g, ' ') },
+      { label: 'Agreement', value: (p.agreement_type || 'Not specified').replace(/_/g, ' ') },
+      { label: 'Venue rate', value: p.venue_rate !== null ? this.money(p.venue_rate) : 'Not set' },
+      { label: 'Approval', value: (p.approval_policy || 'Not specified').replace(/_/g, ' ') },
+      { label: 'Valid from', value: p.effective_from ? this.formatDate(p.effective_from) : (p.approved_at ? this.formatDate(p.approved_at) : '—') },
+      { label: 'Valid until', value: p.effective_until ? this.formatDate(p.effective_until) : 'Open-ended' },
     ];
   }
 
-  getSessionStatsList() {
-    const d = this.data();
+  sessionStats(d: CoachVenueCollaborationDetail) {
     return [
-      { emoji: '📅', label: 'Scheduled', val: d.sessions.scheduled, sub: 'Total booked', color: 'var(--app-primary)' },
-      { emoji: '✅', label: 'Completed', val: d.sessions.completed, sub: 'Successfully done', color: '#22C55E' },
-      { emoji: '⏱', label: 'Hours Coached', val: `${d.sessions.hours}h`, sub: 'Total coaching', color: '#38BDF8' },
-      { emoji: '⏳', label: 'Remaining', val: `${d.sessions.remaining}h`, sub: 'Scheduled ahead', color: '#FF7A00' },
+      { icon: 'calendar-outline', label: 'Total sessions', value: String(d.stats.sessions), color: '#16A34A' },
+      { icon: 'checkmark-done-outline', label: 'Completed', value: String(d.stats.completed_sessions), color: '#22C55E' },
+      { icon: 'time-outline', label: 'Hours coached', value: `${d.stats.hours_coached}h`, color: '#0EA5E9' },
+      { icon: 'people-outline', label: 'Students coached', value: String(d.stats.students), color: '#FF7A00' },
     ];
   }
 
-  getPaymentDetailsList() {
-    const d = this.data();
-    return [
-      { label: 'Bank Account', val: d.payment.bank },
-      { label: 'UPI ID', val: d.payment.upi },
-      { label: 'Transaction Ref', val: d.payment.ref },
-      { label: 'Payment Date', val: d.payment.date },
-      { label: 'Invoice No.', val: d.payment.invoice },
-      { label: 'GST Number', val: d.payment.gst },
-    ];
+  barHeight(amount: number): number {
+    const max = this.monthlyMax();
+    return max > 0 ? Math.max(4, Math.round((amount / max) * 100)) : 0;
+  }
+
+  sessionStyle(s: CoachVenueCollaborationSession) {
+    switch (s.state) {
+      case 'completed': return { label: 'Completed', icon: 'checkmark-circle-outline', bg: '#F0FDF4', color: '#16A34A' };
+      case 'upcoming': return { label: 'Confirmed', icon: 'calendar-outline', bg: '#EFF6FF', color: '#2563EB' };
+      case 'pending': return { label: 'Awaiting venue', icon: 'hourglass-outline', bg: '#FFFBEB', color: '#D97706' };
+      case 'awaiting_completion': return { label: 'Needs completion', icon: 'alert-circle-outline', bg: '#FFF7ED', color: '#C2410C' };
+      case 'cancelled': return { label: 'Cancelled', icon: 'close-circle-outline', bg: '#FEF2F2', color: '#DC2626' };
+      case 'expired': return { label: 'Expired', icon: 'time-outline', bg: '#F3F4F6', color: '#6B7280' };
+      default: return { label: s.status.replace(/_/g, ' '), icon: 'ellipse-outline', bg: '#F3F4F6', color: '#6B7280' };
+    }
+  }
+
+  statusStyle(status: string) {
+    const value = status.toLowerCase();
+    if (value === 'active' || value === 'approved') return { bg: '#F0FDF4', color: '#16A34A' };
+    if (value.includes('pending')) return { bg: '#FFF7ED', color: '#C2410C' };
+    if (value.includes('reject') || value.includes('suspend') || value.includes('terminat')) return { bg: '#FEF2F2', color: '#DC2626' };
+    return { bg: '#F3F4F6', color: '#6B7280' };
+  }
+
+  hasMapLocation(d: CoachVenueCollaborationDetail): boolean {
+    return (d.latitude !== null && d.longitude !== null) || !!d.location;
+  }
+
+  mapUrl(d: CoachVenueCollaborationDetail): string {
+    const query = d.latitude !== null && d.longitude !== null ? `${d.latitude},${d.longitude}` : `${d.name} ${d.location || ''}`.trim();
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+  }
+
+  openSession(s: CoachVenueCollaborationSession) {
+    this.go('/app/coach/session/' + encodeURIComponent(s.id));
+  }
+
+  money(value: number | null | undefined): string {
+    return '₹' + Math.round(Number(value || 0)).toLocaleString('en-IN');
+  }
+
+  compactMoney(value: number): string {
+    if (value >= 100000) return '₹' + (value / 100000).toFixed(1).replace(/\.0$/, '') + 'L';
+    if (value >= 1000) return '₹' + (value / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+    return '₹' + Math.round(value);
+  }
+
+  formatDate(value: string): string {
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  formatDateTime(value: string): string {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+    return date.toLocaleString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit', hour12: true });
+  }
+
+  formatClock(value: string): string {
+    if (/[ap]m/i.test(value)) return value.toUpperCase();
+    const [h, m] = value.split(':').map(Number);
+    if (Number.isNaN(h)) return value;
+    const date = new Date();
+    date.setHours(h, m || 0, 0, 0);
+    return date.toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit', hour12: true });
   }
 
   back() {

@@ -6,6 +6,7 @@ import { BrandHeaderShellComponent } from '../../../shared/components/brand-head
 import { SegmentControlComponent, SegmentOption } from '../../../shared/components/segment-control/segment-control.component';
 import { CoachService } from '../../../core/services/coach.service';
 import { TabBadgeService } from '../../../core/services/tab-badge.service';
+import { ChatService } from '../../../core/services/chat.service';
 import { resolveMediaUrl } from '../../../core/utils/media-url.util';
 import { SkeletonListComponent } from '../../../shared/components/skeleton';
 
@@ -34,91 +35,16 @@ interface CoachSession {
   time: string;
   duration: string;
   type: 'Training' | 'One-on-One' | 'Academy' | 'Group Session';
-  status: 'Confirmed' | 'Completed' | 'Pending' | 'Cancelled';
-  weather: string;
-  distance: string;
+  status: 'Confirmed' | 'Completed' | 'Pending' | 'Cancelled' | 'Needs completion';
+  court: string;
   startsIn?: string | null;
   earnings: number;
+  mapQuery: string;
   studentsConfirmed: number;
   studentsTotal: number;
   students: Student[];
   tab: 'today' | 'upcoming' | 'completed' | 'cancelled';
 }
-
-const MOCK_STUDENTS: Student[] = [
-  { id: 1, name: 'Rahul Sharma', photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&auto=format', skill: 'Advanced', attendance: 94, sessions: 18 },
-  { id: 2, name: 'Priya Verma', photo: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=80&h=80&fit=crop&auto=format', skill: 'Intermediate', attendance: 88, sessions: 12 },
-  { id: 3, name: 'Vikram Singh', photo: 'https://images.unsplash.com/photo-1557862921-37829c790f19?w=80&h=80&fit=crop&auto=format', skill: 'Expert', attendance: 96, sessions: 24 },
-  { id: 4, name: 'Ananya Patel', photo: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=80&h=80&fit=crop&auto=format', skill: 'Beginner', attendance: 82, sessions: 6 },
-  { id: 5, name: 'Kabir Malhotra', photo: 'https://images.unsplash.com/photo-1552058544-f2b08422138a?w=80&h=80&fit=crop&auto=format', skill: 'Advanced', attendance: 91, sessions: 15 },
-  { id: 6, name: 'Meena Krishnan', photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&h=80&fit=crop&auto=format', skill: 'Intermediate', attendance: 85, sessions: 9 },
-];
-
-const SESSIONS: CoachSession[] = [
-  {
-    id: 's1', name: 'Elite Cricket Academy', sport: 'Cricket', emoji: '🏏',
-    image: 'https://images.unsplash.com/photo-1593341646782-e0b495cff86d?w=700&h=350&fit=crop&auto=format',
-    teamName: 'Advanced Batch', venue: 'Phoenix Arena', address: 'Gomti Nagar, Lucknow',
-    date: 'Today', time: '6:00 PM', duration: '2 hours', type: 'Training', status: 'Confirmed',
-    weather: 'Clear ☀️ 28°C', distance: '2.3 km', startsIn: '35 min',
-    earnings: 1500, studentsConfirmed: 10, studentsTotal: 12,
-    students: MOCK_STUDENTS, tab: 'today'
-  },
-  {
-    id: 's2', name: 'Football Skills Workshop', sport: 'Football', emoji: '⚽',
-    image: 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=700&h=350&fit=crop&auto=format',
-    teamName: 'Junior Squad', venue: 'K.D. Singh Stadium', address: 'Nehru Nagar, Lucknow',
-    date: 'Today', time: '7:30 PM', duration: '90 min', type: 'Group Session', status: 'Confirmed',
-    weather: 'Clear ☀️ 26°C', distance: '3.8 km', startsIn: '1h 55m',
-    earnings: 1200, studentsConfirmed: 8, studentsTotal: 10,
-    students: MOCK_STUDENTS.slice(0, 5), tab: 'today'
-  },
-  {
-    id: 's3', name: 'Priya – Individual Coaching', sport: 'Badminton', emoji: '🏸',
-    image: 'https://images.unsplash.com/photo-1722087642932-9b070e9a066e?w=700&h=350&fit=crop&auto=format',
-    studentName: 'Priya Verma', venue: 'Sports Authority Complex', address: 'Gomti Nagar, Lucknow',
-    date: 'Today', time: '4:00 PM', duration: '60 min', type: 'One-on-One', status: 'Completed',
-    weather: 'Clear ☀️', distance: '4.5 km', startsIn: null,
-    earnings: 800, studentsConfirmed: 1, studentsTotal: 1,
-    students: [MOCK_STUDENTS[1]], tab: 'today'
-  },
-  {
-    id: 's4', name: 'Junior Tennis Camp', sport: 'Tennis', emoji: '🎾',
-    image: 'https://images.unsplash.com/photo-1761156896762-2ef13f932004?w=700&h=350&fit=crop&auto=format',
-    teamName: 'Weekend Juniors', venue: 'Phoenix Sports Hub', address: 'Aliganj, Lucknow',
-    date: 'Today', time: '10:00 AM', duration: '90 min', type: 'Academy', status: 'Completed',
-    weather: 'Clear ☀️', distance: '5.2 km', startsIn: null,
-    earnings: 750, studentsConfirmed: 6, studentsTotal: 6,
-    students: MOCK_STUDENTS.slice(2, 6), tab: 'today'
-  },
-  {
-    id: 's5', name: 'Cricket Advanced Batch', sport: 'Cricket', emoji: '🏏',
-    image: 'https://images.unsplash.com/photo-1593341646782-e0b495cff86d?w=700&h=350&fit=crop&auto=format',
-    teamName: 'Advanced Batch', venue: 'Ekana Cricket Stadium', address: 'Gomti Nagar Extension',
-    date: 'Tomorrow', time: '6:30 PM', duration: '2 hours', type: 'Training', status: 'Confirmed',
-    weather: 'Partly Cloudy ⛅', distance: '4.5 km', startsIn: '25h 30m',
-    earnings: 1500, studentsConfirmed: 10, studentsTotal: 12,
-    students: MOCK_STUDENTS, tab: 'upcoming'
-  },
-  {
-    id: 's6', name: 'Badminton Weekend Camp', sport: 'Badminton', emoji: '🏸',
-    image: 'https://images.unsplash.com/photo-1722087642932-9b070e9a066e?w=700&h=350&fit=crop&auto=format',
-    teamName: 'Weekend Batch', venue: 'Sports Authority Complex', address: 'Gomti Nagar',
-    date: 'Yesterday', time: '8:00 AM', duration: '2 hours', type: 'Group Session', status: 'Completed',
-    weather: 'Clear ☀️', distance: '4.5 km', startsIn: null,
-    earnings: 2000, studentsConfirmed: 8, studentsTotal: 8,
-    students: MOCK_STUDENTS.slice(0, 4), tab: 'completed'
-  },
-  {
-    id: 's7', name: 'Football Strategy Session', sport: 'Football', emoji: '⚽',
-    image: 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=700&h=350&fit=crop&auto=format',
-    teamName: 'Senior Squad', venue: 'K.D. Singh Stadium', address: 'Nehru Nagar',
-    date: 'Today', time: '8:00 AM', duration: '90 min', type: 'Training', status: 'Cancelled',
-    weather: 'Rainy 🌧️', distance: '3.8 km', startsIn: null,
-    earnings: 0, studentsConfirmed: 0, studentsTotal: 10,
-    students: MOCK_STUDENTS.slice(0, 3), tab: 'cancelled'
-  },
-];
 
 function buildWeek() {
   const today = new Date();
@@ -150,9 +76,18 @@ function buildWeek() {
               <p class="app-header-title text-[#111827] m-0">Schedule</p>
               <p class="text-[11px] text-[#9CA3AF] font-bold m-0">{{ todayLabel }}</p>
             </div>
-            <button class="app-header-btn flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
-              <ion-icon name="search-outline" class="text-xl text-[#111827]"></ion-icon>
+            <button type="button" (click)="toggleSearch()" [attr.aria-label]="searchOpen() ? 'Close search' : 'Search sessions'"
+              class="app-header-btn flex items-center justify-center rounded-xl bg-[#F3F4F6] border-none">
+              <ion-icon [name]="searchOpen() ? 'close-outline' : 'search-outline'" class="text-xl text-[#111827]"></ion-icon>
             </button>
+          </div>
+          <div *ngIf="searchOpen()" class="px-5 py-2.5 bg-white border-b border-[#F3F4F6]">
+            <label class="flex items-center gap-2 px-3 h-10 rounded-xl bg-[#F3F4F6]">
+              <ion-icon name="search-outline" class="text-[#9CA3AF]"></ion-icon>
+              <input type="search" class="flex-1 bg-transparent border-none outline-none text-[13px] text-[#111827]"
+                placeholder="Search by session, student or venue" [value]="searchTerm()"
+                (input)="searchTerm.set($any($event.target).value)" aria-label="Search sessions" />
+            </label>
           </div>
 
           <!-- Weekly Calendar dates slider -->
@@ -287,13 +222,21 @@ function buildWeek() {
                       <div class="flex items-center gap-1 text-[11px] text-[#9CA3AF] font-bold">
                         <ion-icon name="location-outline"></ion-icon>{{ sess.venue }}
                       </div>
+                      <ng-container *ngIf="sess.court">
+                        <div class="h-3 w-px bg-[#E5E7EB]"></div>
+                        <div class="flex items-center gap-1 text-[11px] text-[#9CA3AF] font-bold">
+                          <ion-icon name="grid-outline"></ion-icon>{{ sess.court }}
+                        </div>
+                      </ng-container>
                       <div class="h-3 w-px bg-[#E5E7EB]"></div>
-                      <div class="flex items-center gap-1 text-[11px] text-[#9CA3AF] font-bold">
-                        <ion-icon name="cloudy-night-outline"></ion-icon>{{ sess.weather }}
-                      </div>
-                      <div class="h-3 w-px bg-[#E5E7EB]"></div>
-                      <span class="text-[11px] text-[#9CA3AF] font-bold">{{ sess.distance }}</span>
+                      <span class="text-[11px] text-[#9CA3AF] font-bold">₹{{ sess.earnings | number:'1.0-0' }}</span>
                     </div>
+                    <button *ngIf="sess.status === 'Needs completion'" type="button" (click)="go('/app/coach/session/' + sess.id)"
+                      class="w-full mb-3 px-3.5 py-2.5 rounded-2xl border border-[#FFE1BF] bg-[#FFF8EF] text-left flex items-center gap-2">
+                      <ion-icon name="time-outline" class="text-[#E06A00] text-lg"></ion-icon>
+                      <span class="flex-1 text-[11px] font-bold text-[#8A6A48]">This session has ended. Mark it as completed to count the earnings.</span>
+                      <ion-icon name="chevron-forward-outline" class="text-[#C2854A]"></ion-icon>
+                    </button>
 
                     <!-- Attendance avatar bar -->
                     <div class="bg-[#F9FAFB] rounded-2xl px-3.5 py-3 mb-3 flex items-center justify-between border border-slate-100">
@@ -331,10 +274,10 @@ function buildWeek() {
 
                     <!-- Action buttons -->
                     <div class="grid grid-cols-3 gap-2">
-                      <button (click)="go('/app/coach/chat')" class="action-card-btn">
-                        <ion-icon name="chatbubbles-outline"></ion-icon>Chat
+                      <button type="button" (click)="openChat(sess)" [disabled]="openingChat() === sess.id" class="action-card-btn">
+                        <ion-icon name="chatbubbles-outline"></ion-icon>{{ openingChat() === sess.id ? 'Opening…' : 'Chat' }}
                       </button>
-                      <button class="action-card-btn">
+                      <button type="button" (click)="navigate(sess)" [disabled]="!sess.mapQuery" class="action-card-btn">
                         <ion-icon name="navigate-outline"></ion-icon>Navigate
                       </button>
                       <button (click)="go('/app/coach/session/' + sess.id)" class="action-card-btn font-black text-[#111827] btn-green-gradient">
@@ -442,8 +385,12 @@ export class CoachSchedulePage implements OnInit {
   private readonly router = inject(Router);
   private readonly coachService = inject(CoachService);
   private readonly tabBadges = inject(TabBadgeService);
+  private readonly chat = inject(ChatService);
 
   selectedDay = signal(0);
+  searchOpen = signal(false);
+  searchTerm = signal('');
+  openingChat = signal<string | null>(null);
   activeTab = signal<'today' | 'upcoming' | 'completed' | 'cancelled'>('today');
   loading = signal(true);
   loadError = signal('');
@@ -510,14 +457,49 @@ export class CoachSchedulePage implements OnInit {
     const tab = this.activeTab();
     const selectedDate = this.dateForOffset(this.selectedDay()).toDateString();
     const now = new Date();
+    const term = this.searchTerm().trim().toLowerCase();
     return this.sessions().filter(session => {
+      if (term && !this.matchesSearch(session, term)) return false;
+      if (term) return true;
       const date = new Date(session.date);
       if (tab === 'today') return date.toDateString() === selectedDate && !['Completed', 'Cancelled'].includes(session.status);
       if (tab === 'upcoming') return date > now && !['Completed', 'Cancelled'].includes(session.status);
-      if (tab === 'completed') return session.status === 'Completed';
+      if (tab === 'completed') return session.status === 'Completed' || session.status === 'Needs completion';
       return session.status === 'Cancelled';
     }).sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
   });
+
+  toggleSearch(): void {
+    const open = !this.searchOpen();
+    this.searchOpen.set(open);
+    if (!open) this.searchTerm.set('');
+  }
+
+  private matchesSearch(session: CoachSession, term: string): boolean {
+    return [session.name, session.sport, session.venue, session.address, ...session.students.map((student) => student.name)]
+      .some((value) => String(value || '').toLowerCase().includes(term));
+  }
+
+  navigate(session: CoachSession): void {
+    if (!session.mapQuery) return;
+    window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(session.mapQuery)}`, '_blank', 'noopener');
+  }
+
+  async openChat(session: CoachSession): Promise<void> {
+    if (session.students.length !== 1) {
+      void this.router.navigateByUrl('/app/coach/chat');
+      return;
+    }
+    this.openingChat.set(session.id);
+    const student = session.students[0];
+    const response = await this.chat.openPrivate({ id: student.id, name: student.name, avatar: student.photo || null });
+    this.openingChat.set(null);
+    if (response.success && response.data?.id) {
+      void this.router.navigateByUrl(`/app/coach/chat/${encodeURIComponent(response.data.id)}`);
+    } else {
+      void this.router.navigateByUrl('/app/coach/chat');
+    }
+  }
 
   ngOnInit(): void {
     this.loadSchedule();
@@ -542,7 +524,7 @@ export class CoachSchedulePage implements OnInit {
     const startsAt = item.starts_at ? new Date(item.starts_at) : new Date();
     const endsAt = item.ends_at ? new Date(item.ends_at) : startsAt;
     const participants = Array.isArray(item.participants) ? item.participants : [];
-    const status = this.statusLabel(item.status);
+    const status = this.statusLabel(item.status, startsAt);
     return {
       id: `${item.source || 'scheduling'}-${item.id}`,
       name: item.title || 'Coaching Session',
@@ -558,10 +540,10 @@ export class CoachSchedulePage implements OnInit {
       duration: this.durationLabel(startsAt, endsAt),
       type: participants.length === 1 ? 'One-on-One' : 'Group Session',
       status,
-      weather: item.court ? `Court: ${item.court}` : 'Venue to be confirmed',
-      distance: '',
+      court: item.court || '',
       startsIn: this.startsIn(startsAt, status),
       earnings: Number(item.coach_fee ?? item.price ?? 0),
+      mapQuery: [item.venue, item.venue_location].filter(Boolean).join(', '),
       studentsConfirmed: Number(item.confirmed_participants_count ?? participants.filter((participant: any) => participant.status === 'confirmed').length),
       studentsTotal: Number(item.capacity ?? participants.length),
       students: participants.map((participant: any) => ({ id: Number(participant.id), name: participant.name || 'Player', photo: resolveMediaUrl(participant.photo) || '', status: participant.status, skill: '', attendance: 0, sessions: 0 })),
@@ -569,10 +551,10 @@ export class CoachSchedulePage implements OnInit {
     };
   }
 
-  private statusLabel(status: string): CoachSession['status'] {
+  private statusLabel(status: string, startsAt: Date): CoachSession['status'] {
     if (status === 'completed') return 'Completed';
     if (['cancelled', 'rejected', 'expired'].includes(status)) return 'Cancelled';
-    if (status === 'confirmed' || status === 'scheduled') return 'Confirmed';
+    if (status === 'confirmed' || status === 'scheduled') return startsAt.getTime() <= Date.now() ? 'Needs completion' : 'Confirmed';
     return 'Pending';
   }
 
@@ -628,12 +610,13 @@ export class CoachSchedulePage implements OnInit {
       const date = new Date(session.date);
       if (tab === 'today') return date.toDateString() === selectedDate && !['Completed', 'Cancelled'].includes(session.status);
       if (tab === 'upcoming') return date > now && !['Completed', 'Cancelled'].includes(session.status);
-      return tab === 'completed' ? session.status === 'Completed' : session.status === 'Cancelled';
+      return tab === 'completed' ? ['Completed', 'Needs completion'].includes(session.status) : session.status === 'Cancelled';
     }).length;
   }
 
   getStatusStyle(status: string) {
     if (status === 'Confirmed') return { bg: '#F0FDF4', color: '#16A34A' };
+    if (status === 'Needs completion') return { bg: '#FFF7ED', color: '#C2410C' };
     if (status === 'Completed') return { bg: '#F3F4F6', color: '#6B7280' };
     if (status === 'Pending') return { bg: '#FFFBEB', color: '#D97706' };
     return { bg: '#FEF2F2', color: '#DC2626' };

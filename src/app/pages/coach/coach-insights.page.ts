@@ -105,6 +105,31 @@ type ColouredMetric = CoachInsightMetric & { color: string };
             </div>
           </section>
 
+          <article *ngIf="data()?.revenue as revenue" class="content-card">
+            <div class="section-title">
+              <div><h2>Revenue trend</h2><p>Completed-session earnings · {{ data()?.range?.label }}</p></div>
+              <button type="button" class="revenue-link" (click)="openEarnings()">Earnings <ion-icon name="chevron-forward-outline"></ion-icon></button>
+            </div>
+            <div class="revenue-summary">
+              <strong>₹{{ revenue.total | number:'1.0-0' }}</strong>
+              <span [class.down]="!revenue.positive">{{ revenue.change }}</span>
+            </div>
+            <div class="revenue-chart" role="img" [attr.aria-label]="'Revenue trend for ' + data()?.range?.label">
+              <div *ngFor="let point of revenue.points" class="revenue-col" [title]="point.label + ': ₹' + point.amount">
+                <div class="revenue-bar-wrap"><span class="revenue-bar" [class.empty]="point.amount <= 0" [style.height.%]="revenueBarHeight(point.amount)"></span></div>
+              </div>
+            </div>
+            <div class="revenue-axis" *ngIf="revenue.points.length">
+              <span>{{ revenue.points[0].label }}</span>
+              <span>{{ revenue.points[revenue.points.length - 1].label }}</span>
+            </div>
+            <div class="revenue-foot">
+              <span>{{ revenue.sessions }} completed session{{ revenue.sessions === 1 ? '' : 's' }}</span>
+              <span>Avg ₹{{ revenue.average | number:'1.0-0' }} / session</span>
+              <span>Previous ₹{{ revenue.previous | number:'1.0-0' }}</span>
+            </div>
+          </article>
+
           <article class="content-card">
             <div class="section-title"><div><h2>Business performance</h2><p>Real activity and completed-session earnings</p></div></div>
             <div class="business-list">
@@ -267,6 +292,18 @@ type ColouredMetric = CoachInsightMetric & { color: string };
     .metric-label { min-height:24px; margin-top:5px; color:#8b98b2; font-size:10px; line-height:1.25; font-weight:700; }
     .sparkline { width:100%; height:27px; margin-top:auto; overflow:visible; }
     .content-card { padding:18px; border-radius:22px; }
+    .revenue-link { flex:0 0 auto; display:flex; align-items:center; gap:2px; padding:0; border:0; background:transparent; color:#4c9b00; font-size:11px; font-weight:800; }
+    .revenue-summary { display:flex; align-items:baseline; flex-wrap:wrap; gap:4px 10px; margin-bottom:12px; }
+    .revenue-summary strong { color:var(--ink); font-size:26px; line-height:1.1; font-weight:900; letter-spacing:-.03em; }
+    .revenue-summary span { color:#3f8f00; font-size:10px; font-weight:800; }
+    .revenue-summary span.down { color:#c2410c; }
+    .revenue-chart { display:flex; align-items:flex-end; gap:5px; height:120px; }
+    .revenue-col { flex:1; min-width:0; height:100%; }
+    .revenue-bar-wrap { display:flex; height:100%; align-items:flex-end; justify-content:center; }
+    .revenue-bar { display:block; width:100%; max-width:24px; min-height:4px; border-radius:7px 7px 3px 3px; background:linear-gradient(180deg,#83e521,#69d900); }
+    .revenue-bar.empty { background:#eef1f5; }
+    .revenue-axis { display:flex; justify-content:space-between; margin-top:6px; color:#97a1b0; font-size:9px; font-weight:700; }
+    .revenue-foot { display:flex; flex-wrap:wrap; gap:6px 14px; margin-top:12px; padding-top:10px; border-top:1px solid #f0f2f5; color:#778296; font-size:10px; font-weight:700; }
     .business-list { display:grid; gap:16px; }
     .business-row { min-width:0; display:grid; grid-template-columns:38px minmax(0,1fr); gap:11px; align-items:center; }
     .business-icon { width:38px; height:38px; border-radius:12px; display:grid; place-items:center; font-size:18px; }
@@ -476,6 +513,14 @@ export class CoachInsightsPage {
   }
 
   clampPercent(value: number): number { return Math.max(0, Math.min(100, Math.round(Number(value) || 0))); }
+
+  revenueBarHeight(amount: number): number {
+    const max = Math.max(0, ...(this.data()?.revenue?.points ?? []).map((point) => point.amount));
+    if (max <= 0 || amount <= 0) return 3;
+    return Math.max(6, Math.round((amount / max) * 100));
+  }
+
+  openEarnings(): void { void this.router.navigateByUrl('/app/coach/earnings'); }
 
   private metricColor(id: string): string {
     return ({ views: '#74E600', bookings: '#FF7A00', acceptance: '#38BDF8', completion: '#22C55E', repeat: '#7C3AED', rating: '#F59E0B' } as Record<string, string>)[id] || '#667085';
